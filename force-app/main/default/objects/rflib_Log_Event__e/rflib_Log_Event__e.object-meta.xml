@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Object used to report log events including the list of all log statements collected by rflib_DefaultLogger. The event instance is created when the rflib_DefaultLogger.reportLogs(); method is invoked. It can be used, for example, to create an email notification of this event.</description>
+    <eventType>HighVolume</eventType>
+    <label>Log Event</label>
+    <pluralLabel>Log Events</pluralLabel>
+</CustomObject>

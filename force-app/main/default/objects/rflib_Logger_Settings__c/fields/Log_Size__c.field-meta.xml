@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Log_Size__c</fullName>
+    <defaultValue>100</defaultValue>
+    <description>Number of log messages to be stored by the logger.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Number of log messages to be stored by the logger.</inlineHelpText>
+    <label>Log Size</label>
+    <precision>18</precision>
+    <required>true</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

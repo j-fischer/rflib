@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Event__c</fullName>
+    <description>Select the event under which the trigger will fire.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Select the event under which the trigger will fire.</inlineHelpText>
+    <label>Event</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>BEFORE_INSERT</fullName>
+                <default>true</default>
+                <label>Before Insert</label>
+            </value>
+            <value>
+                <fullName>BEFORE_UPDATE</fullName>
+                <default>false</default>
+                <label>Before Update</label>
+            </value>
+            <value>
+                <fullName>BEFORE_DELETE</fullName>
+                <default>false</default>
+                <label>Before Delete</label>
+            </value>
+            <value>
+                <fullName>AFTER_INSERT</fullName>
+                <default>false</default>
+                <label>After Insert</label>
+            </value>
+            <value>
+                <fullName>AFTER_UPDATE</fullName>
+                <default>false</default>
+                <label>After Update</label>
+            </value>
+            <value>
+                <fullName>AFTER_UNDELETE</fullName>
+                <default>false</default>
+                <label>After Undelete</label>
+            </value>
+            <value>
+                <fullName>AFTER_DELETE</fullName>
+                <default>false</default>
+                <label>After Delete</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
