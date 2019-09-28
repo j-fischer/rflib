@@ -8,6 +8,21 @@ his concepts to provide detailed log information from Lightning Components and L
 into the execution path on the client side, especially when dealing with production issues. The library provides configuration that allows to
 automatically report any unexpected errors through Salesforce's latest technologies such as Platform Events.
 
+## Key Features
+
+The following lists describe some of the key features of rflib. 
+
+Logging Framework:
+* Logger for LWC and LC, which publishes logs the same way as Apex
+* Configuration through Custom Settings allowing for different log configurations between users
+* Aggregation of log statements when reporting
+* Using Platform Events for reporting of log statements
+
+Trigger Framework:
+* Fully decoupled framework, trigger handlers work in isolation
+* Recursion tracking to allow for easy prevention of multiple executions
+* Fully configurable trigger management (activation, order, etc) using Custom Metadata
+
 ## Deploy
 
 You can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deployto Salesforce**
