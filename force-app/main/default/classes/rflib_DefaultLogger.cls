@@ -36,6 +36,8 @@
 public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private static final Integer MAX_MESSAGE_SIZE = 131072;
+  
+  @TestVisible 
   private static final List<String> LOG_STATEMENTS = new List<String>(); 
 
   private final String context;
@@ -208,11 +210,11 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public interface EventPublisher {
-    void publish(SObject event);
+    void publish(rflib_Log_Event__e event);
   }
 
   public class PlatformEventPublisher implements EventPublisher {
-    public void publish(Sobject event) {
+    public void publish(rflib_Log_Event__e event) {
       EventBus.publish(event);
     }
   }
