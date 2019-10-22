@@ -23,6 +23,15 @@ Trigger Framework:
 * Recursion tracking to allow for easy prevention of multiple executions
 * Fully configurable trigger management (activation, order, etc) using Custom Metadata
 
+## Configuration Settings
+
+The following options can be configured using custom settings:
+
+* General Log Level: The log level for which log statements will be included in the logs
+* System Debug Log Level: The log level for which log statements will be written to the System.debug logs
+* Reporting Log Level: The log level that will trigger the reporting of the currently stored log statements using platform event
+* Org Wide Email Sender: The email address that is required to send out reports using the Email Log Event Handler handler
+
 ## Deploy
 
 You can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deployto Salesforce**
