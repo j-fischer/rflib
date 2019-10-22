@@ -68,6 +68,16 @@ public interface rflib_Logger {
   void setSystemDebugLevel(rflib_LogLevel newLevel);
 
   /**
+   * Set the general log level. Whenever a statement is logged and the statements level is encompassed
+   * by the currently set General Log Level, the message will be added to the log stack. 
+   *
+   * rflib_DefaultLogger's default level is INFO.
+   *
+   * @param  newLevel The new log level to be used to match statements.
+   */
+  void setGeneralLogLevel(rflib_LogLevel newLevel);
+
+  /**
    * Write a DEBUG log statement. 
    * @param  message The message to be logged. 
    */

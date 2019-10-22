@@ -46,6 +46,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private Integer logCacheSize = 100;
 
+  private rflib_LogLevel generalLogLevel = rflib_LogLevel.INFO;
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.INFO;
   private rflib_LogLevel reportingLogLevel = rflib_LogLevel.FATAL;
 
@@ -62,6 +63,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
     if (settings.Log_Size__c != null) {
       logger.setLogCacheSize(Integer.valueOf(settings.Log_Size__c));
+    }
+
+    if (String.isNotBlank(settings.General_Log_Level__c)) {
+      logger.setGeneralLogLevel(rflib_LogLevel.fromString(settings.General_Log_Level__c));
     }
 
     if (String.isNotBlank(settings.System_Debug_Log_Level__c)) {
@@ -117,12 +122,16 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
   } 
 
-  public void setReportingLogLevel(rflib_LogLevel newLevev) {
-    reportingLogLevel = newLevev;
+  public void setReportingLogLevel(rflib_LogLevel newLevel) {
+    reportingLogLevel = newLevel;
   }
 
-  public void setSystemDebugLevel(rflib_LogLevel newLevev) {
-    systemDebugLevel = newLevev;
+  public void setSystemDebugLevel(rflib_LogLevel newLevel) {
+    systemDebugLevel = newLevel;
+  }
+
+  public void setGeneralLogLevel(rflib_LogLevel newLevel) {
+    generalLogLevel = newLevel;
   }
 
   public void debug(String message) {
@@ -188,12 +197,16 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       debugLogger.debug(logLevel.getLoggingLevel(), messageToLog);
     }
 
+    if (!generalLogLevel.encompasses(logLevel)) {
+      return;
+    }
+
     if (LOG_STATEMENTS.size() >= logCacheSize) {
       LOG_STATEMENTS.remove(0);
     }
 
     LOG_STATEMENTS.add(messageToLog);
-
+    
     if (reportingLogLevel.encompasses(logLevel)) {
       reportLogs();
     }

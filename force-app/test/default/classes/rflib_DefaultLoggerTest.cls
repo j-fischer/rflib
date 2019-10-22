@@ -146,6 +146,28 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
+  public static void testSetGeneralLogLevel() {
+    rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
+    rflib_DefaultLoggerTest.EventCapture eventCapture = new rflib_DefaultLoggerTest.EventCapture();
+    
+    rflib_Logger logger = new rflib_DefaultLogger(
+      eventCapture,
+      debugLogCapture, 
+      'testSetGeneralLogLevel');
+
+    logger.debug('This statement should NOT be logged');
+    System.assert(eventCapture.eventHasNotBeenPublished());
+
+    logger.setGeneralLogLevel(rflib_LogLevel.WARN);
+    logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+
+    logger.error('This statement should be logged');
+    System.assert(eventCapture.eventHasBeenPublished());
+    System.assert(eventCapture.containsInAnyMessage('This statement should be logged'));
+    System.assert(eventCapture.doesNotContainInAnyMessage('This statement should NOT be logged'));
+  }
+
+  @isTest
   public static void testMessageWithArgs() {
     rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
     rflib_DefaultLoggerTest.EventCapture eventCapture = new rflib_DefaultLoggerTest.EventCapture();
@@ -164,7 +186,9 @@ public class rflib_DefaultLoggerTest {
     insert new rflib_Logger_Settings__c(
       Log_Size__c = 50,
       System_Debug_Log_Level__c = 'warn',
-      Log_Event_Reporting_Level__c = 'error'
+      Log_Event_Reporting_Level__c = 'error',
+      General_Log_Level__c = 'info',
+      Org_Wide_Email_Sender_Address__c = 'foo@email.com'
     );
 
     System.assert(rflib_DefaultLogger.createFromCustomSettings('logger') != null);
