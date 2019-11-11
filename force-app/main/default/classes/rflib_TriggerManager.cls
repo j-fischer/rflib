@@ -70,7 +70,11 @@ public inherited sharing class rflib_TriggerManager {
                     activeHandler = handler;
                     handler.run(args);
                 } catch (Exception ex) {
-                    args.addException(ex, handlerInfo.handlerType);
+                    if (handlerInfo.catchException) {
+                        args.addException(ex, handlerInfo.handlerType);
+                    } else {
+                        throw ex;
+                    }
                 } finally {
                     activeHandler = null;
                 }
@@ -80,7 +84,11 @@ public inherited sharing class rflib_TriggerManager {
                 try {
                     handler.onConsecutiveRun(args, incrementAndGetCounter(args));
                 } catch (Exception ex) {
-                    args.addException(ex, handlerInfo.handlerType);
+                    if (handlerInfo.catchException) {
+                        args.addException(ex, handlerInfo.handlerType);
+                    } else {
+                        throw ex;
+                    }
                 }
             }
 
@@ -111,7 +119,7 @@ public inherited sharing class rflib_TriggerManager {
         List<TriggerHandlerInfo> result = new List<TriggerHandlerInfo>();
 
         List<rflib_Trigger_Configuration__mdt> triggerHandlers = 
-            [SELECT Class_Name__c, Order__c 
+            [SELECT Class_Name__c, Order__c, Exception_Behavior__c
              FROM rflib_Trigger_Configuration__mdt
              WHERE Active__c = true
              AND Object_Name__c = :args.objectType.getDescribe().getName()
@@ -125,7 +133,8 @@ public inherited sharing class rflib_TriggerManager {
             Type handlerType = Type.forName(handlerInfo.Class_Name__c);
             rflib_ITriggerHandler handler = (rflib_ITriggerHandler) handlerType.newInstance();
 
-            result.add(new TriggerHandlerInfo(handler, handlerType));
+            Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';
+            result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
         }
 
         LOGGER.info('{0} active triggers found: {1}', new List<Object> { activeTriggers.size(), String.join(activeTriggers, ',') });
@@ -136,10 +145,12 @@ public inherited sharing class rflib_TriggerManager {
     public class TriggerHandlerInfo {
         public final rflib_ITriggerHandler handler;
         public final Type handlerType;
+        public final Boolean catchException;
 
-        public TriggerHandlerInfo(rflib_ITriggerHandler handler, Type handlerType) {
+        public TriggerHandlerInfo(rflib_ITriggerHandler handler, Type handlerType, Boolean catchException) {
             this.handler = handler;
             this.handlerType = handlerType;
+            this.catchException = catchException;
         }
     }    
 
