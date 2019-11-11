@@ -146,6 +146,32 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
+  public static void testExceedMaxMessageSize() {
+    rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
+    rflib_DefaultLoggerTest.EventCapture eventCapture = new rflib_DefaultLoggerTest.EventCapture();
+    
+    rflib_Logger logger = new rflib_DefaultLogger(
+      eventCapture,
+      debugLogCapture, 
+      'testSetReportingLogLevel');
+
+    logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+
+    String longMessage = 'a';
+    for (Integer i = 1; i < rflib_DefaultLogger.MAX_MESSAGE_SIZE; i++) {
+      longMessage += 'b';
+    }
+
+    longMessage += 'c';
+
+    logger.error(longMessage);
+
+    System.assert(eventCapture.eventHasBeenPublished());
+    System.assert(eventCapture.doesNotContainInAnyMessage('a'));
+    System.assert(eventCapture.containsInAnyMessage('c'));
+  }
+
+  @isTest
   public static void testSetGeneralLogLevel() {
     rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
     rflib_DefaultLoggerTest.EventCapture eventCapture = new rflib_DefaultLoggerTest.EventCapture();

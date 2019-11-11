@@ -35,6 +35,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
+  @TestVisible
   private static final Integer MAX_MESSAGE_SIZE = 131072;
   
   @TestVisible 
@@ -181,7 +182,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       Context__c = context,
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
         ? messagesAsStr 
-        : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE)
+        : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE)
     ));
   }
 
