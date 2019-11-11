@@ -40,13 +40,28 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';
 
+    private Boolean useOrgWideEmailAddress;
+    private List<ApexEmailNotification> apexEmailNotifications;
+
+    public rflib_EmailLogEventHandler() {
+        this([SELECT Email, UserId FROM ApexEmailNotification], true);
+    }
+
+    @TestVisible
+    private rflib_EmailLogEventHandler(List<ApexEmailNotification> apexEmailNotifications, Boolean useOrgWideEmailAddress) {
+        this.apexEmailNotifications = apexEmailNotifications;
+        this.useOrgWideEmailAddress = useOrgWideEmailAddress;
+    }
+
     public void run(rflib_TriggerManager.Args args) {
-        List<ApexEmailNotification> notificationConfigs = [SELECT Email, UserId FROM ApexEmailNotification];
+        if (apexEmailNotifications.size() == 0) {
+            return;
+        }
 
         List<String> emailAddresses = new List<String>();
         List<Id> userIds = new List<Id>();
 
-        for (ApexEmailNotification apexEmail : [SELECT Email, UserId FROM ApexEmailNotification]) {
+        for (ApexEmailNotification apexEmail : apexEmailNotifications) {
             if (String.isNotEmpty(apexEmail.Email)) {
                 emailAddresses.add(apexEmail.Email);
             }
@@ -87,11 +102,14 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
 
         mail.setToAddresses(toAddresses);
-        mail.setOrgWideEmailAddressId(getOrgWideEmailAddressId());
+
+        if (useOrgWideEmailAddress) {
+            mail.setOrgWideEmailAddressId(getOrgWideEmailAddressId());
+        }
 
         mail.setSubject('A Log Event Occurred');
         mail.setPlainTextBody(String.format(PLAIN_TEXT_MESSAGE, new String[] { event.CreatedById, event.Context__c, event.Log_Messages__c  }));
-        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Context__c, event.Log_Messages__c  }));
+        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Context__c, event.Log_Messages__c.replaceAll('(\\r|\\n)+', '<br />')  }));
 
         Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
     }
