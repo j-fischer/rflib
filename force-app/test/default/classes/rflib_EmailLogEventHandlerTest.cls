@@ -30,11 +30,10 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_EmailLogEventHandlerTest {
     
-
     @isTest
     public static void testNoApexEmailConfigurationRecords() {
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler().run(null);
+        new rflib_EmailLogEventHandler(new List<ApexEmailNotification>(), true).run(null);
         System.assertEquals(0, Limits.getEmailInvocations());
     }
 
