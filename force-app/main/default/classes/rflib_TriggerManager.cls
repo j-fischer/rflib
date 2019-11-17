@@ -41,6 +41,9 @@ public inherited sharing class rflib_TriggerManager {
 
     private static Map<rflib_TriggerManager.Args, Integer> onConsecutiveRunCounters = new Map<rflib_TriggerManager.Args,Integer>();
 
+    @TestVisible
+    private static ITriggerConfigurationQueryLocator queryLocator = new DefaultTriggerConfigurationQueryLocator();
+
     /**
      * Call this method from any trigger with the respective object type. The framwork will handle the rest. 
      * @param  objectType SObjectType for the trigger that invokes the Manager.
@@ -118,14 +121,7 @@ public inherited sharing class rflib_TriggerManager {
     private static List<TriggerHandlerInfo> getHandlers(rflib_TriggerManager.Args args) {
         List<TriggerHandlerInfo> result = new List<TriggerHandlerInfo>();
 
-        List<rflib_Trigger_Configuration__mdt> triggerHandlers = 
-            [SELECT Class_Name__c, Order__c, Exception_Behavior__c
-             FROM rflib_Trigger_Configuration__mdt
-             WHERE Active__c = true
-             AND Object_Name__c = :args.objectType.getDescribe().getName()
-             AND Event__c = :args.operation.name()
-             ORDER BY Order__c, Class_Name__c ASC
-            ];
+        List<rflib_Trigger_Configuration__mdt> triggerHandlers = queryLocator.getRecords(args.objectType.getDescribe().getName(), args.operation.name());
 
         List<String> activeTriggers = new List<String>();
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
@@ -234,6 +230,22 @@ public inherited sharing class rflib_TriggerManager {
 
         private void addException(Exception ex, Type t) {
             caughtExceptions.put(ex, t);
+        }
+    }
+
+    public interface ITriggerConfigurationQueryLocator {
+        List<rflib_Trigger_Configuration__mdt> getRecords(String objectType, String triggerEvent);
+    }
+
+    public class DefaultTriggerConfigurationQueryLocator implements ITriggerConfigurationQueryLocator {
+        public List<rflib_Trigger_Configuration__mdt> getRecords(String objectTypeName, String triggerEvent) {
+            return [SELECT Class_Name__c, Order__c, Exception_Behavior__c
+             FROM rflib_Trigger_Configuration__mdt
+             WHERE Active__c = true
+             AND Object_Name__c = :objectTypeName 
+             AND Event__c = :triggerEvent
+             ORDER BY Order__c, Class_Name__c ASC
+            ];
         }
     }
 }
