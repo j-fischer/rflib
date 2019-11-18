@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @IsTest
+@SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockTriggerConfigQueryLocator implements rflib_TriggerManager.ITriggerConfigurationQueryLocator {
     
     public final String expectedObjectType;

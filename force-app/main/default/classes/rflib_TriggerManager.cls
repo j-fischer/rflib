@@ -37,12 +37,12 @@ public inherited sharing class rflib_TriggerManager {
     
     private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_TriggerManager');
 
-    private static rflib_ITriggerHandler activeHandler;
+    private static rflib_ITriggerHandler ACTIVE_HANDLER;
 
-    private static Map<rflib_TriggerManager.Args, Integer> onConsecutiveRunCounters = new Map<rflib_TriggerManager.Args,Integer>();
+    private static Map<rflib_TriggerManager.Args, Integer> ON_CONSECUTIVE_RUN_COUNTERS = new Map<rflib_TriggerManager.Args,Integer>();
 
     @TestVisible
-    private static ITriggerConfigurationQueryLocator queryLocator = new DefaultTriggerConfigurationQueryLocator();
+    private static ITriggerConfigurationQueryLocator QUERY_LOCATOR = new DefaultTriggerConfigurationQueryLocator();
 
     /**
      * Call this method from any trigger with the respective object type. The framwork will handle the rest. 
@@ -68,60 +68,55 @@ public inherited sharing class rflib_TriggerManager {
         for (TriggerHandlerInfo handlerInfo : handlers) {
             rflib_ITriggerHandler handler = handlerInfo.handler;
 
-            if (activeHandler == null) {
+            if (ACTIVE_HANDLER == null) {
                 try {
-                    activeHandler = handler;
+                    ACTIVE_HANDLER = handler;
                     handler.run(args);
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
+                        LOGGER.warn('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         args.addException(ex, handlerInfo.handlerType);
                     } else {
+                        LOGGER.error('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         throw ex;
                     }
                 } finally {
-                    activeHandler = null;
+                    ACTIVE_HANDLER = null;
                 }
             }
 
-            if (activeHandler != null) {
+            if (ACTIVE_HANDLER != null) {
                 try {
                     handler.onConsecutiveRun(args, incrementAndGetCounter(args));
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
+                        LOGGER.warn('onConsecutiveRun: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         args.addException(ex, handlerInfo.handlerType);
                     } else {
+                        LOGGER.error('onConsecutiveRun: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         throw ex;
                     }
                 }
-            }
-
-            if (activeHandler == null && args.hasExceptions()) {
-                for (Exception ex : args.getCaughtExceptions().keySet()) {
-                    LOGGER.error('An error was caught during a trigger exception: {0}\n{1}', new List<String> { ex.getMessage(), ex.getStackTraceString() } );
-                }
-                LOGGER.fatal('Triggers finished with errors.');
-
-                //TODO: Add custom setting to decide whether to throw an exception here to trigger a rollback, default should be yes
             }
         }
     }
 
     private static Integer incrementAndGetCounter(rflib_TriggerManager.Args args) {
-        Integer count = onConsecutiveRunCounters.get(args); 
+        Integer count = ON_CONSECUTIVE_RUN_COUNTERS.get(args); 
         if (count == null) {
             count = 1;
         } else {
             count++;
         }
 
-        onConsecutiveRunCounters.put(args, count);
+        ON_CONSECUTIVE_RUN_COUNTERS.put(args, count);
         return count;
     }
 
     private static List<TriggerHandlerInfo> getHandlers(rflib_TriggerManager.Args args) {
         List<TriggerHandlerInfo> result = new List<TriggerHandlerInfo>();
 
-        List<rflib_Trigger_Configuration__mdt> triggerHandlers = queryLocator.getRecords(args.objectType.getDescribe().getName(), args.operation.name());
+        List<rflib_Trigger_Configuration__mdt> triggerHandlers = QUERY_LOCATOR.getRecords(args.objectType.getDescribe().getName(), args.operation.name());
 
         List<String> activeTriggers = new List<String>();
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
@@ -133,7 +128,7 @@ public inherited sharing class rflib_TriggerManager {
             result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
         }
 
-        LOGGER.info('{0} active triggers found: {1}', new List<Object> { activeTriggers.size(), String.join(activeTriggers, ',') });
+        LOGGER.info('{0} active trigger(s) found: {1}', new List<Object> { activeTriggers.size(), String.join(activeTriggers, ',') });
 
         return result;
     }
@@ -164,7 +159,7 @@ public inherited sharing class rflib_TriggerManager {
         public final Map<Id, SObject> newRecordsMap; 
         public final Integer size;
 
-        private final Map<Exception, Type> caughtExceptions = new Map<Exception, Type>();
+        private final Map<String, List<Exception>> caughtExceptions = new Map<String, List<Exception>>();
 
         @SuppressWarnings('PMD.ExcessiveParameterList')
         public Args(
@@ -193,20 +188,12 @@ public inherited sharing class rflib_TriggerManager {
             return caughtExceptions.size() == 0;
         }
 
-        public Map<Exception, Type> getCaughtExceptions() {
-            return new Map<Exception, Type>(caughtExceptions);
+        public Map<String, List<Exception>> getCaughtExceptions() {
+            return new Map<String, List<Exception>>(caughtExceptions);
         }
 
         public List<Exception> getCaughtExceptionsByType(Type targetType) {
-            List<Exception> result = new List<Exception>();
-
-            for (Exception ex : caughtExceptions.keySet()) {
-                if (caughtExceptions.get(ex).equals(targetType)) {
-                    result.add(ex);
-                }
-            }
-
-            return result;
+            return new List<Exception>(caughtExceptions.get(targetType.getName()));
         }
 
         public Boolean equals(Object o) {
@@ -229,7 +216,12 @@ public inherited sharing class rflib_TriggerManager {
         }
 
         private void addException(Exception ex, Type t) {
-            caughtExceptions.put(ex, t);
+            String typeName = t.getName();
+            if (!caughtExceptions.containsKey(typeName)) {
+                caughtExceptions.put(typeName, new List<Exception>());
+            }
+
+            caughtExceptions.get(typeName).add(ex);
         }
     }
 

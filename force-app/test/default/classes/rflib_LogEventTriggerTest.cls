@@ -33,7 +33,7 @@ private class rflib_LogEventTriggerTest {
     
     @IsTest
     public static void testTriggerExecution() {
-        rflib_TriggerManager.queryLocator = new rflib_MockTriggerConfigQueryLocator(
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
             createConfiguration(), 
             rflib_Log_Event__e.SObjectType.getDescribe().getName(), 
             AFTER_INSERT
@@ -45,9 +45,9 @@ private class rflib_LogEventTriggerTest {
         EventBus.publish(ev);
         Test.stopTest();
 
-        System.assertEquals(1, rflib_MockTriggerHandler.capturedRunTriggerArgs.size());
+        System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
 
-        rflib_TriggerManager.Args args = rflib_MockTriggerHandler.capturedRunTriggerArgs.get(0);
+        rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
         rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
         System.assertEquals(ev.Context__c, capturedEvent.Context__c);
     }
