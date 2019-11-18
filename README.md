@@ -44,7 +44,7 @@ button below to deploy it directly into your org.
 
 ## How To's
 
-### Use in Lightning Web Component
+### Logging in Lightning Web Component
 
 Import the log factory using the following import:
 
@@ -69,7 +69,7 @@ handleSomeEvent(event) {
 }
 ```
 
-### Use in Lightning Component
+### Logging in Lightning Component
 
 Insert the wrapper component into any Lightning Component, preferrably at the top of the markup.
 
@@ -87,7 +87,7 @@ Then retrieve the logger from your controller or helper code.
 })
 ```
 
-### Use in Apex
+### Logging in Apex
 
 Create a logger in your Apex class using the following command.
 
