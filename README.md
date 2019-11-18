@@ -58,6 +58,7 @@ export default class MyModule extends LightningElement {
     logger = createLogger('MyModule');
 
     ...
+}
 ```
 
 Last, use the logger to record log statements.
@@ -81,7 +82,7 @@ Then retrieve the logger from your controller or helper code.
 	doInit: function(component, event, helper) {
 		var logger = component.find('logger');
 
-    logger.debug('This is a test > {0}-{1}', ['foo', 'bar']);
+        logger.debug('This is a test > {0}-{1}', ['foo', 'bar']);
 	}
 })
 ```
@@ -96,6 +97,22 @@ Then call the log functions.
 
 `logger.debug('This is a test -> {1}: {2}', new List<Object> { 'foo', 'bar' });`
 
+### Trigger Framework
+
+The trigger framework of this library requires custom metadata to be create for any trigger that you create. To add a new trigger, create a new Apex class that implements the `rflib_ITriggerHandler` interface and its methods. 
+
+Next, create the actual trigger, i.e. an Account trigger as displayed below. It is recommended to create the trigger for all events so that future trigger additions only require the new class and the custom metadata record. 
+
+```
+trigger AccountTrigger on Account (before insert, after insert, before update, after update, before delete, after delete, before undelete) {
+    rflib_TriggerManager.dispatch(Account.SObjectType);
+}
+```
+
+Once the trigger is created, the framework will take care of the rest. 
+
+To create a test class for any new triggers, simply copy the `rflib_LogEventTriggerTest` class and rename the object to the object of your new trigger. Obviously, you need to create a record for the DML operation. Once this is done and the test passes, you won't have to touch the test case again. Any new handlers are tested in isolation and do not require the actual creation of records. 
+
 ## Updates
 
--   **Oct 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
+-   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
