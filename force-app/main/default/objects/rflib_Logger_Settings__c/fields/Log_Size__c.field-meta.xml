@@ -6,7 +6,7 @@
     <externalId>false</externalId>
     <inlineHelpText>Number of log messages to be stored by the logger.</inlineHelpText>
     <label>Log Size</label>
-    <precision>18</precision>
+    <precision>5</precision>
     <required>true</required>
     <scale>0</scale>
     <trackTrending>false</trackTrending>

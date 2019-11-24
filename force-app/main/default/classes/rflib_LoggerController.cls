@@ -35,6 +35,14 @@
 public with sharing class rflib_LoggerController {
     
     /**
+     * Retrieve the configuration settings for this users.
+     */
+    @AuraEnabled
+    public static rflib_Logger_Settings__c getSettings(){
+        return rflib_Logger_Settings__c.getInstance();
+    }
+
+    /**
      * Log action to be invoked from the client. THe statment will be logged using a custom settings logger.
      * This controller is used by the rflib_logger LWC module.
      * 
@@ -45,6 +53,14 @@ public with sharing class rflib_LoggerController {
     @AuraEnabled
     public static void log(String level, String context, String message){
         rflib_Logger logger = rflib_DefaultLogger.createFromCustomSettings(context);
+
+        /* Overwriting configuration values for general log level, system log level, and reporting level to ensure that the 
+         * client side log messages are managed by the client specific settings only, so that those log statements
+         * are not "swallowed" by the server side settings. 
+         */
+        logger.setGeneralLogLevel(rflib_LogLevel.DEBUG);
+        logger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
+        logger.setReportingLogLevel(rflib_LogLevel.DEBUG);
 
         switch on level.toUpperCase() {
             when 'DEBUG' {

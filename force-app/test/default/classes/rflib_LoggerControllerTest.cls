@@ -35,12 +35,21 @@ private class rflib_LoggerControllerTest {
     private static void setup(){
         rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getOrgDefaults();
 
-        loggerSettings.General_Log_Level__c = 'Debug';
+        loggerSettings.General_Log_Level__c = 'None';
         loggerSettings.System_Debug_Log_Level__c = 'None';
         loggerSettings.Log_Event_Reporting_Level__c = 'None';
         loggerSettings.Org_Wide_Email_Sender_Address__c = 'foo@bar.com';
 
         upsert loggerSettings;
+    }
+
+    @IsTest
+    public static void testGetSettings() {
+        rflib_Logger_Settings__c actualSettings = rflib_LoggerController.getSettings();
+
+        System.assertEquals('None', actualSettings.General_Log_Level__c);
+        System.assertEquals('None', actualSettings.System_Debug_Log_Level__c);
+        System.assertEquals('None', actualSettings.Log_Event_Reporting_Level__c);
     }
 
     @isTest
@@ -68,6 +77,11 @@ private class rflib_LoggerControllerTest {
         executeTestLogMessage('Fatal');
     } 
 
+    @isTest
+    public static void testLog_UnknownLevel() {
+        executeTestLogMessage('Foo');
+    } 
+
     private static void executeTestLogMessage(String level) {
         String context = 'someContext';
         String message = 'some message';
@@ -77,7 +91,9 @@ private class rflib_LoggerControllerTest {
         rflib_LoggerController.log(level, context, message);
         
         System.assertEquals(1, rflib_DefaultLogger.LOG_STATEMENTS.size());
-        System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(level.toUpperCase()), 'LogLevel should be part of the log statement');
+
+        String expectedLogLevel = level == 'Foo' ? 'FATAL' : level.toUpperCase();
+        System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(expectedLogLevel), 'LogLevel should be part of the log statement');
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(context), 'Context should be part of the log statement');
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(message), 'Message should be part of the log statement');
     }
