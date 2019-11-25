@@ -37,6 +37,8 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_EmailLogEventHandler implements rflib_ITriggerHandler {
 
+    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_EmailLogEventHandler');
+
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';
 
@@ -54,7 +56,9 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
     }
 
     public void run(rflib_TriggerManager.Args args) {
+        LOGGER.info('run() invoked');
         if (apexEmailNotifications.size() == 0) {
+            LOGGER.info('No Apex email notifications found');
             return;
         }
 
@@ -73,8 +77,12 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
 
         emailAddresses.addAll(getEmailAddressesForUsers(userIds));
 
+        LOGGER.info('Recipients of log event: ' + String.join(emailAddresses, ','));
+
         List<rflib_Log_Event__e> events = (List<rflib_Log_Event__e>) args.newRecords;
         Integer numEmailToSend = Math.min(events.size(), 10);
+
+        LOGGER.info('Emails to be sent = ' + numEmailToSend);
         for (Integer i = 0; i < numEmailToSend; i++) {
             sendMessage(emailAddresses, events[i]);
         }
