@@ -2,7 +2,7 @@
     "name": "reliability-force",
     "private": true,
     "version": "0.1.0",
-    "description": "Salesforce library for imrpoving the reliability of your org",
+    "description": "Salesforce library for improving the reliability of your org",
     "scripts": {
         "lint": "npm run lint:lwc && npm run lint:aura",
         "lint:lwc": "eslint **/lwc/**",
@@ -13,8 +13,7 @@
         "test:unit:debug": "lwc-jest --debug",
         "test:unit:coverage": "lwc-jest --coverage",
         "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'",
-        "postinstall": "node bin/check-version.js"
+        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
     },
     "author": "salesforce.com",
     "license": "CC0-1.0",
