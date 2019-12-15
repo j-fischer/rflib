@@ -38,5 +38,6 @@ public with sharing class rflib_TraceId {
     public static String value = UserInfo.getUserId();
     
     @SuppressWarnings('PMD.EmptyStatementBlock')
+    @TestVisible
     private rflib_TraceId() { }
 }

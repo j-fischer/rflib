@@ -34,4 +34,9 @@ private class rflib_TraceIdTest {
     private static void testValue(){
         System.assertEquals(UserInfo.getUserId(), rflib_TraceId.value);        
     }
+
+    @IsTest
+    private static void testConstructorForCodeCoverage(){
+        System.assertNotEquals(null, new rflib_TraceId());        
+    }
 }
