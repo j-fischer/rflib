@@ -28,11 +28,11 @@
  */
 
 /**
- * @group Core
+ * @group Common
  * @description Provides values for any rflib related global settings.
  */ 
  @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_Settings {
+public with sharing class rflib_GlobalSettings {
 
     public static String traceIdHeaderName {
         get {
@@ -43,11 +43,11 @@ public with sharing class rflib_Settings {
     private static final Map<String, String> SETTINGS = new Map<String, String>();
 
     @SuppressWarnings('PMD.EmptyStatementBlock')
-    private rflib_Settings() { }
+    private rflib_GlobalSettings() { }
 
     private static String getSetting(String name) {
         if (SETTINGS.isEmpty()) {
-            for (rflib_Setting__mdt setting : [SELECT DeveloperName, Value__c FROM rflib_Setting__mdt]) {
+            for (rflib_Global_Setting__mdt setting : [SELECT DeveloperName, Value__c FROM rflib_Global_Setting__mdt]) {
                 SETTINGS.put(setting.DeveloperName, setting.Value__c);
             }
         }
