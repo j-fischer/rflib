@@ -26,17 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-/**
- * @group Integration
- * @description Value holder for the Trace ID to be used in log statements and 
-                when sending HTTP requests using rflib_HttpRequest.
- */ 
+@isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_TraceId {
-    
-    public static String value = UserInfo.getUserId();
-    
-    @SuppressWarnings('PMD.EmptyStatementBlock')
-    private rflib_TraceId() { }
+private class rflib_TraceIdTest {
+
+    @IsTest
+    private static void testValue(){
+        System.assertEquals(UserInfo.getUserId(), rflib_TraceId.value);        
+    }
 }
