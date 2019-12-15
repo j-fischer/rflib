@@ -188,7 +188,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private void logMessage(rflib_LogLevel logLevel, String message, Object[] args) {
     
-    String messageToLog = DateTime.now().format() + '|' + logLevel + '|' + context;
+    String messageToLog = DateTime.now().format('yyyy-MM-dd\'T\'HH:mm:ss') + '|' + logLevel + '|' + rflib_TraceId.value + '|' + context;
     
     messageToLog = args == null 
       ? messageToLog + '|' + message
