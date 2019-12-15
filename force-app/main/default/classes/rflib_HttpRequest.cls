@@ -36,10 +36,17 @@
  @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_HttpRequest {
 
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_HttpRequest');
-
+    private final rflib_Logger logger;
     private final HttpRequest delegatee = new HttpRequest();
     
+    public rflib_HttpRequest() {
+        this(rflib_DefaultLogger.createFromCustomSettings('rflib_HttpRequest'));
+    }
+
+    public rflib_HttpRequest(rflib_Logger logger) {
+        this.logger = logger;
+    }
+
     public HttpRequest getPlatformRequest() {
         return delegatee;
     }
@@ -47,7 +54,7 @@ public with sharing class rflib_HttpRequest {
     public HttpResponse send() {
         LOGGER.info('Sending request: {0} with body: {1}', new String[] { delegatee.toString(), delegatee.getBody() } );
 
-        delegatee.setHeader(rflib_Settings.traceIdHeaderName, rflib_TraceId.value);
+        delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderName, rflib_TraceId.value);
 
         Http http = new Http();
         HttpResponse response = http.send(delegatee);
