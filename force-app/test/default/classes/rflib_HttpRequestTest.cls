@@ -52,6 +52,8 @@ private class rflib_HttpRequestTest {
         HttpResponse actualResponse = req.send();
 
         System.assertNotEquals(null, actualResponse);
+        System.assertEquals(UserInfo.getUserId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderName));
+        
         assertResponse(resp, actualResponse);
     }
 
@@ -70,6 +72,8 @@ private class rflib_HttpRequestTest {
         HttpResponse actualResponse = req.send();
 
         System.assertNotEquals(null, actualResponse);
+        System.assertEquals(headerValue, req.getPlatformRequest().getHeader(headerKey));
+        
         assertResponse(resp, actualResponse);
     }
 
