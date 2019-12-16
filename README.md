@@ -113,6 +113,30 @@ Once the trigger is created, the framework will take care of the rest.
 
 To create a test class for any new triggers, simply copy the `rflib_LogEventTriggerTest` class and rename the object to the object of your new trigger. Obviously, you need to create a record for the DML operation. Once this is done and the test passes, you won't have to touch the test case again. Any new handlers are tested in isolation and do not require the actual creation of records. 
 
+### Trace ID
+
+Integration plays a very big part in today's enterprise IT environments. This means that Salesforce exchanges data with other
+systems such as order management or financial systems. When the integration runs successfully, life is good, but if somehting goes wrong then it can be difficult to understand what the root cause is. It often requires the support team to investigate in multiple log files, where they have to find relevant log statements. And the same needs to be done for each system involved in the integration. 
+
+The intention of the Trace ID is to improve investigations by providing a common piece of data that can be included in all log files that belong to a single transaction across systems. The Trace ID should be generated in the system where the transaction originates and then be handed over to the other applications. Since most integrations today use the HTTP protocol, a non-intrusive way to transfer the ID is to add it as a custem header.
+
+To hide this type of management from developers, rflib contains a new utility class called `rflib_HttpRequest` that wraps the actual `HttpRequest`. It automatically adds the Trace ID based on the header name configured in the `rflib_Global_Setting.mtd`. By default, the Trace ID in rflib is set to be the ID of the current user, but it can be easily replaced with other values. Below is a small example on how to use the class. 
+
+```
+rflib_HttpRequest req = new rflib_HttpRequest();
+req.setEndpoint('http://www.yahoo.com');
+req.setMethod('GET');
+
+// Set headers, body, etc. 
+
+// Use the send() of the rflib_HttpRequest 
+// instead of creating an instance of the Http class.
+
+HttpResponse res = req.send(); 
+System.debug(res.getBody());
+```
+
 ## Updates
 
--   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
+*   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
+*   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
