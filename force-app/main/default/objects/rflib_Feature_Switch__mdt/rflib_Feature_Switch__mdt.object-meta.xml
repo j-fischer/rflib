@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Configuration object for features switches that can easily be added and removed to a Salesforce org.This object supports a loosely configured hierarchical architecture similar to the functionality that Custom Settings provide. Profiles are mentioned by name, while users should be referred to by their Salesforce user name.</description>
+    <label>Feature Switch</label>
+    <pluralLabel>Feature Switches</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

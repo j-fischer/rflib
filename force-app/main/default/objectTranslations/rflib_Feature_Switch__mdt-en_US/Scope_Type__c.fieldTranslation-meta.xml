@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label><!-- Scope Type --></label>
+    <name>Scope_Type__c</name>
+    <picklistValues>
+        <masterLabel>Global</masterLabel>
+        <translation><!-- Global --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>Profile</masterLabel>
+        <translation><!-- Profile --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>User</masterLabel>
+        <translation><!-- User --></translation>
+    </picklistValues>
+</CustomFieldTranslation>

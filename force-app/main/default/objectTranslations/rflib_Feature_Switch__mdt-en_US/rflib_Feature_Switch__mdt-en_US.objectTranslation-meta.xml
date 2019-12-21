@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObjectTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <caseValues>
+        <plural>false</plural>
+        <value>Feature Switch</value>
+    </caseValues>
+    <caseValues>
+        <plural>true</plural>
+        <value>Feature Switches</value>
+    </caseValues>
+    <layouts>
+        <layout>Feature Switch Layout</layout>
+        <sections>
+            <label><!-- Custom Links --></label>
+            <section>Custom Links</section>
+        </sections>
+    </layouts>
+    <startsWith>Consonant</startsWith>
+    <validationRules>
+        <errorMessage><!-- The Scope Name should be empty for feature switches with Global scope. --></errorMessage>
+        <name>Global_Scope_Validation</name>
+    </validationRules>
+    <validationRules>
+        <errorMessage><!-- A Scope Name is required for any non-Global feature switch. --></errorMessage>
+        <name>Non_Global_Scope_Validation</name>
+    </validationRules>
+</CustomObjectTranslation>
