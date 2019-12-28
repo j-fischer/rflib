@@ -97,7 +97,7 @@ public without sharing class rflib_FeatureSwitch {
 
     private static Boolean getFeatureSwitchValue(String switchName) {
         if (!featureSwitches.containsKey(switchName)) {
-            return false;
+            return DEFAULT_VALUE;
         }
 
         Map<String, Boolean> scopedFeatureSwitchValues = featureSwitches.get(switchName);

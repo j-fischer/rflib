@@ -30,9 +30,12 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_FeatureSwitchTest {
     
+    private static final String TRIGGER_SWITCH = 'All_Triggers';
+
     private static final String USER_SWITCH = 'FeatureSwitch1';
     private static final String PROFILE_SWITCH = 'FeatureSwitch2';
     private static final String GLOBAL_SWITCH = 'FeatureSwitch3';
+    private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
     private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
 
     private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
@@ -52,6 +55,10 @@ private class rflib_FeatureSwitchTest {
 
             GLOBAL_SWITCH => new Map<String,Boolean> {
                 rflib_FeatureSwitch.GLOBAL_SCOPE => true
+            },
+
+            ANOTHER_USER_SWITCH => new Map<String,Boolean> {
+                'another_user@rflib.com' => true
             }
         };
 
@@ -96,6 +103,31 @@ private class rflib_FeatureSwitchTest {
         System.runAs(USER) {
            System.assertEquals(false, rflib_FeatureSwitch.isTurnedOn(NON_EXISTING_FEATURE_SWITCH));
            System.assertEquals(true, rflib_FeatureSwitch.isTurnedOff(NON_EXISTING_FEATURE_SWITCH));
+        }
+    }
+
+    @IsTest
+    private static void testExistingSwitchWithoutMatch() {
+        setup();
+
+        System.runAs(USER) {
+           System.assertEquals(false, rflib_FeatureSwitch.isTurnedOn(ANOTHER_USER_SWITCH));
+           System.assertEquals(true, rflib_FeatureSwitch.isTurnedOff(ANOTHER_USER_SWITCH));
+        }
+    }
+
+    @IsTest
+    private static void testRetrievalOfFeaturesSwitches() {
+        // Do not run setup
+
+        rflib_Feature_Switch__mdt expectedSwitchConfiguration = [
+            SELECT DeveloperName, Scope_Name__c, Scope_Type__c, Turned_On__c 
+            FROM rflib_Feature_Switch__mdt 
+            WHERE DeveloperName = :TRIGGER_SWITCH
+        ];
+
+        System.runAs(USER) {
+           System.assertEquals(expectedSwitchConfiguration.Turned_On__c, rflib_FeatureSwitch.isTurnedOn(TRIGGER_SWITCH));
         }
     }
 }
