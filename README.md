@@ -136,7 +136,31 @@ HttpResponse res = req.send();
 System.debug(res.getBody());
 ```
 
+### Feature Switches
+Feature switches are an integral part of modern org development. For example, they allow features to be deployed but hidden from the users for an extended period of time. They also enable A/B testing, or provide the ability to turn functionality, i.e. a system integration, off during an outage. All of this can be done using Salesforce configuration interface instead of requiring a full deployment. 
+The Feature Switch implementation of rflib is based on Custom Metadata Types, but includes an implementation that enables a hierarchical configuration users know and love about Custom Settings. 
+
+To use Features Swtiches, simply add a new record to the Custom Metadata Type called "Feature Switch" and check the switch using the Apex utility class `rflib_FeatureSwtich`. 
+
+The default value for a feature switch without any matching configuration is `false`.
+
+Below is an example on how the feature switch is evaluated in the Trigger Manager class. 
+
+```
+private static void dispatch(rflib_TriggerManager.Args args) {
+    List<TriggerHandlerInfo> handlers = getHandlers(args);
+
+    if (rflib_FeatureSwitch.isTurnedOff('All_Triggers')) {
+        LOGGER.warn('All Trigger Feature switch turned off, exiting trigger execution.');
+        return;
+    }
+
+    // more code...
+}    
+```
+
 ## Updates
 
 *   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
 *   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
+*   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
