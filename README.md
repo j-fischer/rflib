@@ -143,7 +143,7 @@ System.debug(res.getBody());
 Feature switches are an integral part of modern org development. For example, they allow features to be deployed but hidden from the users for an extended period of time. They also enable A/B testing, or provide the ability to turn functionality, i.e. a system integration, off during an outage. All of this can be done using Salesforce configuration interface instead of requiring a full deployment.
 The Feature Switch implementation of rflib is based on Custom Metadata Types, but includes an implementation that enables a hierarchical configuration users know and love about Custom Settings.
 
-To use Features Swtiches, simply add a new record to the Custom Metadata Type called "Feature Switch" and check the switch using the Apex utility class `rflib_FeatureSwtich`.
+To use Features Swtiches, simply add a new record to the Custom Metadata Type called "Feature Switch" and check the switch using the Apex utility class `rflib_FeatureSwitch`.
 
 The default value for a feature switch without any matching configuration is `false`.
 
