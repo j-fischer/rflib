@@ -47,6 +47,21 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
+    public static void testRun_AllTriggersFeatureSwitchOff() {
+        setup(ABORT_TRANSACTION);
+
+        rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
+            'ALL_TRIGGERS' => new Map<String,Boolean> {
+                rflib_FeatureSwitch.GLOBAL_SCOPE => false   
+            }
+        };
+
+        rflib_TriggerManager.dispatch(createArgs(createEvent()));
+
+        System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+    }
+
+    @IsTest
     public static void testRun_Success() {
         setup(ABORT_TRANSACTION);
 

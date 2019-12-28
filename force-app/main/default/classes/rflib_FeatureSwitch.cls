@@ -36,8 +36,13 @@ public without sharing class rflib_FeatureSwitch {
     
     private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_FeatureSwitch');
 
+    private static final String NO_PROFILE = '__NO_PROFILE__';
+    
     @TestVisible
     private static final String GLOBAL_SCOPE = '__GLOBAL__';
+
+    @TestVisible
+    private static Boolean DEFAULT_VALUE = Test.isRunningTest();
 
     @TestVisible
     private static Map<String, Map<String, Boolean>> featureSwitches {
@@ -107,12 +112,15 @@ public without sharing class rflib_FeatureSwitch {
 
         return scopedFeatureSwitchValues.containsKey(GLOBAL_SCOPE)
             ? scopedFeatureSwitchValues.get(GLOBAL_SCOPE)
-            : false;
+            : DEFAULT_VALUE;
     }
 
     private static String getProfileName(Id profileId) {
-        Profile p = [SELECT Name FROM Profile WHERE Id = :profileId];
-        return p.Name;
+        List<Profile> profiles = [SELECT Name FROM Profile WHERE Id = :profileId];
+        if (profiles.size() == 0) {
+            return NO_PROFILE;
+        }
+        return profiles.get(0).Name;
     }
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {

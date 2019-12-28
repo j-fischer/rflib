@@ -54,6 +54,8 @@ private class rflib_FeatureSwitchTest {
                 rflib_FeatureSwitch.GLOBAL_SCOPE => true
             }
         };
+
+        rflib_FeatureSwitch.DEFAULT_VALUE = false;
     }
 
     @IsTest
