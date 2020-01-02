@@ -55,6 +55,8 @@ public without sharing class rflib_FeatureSwitch {
         private set;
     }
 
+    private static String CACHED_PROFILE_NAME = null;
+
     /**
      * Returns whether a feature switch is turned on or not. The evaluation will consider the proper
      * hierarchy of the settings, meaning it will return either the value specifically configured for
@@ -64,6 +66,7 @@ public without sharing class rflib_FeatureSwitch {
      * will be `false`.
      * 
      * @param switchName The name of the feature switch to be evaluated.
+     * @return A `Boolean` value indicating if the switch is turned ON.
      */
     public static Boolean isTurnedOn(String switchName) {
         LOGGER.info('Evaluating feature switch ' + switchName);
@@ -84,6 +87,7 @@ public without sharing class rflib_FeatureSwitch {
      * will be `true`.
      * 
      * @param switchName The name of the feature switch to be evaluated.
+     * @return A `Boolean` value indicating if the switch is turned OFF.
      */
     public static Boolean isTurnedOff(String switchName) {
         LOGGER.info('Evaluating feature switch ' + switchName);
@@ -94,6 +98,23 @@ public without sharing class rflib_FeatureSwitch {
 
         return result;
     } 
+
+    /**
+     * Returns a `Map` of all switch values configured for the current user,
+     * considering the hierarchy of each switch value.  
+     * 
+     * @return A `Map<String, Boolean>` of all configured switches and their value for the given user.
+     */
+    public static Map<String, Boolean> getAllScopedValues() {
+        Map<String, Boolean> result = new Map<String, Boolean>();
+
+        for (String key : featureSwitches.keySet()) {
+            result.put(key, getFeatureSwitchValue(key));
+        }
+
+        LOGGER.info('Created fully scoped feature switch map: ' + JSON.serialize(result));
+        return result;
+    }
 
     private static Boolean getFeatureSwitchValue(String switchName) {
         if (!featureSwitches.containsKey(switchName)) {
@@ -116,11 +137,15 @@ public without sharing class rflib_FeatureSwitch {
     }
 
     private static String getProfileName(Id profileId) {
-        List<Profile> profiles = [SELECT Name FROM Profile WHERE Id = :profileId];
-        if (profiles.size() == 0) {
-            return NO_PROFILE;
+        if (CACHED_PROFILE_NAME == null) {
+            // NO_PROFILE is used for a possible system user context.
+            List<Profile> profiles = [SELECT Name FROM Profile WHERE Id = :profileId];
+            CACHED_PROFILE_NAME = profiles.size() == 0 ?
+                NO_PROFILE :
+                profiles.get(0).Name;
         }
-        return profiles.get(0).Name;
+
+        return CACHED_PROFILE_NAME;
     }
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {
