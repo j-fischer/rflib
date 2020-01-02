@@ -35,17 +35,17 @@ const getAllFeatureSwitchPromise = getAllFeatureSwitches()
     .then(result => {
         logger.info('Received all feature switch values: ' + JSON.stringify(result));
         return result;
-    }).catch(error => {
+    })
+    .catch(error => {
         logger.error('Failed to retrieve feature switches from server: ' + JSON.stringify(error));
     });
 
 const isTurnedOn = name => {
-    return getAllFeatureSwitchPromise
-        .then(result => {
-            let switchValue = !!result[name];
-            logger.info('Feature Switch with name {0} is turned on? {1}', name, switchValue);
-            return switchValue;
-        });
-}
+    return getAllFeatureSwitchPromise.then(result => {
+        let switchValue = !!result[name];
+        logger.info('Feature Switch with name {0} is turned on? {1}', name, switchValue);
+        return switchValue;
+    });
+};
 
-export { isTurnedOn }; 
+export { isTurnedOn };
