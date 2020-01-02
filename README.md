@@ -67,7 +67,7 @@ Last, use the logger to record log statements.
 
 ```
 handleSomeEvent(event) {
-    this.logger.info('Event ocurred');
+    this.logger.info('Event ocurred, {0} - {1}', 'foo', 'bar'); // Note the variable length of arguments
 }
 ```
 
@@ -84,7 +84,7 @@ Then retrieve the logger from your controller or helper code.
 	doInit: function(component, event, helper) {
 		var logger = component.find('logger');
 
-        logger.debug('This is a test > {0}-{1}', ['foo', 'bar']);
+        logger.debug('This is a test > {0}-{1}', ['foo', 'bar']); // Note that second argument has to be a list
 	}
 })
 ```
