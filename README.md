@@ -162,6 +162,40 @@ private static void dispatch(rflib_TriggerManager.Args args) {
 }
 ```
 
+You can also use features switches on the client side. For LWC, use the following syntax:
+
+```
+import { isFeatureSwitchTurnedOn } from 'c/rflibFeatureSwitches';
+
+handleSomeEvent(event) {
+    isFeatureSwitchTurnedOn('mySwitchName')
+        .then(isTurnedOn => {
+            if (isTurnedOn) {
+                // do something
+            }
+        });
+}
+
+```
+
+In Aura components, add the feature switch component in the .cmp file.
+
+`<c:rflibFeatureSwitches aura:id="featureSwitches" />`
+
+In the controller or helper, you can then validate a feature switch with the following code snippet:
+
+```
+({
+	doInit: function(component, event, helper) {
+		var featureSwitches = component.find('featureSwitches');
+		featureSwitches.isFeatureSwitchTurnedOn('All_Triggers')
+			.then(function (isTunedOn) {
+				logger.info('All_Triggers turned on? ' + isTunedOn);
+			});
+	}
+})
+```
+
 ## Updates
 
 -   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
