@@ -28,18 +28,22 @@
  */
 @isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
+@TestVisible
 private class rflib_FeatureSwitchTest {
     
     private static final String TRIGGER_SWITCH = 'All_Triggers';
 
-    private static final String USER_SWITCH = 'FeatureSwitch1';
-    private static final String PROFILE_SWITCH = 'FeatureSwitch2';
-    private static final String GLOBAL_SWITCH = 'FeatureSwitch3';
-    private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
+    @TestVisible private static final String USER_SWITCH = 'FeatureSwitch1';
+    @TestVisible private static final String PROFILE_SWITCH = 'FeatureSwitch2';
+    @TestVisible private static final String GLOBAL_SWITCH = 'FeatureSwitch3';
+    @TestVisible private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
+    
     private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
 
-    private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
 
+    @TestVisible private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
+
+    @TestVisible
     private static void setup() {
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
             USER_SWITCH => new Map<String,Boolean> {
@@ -128,6 +132,21 @@ private class rflib_FeatureSwitchTest {
 
         System.runAs(USER) {
            System.assertEquals(expectedSwitchConfiguration.Turned_On__c, rflib_FeatureSwitch.isTurnedOn(TRIGGER_SWITCH));
+        }
+    }
+
+    @IsTest
+    private static void testGetAllScopedValues() {
+        setup();
+
+        System.runAs(USER) {
+            Map<String,Boolean> result = rflib_FeatureSwitch.getAllScopedValues();
+            System.assertEquals(4, result.size());
+
+            System.assertEquals(true, result.get(USER_SWITCH));
+            System.assertEquals(true, result.get(PROFILE_SWITCH));
+            System.assertEquals(true, result.get(GLOBAL_SWITCH));
+            System.assertEquals(false, result.get(ANOTHER_USER_SWITCH));
         }
     }
 }
