@@ -1,5 +1,57 @@
 <template>
-    <template for:each={logEvents} for:item="event">
-        <p key={event.Log_Messages__c}>{event.Log_Messages__c}</p>
-    </template>
+    <lightning-card title="Log Events" icon-name="custom:custom63">
+        <div class="slds-m-around_medium">
+            <lightning-input
+                type="search"
+                onchange={handleKeyChange}
+                class="slds-m-bottom_small"
+                label="Search"
+                value={searchKey}
+            >
+            </lightning-input>
+            <template if:true={eventsToDisplay}>
+                <table
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                >
+                    <thead>
+                        <tr class="slds-text-heading_label">
+                            <th scope="col">
+                                <div class="slds-truncate" title="ID">Create By</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Name">Date</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Name">Context</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Name">Message</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={eventsToDisplay} for:item="evt">
+                            <tr key={evt.Id}>
+                                <td scope="row">
+                                    <div>{evt.CreatedById}</div>
+                                </td>
+                                <td scope="row">
+                                    <div>{evt.CreatedDate}</div>
+                                </td>
+                                <td>
+                                    <div>{evt.Context__c}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{evt.Log_Messages__c}</div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+        </div>
+        <p class="slds-m-vertical_medium content">
+            Total records: <b>{filteredRecordsCount} </b> Page <b>{currentPage}</b> of <b> {totalPages}</b>
+        </p>
+    </lightning-card>
 </template>

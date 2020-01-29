@@ -29,7 +29,26 @@
 
     <div class="slds-grid">
         <div class="slds-col slds-size_2-of-3 container">
-            <c-log-event-list log-events={capturedEvents}></c-log-event-list>
+            <lightning-card>
+                <c-log-event-list
+                    onrefreshed={handleRefreshed}
+                    log-events={capturedEvents}
+                    current-page={page}
+                    page-size={pageSize}
+                ></c-log-event-list>
+                <div class="slds-m-around_medium">
+                    <c-paginator
+                        onprevious={handlePrevious}
+                        onnext={handleNext}
+                        onfirst={handleFirst}
+                        onlast={handleLast}
+                        currentpage={page}
+                        totalrecords={totalRecords}
+                        pagesize={pageSize}
+                    >
+                    </c-paginator>
+                </div>
+            </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-3 container">
             Log Details here
