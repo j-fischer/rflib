@@ -6,6 +6,8 @@ import { subscribe, onError } from 'lightning/empApi';
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
 
+const logger = createLogger('LogEventMonitor');
+
 export default class LogEventMonitor extends LightningElement {
     @track page = 1;
     @track pageSize = DEFAULT_PAGE_SIZE;
@@ -13,29 +15,29 @@ export default class LogEventMonitor extends LightningElement {
 
     @track connected = false;
     @track capturedEvents = [];
+    @track selectedLogEvent;
 
-    logger = createLogger('LogEventMonitor');
     subscription = {};
 
     connectedCallback() {
         let _this = this;
         const messageCallback = function(msg) {
-            _this.logger.debug('New message received: ' + JSON.stringify(msg));
+            logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [..._this.capturedEvents, msg.data.payload];
         };
 
         subscribe(CHANNEL, -2, messageCallback).then(response => {
-            this.logger.debug('Successfully subscribed to: ' + response.channel);
+            logger.debug('Successfully subscribed to: ' + response.channel);
             this.subscription = response;
             this.connected = true;
 
-            this.logger.fatal('Show me this event.'); //FIXME: remove
+            logger.fatal('Show me this event.'); //FIXME: remove
         });
     }
 
     registerErrorListener() {
         onError(error => {
-            this.logger.debug('Received error from server: ', JSON.stringify(error));
+            logger.debug('Received error from server: ', JSON.stringify(error));
         });
     }
 
@@ -57,13 +59,20 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     handleRefreshed(event) {
-        this.logger.debug('Records loaded, count={0}', event.detail);
+        logger.debug('Records loaded, count={0}', event.detail);
         this.totalRecords = event.detail;
         this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
     }
 
     handlePageChange(event) {
-        this.logger.debug('Page change, page={0}', event.detail);
+        logger.debug('Page changed, page={0}', event.detail);
         this.page = event.detail;
+    }
+
+    handleLogSelected(event) {
+        const logEvent = JSON.parse(event.detail);
+        logger.debug('Log selected with id={0}', logEvent.Id);
+
+        this.selectedLogEvent = logEvent;
     }
 }

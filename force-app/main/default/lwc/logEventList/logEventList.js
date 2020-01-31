@@ -93,9 +93,9 @@ export default class LogEventList extends LightningElement {
         const logId = event.currentTarget.dataset.logId;
         logger.debug('Log seleceted with Id={0}', logId);
 
-        const evtInfo = this.eventsToDisplay.find(evt => evt.Id === logId);
+        const evtInfo = this.eventsToDisplay.find(evt => evt.Id === parseInt(logId, 10));
         const logSelectedEvent = new CustomEvent('logselected', {
-            detail: evtInfo
+            detail: JSON.stringify(evtInfo)
         });
         this.dispatchEvent(logSelectedEvent);
     }

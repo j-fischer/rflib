@@ -1,0 +1,22 @@
+<template>
+    <lightning-card title={logEvent.Context__c} icon-name="custom:custom63" if:true={hasEvent}>
+        <div class="slds-m-around_medium">
+            <div class="slds-form-element">
+                <span class="slds-form-element__label">Date</span>
+                <div class="slds-form-element__control slds-border_bottom">
+                    <div class="slds-form-element__static">
+                        <lightning-formatted-date-time value={logEvent.CreatedDate}></lightning-formatted-date-time>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-form-element">
+                <span class="slds-form-element__label">Log Messages</span>
+                <div class="slds-form-element__control slds-border_bottom">
+                    <div class="slds-form-element__static">
+                        {logEvent.Log_Messages__c}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+</template>

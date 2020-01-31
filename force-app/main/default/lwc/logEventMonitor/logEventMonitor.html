@@ -35,6 +35,7 @@
                     log-events={capturedEvents}
                     current-page={page}
                     page-size={pageSize}
+                    onlogselected={handleLogSelected}
                 >
                 </c-log-event-list>
                 <div class="slds-m-around_medium">
@@ -52,7 +53,7 @@
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-3 container">
-            Log Details here
+            <c-log-event-viewer log-event={selectedLogEvent}></c-log-event-viewer>
         </div>
     </div>
 </template>
