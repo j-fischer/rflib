@@ -35,16 +35,17 @@
                     log-events={capturedEvents}
                     current-page={page}
                     page-size={pageSize}
-                ></c-log-event-list>
+                >
+                </c-log-event-list>
                 <div class="slds-m-around_medium">
                     <c-paginator
                         onprevious={handlePrevious}
                         onnext={handleNext}
                         onfirst={handleFirst}
                         onlast={handleLast}
-                        currentpage={page}
-                        totalrecords={totalRecords}
-                        pagesize={pageSize}
+                        current-page={page}
+                        total-records={totalRecords}
+                        page-size={pageSize}
                     >
                     </c-paginator>
                 </div>

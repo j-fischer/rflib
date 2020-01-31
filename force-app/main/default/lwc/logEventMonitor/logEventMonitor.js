@@ -24,21 +24,12 @@ export default class LogEventMonitor extends LightningElement {
             _this.capturedEvents = [..._this.capturedEvents, msg.data.payload];
         };
 
-        subscribe(CHANNEL, -1, messageCallback).then(response => {
+        subscribe(CHANNEL, -2, messageCallback).then(response => {
             this.logger.debug('Successfully subscribed to: ' + response.channel);
             this.subscription = response;
             this.connected = true;
-            this.logger.fatal('Show me this event.');
-            this.capturedEvents = [
-                ...this.capturedEvents,
-                {
-                    //FIXME: Remove
-                    CreatedDate: 'Same day',
-                    CreatedById: '005R0000004nudVIAQ',
-                    Log_Messages__c: 'Foo bar',
-                    Context__c: 'Foo'
-                }
-            ];
+
+            this.logger.fatal('Show me this event.'); //FIXME: remove
         });
     }
 

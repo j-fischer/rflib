@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title="Log Events" icon-name="custom:custom63">
+    <lightning-card title={title} icon-name="custom:custom63">
         <div class="slds-m-around_medium">
             <lightning-input
                 type="search"
@@ -31,7 +31,7 @@
                     </thead>
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
-                            <tr key={evt.Id}>
+                            <tr key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
                                 <td scope="row">
                                     <div>{evt.CreatedById}</div>
                                 </td>
@@ -42,7 +42,7 @@
                                     <div>{evt.Context__c}</div>
                                 </td>
                                 <td>
-                                    <div class="slds-truncate">{evt.Log_Messages__c}</div>
+                                    <div class="slds-truncate" title={evt.Log_Messages__c}>{evt.Log_Messages__c}</div>
                                 </td>
                             </tr>
                         </template>
@@ -50,7 +50,7 @@
                 </table>
             </template>
         </div>
-        <p class="slds-m-vertical_medium content">
+        <p class="slds-m-around_medium">
             Total records: <b>{filteredRecordsCount} </b> Page <b>{currentPage}</b> of <b> {totalPages}</b>
         </p>
     </lightning-card>

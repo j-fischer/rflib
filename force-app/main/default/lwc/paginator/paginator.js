@@ -1,21 +1,21 @@
 import { LightningElement, api } from 'lwc';
 export default class Paginator extends LightningElement {
-    @api totalrecords;
-    @api currentpage;
-    @api pagesize;
+    @api totalRecords;
+    @api currentPage;
+    @api pageSize;
 
     lastpage = false;
     firstpage = false;
 
     get showFirstButton() {
-        if (this.currentpage === 1) {
+        if (this.currentPage === 1) {
             return true;
         }
         return false;
     }
 
     get showLastButton() {
-        if (Math.ceil(this.totalrecords / this.pagesize) === this.currentpage) {
+        if (Math.ceil(this.totalRecords / this.pageSize) === this.currentPage) {
             return true;
         }
         return false;
@@ -24,12 +24,15 @@ export default class Paginator extends LightningElement {
     handlePrevious() {
         this.dispatchEvent(new CustomEvent('previous'));
     }
+
     handleNext() {
         this.dispatchEvent(new CustomEvent('next'));
     }
+
     handleFirst() {
         this.dispatchEvent(new CustomEvent('first'));
     }
+
     handleLast() {
         this.dispatchEvent(new CustomEvent('last'));
     }
