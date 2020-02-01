@@ -13,6 +13,7 @@
                             hour="2-digit"
                             minute="2-digit"
                             second="2-digit"
+                            weekday="long"
                         >
                         </lightning-formatted-date-time>
                     </div>
@@ -21,17 +22,14 @@
             <div class="slds-form-element">
                 <span class="slds-form-element__label">Created By</span>
                 <div class="slds-form-element__control slds-border_bottom">
-                    <div class="slds-form-element__static">
-                        {logEvent.CreatedById}
-                    </div>
-                    <template if:true={user.error}>
+                    <template if:false={user.id}>
                         <div class="slds-form-element__static">
                             {logEvent.CreatedById}
                         </div>
                     </template>
-                    <template if:true={user.data}>
+                    <template if:true={user.id}>
                         <div class="slds-form-element__static">
-                            {name}<br />
+                            Name: {name}<br />
                             Email: {email}<br />
                             Phone: {phone}
                         </div>
