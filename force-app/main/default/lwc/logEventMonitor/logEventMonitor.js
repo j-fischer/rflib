@@ -23,7 +23,7 @@ export default class LogEventMonitor extends LightningElement {
         let _this = this;
         const messageCallback = function(msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
-            _this.capturedEvents = [..._this.capturedEvents, msg.data.payload];
+            _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
         };
 
         subscribe(CHANNEL, -2, messageCallback).then(response => {
