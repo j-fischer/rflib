@@ -5,8 +5,37 @@
                 <span class="slds-form-element__label">Date</span>
                 <div class="slds-form-element__control slds-border_bottom">
                     <div class="slds-form-element__static">
-                        <lightning-formatted-date-time value={logEvent.CreatedDate}></lightning-formatted-date-time>
+                        <lightning-formatted-date-time
+                            value={logEvent.CreatedDate}
+                            year="numeric"
+                            day="2-digit"
+                            month="long"
+                            hour="2-digit"
+                            minute="2-digit"
+                            second="2-digit"
+                        >
+                        </lightning-formatted-date-time>
                     </div>
+                </div>
+            </div>
+            <div class="slds-form-element">
+                <span class="slds-form-element__label">Created By</span>
+                <div class="slds-form-element__control slds-border_bottom">
+                    <div class="slds-form-element__static">
+                        {logEvent.CreatedById}
+                    </div>
+                    <template if:true={user.error}>
+                        <div class="slds-form-element__static">
+                            {logEvent.CreatedById}
+                        </div>
+                    </template>
+                    <template if:true={user.data}>
+                        <div class="slds-form-element__static">
+                            {name}<br />
+                            Email: {email}<br />
+                            Phone: {phone}
+                        </div>
+                    </template>
                 </div>
             </div>
             <div class="slds-form-element">

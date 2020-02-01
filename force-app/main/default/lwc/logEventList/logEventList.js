@@ -31,7 +31,7 @@ export default class LogEventList extends LightningElement {
 
     @api
     get title() {
-        return this.filteredRecordCount + ' Log Events';
+        return this.filteredRecordCount + ' Displayed Log Events';
     }
 
     totalPages = 1;

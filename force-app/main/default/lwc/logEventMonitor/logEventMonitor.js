@@ -15,7 +15,7 @@ export default class LogEventMonitor extends LightningElement {
 
     @track connected = false;
     @track capturedEvents = [];
-    @track selectedLogEvent;
+    @track selectedLogEvent = null;
 
     subscription = {};
 
