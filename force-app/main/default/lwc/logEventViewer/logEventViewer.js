@@ -11,13 +11,14 @@ const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD];
 const LOGGER = createLogger('LogEventViewer');
 
 export default class LogEventViewer extends LightningElement {
+    @api userId;
     @api logEvent;
 
     @track user = {};
 
-    @wire(getRecord, { recordId: '005R0000004nudVIAQ', fields: FIELDS })
+    @wire(getRecord, { recordId: '$userId', fields: FIELDS })
     wiredRecord({ error, data }) {
-        LOGGER.debug('getRecord completed');
+        LOGGER.debug('getRecord completed for id={0}', this.userId);
         if (error) {
             let message = 'Unknown error';
             if (Array.isArray(error.body)) {

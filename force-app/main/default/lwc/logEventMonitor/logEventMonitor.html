@@ -53,7 +53,12 @@
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-3 container">
-            <c-log-event-viewer log-event={selectedLogEvent}></c-log-event-viewer>
+            <template if:true={selectedLogEvent}>
+                <c-log-event-viewer
+                    log-event={selectedLogEvent}
+                    user-id={selectedLogEvent.CreatedById}
+                ></c-log-event-viewer>
+            </template>
         </div>
     </div>
 </template>
