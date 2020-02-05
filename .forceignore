@@ -6,6 +6,7 @@ package.xml
 
 #profiles
 **profiles
+**appMenus
 
 # LWC configuration files
 **/jsconfig.json
