@@ -15,7 +15,7 @@
                         <div class="slds-page-header__name">
                             <div class="slds-page-header__name-title">
                                 <h1>
-                                    <span class="slds-page-header__title slds-truncate">{totalRecords} Total Log Events</span>
+                                    <span class="slds-page-header__title slds-truncate">{numTotalRecords} Total Log Events</span>
                                 </h1>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                         onfirst={handleFirst}
                         onlast={handleLast}
                         current-page={page}
-                        total-records={totalRecords}
+                        total-records={numDisplayedRecords}
                         page-size={pageSize}
                     >
                     </c-paginator>

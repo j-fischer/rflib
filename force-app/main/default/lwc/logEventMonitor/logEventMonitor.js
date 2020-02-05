@@ -11,7 +11,8 @@ const logger = createLogger('LogEventMonitor');
 export default class LogEventMonitor extends LightningElement {
     @track page = 1;
     @track pageSize = DEFAULT_PAGE_SIZE;
-    @track totalRecords;
+    @track numDisplayedRecords;
+    @track numTotalRecords;
 
     @track connected = false;
     @track capturedEvents = [];
@@ -24,6 +25,7 @@ export default class LogEventMonitor extends LightningElement {
         const messageCallback = function(msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
+            _this.numTotalRecords = _this.capturedEvents.length;
         };
 
         subscribe(CHANNEL, -2, messageCallback).then(response => {
@@ -60,8 +62,8 @@ export default class LogEventMonitor extends LightningElement {
 
     handleRefreshed(event) {
         logger.debug('Records loaded, count={0}', event.detail);
-        this.totalRecords = event.detail;
-        this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
+        this.numDisplayedRecords = event.detail;
+        this.totalPages = Math.ceil(this.numDisplayedRecords / this.pageSize);
     }
 
     handlePageChange(event) {
