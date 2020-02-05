@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>rflib_Log_Monitor</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <description>This permission set provides a user with access to the Log Monitor tab and the Log Event object.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Log Monitor Access</label>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>rflib_Log_Event__e</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+</PermissionSet>
