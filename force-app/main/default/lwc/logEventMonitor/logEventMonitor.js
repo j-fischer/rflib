@@ -32,8 +32,6 @@ export default class LogEventMonitor extends LightningElement {
             logger.debug('Successfully subscribed to: ' + response.channel);
             this.subscription = response;
             this.connected = true;
-
-            logger.fatal('Show me this event.'); //FIXME: remove
         });
     }
 
