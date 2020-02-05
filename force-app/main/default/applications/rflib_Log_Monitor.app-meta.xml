@@ -10,7 +10,7 @@
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
     <label>Log Monitor</label>
     <navType>Standard</navType>
-    <tabs>rflib_Log_Event_Monitor_Tab</tabs>
+    <tabs>rflib_Log_Dashboard</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>
