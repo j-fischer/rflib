@@ -32,16 +32,16 @@
     <div class="slds-grid">
         <div class="slds-col slds-size_2-of-3 container">
             <lightning-card>
-                <c-log-event-list
+                <c-rflib-log-event-list
                     onrefreshed={handleRefreshed}
                     log-events={capturedEvents}
                     current-page={page}
                     page-size={pageSize}
                     onlogselected={handleLogSelected}
                 >
-                </c-log-event-list>
+                </c-rflib-log-event-list>
                 <div class="slds-m-around_medium">
-                    <c-paginator
+                    <c-rflib-paginator
                         onprevious={handlePrevious}
                         onnext={handleNext}
                         onfirst={handleFirst}
@@ -50,16 +50,16 @@
                         total-records={numDisplayedRecords}
                         page-size={pageSize}
                     >
-                    </c-paginator>
+                    </c-rflib-paginator>
                 </div>
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-3 container">
             <template if:true={selectedLogEvent}>
-                <c-log-event-viewer
+                <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
                     user-id={selectedLogEvent.CreatedById}
-                ></c-log-event-viewer>
+                ></c-rflib-log-event-viewer>
             </template>
         </div>
     </div>

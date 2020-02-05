@@ -12,5 +12,5 @@
     <navType>Standard</navType>
     <tabs>rflib_Log_Dashboard</tabs>
     <uiType>Lightning</uiType>
-    <utilityBar>Log_Monitor_UtilityBar</utilityBar>
+    <utilityBar>rflib_Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>
