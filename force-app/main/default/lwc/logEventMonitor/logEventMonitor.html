@@ -1,0 +1,66 @@
+<template>
+    <div class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
+                            <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
+                                <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#opportunity"></use>
+                            </svg>
+                            <span class="slds-assistive-text">opportunity</span>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate">
+                                        {numTotalRecords} Total Log Events
+                                    </span>
+                                </h1>
+                            </div>
+                        </div>
+                        <p class="slds-page-header__name-meta" if:true={connected}>Connected • {connected}</p>
+                        <p class="slds-page-header__name-meta" if:false={connected}>Not Connected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slds-grid">
+        <div class="slds-col slds-size_2-of-3 container">
+            <lightning-card>
+                <c-log-event-list
+                    onrefreshed={handleRefreshed}
+                    log-events={capturedEvents}
+                    current-page={page}
+                    page-size={pageSize}
+                    onlogselected={handleLogSelected}
+                >
+                </c-log-event-list>
+                <div class="slds-m-around_medium">
+                    <c-paginator
+                        onprevious={handlePrevious}
+                        onnext={handleNext}
+                        onfirst={handleFirst}
+                        onlast={handleLast}
+                        current-page={page}
+                        total-records={numDisplayedRecords}
+                        page-size={pageSize}
+                    >
+                    </c-paginator>
+                </div>
+            </lightning-card>
+        </div>
+        <div class="slds-col slds-size_1-of-3 container">
+            <template if:true={selectedLogEvent}>
+                <c-log-event-viewer
+                    log-event={selectedLogEvent}
+                    user-id={selectedLogEvent.CreatedById}
+                ></c-log-event-viewer>
+            </template>
+        </div>
+    </div>
+</template>
