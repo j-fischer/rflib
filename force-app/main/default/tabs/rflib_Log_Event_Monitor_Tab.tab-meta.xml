@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Created by Lightning App Builder</description>
+    <description>Log Event Dashboard showing historical events as well as any new events created while using the dashboard.</description>
     <flexiPage>Log_Event_Monitor</flexiPage>
-    <label>Log Event Monitor</label>
+    <label>Log Dashboard</label>
     <mobileReady>false</mobileReady>
     <motif>Custom62: Chalkboard</motif>
 </CustomTab>

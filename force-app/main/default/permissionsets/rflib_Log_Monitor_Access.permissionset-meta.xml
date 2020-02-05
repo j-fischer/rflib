@@ -16,4 +16,8 @@
         <object>rflib_Log_Event__e</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
+    <tabSettings>
+        <tab>rflib_Log_Event_Monitor_Tab</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>

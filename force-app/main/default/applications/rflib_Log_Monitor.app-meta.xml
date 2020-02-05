@@ -4,12 +4,13 @@
         <headerColor>#0070D2</headerColor>
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
+    <description>App to review previous events and monitor new income log events.</description>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
     <label>Log Monitor</label>
     <navType>Standard</navType>
-    <tabs>Log_Event_Monitor</tabs>
+    <tabs>rflib_Log_Event_Monitor_Tab</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>
