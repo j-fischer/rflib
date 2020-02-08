@@ -61,7 +61,7 @@
                     </thead>
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
-                            <tr key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
+                            <tr class="clickable" key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
                                 <td scope="row">
                                     <div>{evt.CreatedById}</div>
                                 </td>
@@ -80,7 +80,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div>{evt.Context__c}</div>
+                                    <div class="slds-truncate">{evt.Context__c}</div>
                                 </td>
                                 <td>
                                     <div class="slds-truncate" title={evt.Log_Messages__c}>{evt.Log_Messages__c}</div>

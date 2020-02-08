@@ -68,6 +68,7 @@ export default class LogEventList extends LightningElement {
     totalPages = 1;
     currentPageIndex = 0;
     displayedPageIndex;
+    selectedRow;
 
     allEvents;
     filteredEvents = [];
@@ -121,8 +122,17 @@ export default class LogEventList extends LightningElement {
     }
 
     handleLogSelected(event) {
-        const logId = event.currentTarget.dataset.logId;
+        const currentTarget = event.currentTarget;
+
+        const logId = currentTarget.dataset.logId;
         logger.debug('Log seleceted with Id={0}', logId);
+
+        currentTarget.classList.toggle('selected');
+        
+        if (this.selectedRow) {
+            this.selectedRow.classList.toggle('selected');
+        }
+        this.selectedRow = currentTarget;
 
         const evtInfo = this.eventsToDisplay.find(evt => evt.Id === parseInt(logId, 10));
         const logSelectedEvent = new CustomEvent('logselected', {
