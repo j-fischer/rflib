@@ -203,7 +203,7 @@ filter the events by searching text within the messages. This will make it easy 
 
 To enabled the Log Monitor application, simply assign the `Log Monitor Access` Permission Set to the users of your choice.
 
-![alt text](https://github.com/j-fischer/rflib/tree/master/screenshots/Log_Monitor_Dashboard.png 'Log Monitor Dashboard')
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Monitor_Dashboard.png 'Log Monitor Dashboard')
 
 ## Updates
 
