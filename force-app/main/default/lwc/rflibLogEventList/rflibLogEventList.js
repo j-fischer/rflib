@@ -128,7 +128,7 @@ export default class LogEventList extends LightningElement {
         logger.debug('Log seleceted with Id={0}', logId);
 
         currentTarget.classList.toggle('selected');
-        
+
         if (this.selectedRow) {
             this.selectedRow.classList.toggle('selected');
         }

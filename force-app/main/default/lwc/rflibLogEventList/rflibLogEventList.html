@@ -30,7 +30,7 @@
  * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -->
 <template>
-    <lightning-card title={title} icon-name="custom:custom63">
+    <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
             <lightning-input
                 type="search"
@@ -42,7 +42,8 @@
             </lightning-input>
             <template if:true={eventsToDisplay}>
                 <table
-                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout">
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                >
                     <thead>
                         <tr class="slds-text-heading_label">
                             <th scope="col">
