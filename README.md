@@ -201,3 +201,8 @@ In the controller or helper, you can then validate a feature switch with the fol
 -   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
 -   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
 -   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
+
+## Credits
+
+-   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
+-   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
