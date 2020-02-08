@@ -196,11 +196,21 @@ In the controller or helper, you can then validate a feature switch with the fol
 })
 ```
 
+### Log Event Dashboard
+
+Review any log events sent within the last 24 hours or receive new log events in real-time. The dashboard shows all the events and lets you
+filter the events by searching text within the messages. This will make it easy to detect error codes or other log messages of value.
+
+To enabled the Log Monitor application, simply assign the `Log Monitor Access` Permission Set to the users of your choice.
+
+![alt text](https://github.com/j-fischer/rflib/tree/master/screenshots/Log_Monitor_Dashboard.png 'Log Monitor Dashboard')
+
 ## Updates
 
 -   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
 -   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
 -   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
+-   **Feb 2020** - Added application to review log events for the last 24 hours as well as in real-time on a dashboard
 
 ## Credits
 
