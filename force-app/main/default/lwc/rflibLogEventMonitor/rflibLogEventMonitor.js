@@ -62,6 +62,11 @@ export default class LogEventMonitor extends LightningElement {
         });
     }
 
+    clearLogs() {
+        this.capturedEvents = [];
+        this.numTotalRecords = 0;
+    }
+
     registerErrorListener() {
         onError(error => {
             logger.debug('Received error from server: ', JSON.stringify(error));
