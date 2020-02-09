@@ -28,6 +28,9 @@
 -->
 <template>
     <lightning-card title={logEvent.Context__c} icon-name="utility:summarydetail" if:true={hasEvent}>
+        <div slot="actions">
+            <button class="slds-button slds-button_neutral" onclick={downloadLog}>Download</button>
+        </div>
         <div class="slds-m-around_medium">
             <div class="slds-form-element">
                 <span class="slds-form-element__label">Date</span>

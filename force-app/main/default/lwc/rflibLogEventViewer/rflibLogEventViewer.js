@@ -77,4 +77,23 @@ export default class LogEventViewer extends LightningElement {
     get hasEvent() {
         return !!this.logEvent;
     }
+
+    downloadLog() {
+        var element = document.createElement('a');
+        element.setAttribute(
+            'href',
+            'data:text/plain;charset=utf-8,' + encodeURIComponent(this.logEvent.Log_Messages__c)
+        );
+        element.setAttribute(
+            'download',
+            this.logEvent.CreatedById + '_' + this.logEvent.Context__c + '_' + this.logEvent.CreatedDate + '.txt'
+        );
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
 }
