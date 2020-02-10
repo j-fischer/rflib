@@ -71,12 +71,13 @@ const log = (level, component, message) => {
 
     addMessage(msgToLog);
 
-    initializationPromise.then( () => {
+    //eslint-disable-next-line no-use-before-define
+    initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
             logMessageToServer({
                 level: level.label,
                 context: component,
-                message: message
+                message: state.messages.join('\n')
             }).catch(error => {
                 window.console.log('>>> Failed to log message to server for: ' + JSON.stringify(error));
             });
@@ -89,25 +90,30 @@ const toUpperCase = text => {
         return text.toUpperCase();
     }
     return text;
-}
+};
 
-const loadSettings = () => {
-    return getSettings()
-        .then(result => {
-            log(LogLevel.DEBUG, 'rflibLogger', 'Retrieved settings for user: ' + JSON.stringify(result));
+const initializationPromise = getSettings()
+    .then(result => {
+        log(LogLevel.DEBUG, 'rflibLogger', 'Retrieved settings for user: ' + JSON.stringify(result));
 
-            state.config.stackSize = result.Client_Stack_Size__c || state.config.stackSize;
-            state.config.consoleLogLevel = LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || state.config.consoleLogLevel;
-            state.config.serverLogLevel = LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || state.config.serverLogLevel;
-        }).catch(error => {
-            window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
-        });
-}
+        state.config.stackSize = result.Client_Stack_Size__c || state.config.stackSize;
+        state.config.consoleLogLevel =
+            LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || state.config.consoleLogLevel;
+        state.config.serverLogLevel =
+            LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || state.config.serverLogLevel;
+    })
+    .catch(error => {
+        window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
+    });
 
 const createLogger = loggerName => {
     const setConfig = newConfig => {
-        log(LogLevel.INFO, loggerName, format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig)));
-        
+        log(
+            LogLevel.INFO,
+            loggerName,
+            format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig))
+        );
+
         state.config.stackSize = newConfig.stackSize || state.config.stackSize;
         state.config.consoleLogLevel = newConfig.consoleLogLevel || state.config.consoleLogLevel;
         state.config.serverLogLevel = newConfig.serverLogLevel || state.config.serverLogLevel;
@@ -142,7 +148,5 @@ const createLogger = loggerName => {
         fatal: fatal
     };
 };
-
-const initializationPromise = loadSettings();
 
 export { createLogger };
