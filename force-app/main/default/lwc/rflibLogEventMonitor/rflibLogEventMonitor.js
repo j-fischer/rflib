@@ -47,6 +47,10 @@ export default class LogEventMonitor extends LightningElement {
 
     subscription = {};
 
+    get hasLogEvent() {
+        return this.selectedLogEvent != null;
+    }
+
     connectedCallback() {
         let _this = this;
         const messageCallback = function(msg) {
@@ -65,6 +69,7 @@ export default class LogEventMonitor extends LightningElement {
     clearLogs() {
         this.capturedEvents = [];
         this.numTotalRecords = 0;
+        this.selectedLogEvent = null;
     }
 
     registerErrorListener() {
