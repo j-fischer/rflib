@@ -15,8 +15,8 @@
         "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
         "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
     },
-    "author": "salesforce.com",
-    "license": "CC0-1.0",
+    "author": "Johannes Fischer",
+    "license": "BSD-3-Clause",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/j_fischer/reliability-force"
