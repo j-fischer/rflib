@@ -70,8 +70,8 @@
             <div class="slds-form-element">
                 <span class="slds-form-element__label">Log Messages</span>
                 <div class="slds-form-element__control slds-border_bottom">
-                    <div class="slds-form-element__static">
-                        {logEvent.Log_Messages__c}
+                    <div class="slds-form-element__static slds-scrollable_y logMessages">
+                        <lightning-formatted-text value={logEvent.Log_Messages__c}></lightning-formatted-text>
                     </div>
                 </div>
             </div>

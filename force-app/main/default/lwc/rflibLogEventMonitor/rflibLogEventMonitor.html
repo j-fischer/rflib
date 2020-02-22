@@ -61,7 +61,7 @@
     </div>
 
     <div class="slds-grid">
-        <div class="slds-col slds-size_2-of-3">
+        <div class="slds-col slds-size_7-of-12">
             <lightning-card>
                 <c-rflib-log-event-list
                     onrefreshed={handleRefreshed}
@@ -85,7 +85,7 @@
                 </div>
             </lightning-card>
         </div>
-        <div class="slds-col slds-size_1-of-3 container">
+        <div class="slds-col slds-size_5-of-12 container">
             <template if:true={hasLogEvent}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
