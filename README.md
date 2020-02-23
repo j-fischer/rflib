@@ -25,6 +25,12 @@ Trigger Framework:
 -   Recursion tracking to allow for easy prevention of multiple executions
 -   Fully configurable trigger management (activation, order, etc) using Custom Metadata
 
+Feature Swtiches:
+
+-   Fully configured using Custom Metadata
+-   Supports hierarchical structure (similar to Custom Settings) to override settings on a profile or user level
+-   Fully supported in Flow Builder through Get Records or Apex Action
+
 ## Configuration Settings
 
 The following options can be configured using custom settings:
@@ -195,6 +201,14 @@ In the controller or helper, you can then validate a feature switch with the fol
 	}
 })
 ```
+
+In Flow Builder, `Global` feature switches can easily be accessed using the `Get Records` element. See the screenshot below for a sample configuration.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Feature_Switch_Flow_Get_Records.png 'Get Records Configuration')
+
+If you would like to retrieve a full hierarchical feature switch value, that can be overwritte on a profile of user level, use the Apex Action displayed below.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Feature_Switch_Flow_Plugin.png 'Apex Action Configuration')
 
 ### Log Event Dashboard
 
