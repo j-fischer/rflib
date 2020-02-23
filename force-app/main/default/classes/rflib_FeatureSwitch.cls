@@ -150,7 +150,7 @@ public without sharing class rflib_FeatureSwitch {
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {
         List<rflib_Feature_Switch__mdt> allFeaturesSwitches = [
-            SELECT DeveloperName, Scope_Name__c, Scope_Type__c, Turned_On__c 
+            SELECT Switch_Name__c, Scope_Name__c, Scope_Type__c, Turned_On__c 
             FROM rflib_Feature_Switch__mdt
         ];
 
@@ -158,11 +158,11 @@ public without sharing class rflib_FeatureSwitch {
 
         Map<String, Map<String, Boolean>> result = new Map<String, Map<String, Boolean>>();
         for (rflib_Feature_Switch__mdt featureSwitch : allFeaturesSwitches) {
-            if (!result.containsKey(featureSwitch.DeveloperName)) {
-                result.put(featureSwitch.DeveloperName, new Map<String, Boolean>());
+            if (!result.containsKey(featureSwitch.Switch_Name__c)) {
+                result.put(featureSwitch.Switch_Name__c, new Map<String, Boolean>());
             }
 
-            Map<String, Boolean> scopedSwitchSettings = result.get(featureSwitch.DeveloperName);
+            Map<String, Boolean> scopedSwitchSettings = result.get(featureSwitch.Switch_Name__c);
             if (featureSwitch.Scope_type__c == 'Global') {
                 scopedSwitchSettings.put(GLOBAL_SCOPE, featureSwitch.Turned_On__c);
             } else {

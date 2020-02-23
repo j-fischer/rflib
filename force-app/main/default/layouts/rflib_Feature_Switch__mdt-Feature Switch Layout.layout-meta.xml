@@ -8,11 +8,15 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>MasterLabel</field>
+                <field>Switch_Name__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>DeveloperName</field>
+                <field>Scope_Type__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Scope_Name__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
@@ -22,11 +26,11 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Scope_Type__c</field>
+                <field>MasterLabel</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Edit</behavior>
-                <field>Scope_Name__c</field>
+                <behavior>Required</behavior>
+                <field>DeveloperName</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
@@ -74,7 +78,7 @@
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
     <summaryLayout>
-        <masterLabel>00h8A000000jDo9</masterLabel>
+        <masterLabel>00hJ0000000YkuD</masterLabel>
         <sizeX>4</sizeX>
         <sizeY>0</sizeY>
         <summaryLayoutStyle>Default</summaryLayoutStyle>
