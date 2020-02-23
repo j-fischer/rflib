@@ -12,20 +12,20 @@ automatically report any unexpected errors through Salesforce's latest technolog
 
 The following lists describe some of the key features of rflib.
 
-Logging Framework:
+#### Logging Framework:
 
 -   Logger for LWC and LC, which publishes logs the same way as Apex
 -   Configuration through Custom Settings allowing for different log configurations between users
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
 
-Trigger Framework:
+#### Trigger Framework:
 
 -   Fully decoupled framework, trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
 -   Fully configurable trigger management (activation, order, etc) using Custom Metadata
 
-Feature Swtiches:
+#### Feature Swtiches:
 
 -   Fully configured using Custom Metadata
 -   Supports hierarchical structure (similar to Custom Settings) to override settings on a profile or user level
