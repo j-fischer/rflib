@@ -25,7 +25,7 @@ The following lists describe some of the key features of rflib.
 -   Recursion tracking to allow for easy prevention of multiple executions
 -   Fully configurable trigger management (activation, order, etc) using Custom Metadata
 
-#### Feature Swtiches:
+#### Feature Switches:
 
 -   Fully configured using Custom Metadata
 -   Supports hierarchical structure (similar to Custom Settings) to override settings on a profile or user level
