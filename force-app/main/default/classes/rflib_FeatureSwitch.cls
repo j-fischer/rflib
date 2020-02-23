@@ -172,4 +172,8 @@ public without sharing class rflib_FeatureSwitch {
 
         return result;
     }
+
+    private rflib_FeatureSwitch() {
+        // do nothing
+    }
 }

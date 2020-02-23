@@ -37,9 +37,7 @@ private class rflib_FeatureSwitchTest {
     @TestVisible private static final String PROFILE_SWITCH = 'FeatureSwitch2';
     @TestVisible private static final String GLOBAL_SWITCH = 'FeatureSwitch3';
     @TestVisible private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
-    
-    private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
-
+    @TestVisible private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
 
     @TestVisible private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
 
@@ -78,7 +76,6 @@ private class rflib_FeatureSwitchTest {
            System.assertEquals(false, rflib_FeatureSwitch.isTurnedOff(USER_SWITCH));
         }
     }
-
 
     @IsTest
     private static void testProfileSwitch() {
