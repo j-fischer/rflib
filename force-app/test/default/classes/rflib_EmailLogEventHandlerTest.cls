@@ -33,14 +33,14 @@ private class rflib_EmailLogEventHandlerTest {
     @isTest
     public static void testNoApexEmailConfigurationRecords() {
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler(new List<ApexEmailNotification>(), true).run(null);
+        new rflib_EmailLogEventHandler(new List<ApexEmailNotification>(), true, createLoggerSettings()).run(null);
         System.assertEquals(0, Limits.getEmailInvocations());
     }
 
     @isTest
     public static void testNoOrgWideEmailAddressId() {
         try {
-            new rflib_EmailLogEventHandler(createApexEmailNotification(), true).run(createLogEventArgs());
+            new rflib_EmailLogEventHandler(createApexEmailNotification(), true, createLoggerSettings()).run(createLogEventArgs());
             System.assert(false, 'Expected QueryException has not been thrown');
         } catch (QueryException ex) {
             System.assertEquals('List has no rows for assignment to SObject', ex.getMessage());
@@ -54,7 +54,7 @@ private class rflib_EmailLogEventHandlerTest {
         );
 
         try {
-            new rflib_EmailLogEventHandler(createApexEmailNotification(), true).run(createLogEventArgs());
+            new rflib_EmailLogEventHandler(createApexEmailNotification(), true, createLoggerSettings()).run(createLogEventArgs());
             System.assert(false, 'Expected QueryException has not been thrown');
         } catch (QueryException ex) {
             System.assertEquals('List has no rows for assignment to SObject', ex.getMessage());
@@ -62,9 +62,16 @@ private class rflib_EmailLogEventHandlerTest {
     }
 
     @isTest
+    public static void testEmailLogLevelDoesNotMatch() {
+        System.assertEquals(0, Limits.getEmailInvocations());
+        new rflib_EmailLogEventHandler(createApexEmailNotification(), false, createLoggerSettings('FATAL')).run(createLogEventArgs());
+        System.assertEquals(0, Limits.getEmailInvocations());
+    }
+
+    @isTest
     public static void testSuccess() {
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler(createApexEmailNotification(), false).run(createLogEventArgs());
+        new rflib_EmailLogEventHandler(createApexEmailNotification(), false, createLoggerSettings()).run(createLogEventArgs());
         System.assertEquals(1, Limits.getEmailInvocations());
     }
 
@@ -89,7 +96,8 @@ private class rflib_EmailLogEventHandlerTest {
     private static rflib_TriggerManager.Args createLogEventArgs() {
         rflib_Log_Event__e ev = new rflib_Log_Event__e(
             Context__c = 'Context Foo',
-            Log_Messages__c = 'Some messages'
+            Log_Messages__c = 'Some messages',
+            Log_Level__c = 'ERROR'
         );
 
         return new rflib_TriggerManager.Args(
@@ -101,5 +109,15 @@ private class rflib_EmailLogEventHandlerTest {
             new Map<Id, SObject>(), 
             1
         );
+    }
+
+    private static rflib_Logger_Settings__c createLoggerSettings() {
+        return createLoggerSettings('ERROR');
+    }
+
+    private static rflib_Logger_Settings__c createLoggerSettings(String level) {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+        settings.Email_Log_Level__c = level;
+        return settings;
     }
 }

@@ -42,17 +42,19 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';
 
-    private Boolean useOrgWideEmailAddress;
-    private List<ApexEmailNotification> apexEmailNotifications;
+    private final Boolean useOrgWideEmailAddress;
+    private final List<ApexEmailNotification> apexEmailNotifications;
+    private final rflib_Logger_Settings__c loggerSettings;
 
     public rflib_EmailLogEventHandler() {
-        this([SELECT Email, UserId FROM ApexEmailNotification], true);
+        this([SELECT Email, UserId FROM ApexEmailNotification], true, rflib_Logger_Settings__c.getInstance());
     }
 
     @TestVisible
-    private rflib_EmailLogEventHandler(List<ApexEmailNotification> apexEmailNotifications, Boolean useOrgWideEmailAddress) {
+    private rflib_EmailLogEventHandler(List<ApexEmailNotification> apexEmailNotifications, Boolean useOrgWideEmailAddress, rflib_Logger_Settings__c loggerSettings) {
         this.apexEmailNotifications = apexEmailNotifications;
         this.useOrgWideEmailAddress = useOrgWideEmailAddress;
+        this.loggerSettings = loggerSettings;
     }
 
     public void run(rflib_TriggerManager.Args args) {
@@ -84,12 +86,20 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
 
         LOGGER.info('Emails to be sent = ' + numEmailToSend);
         for (Integer i = 0; i < numEmailToSend; i++) {
-            sendMessage(emailAddresses, events[i]);
+            rflib_Log_Event__e evt = events[i];
+            if (matchesConfiguredLogLevel(evt)) {
+                sendMessage(emailAddresses, evt);
+            }
         }
     }
 
     public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
         // do nothing
+    }
+
+    private Boolean matchesConfiguredLogLevel(rflib_Log_Event__e evt) {
+        return rflib_LogLevel.fromString(loggerSettings.Email_Log_Level__c).
+            encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
     private List<String> getEmailAddressesForUsers(List<Id> userIds) {
