@@ -47,16 +47,19 @@
                     <thead>
                         <tr class="slds-text-heading_label">
                             <th scope="col">
-                                <div class="slds-truncate" title="ID">Create By</div>
+                                <div class="slds-truncate" title="Created By">Create By</div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Name">Date</div>
+                                <div class="slds-truncate" title="Date">Date</div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Name">Context</div>
+                                <div class="slds-truncate" title="Level">Level</div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Name">Message</div>
+                                <div class="slds-truncate" title="Context">Context</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Message">Message</div>
                             </th>
                         </tr>
                     </thead>
@@ -79,6 +82,9 @@
                                         >
                                         </lightning-formatted-date-time>
                                     </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{evt.Log_Level__c}</div>
                                 </td>
                                 <td>
                                     <div class="slds-truncate">{evt.Context__c}</div>

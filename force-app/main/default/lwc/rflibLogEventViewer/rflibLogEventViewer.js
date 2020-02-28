@@ -62,6 +62,10 @@ export default class LogEventViewer extends LightningElement {
         }
     }
 
+    get title() {
+        return this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
+    }
+
     get name() {
         return getFieldValue(this.user, NAME_FIELD);
     }
