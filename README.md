@@ -206,14 +206,14 @@ In Flow Builder, `Global` feature switches can easily be accessed using the `Get
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Feature_Switch_Flow_Get_Records.png 'Get Records Configuration')
 
-If you would like to retrieve a full hierarchical feature switch value, that can be overwritte on a profile of user level, use the Apex Action displayed below.
+If you would like to retrieve a full hierarchical feature switch value, that can be overwritten on a profile of user level, use the Apex Action displayed below.
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Feature_Switch_Flow_Plugin.png 'Apex Action Configuration')
 
 ### Log Event Dashboard
 
 Review any log events sent within the last 24 hours or receive new log events in real-time. The dashboard shows all the events and lets you
-filter the events by searching text within the messages. This will make it easy to detect error codes or other log messages of value.
+filter them by searching text within the messages. This will make it easy to detect error codes or other log messages of value.
 
 To enabled the Log Monitor application, simply assign the `Log Monitor Access` Permission Set to the users of your choice.
 
@@ -221,10 +221,10 @@ To enabled the Log Monitor application, simply assign the `Log Monitor Access` P
 
 ## Updates
 
--   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
--   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
--   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
 -   **Feb 2020** - Added application to review log events for the last 24 hours as well as in real-time on a dashboard
+-   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
+-   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
+-   **Nov 2019** - Initial release with Trigger pattern, LWC/LC logger, and Apex logger
 
 ## Credits
 
