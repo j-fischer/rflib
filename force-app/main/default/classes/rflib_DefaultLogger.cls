@@ -139,35 +139,53 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     debug(message, null);
   }
   public void debug(String message, Object[] args) {
-    logMessage(rflib_LogLevel.DEBUG, message, args);
+    logMessage(rflib_LogLevel.DEBUG, message, args, null);
   }
 
   public void info(String message){
     info(message, null);
   }
   public void info(String message, Object[] args) {
-    logMessage(rflib_LogLevel.INFO, message, args);
+    logMessage(rflib_LogLevel.INFO, message, args, null);
   }
 
   public void warn(String message){
     warn(message, null);
   }
   public void warn(String message, Object[] args) {
-    logMessage(rflib_LogLevel.WARN, message, args);
+    logMessage(rflib_LogLevel.WARN, message, args, null);
   }
 
   public void error(String message){
-    error(message, null);
+    error(message, null, null);
   }
+
+  public void error(String message, Exception ex){
+    error(message, null, ex);
+  }
+
   public void error(String message, Object[] args) {
-    logMessage(rflib_LogLevel.ERROR, message, args);
+    error(message, args, null);
+  }
+
+  public void error(String message, Object[] args, Exception ex) {
+    logMessage(rflib_LogLevel.ERROR, message, args, ex);
   }
 
   public void fatal(String message){
-    fatal(message, null);
+    fatal(message, null, null);
   }
+
+  public void fatal(String message, Exception ex){
+    fatal(message, null, null);
+  }
+
   public void fatal(String message, Object[] args) {
-    logMessage(rflib_LogLevel.FATAL, message, args);
+    fatal(message, args, null);
+  }
+
+  public void fatal(String message, Object[] args, Exception ex) {
+    logMessage(rflib_LogLevel.FATAL, message, args, ex);
   }
 
   public void printLogs() {
@@ -186,13 +204,17 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     ));
   }
 
-  private void logMessage(rflib_LogLevel logLevel, String message, Object[] args) {
+  private void logMessage(rflib_LogLevel logLevel, String message, Object[] args, Exception ex) {
     
     String messageToLog = DateTime.now().format('yyyy-MM-dd\'T\'HH:mm:ss') + '|' + logLevel + '|' + rflib_TraceId.value + '|' + context;
     
     messageToLog = args == null 
       ? messageToLog + '|' + message
       : messageToLog + '|' + String.format(message, args);
+
+    if (ex != null) {
+      messageToLog = messageToLog + '\n' + ex.getMessage() + '\n' + ex.getStackTraceString();
+    }
 
     if (systemDebugLevel.encompasses(logLevel)) {
       debugLogger.debug(logLevel.getLoggingLevel(), messageToLog);

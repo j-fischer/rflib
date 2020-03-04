@@ -132,6 +132,13 @@ public interface rflib_Logger {
   void error(String message);
 
   /**
+   * Write a ERROR log statement. 
+   * @param  message The message to be logged. 
+   * @param  ex An `Exception` to be logged. 
+   */
+  void error(String message, Exception ex);
+
+  /**
    * Write a ERROR log statement where the message contains substitution variables to be replaced with the
    * arguments provided. See String.format() for more details. If no arguments are provided, the message will
    * be logged as is.
@@ -142,10 +149,28 @@ public interface rflib_Logger {
   void error(String message, Object[] args);
 
   /**
+   * Write a ERROR log statement where the message contains substitution variables to be replaced with the
+   * arguments provided. See String.format() for more details. If no arguments are provided, the message will
+   * be logged as is.
+   *  
+   * @param  message The log message possibly including substitution variables. 
+   * @param  args    The Array of arguments holding the substitutions.
+   * @param  ex An `Exception` to be logged.  
+   */
+  void error(String message, Object[] args, Exception ex);
+
+  /**
    * Write a FATAL log statement. 
    * @param  message The message to be logged. 
    */
   void fatal(String message);
+
+  /**
+   * Write a FATAL log statement. 
+   * @param  message The message to be logged. 
+   * @param  ex An `Exception` to be logged. 
+   */
+  void fatal(String message, Exception ex);
 
   /**
    * Write a FATAL log statement where the message contains substitution variables to be replaced with the
@@ -156,6 +181,17 @@ public interface rflib_Logger {
    * @param  args    The Array of arguments holding the substitutions. 
    */
   void fatal(String message, Object[] args);
+
+  /**
+   * Write a FATAL log statement where the message contains substitution variables to be replaced with the
+   * arguments provided. See String.format() for more details. If no arguments are provided, the message will
+   * be logged as is.
+   *  
+   * @param  message The log message possibly including substitution variables. 
+   * @param  args    The Array of arguments holding the substitutions. 
+   * @param  ex An `Exception` to be logged. 
+   */
+  void fatal(String message, Object[] args, Exception ex);
   
   /**
    * Prints all messages to the Apex logs using System.debug() separated by lines (\\n).

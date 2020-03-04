@@ -208,6 +208,23 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
+  public static void testMessageWithException() {
+    rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
+    rflib_DefaultLoggerTest.EventCapture eventCapture = new rflib_DefaultLoggerTest.EventCapture();
+    
+    rflib_Logger logger = new rflib_DefaultLogger(
+      eventCapture,
+      debugLogCapture, 
+      'testMessageWithException');
+
+    logger.error('This is an error', new TestException('This is an error message'));
+    
+    System.assert(debugLogCapture.containsInAnyMessage('This is an error message'), 'debugLogger did not contain exception message');
+    System.assert(debugLogCapture.containsInAnyMessage('rflib_DefaultLogger'), 'debugLogger did not contain rflib_DefaultLogger in stacktrace');
+    System.assert(debugLogCapture.containsInAnyMessage('rflib_DefaultLoggerTest'), 'debugLogger did not contain rflib_DefaultLoggerTest in stacktrace');
+  }
+
+  @isTest
   public static void testCreateFromCustomSettings() {
     insert new rflib_Logger_Settings__c(
       Log_Size__c = 50,
@@ -290,4 +307,6 @@ public class rflib_DefaultLoggerTest {
       return result;
     }
   }
+
+  public class TestException extends Exception { }
 }
