@@ -27,10 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
  @IsTest
+ @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LogEventTriggerTest {
 
     private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
     
+    @TestSetup
+    static void makeData(){
+        rflib_TestUtil.prepareLoggerForUnitTests();
+    }
+
     @IsTest
     public static void testTriggerExecution() {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
@@ -40,7 +46,7 @@ private class rflib_LogEventTriggerTest {
         );
 
         rflib_Log_Event__e ev = createEvent();
-
+        
         Test.startTest();
         EventBus.publish(ev);
         Test.stopTest();
@@ -55,7 +61,8 @@ private class rflib_LogEventTriggerTest {
     private static rflib_Log_Event__e createEvent() {
         return new rflib_Log_Event__e(
             Context__c = 'rflib_LogEventTriggerTest',
-            Log_Messages__c = 'Some log messages'
+            Log_Messages__c = 'Some log messages',
+            Log_Level__c = 'INFO'
         );
     }
 

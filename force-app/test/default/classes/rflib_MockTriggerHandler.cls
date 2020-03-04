@@ -42,9 +42,11 @@ public class rflib_MockTriggerHandler implements rflib_ITriggerHandler {
     public static Callable ACTION_WHEN_CALLED = null;
 
     public void run(rflib_TriggerManager.Args args) {
+        LOGGER.info('run() invoked');
+
         CAPTURED_RUN_TRIGGER_ARGS.add(args);
 
-        LOGGER.info('run invoked, will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_RUN != null) });
+        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_RUN != null) });
         if (ACTION_WHEN_CALLED != null) {
             ACTION_WHEN_CALLED.call('run', new Map<String, Object> { 'triggerArgs' => args });
         }
