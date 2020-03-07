@@ -50,7 +50,6 @@ private class rflib_TriggerManagerTest {
     public static void testRun_AllTriggersFeatureSwitchOff() {
         setup(ABORT_TRANSACTION);
 
-
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
             'All_Triggers' => new Map<String,Boolean> {
                 rflib_FeatureSwitch.GLOBAL_SCOPE => false   
@@ -213,6 +212,7 @@ private class rflib_TriggerManagerTest {
 
     private static rflib_Log_Event__e createEvent() {
         return new rflib_Log_Event__e(
+            Log_Level__c = 'INFO',
             Context__c = 'rflib_TriggerManagerTest',
             Log_Messages__c = 'Some log messages'
         );

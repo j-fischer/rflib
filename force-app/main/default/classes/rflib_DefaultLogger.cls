@@ -193,10 +193,15 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public void reportLogs() {
+    reportLogs(rflib_LogLevel.DEBUG);
+  }
+
+  private void reportLogs(rflib_LogLevel logLevel) {
     String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
     Integer messageSize = messagesAsStr.length();
 
     eventPublisher.publish(new rflib_Log_Event__e(
+      Log_Level__c = logLevel.toString(),
       Context__c = context,
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
         ? messagesAsStr 
@@ -213,7 +218,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       : messageToLog + '|' + String.format(message, args);
 
     if (ex != null) {
-      messageToLog = messageToLog + '\n' + ex.getMessage() + '\n' + ex.getStackTraceString();
+      messageToLog = messageToLog + '\nMessage: ' + ex.getMessage() + '\nStracktrace: ' + ex.getStackTraceString();
     }
 
     if (systemDebugLevel.encompasses(logLevel)) {
@@ -231,7 +236,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     LOG_STATEMENTS.add(messageToLog);
     
     if (reportingLogLevel.encompasses(logLevel)) {
-      reportLogs();
+      reportLogs(logLevel);
     }
   }
 
@@ -251,7 +256,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   public class PlatformEventPublisher implements EventPublisher {
     public void publish(rflib_Log_Event__e event) {
-      EventBus.publish(event);
+      Database.SaveResult result = EventBus.publish(event);
+      if(!result.isSuccess()) {
+        System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+      }
     }
   }
 }

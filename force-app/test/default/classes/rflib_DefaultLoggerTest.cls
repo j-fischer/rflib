@@ -30,6 +30,11 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_DefaultLoggerTest {
 
+  private static final String ABORT_TRANSACTION = 'Abort Transaction';
+
+  private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
+  private static final String OBJECT_TYPE_NAME = rflib_Log_Event__e.SObjectType.getDescribe().getName();
+
   @isTest
   public static void testDefaultBehaviour() {
     rflib_DefaultLoggerTest.DebugLogCapture debugLogCapture = new rflib_DefaultLoggerTest.DebugLogCapture();
@@ -217,10 +222,13 @@ public class rflib_DefaultLoggerTest {
       debugLogCapture, 
       'testMessageWithException');
 
-    logger.error('This is an error', new TestException('This is an error message'));
+    try {
+      String.format(null, null);
+    } catch (Exception ex) {
+      logger.error('Caught an error', ex);
+    } 
     
-    System.assert(debugLogCapture.containsInAnyMessage('This is an error message'), 'debugLogger did not contain exception message');
-    System.assert(debugLogCapture.containsInAnyMessage('rflib_DefaultLogger'), 'debugLogger did not contain rflib_DefaultLogger in stacktrace');
+    System.assert(debugLogCapture.containsInAnyMessage('Argument cannot be null'), 'debugLogger did not contain exception message');
     System.assert(debugLogCapture.containsInAnyMessage('rflib_DefaultLoggerTest'), 'debugLogger did not contain rflib_DefaultLoggerTest in stacktrace');
   }
 
@@ -238,8 +246,52 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
-  public static void testCreateCreate() {
+  public static void testCreate() {
     System.assert(rflib_DefaultLogger.create('logger') != null);
+  }
+
+  @IsTest
+  private static void testPlatformEventPublisher() {
+    setupLogManager();
+
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    Test.startTest();
+    logger.reportLogs();
+    Test.stopTest();
+
+    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+
+    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
+
+    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
+    System.assertEquals('testPlatformEventPublisher', capturedEvent.Context__c);
+    System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
+  }
+
+  private static void setupLogManager() {
+    rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+        createConfiguration(ABORT_TRANSACTION), 
+        OBJECT_TYPE_NAME, 
+        AFTER_INSERT
+    );
+  }
+
+  private static rflib_Trigger_Configuration__mdt createConfiguration(String exceptionBehaviour) {
+    return new rflib_Trigger_Configuration__mdt(
+        Active__c = true,
+        Class_Name__c = 'rflib_MockTriggerHandler',
+        Object_Name__c = 'rflib_Log_Event__e',
+        Event__c = 'AFTER_INSERT',
+        Order__c = 1,
+        Exception_Behavior__c = exceptionBehaviour
+    );
   }
 
   public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
@@ -307,6 +359,4 @@ public class rflib_DefaultLoggerTest {
       return result;
     }
   }
-
-  public class TestException extends Exception { }
 }

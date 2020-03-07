@@ -200,7 +200,7 @@ public interface rflib_Logger {
 
   /**
    * Creates a rflib_Log_Event__e Platform Event containing the value for the 'context' of the current logger
-   * and a text of all messages separated by lines (\\n).
+   * and a text of all messages separated by lines (\\n). The Log Level of the event will be set to DEBUG.
    */
   void reportLogs();
 }
