@@ -251,13 +251,13 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testPlatformEventPublisher() {
+  private static void testSyncPlatformEventPublisher() {
     setupLogManager();
 
     rflib_Logger logger = new rflib_DefaultLogger(
-      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.PlatformEventPublisher(false), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
-      'testPlatformEventPublisher'
+      'testSyncPlatformEventPublisher'
     );
 
     logger.info('This is a test message');
@@ -271,7 +271,32 @@ public class rflib_DefaultLoggerTest {
     rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
 
     rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
-    System.assertEquals('testPlatformEventPublisher', capturedEvent.Context__c);
+    System.assertEquals('testSyncPlatformEventPublisher', capturedEvent.Context__c);
+    System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
+  }
+
+  @IsTest
+  private static void testAsyncPlatformEventPublisher() {
+    setupLogManager();
+
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(true), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testAsyncPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    Test.startTest();
+    logger.reportLogs();
+    Test.stopTest();
+
+    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+
+    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
+
+    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
+    System.assertEquals('testAsyncPlatformEventPublisher', capturedEvent.Context__c);
     System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
   }
 

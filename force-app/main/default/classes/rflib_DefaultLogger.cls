@@ -53,13 +53,25 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   /**
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
-   * associated with this user.
+   * associated with this user. Events are published synchronously.
    * 
    * @param  context The context identifier for this logger instance.
    * @return         A logger instance for the given context.
    */
   public static rflib_Logger createFromCustomSettings(String context) {
-    rflib_Logger logger = rflib_DefaultLogger.create(context);
+    return createFromCustomSettings(context, false);
+  }
+
+  /**
+   * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
+   * associated with this user.
+   * 
+   * @param  context The context identifier for this logger instance.
+   * @param  shouldPublishEventsAsync `Boolean` flag to indicate whether to publish events asynchronously (`System.enqueueJob()`) or not.
+   * @return         A logger instance for the given context.
+   */
+  public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsAsync) {
+    rflib_Logger logger = rflib_DefaultLogger.create(context, shouldPublishEventsAsync);
 
     rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
     if (settings.Log_Size__c != null) {
@@ -86,17 +98,32 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    *    - cache size: 100
    *    - system debug level: INFO
    *    - reporting log level: FATAL
+   *    - event publishing: synchronous
    *
    * @param  context The context for this logger.
    * @return         The new logger instance for the given context.
    */
   public static rflib_Logger create(String context) {
-    return new rflib_DefaultLogger(context);
+    return create(context, false);
+  }
+
+  /**
+   * Create a default logger instance for the given context. Default values for the logger are:
+   *    - cache size: 100
+   *    - system debug level: INFO
+   *    - reporting log level: FATAL
+   *
+   * @param  context The context for this logger.
+   * @param  shouldPublishEventsAsync `Boolean` flag to indicate whether to publish events asynchronously (`System.enqueueJob()`) or not.
+   * @return         The new logger instance for the given context.
+   */
+  public static rflib_Logger create(String context, Boolean shouldPublishEventsAsync) {
+    return new rflib_DefaultLogger(context, shouldPublishEventsAsync);
   }
   
-  private rflib_DefaultLogger(String context) {
+  private rflib_DefaultLogger(String context, Boolean shouldPublishEventsAsync) {
     this(
-      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.PlatformEventPublisher(shouldPublishEventsAsync), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
       context
     );
@@ -255,8 +282,34 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public class PlatformEventPublisher implements EventPublisher {
+
+    private final Boolean shouldPublishEventsAsync;
+
+    public PlatformEventPublisher(Boolean shouldPublishEventsAsync) {
+      this.shouldPublishEventsAsync = shouldPublishEventsAsync;
+    }
+
     public void publish(rflib_Log_Event__e event) {
-      Database.SaveResult result = EventBus.publish(event);
+      PlatformEventPublisherQueueable asyncPublisher = new PlatformEventPublisherQueueable(event);
+      if (shouldPublishEventsAsync) {
+        System.enqueueJob(asyncPublisher);
+        return;
+      }
+
+      asyncPublisher.execute(null);
+    }
+  }
+
+  public class PlatformEventPublisherQueueable implements Queueable {
+
+    private final rflib_Log_Event__e evt;
+
+    public PlatformEventPublisherQueueable(rflib_Log_Event__e evt) {
+      this.evt = evt;
+    }
+
+    public void execute(QueueableContext ctx) {
+      Database.SaveResult result = EventBus.publish(evt);
       if(!result.isSuccess()) {
         System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
