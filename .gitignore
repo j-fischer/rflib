@@ -32,3 +32,6 @@ $RECYCLE.BIN/
 
 # VS Code project settings
 .vscode/
+
+#Travis CI Configration
+assets/server.key
