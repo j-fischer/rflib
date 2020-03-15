@@ -1,5 +1,7 @@
 # Reliability Force
 
+[![Build Status](https://travis-ci.org/j-fischer/rflib.svg?branch=master)](https://travis-ci.org/j-fischer/rflib)
+
 The goal of this library is to help developers to create clean, production ready code with a high level of operational supportability.
 
 This library is inspired by Dan Appleman's (see [Advanced Apex Programming](https://www.amazon.com/gp/product/1936754126/ref=as_li_tl?ie=UTF8&tag=apexbook-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1936754126&linkId=2e3446c23a7a7cc6c947ec1bb2480434))
