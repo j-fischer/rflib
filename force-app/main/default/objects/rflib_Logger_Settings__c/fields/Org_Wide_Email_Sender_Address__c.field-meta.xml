@@ -5,7 +5,7 @@
     <externalId>false</externalId>
     <inlineHelpText>Please provide a valid email address that matches an email address configured in the Organization-Wide Addresses under Setup -&gt; Email. The email handler will use this address in the From header field if provided.</inlineHelpText>
     <label>Org Wide Email Sender Address</label>
-    <required>true</required>
+    <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Email</type>
     <unique>false</unique>
