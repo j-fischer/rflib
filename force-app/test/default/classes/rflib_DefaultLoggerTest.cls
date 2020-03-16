@@ -236,10 +236,11 @@ public class rflib_DefaultLoggerTest {
   public static void testCreateFromCustomSettings() {
     insert new rflib_Logger_Settings__c(
       Log_Size__c = 50,
-      System_Debug_Log_Level__c = 'warn',
-      Log_Event_Reporting_Level__c = 'error',
-      General_Log_Level__c = 'info',
-      Org_Wide_Email_Sender_Address__c = 'foo@email.com'
+      System_Debug_Log_Level__c = 'WARN',
+      Log_Event_Reporting_Level__c = 'ERROR',
+      General_Log_Level__c = 'INFO',
+      Org_Wide_Email_Sender_Address__c = 'foo@email.com',
+      Async_Log_Event_Reporting_Level__c = 'NONE'
     );
 
     System.assert(rflib_DefaultLogger.createFromCustomSettings('logger') != null);
@@ -289,6 +290,7 @@ public class rflib_DefaultLoggerTest {
 
     Test.startTest();
     logger.reportLogs();
+    System.assertEquals(1, Limits.getQueueableJobs());
     Test.stopTest();
 
     System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
@@ -298,6 +300,33 @@ public class rflib_DefaultLoggerTest {
     rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
     System.assertEquals('testAsyncPlatformEventPublisher', capturedEvent.Context__c);
     System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
+  }
+
+  @IsTest
+  private static void testSetAsyncReportingLogLevel() {
+    setupLogManager();
+
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(true), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testSetAsyncReportingLogLevel'
+    );
+
+    logger.setReportingLogLevel(rflib_LogLevel.INFO);
+    logger.setAsyncReportingLogLevel(rflib_LogLevel.INFO);
+   
+    Test.startTest();
+    logger.info('This is a test message');
+    System.assertEquals(1, Limits.getQueueableJobs());
+    Test.stopTest();
+
+    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+
+    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
+
+    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
+    System.assertEquals('testSetAsyncReportingLogLevel', capturedEvent.Context__c);
+    System.assertEquals('INFO', capturedEvent.Log_Level__c);
   }
 
   private static void setupLogManager() {
