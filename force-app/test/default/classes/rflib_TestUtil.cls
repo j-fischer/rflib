@@ -37,7 +37,7 @@ public class rflib_TestUtil {
         settings.System_Debug_Log_Level__c = 'DEBUG';
         settings.Log_Event_Reporting_Level__c = 'NONE';
         settings.Email_Log_Level__c = 'NONE';
-        settings.Org_Wide_Email_Sender_Address__c = 'noreply@rflib.org';
+        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
 
         upsert settings;
     }
