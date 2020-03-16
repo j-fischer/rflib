@@ -57,6 +57,17 @@ public interface rflib_Logger {
   void setReportingLogLevel(rflib_LogLevel newLevel);
 
   /**
+   * Set the log level for which a rflib_Log_Event__c Platform Event should be published asynchronously. 
+   * Any log statement that reported and encompassed by set aync reporting level, i.e. async reporting log level of 
+   * WARN will match for WARN and ERROR messages, will publish the log event using a `Queueable`.
+   * 
+   * rflib_DefaultLogger's default level is NONE.
+   * 
+   * @param  newLevel The new log level to be used to match statements. 
+   */
+  void setAsyncReportingLogLevel(rflib_LogLevel newLevel);
+
+  /**
    * Set the log level for which the System.debug() method will be invoked. Whenever a statement is logged and
    * the statements level is encompassed by the currently set System Debug Level, the message will also be logged
    * to the System.debug logs. 

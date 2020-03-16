@@ -50,6 +50,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private rflib_LogLevel generalLogLevel = rflib_LogLevel.INFO;
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.INFO;
   private rflib_LogLevel reportingLogLevel = rflib_LogLevel.FATAL;
+  private rflib_LogLevel asyncReportingLogLevel = rflib_LogLevel.NONE;
 
   /**
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
@@ -88,6 +89,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
     if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
       logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
+    }
+
+    if (String.isNotBlank(settings.Async_Log_Event_Reporting_Level__c)) {
+      logger.setAsyncReportingLogLevel(rflib_LogLevel.fromString(settings.Async_Log_Event_Reporting_Level__c));
     }
 
     return logger;
@@ -152,6 +157,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   public void setReportingLogLevel(rflib_LogLevel newLevel) {
     reportingLogLevel = newLevel;
+  }
+
+  public void setAsyncReportingLogLevel(rflib_LogLevel newLevel) {
+    asyncReportingLogLevel = newLevel;
   }
 
   public void setSystemDebugLevel(rflib_LogLevel newLevel) {
@@ -227,13 +236,19 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
     Integer messageSize = messagesAsStr.length();
 
-    eventPublisher.publish(new rflib_Log_Event__e(
+    rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
       Log_Level__c = logLevel.toString(),
       Context__c = context,
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
         ? messagesAsStr 
         : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE)
-    ));
+    );
+
+    if (asyncReportingLogLevel.encompasses(logLevel)) {
+      System.enqueueJob(new rflib_DefaultLogger.PlatformEventPublisherQueueable(eventToLog));
+    } else {
+      eventPublisher.publish(eventToLog);
+    }
   }
 
   private void logMessage(rflib_LogLevel logLevel, String message, Object[] args, Exception ex) {
