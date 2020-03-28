@@ -67,42 +67,48 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     clearLogs() {
+        logger.debug('Clearing logs');
         this.capturedEvents = [];
         this.numTotalRecords = 0;
         this.selectedLogEvent = null;
     }
 
     registerErrorListener() {
+        logger.debug('Registering Error Listener');
         onError(error => {
-            logger.debug('Received error from server: ', JSON.stringify(error));
+            logger.debug('Received error from server: {0}', JSON.stringify(error));
         });
     }
 
     handlePrevious() {
+        logger.debug('Navigate to previous page, current page={0}', this.page);
         if (this.page > 1) {
             this.page = this.page - 1;
         }
     }
     handleNext() {
+        logger.debug('Navigate to next page, current page={0}', this.page);
         if (this.page < this.totalPages) this.page = this.page + 1;
     }
 
     handleFirst() {
+        logger.debug('Navigate to first page, current page={0}', this.page);
         this.page = 1;
     }
 
     handleLast() {
+        logger.debug('Navigate to last page, current page={0}', this.page);
         this.page = this.totalPages;
     }
 
     handleRefreshed(event) {
-        logger.debug('Records loaded, count={0}', event.detail);
+        logger.debug('Records loaded,  count={0}', event.detail);
         this.numDisplayedRecords = event.detail;
         this.totalPages = Math.ceil(this.numDisplayedRecords / this.pageSize);
     }
 
     handlePageChange(event) {
-        logger.debug('Page changed, page={0}', event.detail);
+        logger.debug('Page changed, current page={0}', event.detail);
         this.page = event.detail;
     }
 
