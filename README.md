@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/j-fischer/rflib.svg?branch=master)](https://travis-ci.org/j-fischer/rflib)
 
-The goal of this library is to help developers to create clean, production ready code with a high level of operational supportability.
+The goal of this library is to help developers to create clean, production-ready code with a high level of operational supportability.
 
 This library is inspired by Dan Appleman's (see [Advanced Apex Programming](https://www.amazon.com/gp/product/1936754126/ref=as_li_tl?ie=UTF8&tag=apexbook-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1936754126&linkId=2e3446c23a7a7cc6c947ec1bb2480434))
 logging design patter to collect better diagnositc information when dealing with errors in your Apex classes. This library expands
@@ -20,12 +20,13 @@ The following lists describe some of the key features of rflib.
 -   Configuration through Custom Settings allowing for different log configurations between users
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
+-   Support Asynchronous Logging for when DML statements are not supported
 
 #### Trigger Framework:
 
 -   Fully decoupled framework, trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
--   Fully configurable trigger management (activation, order, etc) using Custom Metadata
+-   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata
 
 #### Feature Switches:
 
