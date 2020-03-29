@@ -88,7 +88,9 @@ export default class LogEventMonitor extends LightningElement {
     }
     handleNext() {
         logger.debug('Navigate to next page, current page={0}', this.page);
-        if (this.page < this.totalPages) this.page = this.page + 1;
+        if (this.page < this.totalPages) {
+            this.page = this.page + 1;
+        }
     }
 
     handleFirst() {
