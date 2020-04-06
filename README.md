@@ -257,6 +257,7 @@ To enabled the Log Monitor application, simply assign the `Log Monitor Access` P
 
 ## Updates
 
+-   **Mar 2020** - Enhanced email reporting and introduced log batching
 -   **Feb 2020** - Added application to review log events for the last 24 hours as well as in real-time on a dashboard
 -   **Jan 2020** - Added Feature Switches implementation including switch to suspend all triggers
 -   **Dec 2019** - Added `HttpRequest` wrapper and Trace ID implementation
