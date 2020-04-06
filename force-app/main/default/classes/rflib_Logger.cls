@@ -65,7 +65,7 @@ public interface rflib_Logger {
    * 
    * @param  newLevel The new log level to be used to match statements. 
    */
-  void setAsyncReportingLogLevel(rflib_LogLevel newLevel);
+  void setBatchReportingLogLevel(rflib_LogLevel newLevel);
 
   /**
    * Set the log level for which the System.debug() method will be invoked. Whenever a statement is logged and
@@ -214,4 +214,10 @@ public interface rflib_Logger {
    * and a text of all messages separated by lines (\\n). The Log Level of the event will be set to DEBUG.
    */
   void reportLogs();
+
+  /**
+   * Publishes all `rflib_Log_Event__e` Platform Events collected for batch execution using either a single DML statement
+   * or a `System.enqueueJob()` if the DML governor limit for the current transaction has been reached.
+   */
+  void publishBatchedLogEvents();
 }

@@ -35,11 +35,10 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
-  @TestVisible
-  private static final Integer MAX_MESSAGE_SIZE = 131072;
-  
-  @TestVisible 
-  private static final List<String> LOG_STATEMENTS = new List<String>(); 
+  @TestVisible private static final Integer MAX_MESSAGE_SIZE = 131072;
+  @TestVisible private static final List<String> LOG_STATEMENTS = new List<String>(); 
+
+  private static rflib_DefaultLogger.BatchPlatformEventExecutor BATCH_EXECUTOR = new rflib_DefaultLogger.BatchPlatformEventExecutor();
 
   private final String context;
   private final rflib_DefaultLogger.DebugLogger debugLogger;
@@ -51,6 +50,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.INFO;
   private rflib_LogLevel reportingLogLevel = rflib_LogLevel.FATAL;
   private rflib_LogLevel asyncReportingLogLevel = rflib_LogLevel.NONE;
+
 
   /**
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
@@ -68,7 +68,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    * associated with this user.
    * 
    * @param  context The context identifier for this logger instance.
-   * @param  shouldPublishEventsAsync `Boolean` flag to indicate whether to publish events asynchronously (`System.enqueueJob()`) or not.
+   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
    * @return         A logger instance for the given context.
    */
   public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsAsync) {
@@ -92,7 +92,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
 
     if (String.isNotBlank(settings.Async_Log_Event_Reporting_Level__c)) {
-      logger.setAsyncReportingLogLevel(rflib_LogLevel.fromString(settings.Async_Log_Event_Reporting_Level__c));
+      logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Async_Log_Event_Reporting_Level__c));
     }
 
     return logger;
@@ -119,16 +119,18 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    *    - reporting log level: FATAL
    *
    * @param  context The context for this logger.
-   * @param  shouldPublishEventsAsync `Boolean` flag to indicate whether to publish events asynchronously (`System.enqueueJob()`) or not.
+   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
    * @return         The new logger instance for the given context.
    */
-  public static rflib_Logger create(String context, Boolean shouldPublishEventsAsync) {
-    return new rflib_DefaultLogger(context, shouldPublishEventsAsync);
+  public static rflib_Logger create(String context, Boolean shouldBatchEvents) {
+    return new rflib_DefaultLogger(context, shouldBatchEvents);
   }
   
-  private rflib_DefaultLogger(String context, Boolean shouldPublishEventsAsync) {
+  private rflib_DefaultLogger(String context, Boolean shouldBatchEvents) {
     this(
-      new rflib_DefaultLogger.PlatformEventPublisher(shouldPublishEventsAsync), 
+      shouldBatchEvents ? 
+        (rflib_DefaultLogger.EventPublisher) new rflib_DefaultLogger.BatchPlatformEventPublisher() : 
+        (rflib_DefaultLogger.EventPublisher) new rflib_DefaultLogger.PlatformEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
       context
     );
@@ -159,7 +161,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     reportingLogLevel = newLevel;
   }
 
-  public void setAsyncReportingLogLevel(rflib_LogLevel newLevel) {
+  public void setBatchReportingLogLevel(rflib_LogLevel newLevel) {
     asyncReportingLogLevel = newLevel;
   }
 
@@ -232,6 +234,16 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     reportLogs(rflib_LogLevel.DEBUG);
   }
 
+  public void publishBatchedLogEvents() {
+    if (Limits.getDmlStatements() < Limits.getLimitDmlStatements()) {
+      BATCH_EXECUTOR.execute(null);
+    } else {
+      System.enqueueJob(BATCH_EXECUTOR);
+    }
+
+    BATCH_EXECUTOR = new rflib_DefaultLogger.BatchPlatformEventExecutor();
+  }
+
   private void reportLogs(rflib_LogLevel logLevel) {
     String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
     Integer messageSize = messagesAsStr.length();
@@ -245,7 +257,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     );
 
     if (asyncReportingLogLevel.encompasses(logLevel)) {
-      System.enqueueJob(new rflib_DefaultLogger.PlatformEventPublisherQueueable(eventToLog));
+      BATCH_EXECUTOR.addEvent(eventToLog);
     } else {
       eventPublisher.publish(eventToLog);
     }
@@ -297,36 +309,35 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public class PlatformEventPublisher implements EventPublisher {
-
-    private final Boolean shouldPublishEventsAsync;
-
-    public PlatformEventPublisher(Boolean shouldPublishEventsAsync) {
-      this.shouldPublishEventsAsync = shouldPublishEventsAsync;
-    }
-
     public void publish(rflib_Log_Event__e event) {
-      PlatformEventPublisherQueueable asyncPublisher = new PlatformEventPublisherQueueable(event);
-      if (shouldPublishEventsAsync) {
-        System.enqueueJob(asyncPublisher);
-        return;
+      Database.SaveResult result = EventBus.publish(event);     
+      if(!result.isSuccess()) {
+        System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
-
-      asyncPublisher.execute(null);
     }
   }
 
-  public class PlatformEventPublisherQueueable implements Queueable {
+  public class BatchPlatformEventPublisher implements EventPublisher {
+    public void publish(rflib_Log_Event__e event) {
+      BATCH_EXECUTOR.addEvent(event);
+    }
+  }
 
-    private final rflib_Log_Event__e evt;
+  private class BatchPlatformEventExecutor implements Queueable {
 
-    public PlatformEventPublisherQueueable(rflib_Log_Event__e evt) {
-      this.evt = evt;
+    private final List<rflib_Log_Event__e> eventsToPublish = new List<rflib_Log_Event__e>();
+
+    public void addEvent(rflib_Log_Event__e event) {
+      eventsToPublish.add(event);
     }
 
     public void execute(QueueableContext ctx) {
-      Database.SaveResult result = EventBus.publish(evt);
-      if(!result.isSuccess()) {
-        System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+      List<Database.SaveResult> results = EventBus.publish(eventsToPublish);
+      
+      for (Database.SaveResult result : results) {
+        if(!result.isSuccess()) {
+          System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+        }
       }
     }
   }
