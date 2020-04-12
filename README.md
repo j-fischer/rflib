@@ -108,6 +108,33 @@ Then call the log functions.
 
 `logger.debug('This is a test -> {1}: {2}', new List<Object> { 'foo', 'bar' });`
 
+### Logging in Apex using the Batch pattern
+
+Create a logger in your Apex class using the following command.
+
+`rflib_Logger logger = rflib_DefaultLogger.createBatchedLoggerFromCustomSettings('MyContext');`
+
+When using the batched logging pattern, the code is responsible for the publishing of the log events. This means that it is required to call the `rflib_Logger.publishBatchedLogEvents()` method at the end of any transaction. It does not matter what logger it is called on as all loggers manage batched log events globally. Batched logging will reduce the number of DML statements, especially for low log level configurations.
+
+Following is an example of an Aura controller using the batch pattern:
+
+```
+// This will log all Log Events as batched events, independent of the settings.
+private static final rflib_Logger LOGGER = rflib_DefaultLogger.createBatchedLoggerFromCustomSettings('MyController');
+
+@AuraEnabled
+public static String doSomething(){
+    try {
+        // Application logic here
+        return 'Result';
+    } catch (Exception ex) {
+        LOGGER.fatal('DoSomething threw an exception', ex);
+    } finally {
+        LOGGER.publishBatchedLogEvents();
+    }
+}
+```
+
 ### Logger Settings
 
 All log settings have a help text that provides some guidance about the valid values. Below are is a list of all
@@ -140,6 +167,7 @@ Logging is a bit of an art. There is not right or wrong way, so anything describ
 -   Use WARN level for situations that are recoverable, but should not really happen in the real world
 -   Reduce log statements by using the formatting feature to easily print multiple variables in a single statement
 -   Use `rflib_HttpRequest` instead of the Apex platform class, this can save hours of debugging integration issues
+-   Build your code (controllers, trigger handlers, etc.) for batched logging (see Logging in Apex using the Batch pattern)
 
 ### Trigger Framework
 
