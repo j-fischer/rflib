@@ -35,7 +35,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_TriggerManager {
     
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_TriggerManager');
+    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createBatchedLoggerFromCustomSettings('rflib_TriggerManager');
 
     private static rflib_ITriggerHandler ACTIVE_HANDLER;
 
@@ -69,7 +69,17 @@ public inherited sharing class rflib_TriggerManager {
             return;
         }
 
-        // Run handlers
+        try {
+            runHandlers(args, handlers);
+        } finally {
+            // If active handler is not NULL, we are in a recursive loop and need to wait for the root transaction to complete.
+            if (ACTIVE_HANDLER == null) {
+                LOGGER.publishBatchedLogEvents();
+            }
+        }
+    }
+
+    private static void runHandlers(rflib_TriggerManager.Args args, List<TriggerHandlerInfo> handlers) {
         for (TriggerHandlerInfo handlerInfo : handlers) {
             rflib_ITriggerHandler handler = handlerInfo.handler;
 

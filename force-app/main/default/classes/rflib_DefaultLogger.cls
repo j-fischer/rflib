@@ -54,13 +54,24 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   /**
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
-   * associated with this user. Events are published synchronously.
+   * associated with this user. Events are published immediately.
    * 
    * @param  context The context identifier for this logger instance.
    * @return         A logger instance for the given context.
    */
   public static rflib_Logger createFromCustomSettings(String context) {
     return createFromCustomSettings(context, false);
+  }
+
+  /**
+   * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
+   * associated with this user. Events are published in batches.
+   * 
+   * @param  context The context identifier for this logger instance.
+   * @return         A logger instance for the given context.
+   */
+  public static rflib_Logger createBatchedLoggerFromCustomSettings(String context) {
+    return createFromCustomSettings(context, true);
   }
 
   /**
