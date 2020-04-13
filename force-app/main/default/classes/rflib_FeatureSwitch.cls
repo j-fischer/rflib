@@ -34,7 +34,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_FeatureSwitch {
     
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_FeatureSwitch');
+    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createBatchedLoggerFromCustomSettings('rflib_FeatureSwitch');
 
     private static final String NO_PROFILE = '__NO_PROFILE__';
     
@@ -69,11 +69,11 @@ public without sharing class rflib_FeatureSwitch {
      * @return A `Boolean` value indicating if the switch is turned ON.
      */
     public static Boolean isTurnedOn(String switchName) {
-        LOGGER.info('Evaluating feature switch ' + switchName);
+        LOGGER.debug('Evaluating feature switch ' + switchName);
 
         Boolean result = getFeatureSwitchValue(switchName);
 
-        LOGGER.info('Feature switch {0} is turned on? {1}', new Object[] { switchName, result });
+        LOGGER.debug('Feature switch {0} is turned on? {1}', new Object[] { switchName, result });
 
         return result;
     } 
@@ -90,11 +90,11 @@ public without sharing class rflib_FeatureSwitch {
      * @return A `Boolean` value indicating if the switch is turned OFF.
      */
     public static Boolean isTurnedOff(String switchName) {
-        LOGGER.info('Evaluating feature switch ' + switchName);
+        LOGGER.debug('Evaluating feature switch ' + switchName);
 
         Boolean result = getFeatureSwitchValue(switchName) == false;
 
-        LOGGER.info('Feature switch {0} is turned off? {1}', new Object[] { switchName, result });
+        LOGGER.debug('Feature switch {0} is turned off? {1}', new Object[] { switchName, result });
 
         return result;
     } 
@@ -112,7 +112,7 @@ public without sharing class rflib_FeatureSwitch {
             result.put(key, getFeatureSwitchValue(key));
         }
 
-        LOGGER.info('Created fully scoped feature switch map: ' + JSON.serialize(result));
+        LOGGER.debug('Created fully scoped feature switch map: ' + result);
         return result;
     }
 
