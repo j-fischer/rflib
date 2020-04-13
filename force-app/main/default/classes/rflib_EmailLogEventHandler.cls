@@ -62,9 +62,21 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
     }
 
     public void run(rflib_TriggerManager.Args args) {
+        try { 
+            sendEmailsIfApplicable(args);
+        } catch (Exception ex) {
+            System.debug(LoggingLevel.ERROR, ex.getMessage());
+        }
+    }
+
+    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+        // do nothing
+    }
+
+    private void sendEmailsIfApplicable(rflib_TriggerManager.Args args) {
         LOGGER.debug('run() invoked');
         if (apexEmailNotifications.size() == 0) {
-            LOGGER.info('No Apex email notifications found');
+            LOGGER.debug('No Apex email notifications found');
             return;
         }
 
@@ -95,10 +107,6 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
                 sendMessage(emailAddresses, evt);
             }
         }
-    }
-
-    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
-        // do nothing
     }
 
     private Boolean matchesConfiguredLogLevel(rflib_Log_Event__e evt) {
