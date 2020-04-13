@@ -15,6 +15,10 @@
         <value xsi:type="xsd:string">AFTER_INSERT</value>
     </values>
     <values>
+        <field>Exception_Behavior__c</field>
+        <value xsi:type="xsd:string">Catch Exception</value>
+    </values>
+    <values>
         <field>Object_Name__c</field>
         <value xsi:type="xsd:string">rflib_Log_Event__e</value>
     </values>
