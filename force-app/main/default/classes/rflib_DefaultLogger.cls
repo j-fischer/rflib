@@ -336,19 +336,21 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private class BatchPlatformEventExecutor implements Queueable {
 
-    private final List<rflib_Log_Event__e> eventsToPublish = new List<rflib_Log_Event__e>();
+    private rflib_Log_Event__e lastEventToBePublished;
 
     public void addEvent(rflib_Log_Event__e event) {
-      eventsToPublish.add(event);
+      lastEventToBePublished = event;
     }
 
     public void execute(QueueableContext ctx) {
-      List<Database.SaveResult> results = EventBus.publish(eventsToPublish);
+      if (lastEventToBePublished == null) {
+        System.debug(LoggingLevel.INFO, 'There is no log event to be published; exiting.');
+        return;
+      }
+      Database.SaveResult result = EventBus.publish(lastEventToBePublished);
       
-      for (Database.SaveResult result : results) {
-        if(!result.isSuccess()) {
-          System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
-        }
+      if(!result.isSuccess()) {
+        System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
     }
   }
