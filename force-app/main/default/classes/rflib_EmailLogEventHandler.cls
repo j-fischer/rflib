@@ -55,10 +55,14 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
         this.apexEmailNotifications = apexEmailNotifications;
         this.useOrgWideEmailAddress = useOrgWideEmailAddress;
         this.loggerSettings = loggerSettings;
+
+        // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
+        //       does not create an infinite loop of log events. 
+        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
     }
 
     public void run(rflib_TriggerManager.Args args) {
-        LOGGER.info('run() invoked');
+        LOGGER.debug('run() invoked');
         if (apexEmailNotifications.size() == 0) {
             LOGGER.info('No Apex email notifications found');
             return;
@@ -79,12 +83,12 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_ITrigge
 
         emailAddresses.addAll(getEmailAddressesForUsers(userIds));
 
-        LOGGER.info('Recipients of log event: ' + String.join(emailAddresses, ','));
+        LOGGER.debug('Recipients of log event: ' + String.join(emailAddresses, ','));
 
         List<rflib_Log_Event__e> events = (List<rflib_Log_Event__e>) args.newRecords;
         Integer numEmailToSend = Math.min(events.size(), 10);
 
-        LOGGER.info('Emails to be sent = ' + numEmailToSend);
+        LOGGER.debug('Emails to be sent = ' + numEmailToSend);
         for (Integer i = 0; i < numEmailToSend; i++) {
             rflib_Log_Event__e evt = events[i];
             if (matchesConfiguredLogLevel(evt)) {
