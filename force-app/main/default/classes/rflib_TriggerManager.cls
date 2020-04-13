@@ -83,6 +83,8 @@ public inherited sharing class rflib_TriggerManager {
         for (TriggerHandlerInfo handlerInfo : handlers) {
             rflib_ITriggerHandler handler = handlerInfo.handler;
 
+            LOGGER.debug('Is consecutive run? ' + (ACTIVE_HANDLER != null));
+
             if (ACTIVE_HANDLER == null) {
                 try {
                     ACTIVE_HANDLER = handler;
@@ -131,7 +133,8 @@ public inherited sharing class rflib_TriggerManager {
     private static List<TriggerHandlerInfo> getHandlers(rflib_TriggerManager.Args args) {
         List<TriggerHandlerInfo> result = new List<TriggerHandlerInfo>();
 
-        List<rflib_Trigger_Configuration__mdt> triggerHandlers = QUERY_LOCATOR.getRecords(args.objectType.getDescribe().getName(), args.operation.name());
+        String sObjectName = args.objectType.getDescribe().getName();
+        List<rflib_Trigger_Configuration__mdt> triggerHandlers = QUERY_LOCATOR.getRecords(sObjectName, args.operation.name());
 
         List<String> activeTriggers = new List<String>();
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
@@ -143,7 +146,7 @@ public inherited sharing class rflib_TriggerManager {
             result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
         }
 
-        LOGGER.info('{0} active trigger(s) found: {1}', new List<Object> { activeTriggers.size(), String.join(activeTriggers, ',') });
+        LOGGER.debug('{0} active trigger(s) found for operation {1} on object type {2}: {3}', new List<Object> { activeTriggers.size(), args.operation, sObjectName, String.join(activeTriggers, ',') });
 
         return result;
     }
