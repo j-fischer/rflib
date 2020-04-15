@@ -38,30 +38,6 @@ private class rflib_EmailLogEventHandlerTest {
     }
 
     @isTest
-    public static void testNoOrgWideEmailAddressId() {
-        try {
-            new rflib_EmailLogEventHandler(createApexEmailNotification(), true, createLoggerSettings()).run(createLogEventArgs());
-            System.assert(false, 'Expected QueryException has not been thrown');
-        } catch (QueryException ex) {
-            System.assertEquals('List has no rows for assignment to SObject', ex.getMessage());
-        }
-    }
-
-    @isTest
-    public static void testInvalidOrgWideEmailAddressId() {
-        insert new rflib_Logger_Settings__c(
-           Org_Wide_Email_Sender_Address__c = 'foobar@email.com' 
-        );
-
-        try {
-            new rflib_EmailLogEventHandler(createApexEmailNotification(), true, createLoggerSettings()).run(createLogEventArgs());
-            System.assert(false, 'Expected QueryException has not been thrown');
-        } catch (QueryException ex) {
-            System.assertEquals('List has no rows for assignment to SObject', ex.getMessage());
-        }
-    }
-
-    @isTest
     public static void testEmailLogLevelDoesNotMatch() {
         System.assertEquals(0, Limits.getEmailInvocations());
         new rflib_EmailLogEventHandler(createApexEmailNotification(), false, createLoggerSettings('FATAL')).run(createLogEventArgs());
