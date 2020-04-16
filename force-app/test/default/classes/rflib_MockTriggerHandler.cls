@@ -30,7 +30,7 @@
  @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockTriggerHandler implements rflib_ITriggerHandler {
     
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_MockTriggerHandler');
+    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockTriggerHandler');
 
     // These fields have to be static because the class gets instantiated by the TriggerManager, not injected.
     public static List<rflib_TriggerManager.Args> CAPTURED_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();

@@ -52,7 +52,7 @@ public with sharing class rflib_LoggerController {
      */
     @AuraEnabled
     public static void log(String level, String context, String message){
-        rflib_Logger logger = rflib_DefaultLogger.createFromCustomSettings(context);
+        rflib_Logger logger = rflib_LoggerUtil.getFactory().createLogger(context);
 
         /* Overwriting configuration values for general log level, system log level, and reporting level to ensure that the 
          * client side log messages are managed by the client specific settings only, so that those log statements

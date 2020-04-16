@@ -39,6 +39,7 @@ private class rflib_LoggerControllerTest {
         loggerSettings.System_Debug_Log_Level__c = 'None';
         loggerSettings.Log_Event_Reporting_Level__c = 'None';
         loggerSettings.Org_Wide_Email_Sender_Address__c = 'foo@bar.com';
+        loggerSettings.Logger_Factory_Class__c = 'rflib_DefaultLoggerFactory';
 
         upsert loggerSettings;
     }

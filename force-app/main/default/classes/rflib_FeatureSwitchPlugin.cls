@@ -33,7 +33,7 @@
  */ 
 global class rflib_FeatureSwitchPlugin implements Process.Plugin {
 
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_FeatureSwitchPlugin');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_FeatureSwitchPlugin');
 
     /**
      * Returns whether a feature switch is turned on or not. The evaluation will consider the proper

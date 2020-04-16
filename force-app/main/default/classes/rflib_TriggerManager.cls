@@ -35,7 +35,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_TriggerManager {
     
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createBatchedLoggerFromCustomSettings('rflib_TriggerManager');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_TriggerManager');
 
     private static rflib_ITriggerHandler ACTIVE_HANDLER;
 

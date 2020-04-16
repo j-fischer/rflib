@@ -37,7 +37,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_EmailLogEventHandler implements rflib_ITriggerHandler {
 
-    private static final rflib_Logger LOGGER = rflib_DefaultLogger.createFromCustomSettings('rflib_EmailLogEventHandler');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_EmailLogEventHandler');
 
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';

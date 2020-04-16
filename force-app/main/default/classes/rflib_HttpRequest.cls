@@ -40,7 +40,7 @@ public with sharing class rflib_HttpRequest {
     private final HttpRequest delegatee = new HttpRequest();
     
     public rflib_HttpRequest() {
-        this(rflib_DefaultLogger.createFromCustomSettings('rflib_HttpRequest'));
+        this(rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_HttpRequest'));
     }
 
     public rflib_HttpRequest(rflib_Logger logger) {
