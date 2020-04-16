@@ -2,9 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Logger_Factory_Class__c</fullName>
     <defaultValue>&quot;rflib_LoggerFactory&quot;</defaultValue>
-    <description>This field identifies the class to be used as a logger factory, which can be dynamically loaded using the rflib_LoggerUtil.getFactory() method. This class will then be instantiated and used to create the logger in the class.</description>
+    <description>This field identifies the class to be used as a logger factory, which can be dynamically loaded using the rflib_LoggerUtil.getFactory() method. This class will then be instantiated and used to create the logger instance.</description>
     <externalId>false</externalId>
-    <inlineHelpText>This field identifies the class to be used as a logger factory, which can be dynamically loaded using the rflib_LoggerUtil.getFactory() method. This class will then be instantiated and used to create the logger in the class.</inlineHelpText>
+    <inlineHelpText>Please provide the name of the Apex class implementing the rflib_LoggerFactory interface. This class will be dynamically instantiated and used to create a rflib_Logger instance. Please use caution when changing the default value &quot;rflib_LoggerFactory&quot;.</inlineHelpText>
     <label>Logger Factory Class</label>
     <length>255</length>
     <required>true</required>
