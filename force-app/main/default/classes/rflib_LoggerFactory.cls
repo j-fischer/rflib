@@ -26,20 +26,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
+
+/**
+ * @group Logger
+ * @description Interface for factory classes to create `rflib_Logger` instances.
+ */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public interface rflib_LoggerFactory {
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
-
-        upsert settings;
-    }
+  /**
+   * Create a logger instance for the given context.
+   *
+   * @param  context The context for this logger.
+   * @return         The new logger instance for the given context.
+   */
+    rflib_Logger createLogger(String context);
+    
+  /**
+   * Create a batched logger instance for the given context.
+   *
+   * @param  context The context for this logger.
+   * @return         The new logger instance for the given context.
+   */
+    rflib_Logger createBatchedLogger(String context);
 }

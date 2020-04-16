@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
@@ -26,20 +27,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
+@isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+private class rflib_DefaultLoggerFactoryTest {
+   
+    @TestSetup
+    static void makeData(){
+        insert new rflib_Logger_Settings__c(
+            Log_Size__c = 50,
+            System_Debug_Log_Level__c = 'WARN',
+            Log_Event_Reporting_Level__c = 'ERROR',
+            General_Log_Level__c = 'INFO',
+            Org_Wide_Email_Sender_Address__c = 'foo@email.com',
+            Async_Log_Event_Reporting_Level__c = 'NONE'
+        );
+    }
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
+    @isTest
+    public static void testCreateLogger() {
+        System.assert(new rflib_DefaultLoggerFactory().createLogger('logger') != null);
+    }
 
-        upsert settings;
+    @isTest
+    public static void testCreateBatchedLogger() {
+        System.assert(new rflib_DefaultLoggerFactory().createBatchedLogger('logger') != null);
     }
 }

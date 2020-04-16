@@ -26,20 +26,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
+
+/**
+ * @group Logger
+ * @description `rflib_LoggerFactory` implementation to create a `rflib_DefaultLogger` instance configured based on the `rflib_Logger_Settings__c`. 
+ */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
-
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
-
-        upsert settings;
+public with sharing class rflib_DefaultLoggerFactory implements rflib_LoggerFactory  {
+    
+    public rflib_Logger createLogger(String context) {
+        return createFromCustomSettings(context, false);
     }
+    
+    public rflib_Logger createBatchedLogger(String context) {
+        return createFromCustomSettings(context, true);
+    }
+
+    private rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsInBatch) {
+        rflib_Logger logger = shouldPublishEventsInBatch ? 
+            rflib_DefaultLogger.createBatchedLogger(context) :
+            rflib_DefaultLogger.create(context);
+    
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+        if (settings.Log_Size__c != null) {
+            logger.setLogCacheSize(Integer.valueOf(settings.Log_Size__c));
+        }
+    
+        if (String.isNotBlank(settings.General_Log_Level__c)) {
+            logger.setGeneralLogLevel(rflib_LogLevel.fromString(settings.General_Log_Level__c));
+        }
+    
+        if (String.isNotBlank(settings.System_Debug_Log_Level__c)) {
+            logger.setSystemDebugLevel(rflib_LogLevel.fromString(settings.System_Debug_Log_Level__c));
+        }
+    
+        if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
+            logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
+        }
+    
+        if (String.isNotBlank(settings.Async_Log_Event_Reporting_Level__c)) {
+            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Async_Log_Event_Reporting_Level__c));
+        }
+    
+        return logger;
+    }
+    
+    
 }

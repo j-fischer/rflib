@@ -28,18 +28,21 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+private class rflib_LoggerUtilTest {
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
+    @IsTest
+    private static void testGetFacotry_DefaultValue() {
+        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
 
-        upsert settings;
+        System.assert(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
+    }
+
+    @IsTest
+    private static void testGetFacotry_ConfiguredValue() {
+        rflib_TestUtil.prepareLoggerForUnitTests();
+
+        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
+
+        System.assert(factory instanceof rflib_TestLoggerFactory, 'Default Logger Factory instance should be of type rflib_TestLoggerFactory');
     }
 }

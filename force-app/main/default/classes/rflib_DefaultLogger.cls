@@ -53,6 +53,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
 
   /**
+   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
+   * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
    * associated with this user. Events are published immediately.
    * 
@@ -64,6 +66,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   /**
+   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createBatchedLogger()` instead.
+   * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
    * associated with this user. Events are published in batches.
    * 
@@ -75,6 +79,9 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   /**
+   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` or `new rflib_DefaultLoggerFactory.createBatchedLogger()` 
+   *              depending on the value for `shouldPublishEventsAsync` instead.
+   * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
    * associated with this user.
    * 
@@ -114,13 +121,27 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    *    - cache size: 100
    *    - system debug level: INFO
    *    - reporting log level: FATAL
-   *    - event publishing: synchronous
+   *    - event publishing: immediate
    *
    * @param  context The context for this logger.
    * @return         The new logger instance for the given context.
    */
   public static rflib_Logger create(String context) {
     return create(context, false);
+  }
+
+  /**
+   * Create a default logger instance for the given context. Default values for the logger are:
+   *    - cache size: 100
+   *    - system debug level: INFO
+   *    - reporting log level: FATAL
+   *    - event publishing: immediate
+   *
+   * @param  context The context for this logger.
+   * @return         The new logger instance for the given context.
+   */
+  public static rflib_Logger createBatchedLogger(String context) {
+    return create(context, true);
   }
 
   /**

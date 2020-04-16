@@ -26,20 +26,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
-@SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
+/**
+ * @group Logger
+ * @description Utility class for the logging framework.
+ */ 
+public with sharing class rflib_LoggerUtil {
+    
+    private static rflib_LoggerFactory loggerFactory;
 
-        upsert settings;
+    /**
+     * Return an instance of `rflib_LoggerFactory` based on the configuration of the `Logger Class Name` field in the Logger Settings. 
+     * @return   An instance of the configured `rflib_LoggerFactory`.
+     */
+    public static rflib_LoggerFactory getFactory() {
+        if (loggerFactory == null) {
+            rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+    
+            String loggerFactoryTypeName = settings != null && String.isNotBlank(settings.Logger_Factory_Class__c) ?
+                settings.Logger_Factory_Class__c : 
+                'rflib_DefaultLoggerFactory';
+    
+            Type handlerType = Type.forName(loggerFactoryTypeName);
+            loggerFactory =  (rflib_LoggerFactory) handlerType.newInstance();
+        }
+
+        return loggerFactory;
     }
+    
+    private rflib_LoggerUtil() { }
 }
