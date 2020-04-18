@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Email_Log_Level__c</fullName>
-    <defaultValue>&quot;ERROR&quot;</defaultValue>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
     <description>Set the log level for which an email will be sent out in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Email Log Level, an email notification will be sent. Otherwise, no email will be sent out.</description>
     <externalId>false</externalId>
     <inlineHelpText>Set the log level for which emails are sent in response to a Log Event. Valid values are NONE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here trigger the email notification.</inlineHelpText>

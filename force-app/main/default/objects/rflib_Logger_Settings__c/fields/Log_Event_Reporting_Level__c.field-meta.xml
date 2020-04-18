@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Log_Event_Reporting_Level__c</fullName>
-    <defaultValue>&quot;FATAL&quot;</defaultValue>
+    <defaultValue>&quot;WARN&quot;</defaultValue>
     <description>Set the log level for which a rflib_Log_Event__c Platform Event should automatically be created. Any log statement that is added and encompassed by set reporting level, i.e. reporting log level of WARN will match for WARN and ERROR messages, will automatically create a log event.</description>
     <externalId>false</externalId>
     <inlineHelpText>Set the log level for which the Log Event Platform Event will be created. Valid values are NONE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will fire the event.</inlineHelpText>
