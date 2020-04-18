@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <applicationVisibilities>
-        <application>rflib_Log_Monitor</application>
+        <application>rflib_Ops_Center</application>
         <visible>true</visible>
     </applicationVisibilities>
-    <description>This permission set provides a user with access to the Log Monitor tab and the Log Event object.</description>
+    <description>This permission set provides a user with access to the Ops Dashboard application and the Log Event object.</description>
     <hasActivationRequired>false</hasActivationRequired>
-    <label>Log Monitor Access</label>
+    <label>Ops Center Access</label>
     <objectPermissions>
         <allowCreate>false</allowCreate>
         <allowDelete>false</allowDelete>
@@ -17,7 +17,7 @@
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <tabSettings>
-        <tab>rflib_Log_Dashboard</tab>
+        <tab>rflib_Log_Monitor</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>

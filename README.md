@@ -297,3 +297,4 @@ To enabled the Log Monitor application, simply assign the `Log Monitor Access` P
 
 -   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
+-   Logo was created with: https://www.freelogodesign.org/

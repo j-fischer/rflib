@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <brand>
-        <headerColor>#0070D2</headerColor>
+        <headerColor>#FFAD1D</headerColor>
+        <logo>RFLIB_Logo_ffad1d</logo>
+        <logoVersion>1</logoVersion>
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
     <description>App to review previous events and monitor new income log events.</description>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
-    <label>Log Monitor</label>
+    <label>Ops Center</label>
     <navType>Standard</navType>
-    <tabs>rflib_Log_Dashboard</tabs>
+    <tabs>rflib_Log_Monitor</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>rflib_Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>
