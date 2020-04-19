@@ -64,8 +64,8 @@ public with sharing class rflib_DefaultLoggerFactory implements rflib_LoggerFact
             logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
         }
     
-        if (String.isNotBlank(settings.Async_Log_Event_Reporting_Level__c)) {
-            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Async_Log_Event_Reporting_Level__c));
+        if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
+            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
         }
     
         return logger;

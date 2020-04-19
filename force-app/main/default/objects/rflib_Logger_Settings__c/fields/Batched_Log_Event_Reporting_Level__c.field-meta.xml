@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Async_Log_Event_Reporting_Level__c</fullName>
+    <fullName>Batched_Log_Event_Reporting_Level__c</fullName>
     <defaultValue>&quot;NONE&quot;</defaultValue>
     <description>Set the log level for which a rflib_Log_Event__c Platform Event should be published in batches. Any log statement that is added, meets the reporting log level, and encompassed by set this level, i.e. reporting log level of WARN will match for WARN and ERROR messages, will publish NOT be published immediately but requires a rflib_Logger.publishBatchedLogEvents() to be called. This can prevent platform exception, such as Callout exceptions due to pending logs.</description>
     <externalId>false</externalId>

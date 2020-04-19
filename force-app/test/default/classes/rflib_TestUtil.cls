@@ -37,7 +37,7 @@ public class rflib_TestUtil {
         settings.System_Debug_Log_Level__c = 'DEBUG';
         settings.Log_Event_Reporting_Level__c = 'NONE';
         settings.Email_Log_Level__c = 'NONE';
-        settings.Async_Log_Event_Reporting_Level__c = 'NONE';
+        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
         settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
 
         upsert settings;

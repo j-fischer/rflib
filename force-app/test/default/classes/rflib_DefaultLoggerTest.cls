@@ -208,7 +208,7 @@ public class rflib_DefaultLoggerTest {
       Log_Event_Reporting_Level__c = 'ERROR',
       General_Log_Level__c = 'INFO',
       Org_Wide_Email_Sender_Address__c = 'foo@email.com',
-      Async_Log_Event_Reporting_Level__c = 'NONE'
+      Batched_Log_Event_Reporting_Level__c = 'NONE'
     );
 
     System.assert(rflib_DefaultLogger.createFromCustomSettings('logger') != null);
