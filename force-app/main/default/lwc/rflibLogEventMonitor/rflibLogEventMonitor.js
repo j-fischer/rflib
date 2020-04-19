@@ -28,10 +28,27 @@
  */
 import { LightningElement, track } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
-import { subscribe, onError } from 'lightning/empApi';
+import { subscribe, unsubscribe, onError } from 'lightning/empApi';
 
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
+const CONNECTION_MODE = {
+    HISTORIC_AND_NEW_MESSAGES: {
+        id: '1',
+        value: -2,
+        label: 'Historic and New Messages'
+    },
+    NEW_MESSAGES_ONLY: {
+        id: '2',
+        value: -1,
+        label: 'New Messages'
+    },
+    DISCONNECTED: {
+        id: '3',
+        value: 0,
+        label: 'Not Connected'
+    }
+};
 
 const logger = createLogger('LogEventMonitor');
 
@@ -41,29 +58,90 @@ export default class LogEventMonitor extends LightningElement {
     @track numDisplayedRecords;
     @track numTotalRecords;
 
-    @track connected = false;
+    @track currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
     @track capturedEvents = [];
     @track selectedLogEvent = null;
 
     subscription = {};
 
+    messageCallback = null;
+
     get hasLogEvent() {
         return this.selectedLogEvent != null;
     }
 
+    get connectionModes() {
+        const connectionModes = JSON.parse(
+            JSON.stringify([
+                CONNECTION_MODE.NEW_MESSAGES_ONLY,
+                CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES,
+                CONNECTION_MODE.DISCONNECTED
+            ])
+        );
+
+        let i,
+            len = connectionModes.length;
+        for (i = 0; i < len; i++) {
+            const mode = connectionModes[i];
+            mode.disabled = mode.value === this.currentConnectionMode.value;
+        }
+
+        return connectionModes;
+    }
+
     connectedCallback() {
         let _this = this;
-        const messageCallback = function(msg) {
+
+        this.messageCallback = function(msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
             _this.numTotalRecords = _this.capturedEvents.length;
         };
 
-        subscribe(CHANNEL, -2, messageCallback).then(response => {
-            logger.debug('Successfully subscribed to: ' + response.channel);
-            this.subscription = response;
-            this.connected = true;
-        });
+        subscribe(CHANNEL, this.currentConnectionMode.value, this.messageCallback).then(
+            this.createSubscriptionResponseHandler(this)
+        );
+    }
+
+    changeConnectionMode(event) {
+        const newConnectionMode = event.detail.value;
+        logger.debug(
+            'Connection Mode changed: newConnectionMode={0}, currentConnectionMode={1}',
+            newConnectionMode,
+            this.currentConnectionMode.value
+        );
+
+        const _this = this;
+        const connectToServer = function() {
+            logger.debug('connectToServer()');
+            if (newConnectionMode) {
+                _this.currentConnectionMode =
+                    newConnectionMode === CONNECTION_MODE.NEW_MESSAGES_ONLY.value
+                        ? CONNECTION_MODE.NEW_MESSAGES_ONLY
+                        : CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES;
+
+                if (_this.currentConnectionMode.value === CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES.value) {
+                    _this.clearLogs();
+                }
+
+                logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
+                subscribe(CHANNEL, _this.currentConnectionMode.value, _this.messageCallback).then(
+                    _this.createSubscriptionResponseHandler(_this)
+                );
+            }
+        };
+
+        if (this.currentConnectionMode.value !== CONNECTION_MODE.DISCONNECTED.value) {
+            unsubscribe(this.subscription, response => {
+                logger.debug('unsubscribe() response: ', JSON.stringify(response));
+                this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
+                this.subscription = null;
+
+                connectToServer();
+            });
+        } else {
+            connectToServer();
+        }
     }
 
     clearLogs() {
@@ -73,10 +151,18 @@ export default class LogEventMonitor extends LightningElement {
         this.selectedLogEvent = null;
     }
 
+    createSubscriptionResponseHandler(component) {
+        return function(response) {
+            logger.debug('Successfully subscribed to: ' + response.channel);
+            component.subscription = response;
+        };
+    }
+
     registerErrorListener() {
         logger.debug('Registering Error Listener');
         onError(error => {
             logger.debug('Received error from server: {0}', JSON.stringify(error));
+            this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
         });
     }
 
@@ -104,7 +190,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     handleRefreshed(event) {
-        logger.debug('Records loaded,  count={0}', event.detail);
+        logger.debug('Records loaded, count={0}', event.detail);
         this.numDisplayedRecords = event.detail;
         this.totalPages = Math.ceil(this.numDisplayedRecords / this.pageSize);
     }

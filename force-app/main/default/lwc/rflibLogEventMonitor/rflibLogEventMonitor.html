@@ -41,8 +41,7 @@
                                 </h1>
                             </div>
                         </div>
-                        <p class="slds-page-header__name-meta" if:true={connected}>Connected • {connected}</p>
-                        <p class="slds-page-header__name-meta" if:false={connected}>Not Connected</p>
+                        <p class="slds-page-header__name-meta">Connection Status • {currentConnectionMode.label}</p>
                     </div>
                 </div>
             </div>
@@ -50,7 +49,20 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
-                            <li>
+                            <li class="slds-m-horizontal_xx-small">
+                                <lightning-button-menu label="Change Connection Mode" onselect={changeConnectionMode}>
+                                    <template for:each={connectionModes} for:item="menuItem">
+                                        <lightning-menu-item
+                                            key={menuItem.id}
+                                            value={menuItem.value}
+                                            label={menuItem.label}
+                                            disabled={menuItem.disabled}
+                                        >
+                                        </lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small">
                                 <button class="slds-button slds-button_neutral" onclick={clearLogs}>Clear Logs</button>
                             </li>
                         </ul>
