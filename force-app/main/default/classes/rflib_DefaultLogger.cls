@@ -46,10 +46,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private Integer logCacheSize = 100;
 
-  private rflib_LogLevel generalLogLevel = rflib_LogLevel.INFO;
-  private rflib_LogLevel systemDebugLevel = rflib_LogLevel.INFO;
-  private rflib_LogLevel reportingLogLevel = rflib_LogLevel.FATAL;
-  private rflib_LogLevel asyncReportingLogLevel = rflib_LogLevel.NONE;
+  private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
+  private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
+  private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
+  private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
 
 
   /**
@@ -194,7 +194,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public void setBatchReportingLogLevel(rflib_LogLevel newLevel) {
-    asyncReportingLogLevel = newLevel;
+    batchReportingLogLevel = newLevel;
   }
 
   public void setSystemDebugLevel(rflib_LogLevel newLevel) {
@@ -288,7 +288,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE)
     );
 
-    if (asyncReportingLogLevel.encompasses(logLevel)) {
+    if (batchReportingLogLevel.encompasses(logLevel)) {
       BATCH_EXECUTOR.addEvent(eventToLog);
     } else {
       eventPublisher.publish(eventToLog);
