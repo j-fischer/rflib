@@ -135,6 +135,22 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
+  public static void testSetReportingLogLevel_LevelCannotBeSetBelowInfo() {
+    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+
+    rflib_Logger logger = loggerFactory.createLogger('testSetReportingLogLevel_LevelCannotBeSetBelowInfo');
+
+    // This will set the actual log level to INFO
+    logger.setReportingLogLevel(rflib_LogLevel.DEBUG);
+
+    logger.debug('This statement should NOT trigger the publishing of an event');
+    System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
+
+    logger.info('This statement should trigger the publishing of an event');
+    System.assert(loggerFactory.eventCapture.eventHasBeenPublished());
+  }
+
+  @isTest
   public static void testExceedMaxMessageSize() {
     rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
 

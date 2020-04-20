@@ -52,6 +52,8 @@ public interface rflib_Logger {
    * 
    * rflib_DefaultLogger's default level is WARN.
    * 
+   * IMPORTANT: The log level cannot be set to a level lower than INFO. 
+   * 
    * @param  newLevel The new log level to be used to match statements. 
    */
   void setReportingLogLevel(rflib_LogLevel newLevel);

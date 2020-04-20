@@ -194,7 +194,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   } 
 
   public void setReportingLogLevel(rflib_LogLevel newLevel) {
-    reportingLogLevel = newLevel;
+    reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
   }
 
   public void setBatchReportingLogLevel(rflib_LogLevel newLevel) {
