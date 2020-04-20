@@ -4,7 +4,7 @@
     <defaultValue>&quot;NONE&quot;</defaultValue>
     <description>Set the log level for which a rflib_Log_Event__c Platform Event should be published in batches. Any log statement that is added, meets the reporting log level, and encompassed by set this level, i.e. reporting log level of WARN will match for WARN and ERROR messages, will publish NOT be published immediately but requires a rflib_Logger.publishBatchedLogEvents() to be called. This can prevent platform exception, such as Callout exceptions due to pending logs.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which the Log Event Platform Event will be batched. Valid values are NONE, DEBUG, INFO, WARN, ERROR, and FATAL. Events reported matching this level require rflib_Logger.publishBatchedLogEvents() to be called to be actually published.</inlineHelpText>
+    <inlineHelpText>Set the log level for which the Log Event will be batched. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Events reported matching this level require rflib_Logger.publishBatchedLogEvents() to be called to be actually published.</inlineHelpText>
     <label>Batched Log Event Reporting Level</label>
     <length>5</length>
     <required>true</required>

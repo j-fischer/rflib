@@ -4,7 +4,7 @@
     <defaultValue>&quot;WARN&quot;</defaultValue>
     <description>Set the log level for which a rflib_Log_Event__c Platform Event should automatically be created. Any log statement that is added and encompassed by set reporting level, i.e. reporting log level of WARN will match for WARN and ERROR messages, will automatically create a log event.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which the Log Event Platform Event will be created. Valid values are NONE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will fire the event.</inlineHelpText>
+    <inlineHelpText>Set the log level for which the Log Event Platform Event will be created. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will fire the event.</inlineHelpText>
     <label>Log Event Reporting Level</label>
     <length>5</length>
     <required>true</required>

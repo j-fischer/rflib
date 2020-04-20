@@ -119,8 +119,9 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   /**
    * Create a default logger instance for the given context. Default values for the logger are:
    *    - cache size: 100
-   *    - system debug level: INFO
-   *    - reporting log level: FATAL
+   *    - general log level: DEBUG
+   *    - system debug level: DEBUG
+   *    - reporting log level: WARN
    *    - event publishing: immediate
    *
    * @param  context The context for this logger.
@@ -129,12 +130,13 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   public static rflib_Logger create(String context) {
     return create(context, false);
   }
-
+  
   /**
    * Create a default logger instance for the given context. Default values for the logger are:
    *    - cache size: 100
-   *    - system debug level: INFO
-   *    - reporting log level: FATAL
+   *    - general log level: DEBUG
+   *    - system debug level: DEBUG
+   *    - reporting log level: WARN
    *    - event publishing: immediate
    *
    * @param  context The context for this logger.
@@ -147,8 +149,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   /**
    * Create a default logger instance for the given context. Default values for the logger are:
    *    - cache size: 100
-   *    - system debug level: INFO
-   *    - reporting log level: FATAL
+   *    - general log level: DEBUG
+   *    - system debug level: DEBUG
+   *    - reporting log level: WARN
+   *    - event publishing: immediate
    *
    * @param  context The context for this logger.
    * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
@@ -205,9 +209,18 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     generalLogLevel = newLevel;
   }
 
+  public void trace(String message) {
+    trace(message, null);
+  }
+
+  public void trace(String message, Object[] args) {
+    logMessage(rflib_LogLevel.TRACE, message, args, null);
+  }
+
   public void debug(String message) {
     debug(message, null);
   }
+
   public void debug(String message, Object[] args) {
     logMessage(rflib_LogLevel.DEBUG, message, args, null);
   }
@@ -215,6 +228,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   public void info(String message){
     info(message, null);
   }
+
   public void info(String message, Object[] args) {
     logMessage(rflib_LogLevel.INFO, message, args, null);
   }
@@ -222,6 +236,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   public void warn(String message){
     warn(message, null);
   }
+
   public void warn(String message, Object[] args) {
     logMessage(rflib_LogLevel.WARN, message, args, null);
   }

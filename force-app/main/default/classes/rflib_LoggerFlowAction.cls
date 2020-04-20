@@ -80,7 +80,7 @@ public with sharing class rflib_LoggerFlowAction {
         @InvocableVariable(label='Context' description='The context of your log message, i.e. Flow/Process name' required=true)
         public String context;
         
-        @InvocableVariable(label='Log Level' description='The log level for the message: DEBUG, INFO, WARN, ERROR, FATAL' required=true)
+        @InvocableVariable(label='Log Level' description='The log level for the message: TRACE, DEBUG, INFO, WARN, ERROR, FATAL' required=true)
         public String logLevel;
         
         @InvocableVariable(label='Message' description='The actual log message' required=true)

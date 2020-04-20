@@ -50,7 +50,7 @@ public interface rflib_Logger {
    * Any log statement that is added and encompassed by set reporting level, i.e. reporting log level of 
    * WARN will match for WARN and ERROR messages, will automatically create a log event.
    * 
-   * rflib_DefaultLogger's default level is FATAL.
+   * rflib_DefaultLogger's default level is WARN.
    * 
    * @param  newLevel The new log level to be used to match statements. 
    */
@@ -72,7 +72,7 @@ public interface rflib_Logger {
    * the statements level is encompassed by the currently set System Debug Level, the message will also be logged
    * to the System.debug logs. 
    *
-   * rflib_DefaultLogger's default level is INFO.
+   * rflib_DefaultLogger's default level is DEBUG.
    *
    * @param  newLevel The new log level to be used to match statements.
    */
@@ -82,11 +82,27 @@ public interface rflib_Logger {
    * Set the general log level. Whenever a statement is logged and the statements level is encompassed
    * by the currently set General Log Level, the message will be added to the log stack. 
    *
-   * rflib_DefaultLogger's default level is INFO.
+   * rflib_DefaultLogger's default level is DEBUG.
    *
    * @param  newLevel The new log level to be used to match statements.
    */
   void setGeneralLogLevel(rflib_LogLevel newLevel);
+
+  /**
+   * Write a TRACE log statement. 
+   * @param  message The message to be logged. 
+   */
+  void trace(String message);
+
+  /**
+   * Write a TRACE log statement where the message contains substitution variables to be replaced with the
+   * arguments provided. See String.format() for more details. If no arguments are provided, the message will
+   * be logged as is.
+   *  
+   * @param  message The log message possibly including substitution variables. 
+   * @param  args    The Array of arguments holding the substitutions. 
+   */
+  void trace(String message, Object[] args);
 
   /**
    * Write a DEBUG log statement. 

@@ -36,6 +36,7 @@ private class rflib_LogLevelTest {
 
     System.assertEquals(LoggingLevel.NONE, level.getLoggingLevel());
     System.assertEquals('NONE', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.WARN));
@@ -45,11 +46,27 @@ private class rflib_LogLevelTest {
   }   
   
   @isTest
+  public static void testTrace() {
+    rflib_LogLevel level = rflib_LogLevel.TRACE;
+
+    System.assertEquals(LoggingLevel.FINE, level.getLoggingLevel());
+    System.assertEquals('TRACE', level.toString());
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.TRACE));
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.DEBUG));
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.INFO));
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.WARN));
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.ERROR));
+    System.assertEquals(true, level.encompasses(rflib_LogLevel.FATAL));
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.NONE));
+  }
+
+  @isTest
   public static void testDebug() {
     rflib_LogLevel level = rflib_LogLevel.DEBUG;
 
     System.assertEquals(LoggingLevel.DEBUG, level.getLoggingLevel());
     System.assertEquals('DEBUG', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.WARN));
@@ -64,6 +81,7 @@ private class rflib_LogLevelTest {
 
     System.assertEquals(LoggingLevel.INFO, level.getLoggingLevel());
     System.assertEquals('INFO', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.WARN));
@@ -78,6 +96,7 @@ private class rflib_LogLevelTest {
 
     System.assertEquals(LoggingLevel.WARN, level.getLoggingLevel());
     System.assertEquals('WARN', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(true, level.encompasses(rflib_LogLevel.WARN));
@@ -92,6 +111,7 @@ private class rflib_LogLevelTest {
 
     System.assertEquals(LoggingLevel.ERROR, level.getLoggingLevel());
     System.assertEquals('ERROR', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.WARN));
@@ -106,6 +126,7 @@ private class rflib_LogLevelTest {
 
     System.assertEquals(LoggingLevel.ERROR, level.getLoggingLevel());
     System.assertEquals('FATAL', level.toString());
+    System.assertEquals(false, level.encompasses(rflib_LogLevel.TRACE));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.DEBUG));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.INFO));
     System.assertEquals(false, level.encompasses(rflib_LogLevel.WARN));
@@ -116,6 +137,7 @@ private class rflib_LogLevelTest {
 
   @isTest
   public static void testFromString() {
+    System.assertEquals(rflib_LogLevel.TRACE, rflib_LogLevel.fromString('trace'));
     System.assertEquals(rflib_LogLevel.DEBUG, rflib_LogLevel.fromString('debug'));
     System.assertEquals(rflib_LogLevel.INFO, rflib_LogLevel.fromString('info'));
     System.assertEquals(rflib_LogLevel.WARN, rflib_LogLevel.fromString('warn'));

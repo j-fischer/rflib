@@ -30,11 +30,12 @@
 /**
  * @group Logger
  * @description Log Levels used to determine the behavior of the jfflib_Logger implementation. 
- *              Valid levels are NONE, DEBUG, INFO, WARN, ERROR, and FATAL.
+ *              Valid levels are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL.
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_LogLevel {
   
+  public static final rflib_LogLevel TRACE = new rflib_LogLevel(LoggingLevel.FINE, 0, 'TRACE');
   public static final rflib_LogLevel DEBUG = new rflib_LogLevel(LoggingLevel.DEBUG, 1, 'DEBUG');
   public static final rflib_LogLevel INFO = new rflib_LogLevel(LoggingLevel.INFO, 2, 'INFO');
   public static final rflib_LogLevel WARN = new rflib_LogLevel(LoggingLevel.WARN, 3, 'WARN');
@@ -51,6 +52,10 @@ public without sharing class rflib_LogLevel {
   @SuppressWarnings('PMD.EmptyStatementBlock')
   public static rflib_LogLevel fromString(String level) {
     switch on level.toUpperCase() {
+      when 'TRACE' {
+        return rflib_LogLevel.TRACE;
+      }
+
       when 'DEBUG' {
         return rflib_LogLevel.DEBUG;
       }

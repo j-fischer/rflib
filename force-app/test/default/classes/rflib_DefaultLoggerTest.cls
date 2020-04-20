@@ -41,7 +41,7 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testDefaultBehaviour');
 
-    logger.debug('debug statement to ignore');
+    logger.trace('trace statement to ignore');
     logger.info('first info statement');
 
     Integer i;
@@ -49,13 +49,13 @@ public class rflib_DefaultLoggerTest {
       logger.info('info statement ' + i);
     }
 
-    logger.error('error statement');
+    logger.warn('warn statement');
 
-    System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished(), 'event should not have been published');
+    System.assert(loggerFactory.eventCapture.eventHasBeenPublished(), 'event should have been published');
 
-    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('debug statement to ignore'), 'falsely contained debug statement to ignore');
+    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('trace statement to ignore'), 'falsely contained trace statement to ignore');
     System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('first info statement'), 'debugLogger did not contain statement');
-    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('error statement'), 'debugLogger did not contain statement');
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('warn statement'), 'debugLogger did not contain statement');
 
     loggerFactory.debugLogCapture.clearCapturedLogs();
 
@@ -63,13 +63,13 @@ public class rflib_DefaultLoggerTest {
 
     System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('Log statements reported by'), 'debugLogger did not contain header statement'); 
     System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('first info statement'), 'debugLogger falsely contained statement');
-    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('error statement'), 'debugLogger did not contain statement');
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('warn statement'), 'debugLogger did not contain statement');
 
     logger.fatal('fatal log statement');
 
     System.assert(loggerFactory.eventCapture.eventHasBeenPublished(), 'event did not get published');
     System.assert(loggerFactory.eventCapture.doesNotContainInAnyMessage('first info statement'), 'event falsely contained statement');
-    System.assert(loggerFactory.eventCapture.containsInAnyMessage('error statement'), 'event did not contain statement');
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('warn statement'), 'event did not contain statement');
     System.assert(loggerFactory.eventCapture.containsInAnyMessage('fatal log statement'), 'event did not contain statement');
   }
 
@@ -110,13 +110,13 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testSetLogCacheSize');
 
-    logger.debug('debug statement to ignore');
-    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('debug statement to ignore'), 'falsely contained debug statement to ignore');
+    logger.trace('trace statement to ignore');
+    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('trace statement to ignore'), 'falsely contained debug statement to ignore');
 
-    logger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
+    logger.setSystemDebugLevel(rflib_LogLevel.TRACE);
 
-    logger.debug('debug statement to include');
-    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('debug statement to include'), 'debugLogger did not contain statement');
+    logger.trace('trace statement to include');
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('trace statement to include'), 'debugLogger did not contain statement');
   }
 
   @isTest
@@ -125,12 +125,12 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testSetReportingLogLevel');
 
-    logger.error('This statement should NOT trigger the publishing of an event');
+    logger.info('This statement should NOT trigger the publishing of an event');
     System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
 
-    logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+    logger.setReportingLogLevel(rflib_LogLevel.INFO);
 
-    logger.error('This statement should trigger the publishing of an event');
+    logger.info('This statement should trigger the publishing of an event');
     System.assert(loggerFactory.eventCapture.eventHasBeenPublished());
   }
 
@@ -162,7 +162,7 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testSetGeneralLogLevel');
 
-    logger.debug('This statement should NOT be logged');
+    logger.trace('This statement should NOT be logged');
     System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
 
     logger.setGeneralLogLevel(rflib_LogLevel.WARN);

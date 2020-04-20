@@ -4,7 +4,7 @@
     <defaultValue>&quot;DEBUG&quot;</defaultValue>
     <description>Set the log level for which the System.debug() method will be invoked. Whenever a statement is logged and the statements level is encompassed by the currently set System Debug Level, the message will also be logged to the System.debug logs.Note: This log level is not impacted by the General Log Level.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which the System.debug() method will be invoked. Valid values are NONE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be logged.</inlineHelpText>
+    <inlineHelpText>Set the log level for which the System.debug() method will be invoked. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be logged.</inlineHelpText>
     <label>System Debug Log Level</label>
     <length>5</length>
     <required>true</required>

@@ -175,7 +175,7 @@ Logging is a bit of an art. There is not right or wrong way, so anything describ
 
 -   Generally use INFO statements
 -   Try to create a log "stacktrace", which means that almost every function should have a log statement at the beginning with the arguments
--   Use DEBUG statements within loops or for extremely large payloads
+-   Use TRACE statements within loops or for extremely large payloads
 -   Every class or lightning component should have a logger instance
 -   Use FATAL statements when catching unexpected exceptions in Aura Controller classes
 -   Use ERROR statements in service classes, i.e. when catching errors after making a callout
