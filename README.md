@@ -53,6 +53,8 @@ button below to deploy it directly into your org.
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
+[![Deploy](https://deploy-to-sfdx.com/dist/assets/images/DeployToSFDX.svg)](https://deploy-to-sfdx.com)
+
 ## How To's
 
 ### Logging in Lightning Web Component

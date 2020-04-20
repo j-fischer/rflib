@@ -1,0 +1,6 @@
+scratch-org-def: config/project-scratch-def.json
+assign-permset: true
+permset-name: rflib_Ops_Center_Access
+run-apex-tests: true
+delete-scratch-org: false
+show-scratch-org-url: true
