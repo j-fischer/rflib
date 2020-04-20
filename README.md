@@ -157,6 +157,18 @@ existing configuration options with additional context information.
 | Org Wide Email Sender Address     | Defines the email address to be used to send out the email notifications. The email must be configured and activated in the Organization Wide Email Addresses list.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |                            | UAT/Pre-Prod: Set to valid email address | Set to valid email address       |
 | Logger Factory Class              | This field identifies the class to be used as a logger factory, which can be dynamically loaded using the `rflib_LoggerUtil.getFactory()` method. This class will then be instantiated and used to create the logger instance.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | rflib_DefaultLoggerFactory | rflib_DefaultLoggerFactory               | rflib_DefaultLoggerFactory       |
 
+### Logging in Process Builder and Flow Builder
+
+Logging is also supported in Process Builder and Flow using Apex Actions.
+
+In Process Builder, define an Action with the Action Type `Apex`, give it a unique name and then select the Apex Class `Log Message`. Fill out the fields to log a message during the Process Builder execution. Please note that there are two optional parameters that can be configured when clicking at the `Add Row` button at the bottom of the form. The screenshot below illustrates the configuration.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Message_Action_Process_Builder.png 'Process Builder Log Message Action')
+
+In Flow Builder, add an `Action` element to your Flow. When the New Action modal appears, select `RFLIB` as the category on the left and search for the `Log Message` action in the right column. Once selected, fill out the standard action fields by giving it a unique name, and define your log parameters. Please note that there are two optional parameters that can be configured by enabling the toggle at the bottom of the form.The screenshot below illustrates the configuration.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Message_Action_Flow.png 'Flow Builder Log Message Action')
+
 ### Logging Recommendations
 
 Logging is a bit of an art. There is not right or wrong way, so anything described in this section is simply a recommendation based on previous experiences. I hope this will be helpful when writing your code. These are my best practices:
@@ -280,10 +292,10 @@ If you would like to retrieve a full hierarchical feature switch value, that can
 
 ### Log Event Dashboard
 
-Review any log events sent within the last 24 hours or receive new log events in real-time. The dashboard shows all the events and lets you
+Review any log events sent within the last 72 hours or receive new log events in real-time. The dashboard shows all the events and lets you
 filter them by searching text within the messages. This will make it easy to detect error codes or other log messages of value.
 
-To enabled the Log Monitor application, simply assign the `Log Monitor Access` Permission Set to the users of your choice.
+To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Monitor_Dashboard.gif 'Log Monitor Dashboard')
 
