@@ -79,8 +79,11 @@ export default class LogEventList extends LightningElement {
     }
 
     refreshEventList() {
-        this.displayedPageIndex = this.currentPageIndex;
+        if (this.selectedRow) {
+            this.selectedRow.classList.remove('selected');
+        }
 
+        this.displayedPageIndex = this.currentPageIndex;
         logger.debug('Display page with index {0}', this.currentPageIndex);
 
         const filteredEvents = this.searchKey
@@ -127,10 +130,10 @@ export default class LogEventList extends LightningElement {
         const logId = currentTarget.dataset.logId;
         logger.debug('Log seleceted with Id={0}', logId);
 
-        currentTarget.classList.toggle('selected');
+        currentTarget.classList.add('selected');
 
         if (this.selectedRow) {
-            this.selectedRow.classList.toggle('selected');
+            this.selectedRow.classList.remove('selected');
         }
         this.selectedRow = currentTarget;
 
