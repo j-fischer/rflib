@@ -30,6 +30,7 @@ import logMessageToServer from '@salesforce/apex/rflib_LoggerController.log';
 import getSettings from '@salesforce/apex/rflib_LoggerController.getSettings';
 
 const LogLevel = Object.freeze({
+    TRACE: { index: 0, label: 'TRACE' },
     DEBUG: { index: 1, label: 'DEBUG' },
     INFO: { index: 2, label: 'INFO' },
     WARN: { index: 3, label: 'WARN' },
@@ -119,6 +120,10 @@ const createLogger = loggerName => {
         state.config.serverLogLevel = newConfig.serverLogLevel || state.config.serverLogLevel;
     };
 
+    const trace = (...args) => {
+        log(LogLevel.TRACE, loggerName, format(...args));
+    };
+
     const debug = (...args) => {
         log(LogLevel.DEBUG, loggerName, format(...args));
     };
@@ -141,6 +146,7 @@ const createLogger = loggerName => {
 
     return {
         setConfig: setConfig,
+        trace: trace,
         debug: debug,
         info: info,
         warn: warn,

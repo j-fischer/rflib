@@ -39,6 +39,10 @@
     <aura:method name="setConfig" description="Updates the global configuration of the logger">
         <aura:attribute name="newConfig" type="Map" />
     </aura:method>
+    <aura:method name="trace" description="Log a trace statement">
+        <aura:attribute name="msg" type="String" />
+        <aura:attribute name="args" type="List" />
+    </aura:method>
     <aura:method name="debug" description="Log a debug statement">
         <aura:attribute name="msg" type="String" />
         <aura:attribute name="args" type="List" />

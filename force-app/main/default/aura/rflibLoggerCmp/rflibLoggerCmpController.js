@@ -49,6 +49,11 @@
         }
     },
 
+    trace: function(component, event, helper) {
+        var logger = component.get('v.logger');
+        logger.trace.apply(logger, helper.getArgs(event, helper));
+    },
+
     debug: function(component, event, helper) {
         var logger = component.get('v.logger');
         logger.debug.apply(logger, helper.getArgs(event, helper));
