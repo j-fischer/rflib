@@ -54,8 +54,13 @@ private class rflib_LoggerControllerTest {
     }
 
     @isTest
+    public static void testLog_Trace() {
+        executeTestLogMessage_UnsupportedLevels('Trace');
+    }
+
+    @isTest
     public static void testLog_Debug() {
-        executeTestLogMessage('Debug');
+        executeTestLogMessage_UnsupportedLevels('Debug');
     } 
 
     @isTest
@@ -82,6 +87,17 @@ private class rflib_LoggerControllerTest {
     public static void testLog_UnknownLevel() {
         executeTestLogMessage('Foo');
     } 
+
+    private static void executeTestLogMessage_UnsupportedLevels(String level) {
+        String context = 'someContext';
+        String message = 'some message';
+
+        System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
+
+        rflib_LoggerController.log(level, context, message);
+        
+        System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
+    }
 
     private static void executeTestLogMessage(String level) {
         String context = 'someContext';

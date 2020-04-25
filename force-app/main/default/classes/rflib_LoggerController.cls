@@ -63,8 +63,12 @@ public with sharing class rflib_LoggerController {
         logger.setReportingLogLevel(rflib_LogLevel.DEBUG);
 
         switch on level.toUpperCase() {
+            when 'TRACE' {
+                System.debug(rflib_LogLevel.fromString(level).getLoggingLevel(), message);
+            }
+            
             when 'DEBUG' {
-                logger.debug(message);
+                System.debug(rflib_LogLevel.fromString(level).getLoggingLevel(), message);
             }
 
             when 'INFO' {
