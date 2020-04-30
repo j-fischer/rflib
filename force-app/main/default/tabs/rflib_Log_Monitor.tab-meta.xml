@@ -3,6 +3,5 @@
     <description>Log Event Dashboard showing historical events as well as any new events created while using the dashboard.</description>
     <flexiPage>rflib_Log_Event_Monitor</flexiPage>
     <label>Log Monitor</label>
-    <mobileReady>false</mobileReady>
     <motif>Custom62: Chalkboard</motif>
 </CustomTab>
