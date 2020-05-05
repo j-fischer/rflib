@@ -51,7 +51,7 @@ const state = {
 
 const format = (strToFormat, ...args) => {
     return strToFormat.replace(/{(\d+)}/g, function(match, number) {
-        return typeof args[number] != 'undefined' ? args[number] : match;
+        return typeof args[number] != 'undefined' ? args[number] : 'undefined';
     });
 };
 
