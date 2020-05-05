@@ -262,7 +262,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public void fatal(String message, Exception ex){
-    fatal(message, null, null);
+    fatal(message, null, ex);
   }
 
   public void fatal(String message, Object[] args) {
