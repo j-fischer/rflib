@@ -28,7 +28,7 @@
  */
  @IsTest
  @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockTriggerHandler implements rflib_ITriggerHandler {
+public class rflib_MockTriggerHandler implements rflib_TriggerHandler {
     
     private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockTriggerHandler');
 

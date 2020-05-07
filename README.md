@@ -187,7 +187,7 @@ Logging is a bit of an art. There is not right or wrong way, so anything describ
 
 ### Trigger Framework
 
-The trigger framework of this library requires custom metadata to be create for any trigger that you create. To add a new trigger, create a new Apex class that implements the `rflib_ITriggerHandler` interface and its methods.
+The trigger framework of this library requires custom metadata to be create for any trigger that you create. To add a new trigger, create a new Apex class that implements the `rflib_TriggerHandler` interface and its methods.
 
 Next, create the actual trigger, i.e. an Account trigger as displayed below. It is recommended to create the trigger for all events so that future trigger additions only require the new class and the custom metadata record.
 

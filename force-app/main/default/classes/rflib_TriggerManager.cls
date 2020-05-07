@@ -37,7 +37,7 @@ public inherited sharing class rflib_TriggerManager {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_TriggerManager');
 
-    private static rflib_ITriggerHandler ACTIVE_HANDLER;
+    private static rflib_TriggerHandler ACTIVE_HANDLER;
 
     private static Map<rflib_TriggerManager.Args, Integer> ON_CONSECUTIVE_RUN_COUNTERS = new Map<rflib_TriggerManager.Args,Integer>();
 
@@ -81,7 +81,7 @@ public inherited sharing class rflib_TriggerManager {
 
     private static void runHandlers(rflib_TriggerManager.Args args, List<TriggerHandlerInfo> handlers) {
         for (TriggerHandlerInfo handlerInfo : handlers) {
-            rflib_ITriggerHandler handler = handlerInfo.handler;
+            rflib_TriggerHandler handler = handlerInfo.handler;
 
             LOGGER.debug('Is consecutive run? ' + (ACTIVE_HANDLER != null));
 
@@ -140,7 +140,7 @@ public inherited sharing class rflib_TriggerManager {
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
             activeTriggers.add(handlerInfo.Class_Name__c);
             Type handlerType = Type.forName(handlerInfo.Class_Name__c);
-            rflib_ITriggerHandler handler = (rflib_ITriggerHandler) handlerType.newInstance();
+            rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
 
             Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';
             result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
@@ -152,11 +152,11 @@ public inherited sharing class rflib_TriggerManager {
     }
 
     public class TriggerHandlerInfo {
-        public final rflib_ITriggerHandler handler;
+        public final rflib_TriggerHandler handler;
         public final Type handlerType;
         public final Boolean catchException;
 
-        public TriggerHandlerInfo(rflib_ITriggerHandler handler, Type handlerType, Boolean catchException) {
+        public TriggerHandlerInfo(rflib_TriggerHandler handler, Type handlerType, Boolean catchException) {
             this.handler = handler;
             this.handlerType = handlerType;
             this.catchException = catchException;

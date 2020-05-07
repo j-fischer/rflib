@@ -31,7 +31,7 @@
  * @group Trigger
  * @description Base interface for the trigger framework.
  */ 
-public interface rflib_ITriggerHandler {
+public interface rflib_TriggerHandler {
 
     /**
      * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 

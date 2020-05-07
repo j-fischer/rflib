@@ -35,7 +35,7 @@
  *              are executed by the System user. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public without sharing class rflib_EmailLogEventHandler implements rflib_ITriggerHandler {
+public without sharing class rflib_EmailLogEventHandler implements rflib_TriggerHandler {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_EmailLogEventHandler');
 
