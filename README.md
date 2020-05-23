@@ -48,7 +48,7 @@ The following options can be configured using custom settings:
 You can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deployto Salesforce**
 button below to deploy it directly into your org.
 
-<a href="https://githubsfdeploy.herokuapp.com?owner=j-fischer&rflib">
+<a href="https://githubsfdeploy.herokuapp.com/?owner=j-fischer&repo=rflib&ref=master">
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
@@ -78,7 +78,8 @@ Last, use the logger to record log statements.
 
 ```
 handleSomeEvent(event) {
-    this.logger.info('Event ocurred, {0} - {1}', 'foo', 'bar'); // Note the variable length of arguments
+    // Note the variable length of arguments
+    this.logger.info('Event ocurred, {0} - {1}', 'foo', 'bar');
 }
 ```
 
@@ -95,7 +96,8 @@ Then retrieve the logger from your controller or helper code.
 	doInit: function(component, event, helper) {
 		var logger = component.find('logger');
 
-        logger.debug('This is a test > {0}-{1}', ['foo', 'bar']); // Note that second argument has to be a list
+        // Note that second argument has to be a list
+        logger.debug('This is a test > {0}-{1}', ['foo', 'bar']);
 	}
 })
 ```
