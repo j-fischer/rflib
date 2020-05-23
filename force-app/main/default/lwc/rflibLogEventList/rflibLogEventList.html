@@ -66,10 +66,10 @@
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
                             <tr class="clickable" key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
-                                <td scope="row">
+                                <td class="slds-truncate">
                                     <div>{evt.CreatedById}</div>
                                 </td>
-                                <td scope="row">
+                                <td class="slds-truncate">
                                     <div>
                                         <lightning-formatted-date-time
                                             value={evt.CreatedDate}
