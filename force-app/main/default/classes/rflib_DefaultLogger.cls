@@ -80,7 +80,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   /**
    * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` or `new rflib_DefaultLoggerFactory.createBatchedLogger()` 
-   *              depending on the value for `shouldPublishEventsAsync` instead.
+   *              depending on the value for `shouldPublishEventsInBatch` instead.
    * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
    * associated with this user.
@@ -89,8 +89,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
    * @return         A logger instance for the given context.
    */
-  public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsAsync) {
-    rflib_Logger logger = rflib_DefaultLogger.create(context, shouldPublishEventsAsync);
+  public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsInBatch) {
+    rflib_Logger logger = rflib_DefaultLogger.create(context, shouldPublishEventsInBatch);
 
     rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
     if (settings.Log_Size__c != null) {
