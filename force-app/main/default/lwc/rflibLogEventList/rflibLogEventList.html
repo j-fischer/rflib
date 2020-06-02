@@ -32,14 +32,26 @@
 <template>
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
-            <lightning-input
-                type="search"
-                onchange={handleKeyChange}
-                class="slds-m-bottom_small"
-                label="Search"
-                value={searchKey}
-            >
-            </lightning-input>
+            <div class="slds-grid">
+                <div class="sdls-col slds-size_1-of-3 slds-m-right_x-small">
+                    <lightning-input
+                        type="search"
+                        onchange={handleContextKeyChange}
+                        class="slds-m-bottom_small"
+                        placeholder="Search context..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_2-of-3">
+                    <lightning-input
+                        type="search"
+                        onchange={handleLogMessageKeyChange}
+                        class="slds-m-bottom_small"
+                        placeholder="Search log messages..."
+                    >
+                    </lightning-input>
+                </div>
+            </div>
             <template if:true={eventsToDisplay}>
                 <table
                     class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"

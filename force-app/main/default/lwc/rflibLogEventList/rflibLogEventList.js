@@ -29,7 +29,7 @@
  * This component was inspired by:
  * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
  */
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 
 const logger = createLogger('LogEventList');
@@ -55,10 +55,11 @@ export default class LogEventList extends LightningElement {
         this.refreshEventList();
     }
 
-    @track filteredRecordCount;
-    @track eventsToDisplay = [];
+    filteredRecordCount;
+    eventsToDisplay = [];
 
-    @track searchKey;
+    contextSearch;
+    logMessageSearch;
 
     @api
     get title() {
@@ -86,9 +87,14 @@ export default class LogEventList extends LightningElement {
         this.displayedPageIndex = this.currentPageIndex;
         logger.debug('Display page with index {0}', this.currentPageIndex);
 
-        const filteredEvents = this.searchKey
-            ? this.allEvents.filter(evt => evt.Log_Messages__c.indexOf(this.searchKey) > -1)
-            : this.allEvents;
+        const filteredEvents =
+            this.contextSearch || this.logMessageSearch
+                ? this.allEvents.filter(
+                      evt =>
+                          (!this.contextSearch || evt.Context__c.indexOf(this.contextSearch) > -1) &&
+                          (!this.logMessageSearch || evt.Log_Messages__c.indexOf(this.logMessageSearch) > -1)
+                  )
+                : this.allEvents;
 
         this.filteredEvents = filteredEvents.map(function(evt, index) {
             const modifiedEvt = { ...evt };
@@ -115,10 +121,19 @@ export default class LogEventList extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    handleKeyChange(event) {
-        if (this.searchKey !== event.target.value) {
+    handleContextKeyChange(event) {
+        if (this.contextSearch !== event.target.value) {
             logger.debug('Search target={0}', event.target.value);
-            this.searchKey = event.target.value;
+            this.contextSearch = event.target.value;
+            this.currentpage = 1;
+            this.refreshEventList();
+        }
+    }
+
+    handleLogMessageKeyChange(event) {
+        if (this.logMessageSearch !== event.target.value) {
+            logger.debug('Search target={0}', event.target.value);
+            this.logMessageSearch = event.target.value;
             this.currentpage = 1;
             this.refreshEventList();
         }
