@@ -4,7 +4,7 @@
             "path": "force-app",
             "default": true,
             "package": "RFLIB",
-            "versionName": "ver 0.1",
+            "versionName": "ver 0.1.0",
             "versionNumber": "0.1.0.NEXT"
         }
     ],
@@ -12,6 +12,7 @@
     "sfdcLoginUrl": "https://login.salesforce.com",
     "sourceApiVersion": "48.0",
     "packageAliases": {
-        "RFLIB": "0Ho3h000000Kz8aCAC"
+        "RFLIB": "0Ho3h000000Kz8aCAC",
+        "RFLIB@0.1.0-1": "04t3h000002rMX8AAM"
     }
 }
