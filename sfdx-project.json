@@ -13,6 +13,7 @@
     "sourceApiVersion": "48.0",
     "packageAliases": {
         "RFLIB": "0Ho3h000000Kz8aCAC",
-        "RFLIB@0.1.0-1": "04t3h000002rMX8AAM"
+        "RFLIB@0.1.0-1": "04t3h000002rMX8AAM",
+        "RFLIB@0.1.0-2": "04t3h000002rSOeAAM"
     }
 }
