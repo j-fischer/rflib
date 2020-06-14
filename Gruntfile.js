@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                 files: ['package.json', 'sfdx-project.json'],
                 updateConfigs: [],
                 commit: true,
-                commitMessage: 'Created package version to v%VERSION%',
+                commitMessage: 'Created package for version v%VERSION%',
                 commitFiles: ['package.json', 'sfdx-project.json'],
                 createTag: false,
                 tagName: 'v%VERSION%',
@@ -238,6 +238,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('release', 'Promote the last package version to become a full release', function() {
+        grunt.config('bump.version', config.version.configuredVersionNumber);
         grunt.config('bump.options.commit', false);
         grunt.config('bump.options.createTag', true);
         grunt.config('bump.options.push', 'tag');
