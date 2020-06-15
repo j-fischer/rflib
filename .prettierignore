@@ -5,3 +5,4 @@
 **/staticresources/**
 .sfdx
 sfdx-project.json
+Gruntfile.js
