@@ -4,8 +4,8 @@
             "path": "force-app",
             "default": true,
             "package": "RFLIB",
-            "versionName": "ver 0.1.0",
-            "versionNumber": "0.1.0.NEXT"
+            "versionName": "ver 1.0.0",
+            "versionNumber": "1.0.0.NEXT"
         }
     ],
     "namespace": "",
@@ -14,6 +14,7 @@
     "packageAliases": {
         "RFLIB": "0Ho3h000000Kz8aCAC",
         "RFLIB@0.1.0-1": "04t3h000002rMX8AAM",
-        "RFLIB@0.1.0-2": "04t3h000002rSOeAAM"
+        "RFLIB@0.1.0-2": "04t3h000002rSOeAAM",
+        "RFLIB@1.0.0-1": "04t3h000002rTGPAA2"
     }
 }

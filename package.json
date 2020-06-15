@@ -1,7 +1,7 @@
 {
     "name": "reliability-force",
     "private": true,
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "Salesforce library for improving the reliability of your org",
     "scripts": {
         "create-build": "sfdx force:apex:test:run --codecoverage -r human --wait 10 && sfdx force:package:version:create --skipvalidation --path force-app --package RFLIB --installationkeybypass --wait 10",
