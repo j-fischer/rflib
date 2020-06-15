@@ -18,6 +18,14 @@ module.exports = function(grunt) {
             latestVersionAlias: Object.keys(projectFile.packageAliases)[
                 Object.keys(projectFile.packageAliases).length - 1
             ]
+        },
+
+        sfdx: {
+            org: {
+                create: {
+                    parameters: ''
+                }
+            }
         }
     };
 
@@ -169,7 +177,7 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org': {
-                command: 'sfdx force:org:create -s -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %>'
             },
 
             'force-delete-org': {
@@ -224,14 +232,18 @@ module.exports = function(grunt) {
     /*
      * BUILD TARGETS
      */
-    grunt.registerTask('create-scratch', [
-        'prompt:alias',
-        'shell:force-create-org',
-        'shell:force-push',
-        'shell:force-assign-permset',
-        'shell:force-test',
-        'shell:force-open'
-    ]);
+    grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
+        grunt.config('config.sfdx.org.create.parameters', '');
+        
+        grunt.task.run([
+            'prompt:alias',
+            'shell:force-create-org',
+            'shell:force-push',
+            'shell:force-assign-permset',
+            'shell:force-test',
+            'shell:force-open'
+        ]);
+    });
 
     grunt.registerTask('create-package', 'Create a new package version', function() {
         grunt.task.run(['prompt:alias', 'prompt:bump', 'bumpVersionAndPackage']);
