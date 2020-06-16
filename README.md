@@ -45,8 +45,26 @@ The following options can be configured using custom settings:
 
 ## Deploy
 
-You can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deployto Salesforce**
+**The best way to add RFLIB to your environment is by installing the unlocked package.**
+
+Alternatively, you can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deployto Salesforce**
 button below to deploy it directly into your org.
+
+Please check the `sfdx-project.json` file for all package version IDs.
+
+To install package via browser:
+
+https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_ID>
+
+To install latest package via SFDX CLI Plugin:
+
+```
+sfdx plugins:install shane-sfdx-plugins
+
+sfdx shane:github:package:install -g “j-fischer” -r rflib -u <your org alias>
+```
+
+To deploy code:
 
 <a href="https://githubsfdeploy.herokuapp.com/?owner=j-fischer&repo=rflib&ref=master">
   <img alt="Deploy to Salesforce"
@@ -303,10 +321,12 @@ To enabled the Ops Center application, simply assign the `Ops Center Access` Per
 
 ## Updates
 
-See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md)
+See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md) for versions, install links and package IDs.
 
 ## Credits
 
 -   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
+-   The unlocked packaged was created with the help of Andrew Fawcett: https://andyinthecloud.com/2018/06/16/salesforce-dx-packages-and-open-source/
+-   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
 -   Logo was created with: https://www.freelogodesign.org/

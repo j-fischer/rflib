@@ -1,5 +1,8 @@
 ### 1.0.0
 
+Package ID: 04t3h000002rTGPAA2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000002rTGPAA2
+
 -   **May 2020** - Bug fixes
 -   **Apr 2020** - Added TRACE log level, rebranding, multiple enhancements to the core framework including log batching
 -   **Mar 2020** - Enhanced email reporting and introduced log batching
