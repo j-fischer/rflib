@@ -211,7 +211,7 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.version.latestVersionAlias %> -w 10'
+                command: 'sfdx force:package:version:promote --package <%= config.version.latestVersionAlias %>'
             }
         }
     });
