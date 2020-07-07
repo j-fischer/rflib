@@ -185,7 +185,7 @@ module.exports = function(grunt) {
             },
 
             'force-assign-permset': {
-                command: 'sfdx force:user:permset:assign --permsetname rflib_Ops_Center - <%= config.alias %>'
+                command: 'sfdx force:user:permset:assign --permsetname rflib_Ops_Center_Access -u <%= config.alias %>'
             },
 
             'force-push': {
