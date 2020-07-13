@@ -116,8 +116,8 @@ const createLogger = loggerName => {
         );
 
         state.config.stackSize = newConfig.stackSize || state.config.stackSize;
-        state.config.consoleLogLevel = newConfig.consoleLogLevel || state.config.consoleLogLevel;
-        state.config.serverLogLevel = newConfig.serverLogLevel || state.config.serverLogLevel;
+        state.config.consoleLogLevel = LogLevel[toUpperCase(newConfig.consoleLogLevel)] || state.config.consoleLogLevel;
+        state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
     };
 
     const trace = (...args) => {
