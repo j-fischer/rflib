@@ -24,4 +24,5 @@ script:
     - sfdx force:org:display -u ciorg
     - sfdx force:source:push -u ciorg
     - sfdx force:apex:test:run -u ciorg --codecoverage -r human --wait 10
+    - npm run test:unit:coverage
     - sfdx force:org:delete -u ciorg -p

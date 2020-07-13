@@ -212,6 +212,10 @@ module.exports = function(grunt) {
 
             'force-promote': {
                 command: 'sfdx force:package:version:promote --package <%= config.version.latestVersionAlias %>'
+            },
+
+            'test-lwc': {
+                command: 'npm run test:unit:coverage'
             }
         }
     });
@@ -241,6 +245,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
+            'shell:test-lwc',
             'shell:force-open'
         ]);
     });
@@ -261,6 +266,7 @@ module.exports = function(grunt) {
             'shell:force-create-org',
             'shell:force-install-latest',
             'shell:force-test',
+            'shell:test-lwc',
             'shell:force-promote',
             'shell:force-delete-org',
             'bump:commit-only'
