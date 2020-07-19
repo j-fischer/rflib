@@ -30,8 +30,12 @@ import _ from 'lodash';
 import JsMock from 'js-mock';
 import Matcher from 'hamjest';
 
+process.on('unhandledRejection', error => {
+    throw error;
+});
+
 let mockGetSettings, mockLogMessageToServer, mockConsoleLog;
-JsMock.watch(function() {
+JsMock.watch(() => {
     mockGetSettings = JsMock.mock('getSettings');
     mockLogMessageToServer = JsMock.mock('logMessageToServer');
     mockConsoleLog = JsMock.mockGlobal('console.log');
@@ -56,6 +60,8 @@ jest.mock(
 const loggerSettings = require('./data/loggerSettings.json');
 
 describe('createLogger()', () => {
+    beforeEach(mockConsoleLog.activate);
+
     afterEach(JsMock.assertWatched);
 
     it('factory should return a logger instance', () => {
@@ -63,14 +69,17 @@ describe('createLogger()', () => {
             .expect()
             .once()
             .with(Matcher.containsString('Retrieved settings for user'));
+
         mockGetSettings
             .once()
             .with()
             .returns(Promise.resolve(loggerSettings.default));
+
         const createLogger = require('c/rflibLogger').createLogger;
 
+        let logger = createLogger('factory');
         return Promise.resolve().then(() => {
-            expect(createLogger('factory')).toBeDefined();
+            expect(logger).toBeDefined();
         });
     });
 });
@@ -79,6 +88,11 @@ describe('console logger', () => {
     let logger;
     beforeEach(() => {
         mockConsoleLog.activate();
+        mockGetSettings
+            .allowing()
+            .with()
+            .returns(Promise.resolve(loggerSettings.default));
+
         logger = require('c/rflibLogger').createLogger('console');
     });
 
@@ -94,7 +108,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest([]);
     });
 
-    it('should not log FATAL when setting is set to FATAL', () => {
+    it('should log FATAL when setting is set to FATAL', () => {
         logger.setConfig({
             consoleLogLevel: 'FATAL'
         });
@@ -102,7 +116,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest(['FATAL']);
     });
 
-    it('should not log ERROR when setting is set to ERROR', () => {
+    it('should log ERROR when setting is set to ERROR', () => {
         logger.setConfig({
             consoleLogLevel: 'ERROR'
         });
@@ -110,7 +124,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest(['FATAL', 'ERROR']);
     });
 
-    it('should not log WARN when setting is set to WARN', () => {
+    it('should log WARN when setting is set to WARN', () => {
         logger.setConfig({
             consoleLogLevel: 'WARN'
         });
@@ -118,7 +132,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN']);
     });
 
-    it('should not log INFO when setting is set to INFO', () => {
+    it('should log INFO when setting is set to INFO', () => {
         logger.setConfig({
             consoleLogLevel: 'INFO'
         });
@@ -126,7 +140,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
-    it('should not log DEBUG when setting is set to DEBUG', () => {
+    it('should log DEBUG when setting is set to DEBUG', () => {
         logger.setConfig({
             consoleLogLevel: 'DEBUG'
         });
@@ -134,7 +148,7 @@ describe('console logger', () => {
         executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']);
     });
 
-    it('should not log TRACE when setting is set to TRACE', () => {
+    it('should log TRACE when setting is set to TRACE', () => {
         logger.setConfig({
             consoleLogLevel: 'TRACE'
         });
@@ -150,6 +164,7 @@ describe('console logger', () => {
                 .expect()
                 .once()
                 .with(Matcher.containsStrings('console', logLevel, 'SHOULD LOG'));
+
             logger[logLevel.toLowerCase()]('SHOULD LOG to console');
         });
 
@@ -157,4 +172,137 @@ describe('console logger', () => {
             logger[logLevel.toLowerCase()]('should not log to console');
         });
     }
+});
+
+describe('server logger', () => {
+    beforeEach(() => {
+        mockConsoleLog.restore();
+
+        mockGetSettings
+            .allowing()
+            .with()
+            .returns(Promise.resolve(loggerSettings.default));
+    });
+
+    afterEach(JsMock.assertWatched);
+
+    it('should not log when setting is set to NONE', () => {
+        return executeServerLogLevelTest('NONE', []);
+    });
+
+    it('should log FATAL when setting is set to FATAL', () => {
+        return executeServerLogLevelTest('FATAL', ['FATAL']);
+    });
+
+    it('should not log ERROR when setting is set to ERROR', () => {
+        return executeServerLogLevelTest('ERROR', ['FATAL', 'ERROR']);
+    });
+
+    it('should not log WARN when setting is set to WARN', () => {
+        return executeServerLogLevelTest('WARN', ['FATAL', 'ERROR', 'WARN']);
+    });
+
+    it('should not log INFO when setting is set to INFO', () => {
+        return executeServerLogLevelTest('INFO', ['FATAL', 'ERROR', 'WARN', 'INFO']);
+    });
+
+    it('should not log DEBUG when setting is set to DEBUG', () => {
+        return executeServerLogLevelTest('DEBUG', ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']);
+    });
+
+    it('should not log TRACE when setting is set to TRACE', () => {
+        return executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE']);
+    });
+
+    function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
+        let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
+
+        const willLogConfigChange = _.includes(['INFO', 'DEBUG', 'TRACE'], serverLogLevel);
+        const expectedServerLogInvocations = willLogConfigChange ? validLogLevels.length + 1 : validLogLevels.length;
+
+        mockLogMessageToServer.exactly(expectedServerLogInvocations);
+        let index = 1;
+
+        if (willLogConfigChange) {
+            mockLogMessageToServer
+                .onCall(index++)
+                .with(
+                    Matcher.hasProperties({
+                        level: 'INFO',
+                        context: 'server',
+                        message: Matcher.containsString('Setting new logger configuration for server')
+                    })
+                )
+                .returns(Promise.resolve());
+        }
+
+        _.each(validLogLevels, logLevel => {
+            mockLogMessageToServer
+                .onCall(index++)
+                .with(
+                    Matcher.hasProperties({
+                        level: logLevel,
+                        context: 'server',
+                        message: Matcher.allOf(
+                            Matcher.endsWith('SHOULD LOG to server'),
+                            Matcher.containsString('should not log to server')
+                        )
+                    })
+                )
+                .returns(Promise.resolve());
+        });
+
+        let logger = require('c/rflibLogger').createLogger('server');
+
+        return Promise.resolve().then(() => {
+            logger.setConfig({
+                serverLogLevel: serverLogLevel
+            });
+
+            _.each(_.pullAll(logLevels, validLogLevels), logLevel => {
+                logger[logLevel.toLowerCase()]('should not log to server');
+            });
+
+            _.each(validLogLevels, logLevel => {
+                logger[logLevel.toLowerCase()]('SHOULD LOG to server');
+            });
+        });
+    }
+});
+
+describe('server logger failure', () => {
+    beforeEach(() => {
+        mockConsoleLog.activate();
+    });
+
+    afterEach(JsMock.assertWatched);
+
+    it('should log to the console that the server log failed', () => {
+        mockGetSettings
+            .allowing()
+            .with()
+            .returns(Promise.resolve(loggerSettings.default));
+
+        mockLogMessageToServer.once().returns(Promise.reject(new Error('foo bar error')));
+
+        mockConsoleLog
+            .expect()
+            .once()
+            .with(
+                Matcher.allOf(
+                    Matcher.containsString('Failed to log message to server for'),
+                    Matcher.containsString('foo bar error')
+                )
+            );
+
+        let logger = require('c/rflibLogger').createLogger('server');
+
+        return Promise.resolve().then(() => {
+            logger.setConfig({
+                serverLogLevel: 'FATAL'
+            });
+
+            logger.fatal('some message');
+        });
+    });
 });
