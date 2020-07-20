@@ -220,7 +220,7 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('bumpVersionAndPackage', 'Bumping version number if needed', function() {
+    grunt.registerTask('bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
         var tasks = ['shell:force-push', 'shell:force-test'];
 
         if (grunt.config('bump.options.versionType') !== 'build') {
@@ -234,7 +234,7 @@ module.exports = function(grunt) {
     });
 
     /*
-     * BUILD TARGETS
+     * Public BUILD TARGETS
      */
     grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
         grunt.config('config.sfdx.org.create.parameters', '');
