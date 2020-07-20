@@ -216,12 +216,16 @@ module.exports = function(grunt) {
 
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
+            },
+
+            'lint': {
+                command: 'npm run lint'
             }
         }
     });
 
     grunt.registerTask('bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
-        var tasks = ['shell:test-lwc', 'shell:force-push', 'shell:force-test'];
+        var tasks = ['shell:lint', 'shell:test-lwc', 'shell:force-push', 'shell:force-test'];
 
         if (grunt.config('bump.options.versionType') !== 'build') {
             tasks.push('bump:bump-only');
