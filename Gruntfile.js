@@ -189,7 +189,7 @@ module.exports = function(grunt) {
             },
 
             'force-push': {
-                command: 'sfdx force:source:push -u <%= config.alias %>'
+                command: 'sfdx force:source:push -u <%= config.alias %> -f'
             },
 
             'force-test': {
