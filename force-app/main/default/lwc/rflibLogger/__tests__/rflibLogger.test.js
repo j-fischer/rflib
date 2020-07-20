@@ -30,10 +30,6 @@ import _ from 'lodash';
 import JsMock from 'js-mock';
 import Matcher from 'hamjest';
 
-process.on('unhandledRejection', error => {
-    throw error;
-});
-
 let mockGetSettings, mockLogMessageToServer, mockConsoleLog;
 JsMock.watch(() => {
     mockGetSettings = JsMock.mock('getSettings');
