@@ -38,6 +38,7 @@ const getAllFeatureSwitchPromise = getAllFeatureSwitches()
     })
     .catch(error => {
         logger.error('Failed to retrieve feature switches from server: ' + JSON.stringify(error));
+        throw error;
     });
 
 const isFeatureSwitchTurnedOn = name => {
