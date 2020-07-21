@@ -202,7 +202,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path force-app --package RFLIB --installationkeybypass --releasenotesurl https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md --postinstallurl https://github.com/j-fischer/rflib#how-tos --wait 10'
+                    'sfdx force:package:version:create --path rflib --package RFLIB --installationkeybypass --releasenotesurl https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md --postinstallurl https://github.com/j-fischer/rflib#how-tos --wait 10'
             },
 
             'force-install-latest': {

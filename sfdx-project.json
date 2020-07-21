@@ -1,7 +1,7 @@
 {
     "packageDirectories": [
         {
-            "path": "force-app",
+            "path": "rflib",
             "default": true,
             "package": "RFLIB",
             "versionName": "ver 1.0.1",
