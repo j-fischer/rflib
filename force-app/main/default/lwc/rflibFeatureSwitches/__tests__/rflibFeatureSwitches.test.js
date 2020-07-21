@@ -26,27 +26,52 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { createLogger } from 'c/rflibLogger';
-import getAllFeatureSwitches from '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues';
+import JsMock from 'js-mock';
 
-const logger = createLogger('rflibFeatureSwitches');
+let mockGetAllFeatureSwitches;
+JsMock.watch(() => {
+    mockGetAllFeatureSwitches = JsMock.mock('getAllFeatureSwitches');
+});
 
-const getAllFeatureSwitchPromise = getAllFeatureSwitches()
-    .then(result => {
-        logger.info('Received all feature switch values: ' + JSON.stringify(result));
-        return result;
-    })
-    .catch(error => {
-        logger.error('Failed to retrieve feature switches from server: ' + JSON.stringify(error));
-        throw error;
+jest.mock(
+    '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues',
+    () => {
+        return { default: mockGetAllFeatureSwitches };
+    },
+    { virtual: true }
+);
+
+const featureSwitches = require('./data/featureSwitches.json');
+
+describe('isFeatureSwitchTurnedOn()', () => {
+    let isFeatureSwitchTurnedOn;
+
+    beforeEach(() => {
+        mockGetAllFeatureSwitches
+            .allowing()
+            .with()
+            .returns(Promise.resolve(featureSwitches.default));
+
+        isFeatureSwitchTurnedOn = require('c/rflibFeatureSwitches').isFeatureSwitchTurnedOn;
     });
 
-const isFeatureSwitchTurnedOn = name => {
-    return getAllFeatureSwitchPromise.then(result => {
-        let switchValue = !!result[name];
-        logger.info('Feature Switch with name {0} is turned on? {1}', name, switchValue);
-        return switchValue;
-    });
-};
+    afterEach(JsMock.assertWatched);
 
-export { isFeatureSwitchTurnedOn };
+    it('feature switch is set to true', () => {
+        return isFeatureSwitchTurnedOn('activeSwitch').then(switchValue => {
+            expect(switchValue).toBeTruthy();
+        });
+    });
+
+    it('feature switch is set to false', () => {
+        return isFeatureSwitchTurnedOn('inactiveSwitch').then(switchValue => {
+            expect(switchValue).toBeFalsy();
+        });
+    });
+
+    it('feature switch does not exist', () => {
+        return isFeatureSwitchTurnedOn('unknownSwitch').then(switchValue => {
+            expect(switchValue).toBeFalsy();
+        });
+    });
+});

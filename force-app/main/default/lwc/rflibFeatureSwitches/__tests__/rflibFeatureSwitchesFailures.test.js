@@ -26,27 +26,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { createLogger } from 'c/rflibLogger';
-import getAllFeatureSwitches from '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues';
+import JsMock from 'js-mock';
 
-const logger = createLogger('rflibFeatureSwitches');
+let mockGetAllFeatureSwitches;
+JsMock.watch(() => {
+    mockGetAllFeatureSwitches = JsMock.mock('getAllFeatureSwitches');
+});
 
-const getAllFeatureSwitchPromise = getAllFeatureSwitches()
-    .then(result => {
-        logger.info('Received all feature switch values: ' + JSON.stringify(result));
-        return result;
-    })
-    .catch(error => {
-        logger.error('Failed to retrieve feature switches from server: ' + JSON.stringify(error));
-        throw error;
+jest.mock(
+    '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues',
+    () => {
+        return { default: mockGetAllFeatureSwitches };
+    },
+    { virtual: true }
+);
+
+describe('isFeatureSwitchTurnedOn() Failures', () => {
+    afterEach(JsMock.assertWatched);
+
+    it('retrieving the switches from the server fails', () => {
+        mockGetAllFeatureSwitches
+            .once()
+            .with()
+            .callsAndReturns(() => {
+                return Promise.reject(new Error('some error'));
+            });
+
+        const isFeatureSwitchTurnedOn = require('c/rflibFeatureSwitches').isFeatureSwitchTurnedOn;
+
+        return expect(isFeatureSwitchTurnedOn('activeSwitch')).rejects.toThrow('some error');
     });
-
-const isFeatureSwitchTurnedOn = name => {
-    return getAllFeatureSwitchPromise.then(result => {
-        let switchValue = !!result[name];
-        logger.info('Feature Switch with name {0} is turned on? {1}', name, switchValue);
-        return switchValue;
-    });
-};
-
-export { isFeatureSwitchTurnedOn };
+});

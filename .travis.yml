@@ -11,6 +11,7 @@ before_install:
     - export SFDX_DOMAIN_RETRY=300
     - export SFDX_DISABLE_APP_HUB=true
     - export SFDX_LOG_LEVEL=DEBUG
+    - npm install
     - mkdir sfdx
     - wget -qO- $URL | tar xJ -C sfdx --strip-components 1
     - './sfdx/install'
@@ -24,4 +25,5 @@ script:
     - sfdx force:org:display -u ciorg
     - sfdx force:source:push -u ciorg
     - sfdx force:apex:test:run -u ciorg --codecoverage -r human --wait 10
+    - npm run test:unit:coverage
     - sfdx force:org:delete -u ciorg -p

@@ -189,7 +189,7 @@ module.exports = function(grunt) {
             },
 
             'force-push': {
-                command: 'sfdx force:source:push -u <%= config.alias %>'
+                command: 'sfdx force:source:push -u <%= config.alias %> -f'
             },
 
             'force-test': {
@@ -212,12 +212,20 @@ module.exports = function(grunt) {
 
             'force-promote': {
                 command: 'sfdx force:package:version:promote --package <%= config.version.latestVersionAlias %>'
+            },
+
+            'test-lwc': {
+                command: 'npm run test:unit:coverage'
+            },
+
+            'lint': {
+                command: 'npm run lint'
             }
         }
     });
 
-    grunt.registerTask('bumpVersionAndPackage', 'Bumping version number if needed', function() {
-        var tasks = ['shell:force-push', 'shell:force-test'];
+    grunt.registerTask('bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
+        var tasks = ['shell:lint', 'shell:test-lwc', 'shell:force-push', 'shell:force-test'];
 
         if (grunt.config('bump.options.versionType') !== 'build') {
             tasks.push('bump:bump-only');
@@ -230,7 +238,7 @@ module.exports = function(grunt) {
     });
 
     /*
-     * BUILD TARGETS
+     * Public BUILD TARGETS
      */
     grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
         grunt.config('config.sfdx.org.create.parameters', '');
@@ -241,6 +249,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
+            'shell:test-lwc',
             'shell:force-open'
         ]);
     });
@@ -261,6 +270,7 @@ module.exports = function(grunt) {
             'shell:force-create-org',
             'shell:force-install-latest',
             'shell:force-test',
+            'shell:test-lwc',
             'shell:force-promote',
             'shell:force-delete-org',
             'bump:commit-only'
@@ -268,4 +278,6 @@ module.exports = function(grunt) {
 
         grunt.task.run(tasks);
     });
+
+    grunt.registerTask('default', ['shell:test-lwc']);
 };

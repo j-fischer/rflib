@@ -1,3 +1,13 @@
+### 1.0.1
+
+Package ID: 04t3h000004bbNiAAI
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bbNiAAI
+
+-   Fixed issue in rflibLogger.setConfig where new server and console log levels failed to take effect
+-   Fixed issue in rflibFeatureSwitch where a failed request to the Apex action would return an undefined exception instead of the server error
+-   Added LWC unit tests
+-   Build script improvements
+
 ### 1.0.0
 
 Package ID: 04t3h000002rTGPAA2
