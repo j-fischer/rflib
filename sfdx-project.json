@@ -6,6 +6,33 @@
             "package": "RFLIB",
             "versionName": "ver 1.0.1",
             "versionNumber": "1.0.1.NEXT"
+        },
+        {
+            "path": "rflib-fs",
+            "default": false,
+            "package": "RFLIB-FS",
+            "versionName": "ver 0.1.0",
+            "versionNumber": "0.1.0.NEXT",
+            "dependencies": [ 
+                {
+                   "package": "RFLIB@1.0.1"
+                }
+             ]
+        },
+        {
+            "path": "rflib-tf",
+            "default": false,
+            "package": "RFLIB-TF",
+            "versionName": "ver 0.1.0",
+            "versionNumber": "0.1.0.NEXT",
+            "dependencies": [ 
+                {
+                   "package": "RFLIB@1.0.1"
+                },
+                {
+                    "package": "RFLIB-FS@0.1.0"
+                 }
+             ]
         }
     ],
     "namespace": "",
