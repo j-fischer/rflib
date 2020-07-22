@@ -1,23 +1,47 @@
-const { task } = require('grunt');
+const _ = require('lodash');
+const semver = require('semver');
+
+const bumpVersion = function(grunt, config) {
+    if (config.package.package === "RFLIB") {
+        config.packageFile.version = config.version.nextVersion;
+        grunt.file.write('package.json', JSON.stringify(config.projectFile, null, 4));
+    }
+    
+    config.projectFile.packageDirectories[config.packageIndex].versionName = 'ver ' + config.version.nextVersion;
+    config.projectFile.packageDirectories[config.packageIndex].versionNumber = config.version.nextVersion + '.NEXT';
+
+    if (config.version.updateDependencies) {
+        if (config.package.package === "RFLIB") {
+            config.projectFile.packageDirectories[1].dependencies[0].package = config.package.package + '@' + config.version.nextVersion;
+            config.projectFile.packageDirectories[2].dependencies[0].package = config.package.package + '@' + config.version.nextVersion;
+        }
+
+        if (config.package.package === "RFLIB-FS") {
+            config.projectFile.packageDirectories[2].dependencies[1].package = config.package.package + '@' + config.version.nextVersion;
+        }
+    }
+    
+    grunt.file.write('sfdx-project.json', JSON.stringify(config.projectFile, null, 4));
+}
 
 module.exports = function(grunt) {
     // load all grunt tasks needed for this run
     require('jit-grunt')(grunt);
-    var semver = require('semver');
-
+    grunt.loadNpmTasks('grunt-git');
+    
     // build configuration
-    var projectFile = grunt.file.readJSON('sfdx-project.json');
     var config = {
-        projectFile: projectFile,
+        projectFile: grunt.file.readJSON('sfdx-project.json'),
+        packageFile: grunt.file.readJSON('package.json'),
 
         alias: grunt.option('alias') || 'rflib',
-        packageAlias: projectFile.packageDirectories[0].package,
+        
+        packageIndex: null,
+        package: {},
 
         version: {
-            configuredVersionNumber: projectFile.packageDirectories[0].versionNumber.replace('.NEXT', ''),
-            latestVersionAlias: Object.keys(projectFile.packageAliases)[
-                Object.keys(projectFile.packageAliases).length - 1
-            ]
+            nextVersion: null,
+            updateDependencies: false
         },
 
         sfdx: {
@@ -32,40 +56,6 @@ module.exports = function(grunt) {
     grunt.initConfig({
         config: config,
         env: process.env,
-
-        bump: {
-            options: {
-                files: ['package.json', 'sfdx-project.json'],
-                updateConfigs: [],
-                commit: true,
-                commitMessage: 'Created package for version v%VERSION%',
-                commitFiles: ['package.json', 'sfdx-project.json'],
-                createTag: false,
-                tagName: 'v%VERSION%',
-                tagMessage: 'Version %VERSION%',
-                push: true,
-                pushTo: 'origin',
-                gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d',
-                globalReplace: true,
-                prereleaseName: false,
-                regExp: /(['|"]?version[\w]*['|"]?[ ]*:[ ]*['|"]?[\w\s]*)(\d+\.\d+\.\d+(-\.\d+)?(-\d+)?)([\d|A-a|.|-]*['|"]?)/
-            }
-        },
-
-        semver: {
-            options: {
-                files: [
-                    {
-                        src: 'package.json',
-                        dest: 'package.json.out'
-                    },
-                    {
-                        src: 'sfdx-project.json',
-                        dest: 'sfdx-project.json.out'
-                    }
-                ]
-            }
-        },
 
         prompt: {
             alias: {
@@ -90,15 +80,57 @@ module.exports = function(grunt) {
                 }
             },
 
+            selectPackage: {
+                options: {
+                    questions: [
+                        {
+                            config: 'config.packageIndex',
+                            type: 'list',
+                            message: 'Select package for the current release process',
+                            choices: [
+                                {
+                                    value: 0,
+                                    name: config.projectFile.packageDirectories[0].package
+                                },
+                                {
+                                    value: 1,
+                                    name: config.projectFile.packageDirectories[1].package
+                                },
+                                {
+                                    value: 2,
+                                    name: config.projectFile.packageDirectories[2].package
+                                }
+                            ]
+                        }
+                    ],
+                    then: function() {
+                        if (!config.package) {
+                            grunt.fail.fatal('Failed to set package details');
+                        }
+                        
+                        config.package = _.cloneDeep(config.projectFile.packageDirectories[config.packageIndex]);
+
+                        var packageVersions = _.keys(config.projectFile.packageAliases).filter(function (value) {
+                            return value.startsWith(config.package.package + '@');
+                        });
+                        
+                        config.package.latestVersionAlias = packageVersions[packageVersions.length - 1];
+                        config.package.configuredVersionNumber = config.package.versionNumber.replace('.NEXT', '');
+                        config.package.patch = semver.inc(config.package.configuredVersionNumber, 'patch');
+                        config.package.minor = semver.inc(config.package.configuredVersionNumber, 'minor');
+                        config.package.major = semver.inc(config.package.configuredVersionNumber, 'major');
+                    }
+                }
+            },
+
             confirmVersion: {
                 options: {
                     questions: [
                         {
-                            config: 'config.version.latestVersionConfirmed',
+                            config: 'config.package.latestVersionConfirmed',
                             type: 'list',
                             message:
-                                'Please confirm the current version settings: version number=<%= config.version.configuredVersionNumber %> => version alias=<%= config.version.latestVersionAlias %>',
-                            default: false,
+                                'Please confirm the current version settings: version number=<%= config.package.configuredVersionNumber %> => version alias=<%= config.package.latestVersionAlias %>',
                             choices: [
                                 { name: 'Yes', value: true },
                                 { name: 'No', value: false }
@@ -106,10 +138,39 @@ module.exports = function(grunt) {
                         }
                     ],
                     then: function() {
-                        if (!config.version.latestVersionConfirmed) {
+                        if (!config.package.latestVersionAlias) {
+                            grunt.fail.fatal('Latest version alias is missing');
+                        }
+                        if (!config.package.latestVersionConfirmed) {
                             grunt.fail.fatal('Version was not confirmed');
                         }
                     }
+                }
+            },
+
+            updateDependencies: {
+                options: {
+                    questions: [
+                        {
+                            config: 'config.version.updateDependencies',
+                            type: 'list',
+                            message:
+                                'Should the dependencies for the package <%= config.package.package %> be updated to version <%= config.version.nextVersion %> as well?',
+                            choices: [
+                                { name: 'Yes', value: true },
+                                { name: 'No', value: false }
+                            ],
+                            when: function() {
+                                let shouldAskForDependencyUpdate = config.package.package !== "RFLIB-TF";
+
+                                if (!shouldAskForDependencyUpdate) {
+                                    grunt.log.writeln('No package depends on <%= config.package.package %>');
+                                }
+
+                                return shouldAskForAlias;
+                            }
+                        }
+                    ]
                 }
             },
 
@@ -117,37 +178,29 @@ module.exports = function(grunt) {
                 options: {
                     questions: [
                         {
-                            config: 'bump.options.versionType',
+                            config: 'config.version.nextVersion',
                             type: 'list',
-                            message: 'Bump version from ' + '<%= config.version.configuredVersionNumber %>' + ' to:',
+                            message: 'Bump version from <%= config.package.configuredVersionNumber %> to:',
                             choices: [
                                 {
                                     value: 'build',
                                     name:
-                                        'Build:  ' +
-                                        (config.version.configuredVersionNumber + '-?') +
-                                        ' Unstable, betas, and release candidates.'
+                                        'Build:  <%= config.package.configuredVersionNumber %>-? Unstable, betas, and release candidates.'
                                 },
                                 {
                                     value: 'patch',
                                     name:
-                                        'Patch:  ' +
-                                        semver.inc(config.version.configuredVersionNumber, 'patch') +
-                                        ' Backwards-compatible bug fixes.'
+                                        'Patch:  <%= config.package.patch %> Backwards-compatible bug fixes.'
                                 },
                                 {
                                     value: 'minor',
                                     name:
-                                        'Minor:  ' +
-                                        semver.inc(config.version.configuredVersionNumber, 'minor') +
-                                        ' Add functionality in a backwards-compatible manner.'
+                                        'Minor:  <%= config.package.minor %> Add functionality in a backwards-compatible manner.'
                                 },
                                 {
                                     value: 'major',
                                     name:
-                                        'Major:  ' +
-                                        semver.inc(config.version.configuredVersionNumber, 'major') +
-                                        ' Incompatible API changes.'
+                                        'Major:  <%= config.package.major %> Incompatible API changes.'
                                 },
                                 {
                                     value: 'custom',
@@ -156,11 +209,11 @@ module.exports = function(grunt) {
                             ]
                         },
                         {
-                            config: 'bump.options.setVersion',
+                            config: 'config.version.nextVersion',
                             type: 'input',
                             message: 'What specific version would you like',
                             when: function(answers) {
-                                return answers['bump.options.versionType'] === 'custom';
+                                return answers['config.version.nextVersion'] === 'custom';
                             },
                             validate: function(value) {
                                 var valid = semver.valid(value);
@@ -170,7 +223,49 @@ module.exports = function(grunt) {
                                 );
                             }
                         }
-                    ]
+                    ],
+                    then: function(results) {
+                        if (_.includes(['patch', 'minor', 'major'], results['config.version.nextVersion'])) {
+                            config.version.nextVersion = config.package[results['config.version.nextVersion']];
+                        }
+                    }
+                }
+            }
+        },
+
+        gitadd: {
+            version: {
+                files: {
+                    src: ['package.json', 'sfdx-project.json']
+                }
+            }
+        },
+
+        gitcommit: {
+            version: {
+                options: {
+                    message: 'Created package for version v<%= config.version.nextVersion %>'
+                },
+                files: {
+                    src: ['package.json', 'sfdx-project.json']
+                }
+            }
+
+        },
+
+        gittag: {
+            version: {
+                options: {
+                    tag: 'v<%= config.version.nextVersion %>',
+                    message: 'Version <%= config.version.nextVersion %>'
+                }
+            },
+        },
+
+        gitpush: {
+            origin: {
+                options: {
+                    tag: true
                 }
             }
         },
@@ -202,16 +297,16 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path rflib --package RFLIB --installationkeybypass --releasenotesurl https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md --postinstallurl https://github.com/j-fischer/rflib#how-tos --wait 10'
+                    'sfdx "force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 10"'
             },
 
             'force-install-latest': {
                 command:
-                    'sfdx force:package:install --package <%= config.version.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.version.latestVersionAlias %>'
+                command: 'sfdx "force:package:version:promote --package <%= config.package.latestVersionAlias %>"'
             },
 
             'test-lwc': {
@@ -227,12 +322,14 @@ module.exports = function(grunt) {
     grunt.registerTask('bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
         var tasks = ['shell:lint', 'shell:test-lwc', 'shell:force-push', 'shell:force-test'];
 
-        if (grunt.config('bump.options.versionType') !== 'build') {
-            tasks.push('bump:bump-only');
+        if (grunt.config('config.version.nextVersion') !== 'build') {
+            bumpVersion(grunt, config);
         }
 
         tasks.push('shell:force-create-release-candidate');
-        tasks.push('bump:commit-only');
+        tasks.push('gitadd:version');
+        tasks.push('gitcommit:version');
+        tasks.push('gitpush:origin');
 
         grunt.task.run(tasks);
     });
@@ -255,17 +352,13 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('create-package', 'Create a new package version', function() {
-        grunt.task.run(['prompt:alias', 'prompt:bump', 'bumpVersionAndPackage']);
+        grunt.task.run(['prompt:alias', 'prompt:selectPackage', 'prompt:bump', 'prompt:updateDependencies', 'bumpVersionAndPackage']);
     });
 
     grunt.registerTask('release', 'Promote the last package version to become a full release', function() {
-        grunt.config('bump.version', config.version.configuredVersionNumber);
-        grunt.config('bump.options.commit', false);
-        grunt.config('bump.options.createTag', true);
-        grunt.config('bump.options.push', 'tag');
-
         var tasks = [
             'prompt:alias',
+            'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
             'shell:force-install-latest',
@@ -273,7 +366,8 @@ module.exports = function(grunt) {
             'shell:test-lwc',
             'shell:force-promote',
             'shell:force-delete-org',
-            'bump:commit-only'
+            'gittag:version',
+            'gitpush:origin',
         ];
 
         grunt.task.run(tasks);
