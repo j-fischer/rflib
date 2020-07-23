@@ -237,8 +237,6 @@ public class rflib_DefaultLoggerTest {
 
   @IsTest
   private static void testSyncPlatformEventPublisher() {
-    setupLogManager();
-
     rflib_Logger logger = new rflib_DefaultLogger(
       new rflib_DefaultLogger.PlatformEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
@@ -249,21 +247,12 @@ public class rflib_DefaultLoggerTest {
 
     Test.startTest();
     logger.reportLogs();
+    System.assertEquals(1, Limits.getDmlStatements());
     Test.stopTest();
-
-    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
-
-    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
-
-    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
-    System.assertEquals('testSyncPlatformEventPublisher', capturedEvent.Context__c);
-    System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
   }
 
   @IsTest
   private static void testBatchPlatformEventPublisher() {
-    setupLogManager();
-
     rflib_Logger logger = new rflib_DefaultLogger(
       new rflib_DefaultLogger.BatchPlatformEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
@@ -279,20 +268,10 @@ public class rflib_DefaultLoggerTest {
     logger.publishBatchedLogEvents();
     System.assertEquals(1, Limits.getDmlStatements());
     Test.stopTest();
-
-    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
-
-    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
-
-    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
-    System.assertEquals('testBatchPlatformEventPublisher', capturedEvent.Context__c);
-    System.assertEquals('DEBUG', capturedEvent.Log_Level__c);
   }
 
   @IsTest
   private static void testSetBatchReportingLogLevel() {
-    setupLogManager();
-
     rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetBatchReportingLogLevel');
@@ -308,33 +287,6 @@ public class rflib_DefaultLoggerTest {
     logger.publishBatchedLogEvents();
     System.assertEquals(1, Limits.getDmlStatements());
     Test.stopTest();
-
-    System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
-
-    rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
-
-    rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0); 
-    System.assertEquals('testSetBatchReportingLogLevel', capturedEvent.Context__c);
-    System.assertEquals('INFO', capturedEvent.Log_Level__c);
-  }
-
-  private static void setupLogManager() {
-    rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
-        createConfiguration(ABORT_TRANSACTION), 
-        OBJECT_TYPE_NAME, 
-        AFTER_INSERT
-    );
-  }
-
-  private static rflib_Trigger_Configuration__mdt createConfiguration(String exceptionBehaviour) {
-    return new rflib_Trigger_Configuration__mdt(
-        Active__c = true,
-        Class_Name__c = 'rflib_MockTriggerHandler',
-        Object_Name__c = 'rflib_Log_Event__e',
-        Event__c = 'AFTER_INSERT',
-        Order__c = 1,
-        Exception_Behavior__c = exceptionBehaviour
-    );
   }
 
   public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
