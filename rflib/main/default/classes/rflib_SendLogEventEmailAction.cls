@@ -29,53 +29,36 @@
 
 /**
  * @group Logger
- * @description Trigger event handler that will send out an email to the Apex Email Notification list.
+ * @description Invocable Action that will send out an email to the Apex Email Notification list.
  *              Please make sure to set the Org Wide Email Sender Address in the Logger Custom Settings
  *              or the email will note be sent. This is due to the fact that Platform Event based triggers
  *              are executed by the System user. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public without sharing class rflib_EmailLogEventHandler implements rflib_TriggerHandler {
-
+public with sharing class rflib_SendLogEventEmailAction {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_EmailLogEventHandler');
 
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';
 
-    private final Boolean useOrgWideEmailAddress;
-    private final List<ApexEmailNotification> apexEmailNotifications;
-    private final rflib_Logger_Settings__c loggerSettings;
-
-    public rflib_EmailLogEventHandler() {
-        this([SELECT Email, UserId FROM ApexEmailNotification], true, rflib_Logger_Settings__c.getInstance());
-    }
+    @TestVisible
+    private static Boolean USE_ORG_WIDE_EMAIL_ADDRESS = true;
 
     @TestVisible
-    private rflib_EmailLogEventHandler(List<ApexEmailNotification> apexEmailNotifications, Boolean useOrgWideEmailAddress, rflib_Logger_Settings__c loggerSettings) {
-        this.apexEmailNotifications = apexEmailNotifications;
-        this.useOrgWideEmailAddress = useOrgWideEmailAddress;
-        this.loggerSettings = loggerSettings;
+    private static List<ApexEmailNotification> APEX_EMAIL_NOTIFICATION = [SELECT Email, UserId FROM ApexEmailNotification];
 
+    static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events. 
         LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
     }
 
-    public void run(rflib_TriggerManager.Args args) {
-        try { 
-            sendEmailsIfApplicable(args);
-        } catch (Exception ex) {
-            System.debug(LoggingLevel.ERROR, ex.getMessage());
-        }
-    }
+    @InvocableMethod(label='Send Log Event Emails' category='RFLIB' description='Send Log Events to Apex Email Notification recipients')
+    public static void sendEmailsIfApplicable(List<rflib_Log_Event__e> events) {
+        rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
 
-    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
-        // do nothing
-    }
-
-    private void sendEmailsIfApplicable(rflib_TriggerManager.Args args) {
         LOGGER.debug('run() invoked');
-        if (apexEmailNotifications.size() == 0) {
+        if (APEX_EMAIL_NOTIFICATION.size() == 0) {
             LOGGER.debug('No Apex email notifications found');
             return;
         }
@@ -83,7 +66,7 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_Trigger
         List<String> emailAddresses = new List<String>();
         List<Id> userIds = new List<Id>();
 
-        for (ApexEmailNotification apexEmail : apexEmailNotifications) {
+        for (ApexEmailNotification apexEmail : APEX_EMAIL_NOTIFICATION) {
             if (String.isNotEmpty(apexEmail.Email)) {
                 emailAddresses.add(apexEmail.Email);
             }
@@ -97,24 +80,23 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_Trigger
 
         LOGGER.debug('Recipients of log event: ' + String.join(emailAddresses, ','));
 
-        List<rflib_Log_Event__e> events = (List<rflib_Log_Event__e>) args.newRecords;
         Integer numEmailToSend = Math.min(events.size(), 10);
 
         LOGGER.debug('Emails to be sent = ' + numEmailToSend);
         for (Integer i = 0; i < numEmailToSend; i++) {
             rflib_Log_Event__e evt = events[i];
-            if (matchesConfiguredLogLevel(evt)) {
+            if (matchesConfiguredLogLevel(loggerSettings, evt)) {
                 sendMessage(emailAddresses, evt);
             }
         }
     }
 
-    private Boolean matchesConfiguredLogLevel(rflib_Log_Event__e evt) {
+    private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
         return rflib_LogLevel.fromString(loggerSettings.Email_Log_Level__c).
             encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
-    private List<String> getEmailAddressesForUsers(List<Id> userIds) {
+    private static List<String> getEmailAddressesForUsers(List<Id> userIds) {
         List<String> result = new List<String>();
         for (User u : [SELECT Email FROM USER WHERE Id IN :userIds]) {
             result.add(u.Email);
@@ -123,17 +105,17 @@ public without sharing class rflib_EmailLogEventHandler implements rflib_Trigger
         return result;
     }
 
-    private Id getOrgWideEmailAddressId() {
+    private static Id getOrgWideEmailAddressId() {
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
         return [SELECT Id FROM OrgWideEmailAddress WHERE Address = :settings.Org_Wide_Email_Sender_Address__c].Id;
     }
 
-    private void sendMessage(List<String> toAddresses, rflib_Log_Event__e event) {
+    private static void sendMessage(List<String> toAddresses, rflib_Log_Event__e event) {
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
 
         mail.setToAddresses(toAddresses);
 
-        if (useOrgWideEmailAddress) {
+        if (USE_ORG_WIDE_EMAIL_ADDRESS) {
             mail.setOrgWideEmailAddressId(getOrgWideEmailAddressId());
         }
 

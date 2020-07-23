@@ -28,34 +28,40 @@
  */
 @isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_EmailLogEventHandlerTest {
-    
+private class rflib_SendLogEventEmailActionTest {
+
     @isTest
     public static void testNoApexEmailConfigurationRecords() {
+        rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = true;
+        rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = new List<ApexEmailNotification>();
+
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler(new List<ApexEmailNotification>(), true, createLoggerSettings()).run(null);
+        rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
     }
 
     @isTest
     public static void testEmailLogLevelDoesNotMatch() {
+        createLoggerSettings('FATAL');
+
+        rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
+        rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
+
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler(createApexEmailNotification(), false, createLoggerSettings('FATAL')).run(createLogEventArgs());
+        rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
     }
 
     @isTest
     public static void testSuccess() {
-        System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler(createApexEmailNotification(), false, createLoggerSettings()).run(createLogEventArgs());
-        System.assertEquals(1, Limits.getEmailInvocations());
-    }
+        createLoggerSettings('ERROR');
 
-    @isTest
-    public static void testOnConsecutiveRun() {
+        rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
+        rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
+
         System.assertEquals(0, Limits.getEmailInvocations());
-        new rflib_EmailLogEventHandler().onConsecutiveRun(null, 1);
-        System.assertEquals(0, Limits.getEmailInvocations());
+        rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
+        System.assertEquals(1, Limits.getEmailInvocations());
     }
 
     private static List<ApexEmailNotification> createApexEmailNotification() {
@@ -69,22 +75,14 @@ private class rflib_EmailLogEventHandlerTest {
         };
     }
 
-    private static rflib_TriggerManager.Args createLogEventArgs() {
+    private static List<rflib_Log_Event__e> createLogEventList() {
         rflib_Log_Event__e ev = new rflib_Log_Event__e(
             Context__c = 'Context Foo',
             Log_Messages__c = 'Some messages',
             Log_Level__c = 'ERROR'
         );
 
-        return new rflib_TriggerManager.Args(
-            rflib_Log_Event__e.getSObjectType(),
-            System.TriggerOperation.AFTER_INSERT,
-            new List<SObject>(),
-            new Map<Id, SObject>(), 
-            new List<SObject> { ev },
-            new Map<Id, SObject>(), 
-            1
-        );
+        return new List<rflib_Log_Event__e> { ev };
     }
 
     private static rflib_Logger_Settings__c createLoggerSettings() {
@@ -94,6 +92,8 @@ private class rflib_EmailLogEventHandlerTest {
     private static rflib_Logger_Settings__c createLoggerSettings(String level) {
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
         settings.Email_Log_Level__c = level;
+        
+        upsert settings;
         return settings;
     }
 }
