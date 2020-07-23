@@ -39,6 +39,13 @@
                     "package": "RFLIB-FS@0.1.0"
                 }
             ]
+        },
+        {
+            "path": "rflib-tf",
+            "package": "RFLIB-TS",
+            "versionName": "ver 0.1",
+            "versionNumber": "0.1.0.NEXT",
+            "default": false
         }
     ],
     "namespace": "",
@@ -46,6 +53,8 @@
     "sourceApiVersion": "48.0",
     "packageAliases": {
         "RFLIB": "0Ho3h000000Kz8aCAC",
+        "RFLIB-FS": "0Ho3h000000KzKOCA0",
+        "RFLIB-TS": "0Ho3h000000KzKTCA0",
         "RFLIB@0.1.0-1": "04t3h000002rMX8AAM",
         "RFLIB@0.1.0-2": "04t3h000002rSOeAAM",
         "RFLIB@1.0.0-1": "04t3h000002rTGPAA2",
