@@ -244,7 +244,7 @@ module.exports = function(grunt) {
         gitcommit: {
             version: {
                 options: {
-                    message: 'Created package for version v<%= config.version.nextVersion %>'
+                    message: 'Created package for version v<%= config.version.nextVersion %> for <%= config.package.package %>'
                 },
                 files: {
                     src: ['package.json', 'sfdx-project.json']
@@ -256,8 +256,8 @@ module.exports = function(grunt) {
         gittag: {
             version: {
                 options: {
-                    tag: 'v<%= config.version.nextVersion %>',
-                    message: 'Version <%= config.version.nextVersion %>'
+                    tag: '<%= config.package.package %> v<%= config.version.nextVersion %>',
+                    message: '<%= config.package.package %> - Version <%= config.version.nextVersion %>'
                 }
             },
         },
