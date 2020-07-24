@@ -4,7 +4,7 @@ const semver = require('semver');
 const bumpVersion = function(grunt, config) {
     if (config.package.package === "RFLIB") {
         config.packageFile.version = config.version.nextVersion;
-        grunt.file.write('package.json', JSON.stringify(config.projectFile, null, 4));
+        grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 4));
     }
     
     config.projectFile.packageDirectories[config.packageIndex].versionName = 'ver ' + config.version.nextVersion;
@@ -159,16 +159,7 @@ module.exports = function(grunt) {
                             choices: [
                                 { name: 'Yes', value: true },
                                 { name: 'No', value: false }
-                            ],
-                            when: function() {
-                                let shouldAskForDependencyUpdate = config.package.package !== "RFLIB-TF";
-
-                                if (!shouldAskForDependencyUpdate) {
-                                    grunt.log.writeln('No package depends on <%= config.package.package %>');
-                                }
-
-                                return shouldAskForAlias;
-                            }
+                            ]
                         }
                     ]
                 }
@@ -297,7 +288,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx "force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 10"'
+                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 10'
             },
 
             'force-install-latest': {
@@ -319,7 +310,30 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
+    grunt.registerTask('__updateDependencies', 'PRIVATE - Update dependencies in sfdx.project.json file if selected', function() {
+        if (!config.version.updateDependencies) {
+            grunt.log.writeln('No need to update dependencies');
+            return;
+        }
+        
+        const packageVersions = _.keys(config.projectFile.packageAliases).filter(function (value) {
+            return value.startsWith(config.package.package + '@' + (config.version.nextVersion === 'build' ? '' : config.version.nextVersion));
+        });
+        
+        const newPackageAlias = packageVersions[packageVersions.length - 1];
+        if (config.package.package === "RFLIB") {
+            config.projectFile.packageDirectories[1].dependencies[0].package = newPackageAlias;
+            config.projectFile.packageDirectories[2].dependencies[0].package = newPackageAlias;
+        }
+    
+        if (config.package.package === "RFLIB-FS") {
+            config.projectFile.packageDirectories[2].dependencies[1].package = newPackageAlias;
+        }
+
+        grunt.file.write('sfdx-project.json', JSON.stringify(config.projectFile, null, 4));
+    });
+
+    grunt.registerTask('__bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
         var tasks = ['shell:lint', 'shell:test-lwc', 'shell:force-push', 'shell:force-test'];
 
         if (grunt.config('config.version.nextVersion') !== 'build') {
@@ -327,6 +341,7 @@ module.exports = function(grunt) {
         }
 
         tasks.push('shell:force-create-release-candidate');
+        tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
         tasks.push('gitcommit:version');
         tasks.push('gitpush:origin');
@@ -352,7 +367,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('create-package', 'Create a new package version', function() {
-        grunt.task.run(['prompt:alias', 'prompt:selectPackage', 'prompt:bump', 'prompt:updateDependencies', 'bumpVersionAndPackage']);
+        grunt.task.run(['prompt:alias', 'prompt:selectPackage', 'prompt:bump', 'prompt:updateDependencies', '__bumpVersionAndPackage']);
     });
 
     grunt.registerTask('release', 'Promote the last package version to become a full release', function() {
