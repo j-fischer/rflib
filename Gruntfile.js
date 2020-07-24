@@ -311,6 +311,9 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('__updateDependencies', 'PRIVATE - Update dependencies in sfdx.project.json file if selected', function() {
+        // Since SFDX just updated the project file, we need to refresh it.
+        config.projectFile = grunt.file.readJSON('sfdx-project.json');
+
         if (!config.version.updateDependencies) {
             grunt.log.writeln('No need to update dependencies');
             return;
