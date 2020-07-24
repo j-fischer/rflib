@@ -1,7 +1,7 @@
 {
     "name": "reliability-force",
     "private": true,
-    "version": "1.0.1",
+    "version": "2.0.0",
     "description": "Salesforce library for improving the reliability of your org",
     "scripts": {
         "lint": "npm run lint:lwc && npm run lint:aura",
