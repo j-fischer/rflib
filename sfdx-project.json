@@ -19,7 +19,7 @@
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
             "dependencies": [
                 {
-                    "package": "RFLIB@2.0.0-2"
+                    "package": "RFLIB@2.0.0-3"
                 }
             ]
         },
@@ -33,7 +33,7 @@
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
             "dependencies": [
                 {
-                    "package": "RFLIB@2.0.0-2"
+                    "package": "RFLIB@2.0.0-3"
                 },
                 {
                     "package": "RFLIB-FS@0.1.0"
@@ -60,6 +60,7 @@
         "RFLIB@1.0.0-1": "04t3h000002rTGPAA2",
         "RFLIB@1.0.1-1": "04t3h000004bbNiAAI",
         "RFLIB@2.0.0-1": "04t3h000004bcKwAAI",
-        "RFLIB@2.0.0-2": "04t3h000004bcL1AAI"
+        "RFLIB@2.0.0-2": "04t3h000004bcL1AAI",
+        "RFLIB@2.0.0-3": "04t3h000004bcL6AAI"
     }
 }
