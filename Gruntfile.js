@@ -297,7 +297,11 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sfdx "force:package:version:promote --package <%= config.package.latestVersionAlias %>"'
+                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %>'
+            },
+
+            'force-install-dependencies': {
+                command: 'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %>'
             },
 
             'test-lwc': {
@@ -379,6 +383,7 @@ module.exports = function(grunt) {
             'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
+            'shell:force-install-dependencies',
             'shell:force-install-latest',
             'shell:force-test',
             'shell:test-lwc',
