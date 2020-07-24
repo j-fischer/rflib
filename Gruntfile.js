@@ -70,7 +70,7 @@ module.exports = function(grunt) {
                                 let shouldAskForAlias = !grunt.option('alias');
 
                                 if (!shouldAskForAlias) {
-                                    grunt.log.writeln('Alias already selected: <%= config.alias %>');
+                                    grunt.log.writeln('Alias already selected: ' + grunt.option('alias'));
                                 }
 
                                 return shouldAskForAlias;
