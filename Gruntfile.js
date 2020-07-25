@@ -235,7 +235,7 @@ module.exports = function(grunt) {
         gitcommit: {
             version: {
                 options: {
-                    message: 'Created package for version v<%= config.version.nextVersion %> for <%= config.package.package %>'
+                    message: 'Created new package for <%= config.package.package %>: <%= config.package.configuredVersionNumber %> => <%= config.version.nextVersion %>'
                 },
                 files: {
                     src: ['package.json', 'sfdx-project.json']
