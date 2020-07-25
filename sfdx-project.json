@@ -13,8 +13,8 @@
             "path": "rflib-fs",
             "default": false,
             "package": "RFLIB-FS",
-            "versionName": "ver 0.1.0",
-            "versionNumber": "0.1.0.NEXT",
+            "versionName": "ver 1.0.0",
+            "versionNumber": "1.0.0.NEXT",
             "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
             "dependencies": [
@@ -36,7 +36,7 @@
                     "package": "RFLIB@2.0.0-4"
                 },
                 {
-                    "package": "RFLIB-FS@0.1.0-1"
+                    "package": "RFLIB-FS@1.0.0-1"
                 }
             ]
         },
@@ -64,6 +64,7 @@
         "RFLIB@2.0.0-3": "04t3h000004bcL6AAI",
         "RFLIB-FS@0.1.0-1": "04t3h000004bcLGAAY",
         "RFLIB-TF@0.1.0-1": "04t3h000004bcWGAAY",
-        "RFLIB@2.0.0-4": "04t3h000004bcWfAAI"
+        "RFLIB@2.0.0-4": "04t3h000004bcWfAAI",
+        "RFLIB-FS@1.0.0-1": "04t3h000004bcWkAAI"
     }
 }
