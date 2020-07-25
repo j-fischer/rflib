@@ -2,9 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Client_Console_Log_Level__c</fullName>
     <defaultValue>&quot;DEBUG&quot;</defaultValue>
-    <description>Set the log level for which messages printed to the browser console. Whenever a statement is logged and the statements level is encompassed by the currently set General Log Level, the message will be printed to the browser&apos;s console..</description>
+    <description>Set the log level for which messages printed to the browser console. Whenever a statement is logged and the statements level is encompassed by the currently set General Log Level, the message will be printed to the browser&apos;s console.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which messages are stored in the log stack for a transaction. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be logged</inlineHelpText>
+    <inlineHelpText>Set the log level for which messages are stored in the log stack for a transaction. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be logged.</inlineHelpText>
     <label>Client Console Log Level</label>
     <length>5</length>
     <required>true</required>
