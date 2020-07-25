@@ -54,7 +54,7 @@
     "packageAliases": {
         "RFLIB": "0Ho3h000000Kz8aCAC",
         "RFLIB-FS": "0Ho3h000000KzKOCA0",
-        "RFLIB-TS": "0Ho3h000000KzKTCA0",
+        "RFLIB-TF": "0Ho3h000000KzKTCA0",
         "RFLIB@0.1.0-1": "04t3h000002rMX8AAM",
         "RFLIB@0.1.0-2": "04t3h000002rSOeAAM",
         "RFLIB@1.0.0-1": "04t3h000002rTGPAA2",
@@ -62,6 +62,7 @@
         "RFLIB@2.0.0-1": "04t3h000004bcKwAAI",
         "RFLIB@2.0.0-2": "04t3h000004bcL1AAI",
         "RFLIB@2.0.0-3": "04t3h000004bcL6AAI",
-        "RFLIB-FS@0.1.0-1": "04t3h000004bcLGAAY"
+        "RFLIB-FS@0.1.0-1": "04t3h000004bcLGAAY",
+        "RFLIB-TF@0.1.0-1": "04t3h000004bcWGAAY"
     }
 }
