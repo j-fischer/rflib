@@ -5,4 +5,5 @@
     <eventType>HighVolume</eventType>
     <label>Log Event</label>
     <pluralLabel>Log Events</pluralLabel>
+    <publishBehavior>PublishImmediately</publishBehavior>
 </CustomObject>

@@ -3,7 +3,7 @@
     <fullName>Global_Scope_Validation</fullName>
     <active>true</active>
     <description>Validates that the scope name is empty for Global scope.</description>
-    <errorConditionFormula>ISPICKVAL( Scope_Type__c , &#39;Global&#39;) &amp;&amp; NOT(ISBLANK( Scope_Name__c ))</errorConditionFormula>
+    <errorConditionFormula>ISPICKVAL( Scope_Type__c , &apos;Global&apos;) &amp;&amp; NOT(ISBLANK( Scope_Name__c ))</errorConditionFormula>
     <errorDisplayField>Scope_Name__c</errorDisplayField>
     <errorMessage>The Scope Name should be empty for feature switches with Global scope.</errorMessage>
 </ValidationRule>

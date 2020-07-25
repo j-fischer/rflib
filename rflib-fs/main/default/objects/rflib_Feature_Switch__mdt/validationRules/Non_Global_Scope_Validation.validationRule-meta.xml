@@ -3,7 +3,7 @@
     <fullName>Non_Global_Scope_Validation</fullName>
     <active>true</active>
     <description>Ensures that a Scope name is provided for any scope that is not Global.</description>
-    <errorConditionFormula>NOT(ISPICKVAL( Scope_Type__c , &#39;Global&#39;)) &amp;&amp; ISBLANK( Scope_Name__c )</errorConditionFormula>
+    <errorConditionFormula>NOT(ISPICKVAL( Scope_Type__c , &apos;Global&apos;)) &amp;&amp; ISBLANK( Scope_Name__c )</errorConditionFormula>
     <errorDisplayField>Scope_Name__c</errorDisplayField>
     <errorMessage>A Scope Name is required for any non-Global feature switch.</errorMessage>
 </ValidationRule>

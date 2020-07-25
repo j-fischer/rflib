@@ -4,7 +4,7 @@
     <description>The name of the scope element, i.e. a profile or user name.</description>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
-    <inlineHelpText>Please provide the name of the profile or user, based on your Scope Type&#39;s selection.</inlineHelpText>
+    <inlineHelpText>Please provide the name of the profile or user, based on your Scope Type&apos;s selection.</inlineHelpText>
     <label>Scope Name</label>
     <length>255</length>
     <required>false</required>

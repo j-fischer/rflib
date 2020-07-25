@@ -50,7 +50,7 @@
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "48.0",
+    "sourceApiVersion": "49.0",
     "packageAliases": {
         "RFLIB": "0Ho3h000000Kz8aCAC",
         "RFLIB-FS": "0Ho3h000000KzKOCA0",
