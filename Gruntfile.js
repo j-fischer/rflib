@@ -396,5 +396,17 @@ module.exports = function(grunt) {
         grunt.task.run(tasks);
     });
 
+    grunt.registerTask('test', 'Run server and client tests', function() {
+        var tasks = [
+            'prompt:alias',
+            'shell:force-push',
+            'shell:force-test',
+            'shell:test-lwc'
+        ];
+
+        grunt.task.run(tasks);
+    });
+
+
     grunt.registerTask('default', ['shell:test-lwc']);
 };
