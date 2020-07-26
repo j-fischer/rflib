@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Global_Scope_Validation</fullName>
+    <active>true</active>
+    <description>Validates that the scope name is empty for Global scope.</description>
+    <errorConditionFormula>ISPICKVAL( Scope_Type__c , &apos;Global&apos;) &amp;&amp; NOT(ISBLANK( Scope_Name__c ))</errorConditionFormula>
+    <errorDisplayField>Scope_Name__c</errorDisplayField>
+    <errorMessage>The Scope Name should be empty for feature switches with Global scope.</errorMessage>
+</ValidationRule>

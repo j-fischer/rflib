@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Client_Server_Log_Level__c</fullName>
+    <defaultValue>&quot;WARN&quot;</defaultValue>
+    <description>Set the log level for which the currently captured log messages will be reported to the server. Whenever a statement is logged and the statement&apos;s level is encompassed by the currently set Client Server Log Level, the current log stack in the browser will be sent to the server and reported. The server side log level settings will have no effect.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which browser log messages are reported to the server. Valid values are NONE, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be reported on the server side.</inlineHelpText>
+    <label>Client Server Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
