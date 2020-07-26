@@ -247,7 +247,7 @@ module.exports = function(grunt) {
         gittag: {
             version: {
                 options: {
-                    tag: '<%= config.package.package %> v<%= config.version.nextVersion %>',
+                    tag: '<%= config.package.package %>v<%= config.version.nextVersion %>',
                     message: '<%= config.package.package %> - Version <%= config.version.nextVersion %>'
                 }
             },
