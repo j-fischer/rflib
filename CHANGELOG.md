@@ -9,9 +9,9 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 
 ### RFLIB-FS 1.0.0
 
-Package ID: 04t3h000004bcWkAAI
-Package Alias: RFLIB-FS@1.0.0-1
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWkAAI
+Package ID: 04t3h000004bcXJAAY
+Package Alias: RFLIB-FS@1.0.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcXJAAY
 
 -   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
 -   All metadata was upgrade to API version 49.0.
