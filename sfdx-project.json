@@ -36,7 +36,7 @@
                     "package": "RFLIB@2.0.0-4"
                 },
                 {
-                    "package": "RFLIB-FS@1.0.0-1"
+                    "package": "RFLIB-FS@1.0.0-2"
                 }
             ]
         },
@@ -66,6 +66,7 @@
         "RFLIB-TF@0.1.0-1": "04t3h000004bcWGAAY",
         "RFLIB@2.0.0-4": "04t3h000004bcWfAAI",
         "RFLIB-FS@1.0.0-1": "04t3h000004bcWkAAI",
-        "RFLIB-TF@1.0.0-1": "04t3h000004bcWpAAI"
+        "RFLIB-TF@1.0.0-1": "04t3h000004bcWpAAI",
+        "RFLIB-FS@1.0.0-2": "04t3h000004bcXJAAY"
     }
 }
