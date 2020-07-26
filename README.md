@@ -14,25 +14,25 @@ automatically report any unexpected errors through Salesforce's latest technolog
 
 The following lists describe some of the key features of rflib.
 
-#### Logging Framework:
+#### Logging Framework (package RFLIB):
 
--   Logger for LWC and LC, which publishes logs the same way as Apex
+-   Logger for LWC and Aura, which publishes logs the same way as Apex
 -   Configuration through Custom Settings allowing for different log configurations between users
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
 -   Support Batched Logging for when DML statements are not supported
 
-#### Trigger Framework:
-
--   Fully decoupled framework, trigger handlers work in isolation
--   Recursion tracking to allow for easy prevention of multiple executions
--   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata
-
-#### Feature Switches:
+#### Feature Switches (package RFLIB-FS):
 
 -   Fully configured using Custom Metadata
 -   Supports hierarchical structure (similar to Custom Settings) to override settings at the profile or user level
 -   Fully supported in Flow Builder through Get Records or Apex Action
+
+#### Trigger Framework (package RFLIB-TF):
+
+-   Fully decoupled framework, trigger handlers work in isolation
+-   Recursion tracking to allow for easy prevention of multiple executions
+-   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata
 
 ## Deploy
 
@@ -41,7 +41,7 @@ The following lists describe some of the key features of rflib.
 Alternatively, you can either clone the repository and use 'sfdx force:source:deploy' to deploy this library to your Sandbox or use the **Deploy to Salesforce**
 button below to deploy it directly into your org.
 
-Please check the `sfdx-project.json` file for all package version IDs.
+Please check the [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md) for versions, install links and package aliases.
 
 To install package via browser:
 
@@ -286,8 +286,8 @@ In the controller or helper, you can then validate a feature switch with the fol
 	doInit: function(component, event, helper) {
 		var featureSwitches = component.find('featureSwitches');
 		featureSwitches.isFeatureSwitchTurnedOn('All_Triggers')
-			.then(function (isTunedOn) {
-				logger.info('All_Triggers turned on? ' + isTunedOn);
+			.then(function (isTurnedOn) {
+				logger.info('All_Triggers turned on? ' + isTurnedOn);
 			});
 	}
 })
