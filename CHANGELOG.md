@@ -1,6 +1,36 @@
-### 1.0.1
+### RFLIB-TF 1.0.0
+
+Package ID: 04t3h000004bcWpAAI
+Package Alias: RFLIB-TF@1.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWpAAI
+
+-   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
+-   All metadata was upgrade to API version 49.0.
+
+### RFLIB-FS 1.0.0
+
+Package ID: 04t3h000004bcWkAAI
+Package Alias: RFLIB-FS@1.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWkAAI
+
+-   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
+-   All metadata was upgrade to API version 49.0.
+
+### RFLIB 2.0.0
+
+Package ID: 04t3h000004bcWfAAI
+Package Alias: RFLIB@2.0.0-4
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWfAAI
+
+-   RFLIB 2.0.0 contains the core logging framework. The log event email handler got converted into a Invocable Action, which is used by a Platform Event triggered Flow to send out the email message based on the configuration in the Logger Settings
+-   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
+-   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
+-   All metadata was upgrade to API version 49.0.
+
+### RFLIB 1.0.1
 
 Package ID: 04t3h000004bbNiAAI
+Package Alias: RFLIB@1.0.1-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bbNiAAI
 
 -   Fixed issue in rflibLogger.setConfig where new server and console log levels failed to take effect
@@ -8,9 +38,10 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 -   Added LWC unit tests
 -   Build script improvements
 
-### 1.0.0
+### RFLIB 1.0.0
 
 Package ID: 04t3h000002rTGPAA2
+Package Alias: RFLIB@1.0.0-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000002rTGPAA2
 
 -   **May 2020** - Bug fixes
