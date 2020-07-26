@@ -118,21 +118,6 @@ private class rflib_FeatureSwitchTest {
     }
 
     @IsTest
-    private static void testRetrievalOfFeaturesSwitches() {
-        // Do not run setup
-
-        rflib_Feature_Switch__mdt expectedSwitchConfiguration = [
-            SELECT DeveloperName, Scope_Name__c, Scope_Type__c, Turned_On__c 
-            FROM rflib_Feature_Switch__mdt 
-            WHERE DeveloperName = :TRIGGER_SWITCH
-        ];
-
-        System.runAs(USER) {
-           System.assertEquals(expectedSwitchConfiguration.Turned_On__c, rflib_FeatureSwitch.isTurnedOn(TRIGGER_SWITCH));
-        }
-    }
-
-    @IsTest
     private static void testGetAllScopedValues() {
         setup();
 
