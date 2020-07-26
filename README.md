@@ -34,15 +34,6 @@ The following lists describe some of the key features of rflib.
 -   Supports hierarchical structure (similar to Custom Settings) to override settings at the profile or user level
 -   Fully supported in Flow Builder through Get Records or Apex Action
 
-## Configuration Settings
-
-The following options can be configured using custom settings:
-
--   General Log Level: The log level for which log statements will be included in the logs
--   System Debug Log Level: The log level for which log statements will be written to the System.debug logs
--   Reporting Log Level: The log level that will trigger the reporting of the currently stored log statements using platform event
--   Org Wide Email Sender: The email address that is required to send out reports using the Email Log Event Handler handler
-
 ## Deploy
 
 **The best way to add RFLIB to your environment is by installing the unlocked package.**
