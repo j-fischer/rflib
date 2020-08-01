@@ -50,9 +50,9 @@ https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_
 To install latest package via SFDX CLI Plugin:
 
 ```
-sfdx sforce:package:install -p RFLIB@2.0.0-4 -w 10 -u <your org alias>
-sfdx sforce:package:install -p RFLIB-FS@1.0.0-1 -w 10 -u <your org alias>
-sfdx sforce:package:install -p RFLIB-TF@1.0.0-1 -w 10 -u <your org alias>
+sfdx sforce:package:install -p RFLIB@2.0.0-4 -w 10 -s AllUsers -u <your org alias>
+sfdx sforce:package:install -p RFLIB-FS@1.0.0-1 -w 10 -s AllUsers -u <your org alias>
+sfdx sforce:package:install -p RFLIB-TF@1.0.0-1 -w 10 -s AllUsers -u <your org alias>
 ```
 
 To deploy code:
