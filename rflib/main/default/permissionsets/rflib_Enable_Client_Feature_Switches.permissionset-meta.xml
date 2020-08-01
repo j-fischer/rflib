@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <classAccesses>
+        <apexClass>rflib_FeatureSwitchesController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <description>Assign this permission set to all user profiles so that RFLIB is able to access Feature Switches on the client side.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Enable RFLIB Client Feature Switches</label>
+</PermissionSet>
