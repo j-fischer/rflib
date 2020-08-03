@@ -39,13 +39,6 @@
                     "package": "RFLIB-FS@1.0.0-2"
                 }
             ]
-        },
-        {
-            "path": "rflib-tf",
-            "package": "RFLIB-TS",
-            "versionName": "ver 0.1",
-            "versionNumber": "0.1.0.NEXT",
-            "default": false
         }
     ],
     "namespace": "",
