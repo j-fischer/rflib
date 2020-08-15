@@ -1,10 +1,10 @@
 {
-  "orgName": "RFLIB DEV",
-  "edition": "Developer",
-  "features": [],
-  "settings": {
-    "lightningExperienceSettings": {
-        "enableS1DesktopEnabled": true
+    "orgName": "RFLIB DEV",
+    "edition": "Developer",
+    "features": ["TransactionFinalizers"],
+    "settings": {
+        "lightningExperienceSettings": {
+            "enableS1DesktopEnabled": true
+        }
     }
-  }
 }
