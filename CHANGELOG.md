@@ -1,3 +1,11 @@
+### RFLIB-FS 1.0.1
+
+Package ID: 04t3h000004jmovAAA
+Package Alias: RFLIB-FS@1.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jmovAAA
+
+-   Added rflib_Enable_Client_Feature_Switches permission set (moved from RFLIB package)
+
 ### RFLIB 2.0.1
 
 Package ID: 04t3h000004jmoqAAA
