@@ -1,3 +1,11 @@
+### RFLIB 2.0.1
+
+Package ID: 04t3h000004jmoqAAA
+Package Alias: RFLIB@2.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jmoqAAA
+
+-   Removed rflib_Enable_Client_Feature_Switches permission set from package (to be added to RFLIB-FS)
+
 ### RFLIB-TF 1.0.0
 
 Package ID: 04t3h000004bcWpAAI
