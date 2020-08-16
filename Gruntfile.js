@@ -301,7 +301,7 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %>'
+                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
