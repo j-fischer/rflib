@@ -43,6 +43,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private final String context;
   private final rflib_DefaultLogger.DebugLogger debugLogger;
   private final rflib_DefaultLogger.EventPublisher eventPublisher;
+  private final List<String> logMessages;
 
   private Integer logCacheSize = 100;
 
@@ -177,18 +178,27 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         rflib_DefaultLogger.EventPublisher eventPublisher, 
         rflib_DefaultLogger.DebugLogger debugLogger, 
         String context) {
+    this(eventPublisher, debugLogger, context, LOG_STATEMENTS);
+  }
+
+  private rflib_DefaultLogger(
+        rflib_DefaultLogger.EventPublisher eventPublisher, 
+        rflib_DefaultLogger.DebugLogger debugLogger, 
+        String context,
+        List<String> logMessages) {
     this.eventPublisher = eventPublisher;
     this.debugLogger = debugLogger;
     this.context = context;
+    this.logMessages = logMessages;
   }
 
   public void setLogCacheSize(Integer newSize) {
     logCacheSize = newSize;
 
-    Integer numberOfCollectedMessages = LOG_STATEMENTS.size();
+    Integer numberOfCollectedMessages = logMessages.size();
     if (numberOfCollectedMessages > newSize) {
       for (Integer i = 0; i < (numberOfCollectedMessages - newSize); i++) {
-        LOG_STATEMENTS.remove(0);
+        logMessages.remove(0);
       }
     }
   } 
@@ -274,7 +284,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   public void printLogs() {
-    debugLogger.debug(LoggingLevel.DEBUG, 'Log statements reported by ' + context + ':\n' + String.join(LOG_STATEMENTS, '\n'));
+    debugLogger.debug(LoggingLevel.DEBUG, 'Log statements reported by ' + context + ':\n' + String.join(logMessages, '\n'));
   }
 
   public void reportLogs() {
@@ -292,7 +302,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   private void reportLogs(rflib_LogLevel logLevel) {
-    String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
+    String messagesAsStr = String.join(logMessages, '\n');
     Integer messageSize = messagesAsStr.length();
 
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
@@ -330,11 +340,11 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       return;
     }
 
-    if (LOG_STATEMENTS.size() >= logCacheSize) {
-      LOG_STATEMENTS.remove(0);
+    if (logMessages.size() >= logCacheSize) {
+      logMessages.remove(0);
     }
 
-    LOG_STATEMENTS.add(messageToLog);
+    logMessages.add(messageToLog);
     
     if (reportingLogLevel.encompasses(logLevel)) {
       reportLogs(logLevel);
