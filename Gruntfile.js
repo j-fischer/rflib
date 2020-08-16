@@ -262,10 +262,14 @@ module.exports = function(grunt) {
         },
 
         shell: {
+            'force-create-org-default': {
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %> -s'
+            },
+
             'force-create-org': {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %>'
             },
-
+            
             'force-delete-org': {
                 command: 'sfdx force:org:delete -u <%= config.alias %> -p'
             },
@@ -364,7 +368,7 @@ module.exports = function(grunt) {
         
         grunt.task.run([
             'prompt:alias',
-            'shell:force-create-org',
+            'shell:force-create-org-default',
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
