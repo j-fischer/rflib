@@ -36,7 +36,7 @@ public with sharing class rflib_LoggerUtil {
     private static rflib_LoggerFactory loggerFactory;
 
     /**
-     * Return an instance of `rflib_LoggerFactory` based on the configuration of the `Logger Class Name` field in the Logger Settings. 
+     * Return an instance of `rflib_LoggerFactory` based on the configuration of the `Logger Factory Class` field in the Logger Settings. 
      * @return   An instance of the configured `rflib_LoggerFactory`.
      */
     public static rflib_LoggerFactory getFactory() {
@@ -52,6 +52,24 @@ public with sharing class rflib_LoggerUtil {
         }
 
         return loggerFactory;
+    }
+
+    /**
+     * Return an instance of `Finalizer` based on the configuration of the `Log Finalizer Class Name` field in the Logger Settings. 
+     * @return   An instance of the configured `Finalizer`.
+     */
+    public static rflib_LogFinalizer createLogFinalizer(rflib_Logger logger) {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+
+        String logFinalizerTypeName = settings != null && String.isNotBlank(settings.Log_Finalizer_Class__c) ?
+            settings.Logger_Factory_Class__c : 
+            'rflib_DefaultLogFinalizer';
+
+        Type handlerType = Type.forName(logFinalizerTypeName);
+        rflib_LogFinalizer logFinalizer =  (rflib_LogFinalizer) handlerType.newInstance();
+        logFinalizer.setLogger(logger);
+
+        return logFinalizer;
     }
     
     private rflib_LoggerUtil() { }
