@@ -50,12 +50,12 @@ const state = {
 };
 
 const format = (strToFormat, ...args) => {
-    return strToFormat.replace(/{(\d+)}/g, function(match, number) {
+    return strToFormat.replace(/{(\d+)}/g, function (match, number) {
         return typeof args[number] != 'undefined' ? args[number] : 'undefined';
     });
 };
 
-const addMessage = message => {
+const addMessage = (message) => {
     if (state.messages.length >= state.config.stackSize) {
         state.messages.shift();
     }
@@ -79,14 +79,14 @@ const log = (level, component, message) => {
                 level: level.label,
                 context: component,
                 message: state.messages.join('\n')
-            }).catch(error => {
+            }).catch((error) => {
                 window.console.log('>>> Failed to log message to server for: ' + JSON.stringify(error));
             });
         }
     });
 };
 
-const toUpperCase = text => {
+const toUpperCase = (text) => {
     if (text) {
         return text.toUpperCase();
     }
@@ -94,7 +94,7 @@ const toUpperCase = text => {
 };
 
 const initializationPromise = getSettings()
-    .then(result => {
+    .then((result) => {
         log(LogLevel.DEBUG, 'rflibLogger', 'Retrieved settings for user: ' + JSON.stringify(result));
 
         state.config.stackSize = result.Client_Stack_Size__c || state.config.stackSize;
@@ -103,12 +103,12 @@ const initializationPromise = getSettings()
         state.config.serverLogLevel =
             LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || state.config.serverLogLevel;
     })
-    .catch(error => {
+    .catch((error) => {
         window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
     });
 
-const createLogger = loggerName => {
-    const setConfig = newConfig => {
+const createLogger = (loggerName) => {
+    const setConfig = (newConfig) => {
         log(
             LogLevel.INFO,
             loggerName,
@@ -155,4 +155,33 @@ const createLogger = loggerName => {
     };
 };
 
-export { createLogger };
+const createLogTimer = (logger, threshold, timerName, logLevelStr) => {
+    let logMethodName = (logLevelStr || 'warn').toLowerCase();
+
+    let startTime = new Date().getTime();
+
+    const done = () => {
+        let endTime = new Date().getTime();
+
+        if (endTime - startTime > threshold) {
+            if (typeof logger[logMethodName] === 'function') {
+                logger[logMethodName].apply(logger, [
+                    '{0} exceeded time threshold of {1}ms, took {2}ms',
+                    [timerName, threshold, endTime]
+                ]);
+            } else {
+                logger.warn('{0} exceeded time threshold of {1}ms, took {2}ms. NOTE: Invalid log Level provided', [
+                    timerName,
+                    threshold,
+                    endTime
+                ]);
+            }
+        }
+    };
+
+    return {
+        done: done
+    };
+};
+
+export { createLogger, createLogTimer };
