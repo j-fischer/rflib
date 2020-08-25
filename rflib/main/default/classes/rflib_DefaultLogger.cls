@@ -194,6 +194,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   } 
 
   public void setReportingLogLevel(rflib_LogLevel newLevel) {
+    // NOTE: The reporting level can only be INFO or higher to prevent accidental
+    //       "floods" of Log Events being created. Following best practices, DEBUG and TRACE statements
+    //       should be used within loops and should ideally never cause a Log Event to be sent out.
+    //       It is recommended that most log statements should be INFO level to provide the most transparancy
+    //       when reducing the reporting log level down to INFO. 
+    //       See https://github.com/j-fischer/rflib/issues/6 for more details.
     reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
   }
 
