@@ -403,11 +403,14 @@ module.exports = function(grunt) {
     grunt.registerTask('test', 'Run server and client tests', function() {
         var tasks = [
             'prompt:alias',
-            'shell:force-push',
-            'shell:force-test',
             'shell:test-lwc'
         ];
 
+        if (!grunt.option('lwc-only')) {
+            tasks.push('shell:force-push');
+            tasks.push('shell:force-test');
+        }
+ 
         grunt.task.run(tasks);
     });
 
