@@ -59,15 +59,15 @@ public with sharing class rflib_LoggerUtil {
      * Uses `WARN` as the default log level.
      * @return   An instance of the configured `rflib_LogTimer`.
      */
-    public static rflib_LogTimer createLogTimer(rflib_Logger logger, Integer threshold, String message) {
-        return createLogTimer(logger, threshold, message, rflib_LogLevel.WARN);
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message) {
+        return startLogTimer(logger, threshold, message, rflib_LogLevel.WARN);
     }
 
     /**
      * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
      * @return   An instance of the configured `rflib_LogTimer`.
      */
-    public static rflib_LogTimer createLogTimer(rflib_Logger logger, Integer threshold, String message, rflib_LogLevel logLevel) {
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message, rflib_LogLevel logLevel) {
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
 
         String logTimerTypeName = settings != null && String.isNotBlank(settings.Log_Timer_Class__c) ?

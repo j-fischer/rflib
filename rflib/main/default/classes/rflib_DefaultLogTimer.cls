@@ -48,6 +48,7 @@ public without sharing class rflib_DefaultLogTimer implements rflib_LogTimer {
         }
         
         this.logger = logger;
+        this.logLevel = logLevel;
         this.threshold = threshold;
         this.message = message;
 
@@ -75,7 +76,7 @@ public without sharing class rflib_DefaultLogTimer implements rflib_LogTimer {
 
         switch on logLevel.toString() {
             when 'TRACE' {
-                logger.debug(fullMessage, args);
+                logger.trace(fullMessage, args);
             }
 
             when 'DEBUG' {

@@ -37,7 +37,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testDefaultBehaviour() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testDefaultBehaviour');
 
@@ -75,7 +75,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testSetLogCacheSize() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetLogCacheSize');
 
@@ -106,7 +106,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testSetSystemLoggingLevel() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetLogCacheSize');
 
@@ -121,7 +121,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testSetReportingLogLevel() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetReportingLogLevel');
 
@@ -136,7 +136,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testSetReportingLogLevel_LevelCannotBeSetBelowInfo() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetReportingLogLevel_LevelCannotBeSetBelowInfo');
 
@@ -152,7 +152,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testExceedMaxMessageSize() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetReportingLogLevel');
 
@@ -174,7 +174,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testSetGeneralLogLevel() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetGeneralLogLevel');
 
@@ -192,7 +192,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testMessageWithArgs() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testMessageWithArgs');
 
@@ -202,7 +202,7 @@ public class rflib_DefaultLoggerTest {
 
   @isTest
   public static void testMessageWithException() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testMessageWithException');
 
@@ -272,7 +272,7 @@ public class rflib_DefaultLoggerTest {
 
   @IsTest
   private static void testSetBatchReportingLogLevel() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testSetBatchReportingLogLevel');
 

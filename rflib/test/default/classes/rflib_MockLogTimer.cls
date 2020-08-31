@@ -28,39 +28,31 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_LoggerUtilTest {
+public class rflib_MockLogTimer implements rflib_LogTimer {
+    
+    public rflib_Logger logger { get; private set; }
+    public rflib_LogLevel logLevel { get; private set; }
+    public Integer threshold { get; private set; }
+    public String message { get; private set; }
+    public Boolean doneInvoked { get; private set; }
 
-    private static final rflib_MockLogger LOGGER = new rflib_MockLogger();
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    public void start(rflib_Logger logger, rflib_LogLevel logLevel, Integer threshold, String message) {
+        if (this.logger != null) {
+            throw new rflib_InvalidStateException('Timer has already been started');
+        }
+        
+        this.logger = logger;
+        this.logLevel = logLevel;
+        this.threshold = threshold;
+        this.message = message;
+    }    
 
-    @IsTest
-    private static void testGetFacotry_DefaultValue() {
-        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
+    public void done() {
+        if (this.logger == null) {
+            throw new rflib_InvalidStateException('Timer has not been started');
+        }
 
-        System.assert(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
-    }
-
-    @IsTest
-    private static void testGetFacotry_ConfiguredValue() {
-        rflib_TestUtil.prepareLoggerForUnitTests();
-
-        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
-
-        System.assert(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
-    }
-
-    @IsTest
-    private static void testCreateLogTimer_DefaultValue() {
-        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
-
-        System.assert(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
-    }
-
-    @IsTest
-    private static void testCreateLogTimer_ConfiguredValue() {
-        rflib_TestUtil.prepareLoggerForUnitTests();
-
-        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
-
-        System.assert(logTimer instanceof rflib_MockLogTimer, 'Configured Logger Timer instance should be of type rflib_MockLogTimer');
+        doneInvoked = true;
     }
 }

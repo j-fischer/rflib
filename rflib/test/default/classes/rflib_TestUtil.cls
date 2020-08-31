@@ -38,7 +38,8 @@ public class rflib_TestUtil {
         settings.Log_Event_Reporting_Level__c = 'NONE';
         settings.Email_Log_Level__c = 'NONE';
         settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_TestLoggerFactory';
+        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
+        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
 
         upsert settings;
     }
