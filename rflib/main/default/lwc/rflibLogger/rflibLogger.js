@@ -155,7 +155,7 @@ const createLogger = (loggerName) => {
     };
 };
 
-const createLogTimer = (logger, threshold, timerName, logLevelStr) => {
+const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
     let logMethodName = (logLevelStr || 'warn').toLowerCase();
 
     let startTime = new Date().getTime();
@@ -187,4 +187,4 @@ const createLogTimer = (logger, threshold, timerName, logLevelStr) => {
     };
 };
 
-export { createLogger, createLogTimer };
+export { createLogger, startLogTimer };
