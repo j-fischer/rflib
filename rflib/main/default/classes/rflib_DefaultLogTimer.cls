@@ -71,7 +71,7 @@ public without sharing class rflib_DefaultLogTimer implements rflib_LogTimer {
     }
 
     private void logMessage(Long duration, rflib_LogLevel logLevel) {
-        String fullMessage = message + ' took a total of {0}ms (threshold={1}ms).';
+        String fullMessage = message + ' took a total of {0}ms (threshold={1}ms)';
         Object[] args = new Object[] { duration, threshold };
 
         switch on logLevel.toString() {
