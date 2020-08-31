@@ -162,22 +162,23 @@ const createLogTimer = (logger, threshold, timerName, logLevelStr) => {
 
     const done = () => {
         let endTime = new Date().getTime();
+        let duration = endTime - startTime;
 
-        if (endTime - startTime > threshold) {
+        if (duration > threshold) {
             if (typeof logger[logMethodName] === 'function') {
                 logger[logMethodName].apply(logger, [
-                    '{0} exceeded time threshold of {1}ms, took {2}ms',
-                    [timerName, threshold, endTime]
+                    '{0} took a total of {1}ms (threshold={2}ms).',
+                    [timerName, threshold, duration]
                 ]);
             } else {
-                logger.warn('{0} exceeded time threshold of {1}ms, took {2}ms. NOTE: Invalid log Level provided', [
+                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', [
                     timerName,
                     threshold,
                     endTime
                 ]);
             }
         } else {
-            logger.trace('{0} exceeded time threshold of {1}ms, took {2}ms.', [timerName, threshold, endTime]);
+            logger.trace('{0} took a total of {1}ms (threshold={2}ms)', [timerName, threshold, endTime]);
         }
     };
 
