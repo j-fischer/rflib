@@ -305,8 +305,17 @@ describe('log timer', () => {
         });
     });
 
-    it('should not log if threshold was not exceeded', () => {
+    it('should log TRACE statement if threshold was not exceeded', () => {
+        logger.setConfig({
+            consoleLogLevel: 'TRACE'
+        });
+
         let timerName = 'Foo Bar';
+
+        mockConsoleLog
+            .expect()
+            .once()
+            .with(Matcher.containsStrings('console', 'TRACE', timerName, 'exceeded time threshold', 'took'));
 
         let logTimer = logFactory.createLogTimer(logger, 10, timerName);
 

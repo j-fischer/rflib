@@ -176,6 +176,8 @@ const createLogTimer = (logger, threshold, timerName, logLevelStr) => {
                     endTime
                 ]);
             }
+        } else {
+            logger.trace('{0} exceeded time threshold of {1}ms, took {2}ms.', [timerName, threshold, endTime]);
         }
     };
 
