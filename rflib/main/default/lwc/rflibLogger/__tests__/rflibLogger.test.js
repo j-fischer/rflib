@@ -315,9 +315,9 @@ describe('log timer', () => {
         mockConsoleLog
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', 'TRACE', timerName, 'exceeded time threshold', 'took'));
+            .with(Matcher.containsStrings('console', 'TRACE', timerName, 'took a total of', 'threshold'));
 
-        let logTimer = logFactory.createLogTimer(logger, 10, timerName);
+        let logTimer = logFactory.startLogTimer(logger, 10, timerName);
 
         logTimer.done();
     });
@@ -329,9 +329,9 @@ describe('log timer', () => {
         mockConsoleLog
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'exceeded time threshold', 'took'));
+            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
 
-        let logTimer = logFactory.createLogTimer(logger, 10, timerName);
+        let logTimer = logFactory.startLogTimer(logger, 10, timerName);
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         await new Promise((resolve) => setTimeout(resolve, 11));
@@ -346,9 +346,9 @@ describe('log timer', () => {
         mockConsoleLog
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'exceeded time threshold', 'took'));
+            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
 
-        let logTimer = logFactory.createLogTimer(logger, 10, timerName, logLevel);
+        let logTimer = logFactory.startLogTimer(logger, 10, timerName, logLevel);
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         await new Promise((resolve) => setTimeout(resolve, 11));
