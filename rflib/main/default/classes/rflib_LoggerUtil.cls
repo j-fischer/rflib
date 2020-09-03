@@ -57,6 +57,11 @@ public with sharing class rflib_LoggerUtil {
     /**
      * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
      * Uses `WARN` as the default log level.
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.
+     *   
      * @return   An instance of the configured `rflib_LogTimer`.
      */
     public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message) {
@@ -65,6 +70,12 @@ public with sharing class rflib_LoggerUtil {
 
     /**
      * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.  
+     * @param  logLevel The log level to be used when logging the message. 
+     * 
      * @return   An instance of the configured `rflib_LogTimer`.
      */
     public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message, rflib_LogLevel logLevel) {
