@@ -4,7 +4,7 @@
     <defaultValue>&quot;NONE&quot;</defaultValue>
     <description>Set the log level for which the log cahce should be flushed after a rflib_Log_Event__c Platform Event is published. Any log statement that is published and encompassed by set flush cache level, i.e. flush log cache level of WARN will match for WARN and ERROR messages, will clear the log cache after the platform event is emitted.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which  the log cache should be flushed after a rflib_Log_Event__c Platform Event is pub. Valid values are NONE, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will fire the event.</inlineHelpText>
+    <inlineHelpText>Set the log level for which the log cache should be flushed after a rflib_Log_Event__c Platform Event is published. Valid values are NONE, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured will fire the event.</inlineHelpText>
     <label>Flush Log Cache Level</label>
     <length>5</length>
     <required>false</required>
