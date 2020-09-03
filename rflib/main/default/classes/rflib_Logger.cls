@@ -59,6 +59,20 @@ public interface rflib_Logger {
   void setReportingLogLevel(rflib_LogLevel newLevel);
 
   /**
+   * Set the log level for which the log cache should be flushed after a rflib_Log_Event__c Platform Event is 
+   * published. Any log statement that is published and encompassed by set flush cache level, i.e. flush log 
+   * cache level of WARN will match for WARN and ERROR messages, will clear the log cache after the platform 
+   * event is emitted. This means that all historic log statements will be deleted.
+   * 
+   * rflib_DefaultLogger's default level is NONE.
+   * 
+   * IMPORTANT: The log level cannot be set to a level lower than INFO. 
+   * 
+   * @param  newLevel The new log level to be used to match statements. 
+   */
+  void setFlushLogCacheLevel(rflib_LogLevel newLevel);
+
+  /**
    * Set the log level for which a rflib_Log_Event__c Platform Event should be published asynchronously. 
    * Any log statement that reported and encompassed by set aync reporting level, i.e. async reporting log level of 
    * WARN will match for WARN and ERROR messages, will publish the log event using a `Queueable`.

@@ -49,6 +49,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
   private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
+  private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
   private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
 
 
@@ -107,6 +108,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
     if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
       logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
+    }
+
+    if (String.isNotBlank(settings.Flush_Log_Cache_Level__c)) {
+      logger.setFlushLogCacheLevel(rflib_LogLevel.fromString(settings.Flush_Log_Cache_Level__c));
     }
 
     if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
@@ -201,6 +206,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     //       when reducing the reporting log level down to INFO. 
     //       See https://github.com/j-fischer/rflib/issues/6 for more details.
     reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
+  }
+
+  public void setFlushLogCacheLevel(rflib_LogLevel newLevel) {
+    // NOTE: Because this log level is aligned with the reporting log level, the same restrictions 
+    //       apply with respect to the supported levels.
+    flushLogStackLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
   }
 
   public void setBatchReportingLogLevel(rflib_LogLevel newLevel) {
@@ -313,6 +324,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       BATCH_EXECUTOR.addEvent(eventToLog);
     } else {
       eventPublisher.publish(eventToLog);
+      
+      if (flushLogStackLevel.encompasses(logLevel)) {
+        LOG_STATEMENTS.clear();
+      }
     }
   }
 

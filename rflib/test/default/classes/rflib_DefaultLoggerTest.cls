@@ -289,6 +289,27 @@ public class rflib_DefaultLoggerTest {
     Test.stopTest();
   }
 
+  @IsTest
+  private static void testFlushLogCacheLevel() {
+    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+
+    rflib_Logger logger = loggerFactory.createLogger('testFlushLogCacheLevel');
+
+    logger.setReportingLogLevel(rflib_LogLevel.INFO);
+    logger.setFlushLogCacheLevel(rflib_LogLevel.INFO);
+
+    Test.startTest();
+    System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
+    
+    logger.info('message1');
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('message1'));
+    
+    logger.info('message2');
+    System.assert(loggerFactory.eventCapture.doesNotContainInAnyMessage('message1'));
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('message2'));
+    Test.stopTest();
+  }
+
   public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
     private final List<String> capturedLogMessages = new List<String>();
     
