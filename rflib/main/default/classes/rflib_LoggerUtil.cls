@@ -53,6 +53,45 @@ public with sharing class rflib_LoggerUtil {
 
         return loggerFactory;
     }
+
+    /**
+     * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
+     * Uses `WARN` as the default log level.
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.
+     *   
+     * @return   An instance of the configured `rflib_LogTimer`.
+     */
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message) {
+        return startLogTimer(logger, threshold, message, rflib_LogLevel.WARN);
+    }
+
+    /**
+     * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.  
+     * @param  logLevel The log level to be used when logging the message. 
+     * 
+     * @return   An instance of the configured `rflib_LogTimer`.
+     */
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message, rflib_LogLevel logLevel) {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+
+        String logTimerTypeName = settings != null && String.isNotBlank(settings.Log_Timer_Class__c) ?
+            settings.Log_Timer_Class__c : 
+            'rflib_DefaultLogTimer';
+
+        Type handlerType = Type.forName(logTimerTypeName);
+        rflib_LogTimer logTimer =  (rflib_LogTimer) handlerType.newInstance();
+
+        logTimer.start(logger, logLevel, threshold, message);
+
+        return logTimer;
+    }
     
     private rflib_LoggerUtil() { }
 }

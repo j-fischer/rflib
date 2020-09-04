@@ -52,16 +52,26 @@ public with sharing class rflib_HttpRequest {
     }
 
     public HttpResponse send() {
-        LOGGER.info('Sending request: {0} with body: {1}', new String[] { delegatee.toString(), delegatee.getBody() } );
+        return send(null);
+    }
 
-        delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderName, rflib_TraceId.value);
-
-        Http http = new Http();
-        HttpResponse response = http.send(delegatee);
-        
-        LOGGER.info('Response received: {0} with body: {1}', new String[] { response.toString(), response.getBody() } );
-
-        return response;
+    public HttpResponse send(rflib_LogTimer logTimer) {
+        try {
+            LOGGER.info('Sending request: {0} with body: {1}', new String[] { delegatee.toString(), delegatee.getBody() } );
+    
+            delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderName, rflib_TraceId.value);
+    
+            Http http = new Http();
+            HttpResponse response = http.send(delegatee);
+            
+            LOGGER.info('Response received: {0} with body: {1}', new String[] { response.toString(), response.getBody() } );
+    
+            return response;
+        } finally {
+            if (logTimer != null) {
+                logTimer.done();
+            }
+        }
     }
 
     public void setBody(String body) {

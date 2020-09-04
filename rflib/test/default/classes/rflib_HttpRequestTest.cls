@@ -58,6 +58,22 @@ private class rflib_HttpRequestTest {
     }
 
     @IsTest
+    private static void testSend_withLogTimer() {
+        rflib_MockLogger logger = new rflib_MockLogger();
+        rflib_MockLogTimer logTimer = new rflib_MockLogTimer();
+        
+        rflib_HttpRequest req = createRequest();
+        HttpResponse resp = createResponse('testSend_withLogTimer');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderName }));
+
+        logTimer.start(logger, rflib_LogLevel.WARN, -1, 'HttpRequest timer');
+        HttpResponse actualResponse = req.send(logTimer);
+
+        System.assert(logTimer.doneInvoked , 'The rflib_HttpRequest should have invoked the logTimer.done() methods');
+    }
+
+    @IsTest
     private static void testSend_WithCustomHeader() {
         String headerKey = 'X-UnitTest';
         String headerValue = 'FooBar';

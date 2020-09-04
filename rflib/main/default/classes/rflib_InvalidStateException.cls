@@ -26,41 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
+
+/**
+ * @group Common
+ * @description Exception to be thrown if an object has an invalid state for a service execution. 
+ */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_LoggerUtilTest {
-
-    private static final rflib_MockLogger LOGGER = new rflib_MockLogger();
-
-    @IsTest
-    private static void testGetFacotry_DefaultValue() {
-        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
-
-        System.assert(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
-    }
-
-    @IsTest
-    private static void testGetFacotry_ConfiguredValue() {
-        rflib_TestUtil.prepareLoggerForUnitTests();
-
-        rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
-
-        System.assert(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
-    }
-
-    @IsTest
-    private static void testCreateLogTimer_DefaultValue() {
-        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
-
-        System.assert(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
-    }
-
-    @IsTest
-    private static void testCreateLogTimer_ConfiguredValue() {
-        rflib_TestUtil.prepareLoggerForUnitTests();
-
-        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
-
-        System.assert(logTimer instanceof rflib_MockLogTimer, 'Configured Logger Timer instance should be of type rflib_MockLogTimer');
-    }
-}
+public class rflib_InvalidStateException extends Exception { }
