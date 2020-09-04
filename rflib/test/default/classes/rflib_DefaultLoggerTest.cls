@@ -291,7 +291,7 @@ public class rflib_DefaultLoggerTest {
 
   @IsTest
   private static void testFlushLogCacheLevel() {
-    rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     rflib_Logger logger = loggerFactory.createLogger('testFlushLogCacheLevel');
 
