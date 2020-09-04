@@ -46,8 +46,9 @@ public class rflib_MockTriggerConfigQueryLocator implements rflib_TriggerManager
     }
 
     public List<rflib_Trigger_Configuration__mdt> getRecords(String objectType, String triggerEvent) {
-        System.assertEquals(expectedObjectType, objectType, 'Unexpected object type');
-        System.assertEquals(expectedTriggerEvent, triggerEvent, 'Unexpected trigger event');
+        if (objectType != expectedObjectType || triggerEvent != expectedObjectType) {
+            return new List<rflib_Trigger_Configuration__mdt>();
+        }
 
         return configRecords;
     }
