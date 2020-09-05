@@ -205,13 +205,17 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     //       It is recommended that most log statements should be INFO level to provide the most transparancy
     //       when reducing the reporting log level down to INFO. 
     //       See https://github.com/j-fischer/rflib/issues/6 for more details.
-    reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
+    reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) || rflib_LogLevel.NONE == newLevel ? 
+      newLevel : 
+      rflib_LogLevel.INFO;
   }
 
   public void setFlushLogCacheLevel(rflib_LogLevel newLevel) {
     // NOTE: Because this log level is aligned with the reporting log level, the same restrictions 
     //       apply with respect to the supported levels.
-    flushLogStackLevel = rflib_LogLevel.INFO.encompasses(newLevel) ? newLevel : rflib_LogLevel.INFO;
+    flushLogStackLevel = rflib_LogLevel.INFO.encompasses(newLevel) || rflib_LogLevel.NONE == newLevel ? 
+      newLevel : 
+      rflib_LogLevel.INFO;
   }
 
   public void setBatchReportingLogLevel(rflib_LogLevel newLevel) {
