@@ -403,6 +403,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test', 'Run server and client tests', function() {
         var tasks = [
             'prompt:alias',
+            'shell:lint',
             'shell:test-lwc'
         ];
 
