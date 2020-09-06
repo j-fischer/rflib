@@ -1,3 +1,22 @@
+### RFLIB 2.1.0
+
+Package ID: 04t3h000004jnf6AAA
+Package Alias: RFLIB@2.1.0-3
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jnf6AAA
+
+-   Introduced Log Timer for LWC, Aura, and Apex to add a log statement including the duration of the timer
+-   Added new custom setting to set the log level for when to flush log statements after a Log Event is published, default level is NONE
+-   Fixed bug where the Log Reporting Level did not allow for NONE as a valid value
+
+### RFLIB-TF 1.0.1
+
+Package ID: 04t3h000004jnfBAAQ
+Package Alias: RFLIB-TF@1.0.1-3
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jnfBAAQ
+
+-   Fixed issue with rflib_MockTriggerConfigQueryLocator that would fail tests for regular custom or standard objects
+-   Updated project dependency for RFLIB to version 2.1
+
 ### RFLIB-FS 1.0.1
 
 Package ID: 04t3h000004jmovAAA
