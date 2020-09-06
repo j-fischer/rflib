@@ -40,7 +40,9 @@ public interface rflib_TriggerHandler {
     void run(rflib_TriggerManager.Args args);
 
     /**
-     * onConsecutiveRun description
+     * Method to be invoked by the Trigger Framework in the vent of a recursive invocation. The counter will the number 
+     * of times the recursive loop was entered.  
+     * 
      * @param  args          The TriggerManager.Args object containing all event details.
      * @param  numInvocation The number of times this event trigger has been invoked in the recursive context. 
      *                       Note that the number increases per event type, i.e. before and after update trigger
