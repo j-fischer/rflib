@@ -247,7 +247,7 @@ public class rflib_DefaultLoggerTest {
 
     Test.startTest();
     logger.reportLogs();
-    System.assertEquals(1, Limits.getDmlStatements());
+    System.assertEquals(1, Limits.getPublishImmediateDML());
     Test.stopTest();
   }
 
@@ -263,10 +263,10 @@ public class rflib_DefaultLoggerTest {
     logger.info('This is a test message');
     logger.info('This is a test message');
     logger.reportLogs();
-    System.assertEquals(0, Limits.getDmlStatements());
+    System.assertEquals(0, Limits.getPublishImmediateDML());
     
     logger.publishBatchedLogEvents();
-    System.assertEquals(1, Limits.getDmlStatements());
+    System.assertEquals(1, Limits.getPublishImmediateDML());
     Test.stopTest();
   }
 
@@ -282,10 +282,10 @@ public class rflib_DefaultLoggerTest {
     Test.startTest();
     logger.info('This is a test message');
     logger.info('This is a test message');
-    System.assertEquals(0, Limits.getDmlStatements());
+    System.assertEquals(0, Limits.getPublishImmediateDML());
     
     logger.publishBatchedLogEvents();
-    System.assertEquals(1, Limits.getDmlStatements());
+    System.assertEquals(1, Limits.getPublishImmediateDML());
     Test.stopTest();
   }
 
