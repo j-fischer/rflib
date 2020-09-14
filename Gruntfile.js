@@ -263,11 +263,11 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %> -s'
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
             },
 
             'force-create-org': {
-                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %>'
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
             },
             
             'force-delete-org': {
@@ -364,8 +364,6 @@ module.exports = function(grunt) {
      * Public BUILD TARGETS
      */
     grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
-        grunt.config('config.sfdx.org.create.parameters', '');
-        
         grunt.task.run([
             'prompt:alias',
             'shell:force-create-org-default',
