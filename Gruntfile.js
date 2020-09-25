@@ -375,6 +375,21 @@ module.exports = function(grunt) {
         ]);
     });
 
+    /*
+     * Public BUILD TARGETS
+     */
+    grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
+        grunt.task.run([
+            'prompt:alias',
+            'prompt:selectPackage',
+            'prompt:confirmVersion',
+            'shell:force-create-org',
+            'shell:force-install-dependencies',
+            'shell:force-install-latest',
+            'shell:force-open'
+        ]);
+    });
+
     grunt.registerTask('create-package', 'Create a new package version', function() {
         grunt.task.run(['prompt:alias', 'prompt:selectPackage', 'prompt:bump', 'prompt:updateDependencies', '__bumpVersionAndPackage']);
     });
