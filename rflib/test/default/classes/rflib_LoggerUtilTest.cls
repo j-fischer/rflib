@@ -30,6 +30,8 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LoggerUtilTest {
 
+    private static final rflib_MockLogger LOGGER = new rflib_MockLogger();
+
     @IsTest
     private static void testGetFacotry_DefaultValue() {
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
@@ -43,6 +45,22 @@ private class rflib_LoggerUtilTest {
 
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
 
-        System.assert(factory instanceof rflib_TestLoggerFactory, 'Default Logger Factory instance should be of type rflib_TestLoggerFactory');
+        System.assert(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
+    }
+
+    @IsTest
+    private static void testCreateLogTimer_DefaultValue() {
+        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
+
+        System.assert(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
+    }
+
+    @IsTest
+    private static void testCreateLogTimer_ConfiguredValue() {
+        rflib_TestUtil.prepareLoggerForUnitTests();
+
+        rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
+
+        System.assert(logTimer instanceof rflib_MockLogTimer, 'Configured Logger Timer instance should be of type rflib_MockLogTimer');
     }
 }

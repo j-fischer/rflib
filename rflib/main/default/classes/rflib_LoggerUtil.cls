@@ -36,7 +36,7 @@ public with sharing class rflib_LoggerUtil {
     private static rflib_LoggerFactory loggerFactory;
 
     /**
-     * Return an instance of `rflib_LoggerFactory` based on the configuration of the `Logger Factory Class` field in the Logger Settings. 
+     * Return an instance of `rflib_LoggerFactory` based on the configuration of the `Logger Class Name` field in the Logger Settings. 
      * @return   An instance of the configured `rflib_LoggerFactory`.
      */
     public static rflib_LoggerFactory getFactory() {
@@ -55,21 +55,42 @@ public with sharing class rflib_LoggerUtil {
     }
 
     /**
-     * Return an instance of `Finalizer` based on the configuration of the `Log Finalizer Class Name` field in the Logger Settings. 
-     * @return   An instance of the configured `Finalizer`.
+     * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
+     * Uses `WARN` as the default log level.
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.
+     *   
+     * @return   An instance of the configured `rflib_LogTimer`.
      */
-    public static rflib_LogFinalizer createLogFinalizer(rflib_Logger logger) {
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message) {
+        return startLogTimer(logger, threshold, message, rflib_LogLevel.WARN);
+    }
+
+    /**
+     * Return an instance of `rflib_LogTimer` based on the configuration of the `Log Timer Class Name` field in the Logger Settings. 
+     * 
+     * @param  logger The logger to be used when logging the message. 
+     * @param  threshold The threshold after which the elevated duration statement will be logged, otherwise it uses a TRACE level. 
+     * @param  message The message to be logged along with the duration of the execution.  
+     * @param  logLevel The log level to be used when logging the message. 
+     * 
+     * @return   An instance of the configured `rflib_LogTimer`.
+     */
+    public static rflib_LogTimer startLogTimer(rflib_Logger logger, Integer threshold, String message, rflib_LogLevel logLevel) {
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
 
-        String logFinalizerTypeName = settings != null && String.isNotBlank(settings.Log_Finalizer_Class__c) ?
-            settings.Logger_Factory_Class__c : 
-            'rflib_DefaultLogFinalizer';
+        String logTimerTypeName = settings != null && String.isNotBlank(settings.Log_Timer_Class__c) ?
+            settings.Log_Timer_Class__c : 
+            'rflib_DefaultLogTimer';
 
-        Type handlerType = Type.forName(logFinalizerTypeName);
-        rflib_LogFinalizer logFinalizer =  (rflib_LogFinalizer) handlerType.newInstance();
-        logFinalizer.setLogger(logger);
+        Type handlerType = Type.forName(logTimerTypeName);
+        rflib_LogTimer logTimer =  (rflib_LogTimer) handlerType.newInstance();
 
-        return logFinalizer;
+        logTimer.start(logger, logLevel, threshold, message);
+
+        return logTimer;
     }
     
     private rflib_LoggerUtil() { }

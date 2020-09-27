@@ -26,27 +26,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@IsTest
+@SuppressWarnings('PMD.ClassNamingConventions')
+public class rflib_MockLogTimer implements rflib_LogTimer {
+    
+    public rflib_Logger logger { get; private set; }
+    public rflib_LogLevel logLevel { get; private set; }
+    public Integer threshold { get; private set; }
+    public String message { get; private set; }
+    public Boolean doneInvoked { get; private set; }
 
-/**
- * @group Trigger
- * @description Base interface for the trigger framework.
- */ 
-public interface rflib_TriggerHandler {
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    public void start(rflib_Logger logger, rflib_LogLevel logLevel, Integer threshold, String message) {
+        if (this.logger != null) {
+            throw new rflib_InvalidStateException('Timer has already been started');
+        }
+        
+        this.logger = logger;
+        this.logLevel = logLevel;
+        this.threshold = threshold;
+        this.message = message;
+    }    
 
-    /**
-     * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 
-     * @param  args The TriggerManager.Args object containing all event details.
-     */
-    void run(rflib_TriggerManager.Args args);
+    public void done() {
+        if (this.logger == null) {
+            throw new rflib_InvalidStateException('Timer has not been started');
+        }
 
-    /**
-     * Method to be invoked by the Trigger Framework in the vent of a recursive invocation. The counter will the number 
-     * of times the recursive loop was entered.  
-     * 
-     * @param  args          The TriggerManager.Args object containing all event details.
-     * @param  numInvocation The number of times this event trigger has been invoked in the recursive context. 
-     *                       Note that the number increases per event type, i.e. before and after update trigger
-     *                       will each have a counter of 1 during the first cycle.
-     */
-    void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation);
+        doneInvoked = true;
+    }
 }

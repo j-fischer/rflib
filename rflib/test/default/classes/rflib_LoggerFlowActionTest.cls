@@ -30,7 +30,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LoggerFlowActionTest {
     
-    private static final rflib_TestLoggerFactory loggerFactory = new rflib_TestLoggerFactory();
+    private static final rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
     @IsTest
     private static void testLogMessage_Fatal() {
@@ -70,7 +70,7 @@ private class rflib_LoggerFlowActionTest {
 
     @IsTest
     private static void testLogMessage_Debug() {
-        rflib_TestLoggerFactory debugLogFactory = new rflib_TestLoggerFactory(rflib_LogLevel.DEBUG);
+        rflib_MockLoggerFactory debugLogFactory = new rflib_MockLoggerFactory(rflib_LogLevel.DEBUG);
         rflib_LoggerFlowAction.loggerFactory = debugLogFactory;
 
         rflib_LoggerFlowAction.logMessage(createMessageInfo('debug'));
@@ -80,7 +80,7 @@ private class rflib_LoggerFlowActionTest {
 
     @IsTest
     private static void testLogMessage_UnknownLogLevel() {
-        rflib_TestLoggerFactory debugLogFactory = new rflib_TestLoggerFactory(rflib_LogLevel.DEBUG);
+        rflib_MockLoggerFactory debugLogFactory = new rflib_MockLoggerFactory(rflib_LogLevel.DEBUG);
         rflib_LoggerFlowAction.loggerFactory = debugLogFactory;
 
         rflib_LoggerFlowAction.logMessage(createMessageInfo('foobar'));

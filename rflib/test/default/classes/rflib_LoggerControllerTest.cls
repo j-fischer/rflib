@@ -35,10 +35,10 @@ private class rflib_LoggerControllerTest {
     private static void setup(){
         rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getOrgDefaults();
 
-        loggerSettings.General_Log_Level__c = 'None';
-        loggerSettings.System_Debug_Log_Level__c = 'None';
-        loggerSettings.Log_Event_Reporting_Level__c = 'None';
-        loggerSettings.Org_Wide_Email_Sender_Address__c = 'foo@bar.com';
+        loggerSettings.Client_Log_Size__c = 50;
+        loggerSettings.Client_Console_Log_Level__c = 'INFO';
+        loggerSettings.Client_Server_Log_Level__c = 'INFO';
+        loggerSettings.Flush_Log_Cache_Level__c = 'NONE';
         loggerSettings.Logger_Factory_Class__c = 'rflib_DefaultLoggerFactory';
 
         upsert loggerSettings;
@@ -48,9 +48,9 @@ private class rflib_LoggerControllerTest {
     public static void testGetSettings() {
         rflib_Logger_Settings__c actualSettings = rflib_LoggerController.getSettings();
 
-        System.assertEquals('None', actualSettings.General_Log_Level__c);
-        System.assertEquals('None', actualSettings.System_Debug_Log_Level__c);
-        System.assertEquals('None', actualSettings.Log_Event_Reporting_Level__c);
+        System.assertEquals(50, actualSettings.Client_Log_Size__c);
+        System.assertEquals('INFO', actualSettings.Client_Console_Log_Level__c);
+        System.assertEquals('INFO', actualSettings.Client_Server_Log_Level__c);
     }
 
     @isTest

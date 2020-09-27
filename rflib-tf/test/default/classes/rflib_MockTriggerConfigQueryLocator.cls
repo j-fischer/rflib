@@ -29,7 +29,7 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockTriggerConfigQueryLocator implements rflib_TriggerManager.ITriggerConfigurationQueryLocator {
-    
+
     public final String expectedObjectType;
     public final String expectedTriggerEvent;
     
@@ -46,8 +46,9 @@ public class rflib_MockTriggerConfigQueryLocator implements rflib_TriggerManager
     }
 
     public List<rflib_Trigger_Configuration__mdt> getRecords(String objectType, String triggerEvent) {
-        System.assertEquals(expectedObjectType, objectType, 'Unexpected object type');
-        System.assertEquals(expectedTriggerEvent, triggerEvent, 'Unexpected trigger event');
+        if (objectType != expectedObjectType || triggerEvent != expectedTriggerEvent) {
+            return new List<rflib_Trigger_Configuration__mdt>();
+        }
 
         return configRecords;
     }

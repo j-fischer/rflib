@@ -28,25 +28,8 @@
  */
 
 /**
- * @group Trigger
- * @description Base interface for the trigger framework.
+ * @group Common
+ * @description Exception to be thrown if an object has an invalid state for a service execution. 
  */ 
-public interface rflib_TriggerHandler {
-
-    /**
-     * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 
-     * @param  args The TriggerManager.Args object containing all event details.
-     */
-    void run(rflib_TriggerManager.Args args);
-
-    /**
-     * Method to be invoked by the Trigger Framework in the vent of a recursive invocation. The counter will the number 
-     * of times the recursive loop was entered.  
-     * 
-     * @param  args          The TriggerManager.Args object containing all event details.
-     * @param  numInvocation The number of times this event trigger has been invoked in the recursive context. 
-     *                       Note that the number increases per event type, i.e. before and after update trigger
-     *                       will each have a counter of 1 during the first cycle.
-     */
-    void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation);
-}
+@SuppressWarnings('PMD.ClassNamingConventions')
+public class rflib_InvalidStateException extends Exception { }

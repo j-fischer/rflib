@@ -61,6 +61,7 @@ public with sharing class rflib_LoggerController {
         logger.setGeneralLogLevel(rflib_LogLevel.DEBUG);
         logger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
         logger.setReportingLogLevel(rflib_LogLevel.DEBUG);
+        logger.setFlushLogCacheLevel(rflib_LogLevel.NONE);
 
         switch on level.toUpperCase() {
             when 'TRACE' {

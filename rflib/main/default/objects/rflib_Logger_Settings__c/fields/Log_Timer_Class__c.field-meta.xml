@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Log_Timer_Class__c</fullName>
+    <defaultValue>&quot;rflib_DefaultLogTimer&quot;</defaultValue>
+    <description>This field identifies the class to be used when creating a Log Timer, which can be dynamically loaded and instantiated using the rflib_LoggerUtil.createLogTimer(...) method.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Please provide the name of the Apex class implementing the rflib_LogTimer interface. This class will be dynamically instantiated and used in your Apex code. Please use caution when changing the default value.</inlineHelpText>
+    <label>Log Timer Class</label>
+    <length>255</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

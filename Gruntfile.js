@@ -262,10 +262,14 @@ module.exports = function(grunt) {
         },
 
         shell: {
-            'force-create-org': {
-                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> <%= config.sfdx.org.create.parameters %>'
+            'force-create-org-default': {
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
             },
 
+            'force-create-org': {
+                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
+            },
+            
             'force-delete-org': {
                 command: 'sfdx force:org:delete -u <%= config.alias %> -p'
             },
@@ -288,7 +292,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 10'
+                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 20'
             },
 
             'force-install-latest': {
@@ -297,7 +301,7 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %>'
+                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
@@ -360,15 +364,28 @@ module.exports = function(grunt) {
      * Public BUILD TARGETS
      */
     grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
-        grunt.config('config.sfdx.org.create.parameters', '');
-        
         grunt.task.run([
             'prompt:alias',
-            'shell:force-create-org',
+            'shell:force-create-org-default',
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
             'shell:test-lwc',
+            'shell:force-open'
+        ]);
+    });
+
+    /*
+     * Public BUILD TARGETS
+     */
+    grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
+        grunt.task.run([
+            'prompt:alias',
+            'prompt:selectPackage',
+            'prompt:confirmVersion',
+            'shell:force-create-org',
+            'shell:force-install-dependencies',
+            'shell:force-install-latest',
             'shell:force-open'
         ]);
     });
@@ -399,11 +416,15 @@ module.exports = function(grunt) {
     grunt.registerTask('test', 'Run server and client tests', function() {
         var tasks = [
             'prompt:alias',
-            'shell:force-push',
-            'shell:force-test',
+            'shell:lint',
             'shell:test-lwc'
         ];
 
+        if (!grunt.option('lwc-only')) {
+            tasks.push('shell:force-push');
+            tasks.push('shell:force-test');
+        }
+ 
         grunt.task.run(tasks);
     });
 

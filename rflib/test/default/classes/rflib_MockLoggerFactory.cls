@@ -28,18 +28,18 @@
  */
 @isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestLoggerFactory implements rflib_LoggerFactory {
+public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
 
     public final DebugLogCapture debugLogCapture = new DebugLogCapture();
     public final EventCapture eventCapture = new EventCapture();
 
     private final rflib_LogLevel systemDebugLogLevel;
 
-    public rflib_TestLoggerFactory() {
+    public rflib_MockLoggerFactory() {
        this(null);
     }
 
-    public rflib_TestLoggerFactory(rflib_LogLevel systemDebugLogLevel) {
+    public rflib_MockLoggerFactory(rflib_LogLevel systemDebugLogLevel) {
        this.systemDebugLogLevel = systemDebugLogLevel;
     }
 
