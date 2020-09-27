@@ -92,6 +92,25 @@ public with sharing class rflib_LoggerUtil {
 
         return logTimer;
     }
+
+    
+    /**
+     * Return an instance of `Finalizer` based on the configuration of the `Log Finalizer Class Name` field in the Logger Settings. 
+     * @return   An instance of the configured `Finalizer`.
+     */
+    public static rflib_LogFinalizer createLogFinalizer(rflib_Logger logger) {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+ 
+        String logFinalizerTypeName = settings != null && String.isNotBlank(settings.Log_Finalizer_Class__c) ?
+            settings.Logger_Factory_Class__c : 
+            'rflib_DefaultLogFinalizer';
+
+        Type handlerType = Type.forName(logFinalizerTypeName);
+        rflib_LogFinalizer logFinalizer =  (rflib_LogFinalizer) handlerType.newInstance();
+        logFinalizer.setLogger(logger);
+
+        return logFinalizer;
+    }
     
     private rflib_LoggerUtil() { }
 }
