@@ -2,7 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Log_Finalizer_Class__c</fullName>
     <defaultValue>&quot;rflib_DefaultLogFinalizer&quot;</defaultValue>
+    <description>This field identifies the class to be used as a Log Finalizer, which can be dynamically loaded using the rflib_LoggerUtil.createLogFinalizer() method. This class will then be instantiated and used to create the logger instance.</description>
     <externalId>false</externalId>
+    <inlineHelpText>Please provide the name of the Apex class implementing the rflib_LogFinalizer interface. This class will be dynamically instantiated and can be attached as a Finalizer. Please use caution when changing the default value.</inlineHelpText>
     <label>Log Finalizer Class</label>
     <length>255</length>
     <required>false</required>
