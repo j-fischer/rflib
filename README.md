@@ -83,6 +83,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 
 -   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
+-   "Bypass All Trigger" Custom Permission was inspired by: https://github.com/appero-com/MyTriggers
 -   The unlocked packaged was created with the help of Andrew Fawcett: https://andyinthecloud.com/2018/06/16/salesforce-dx-packages-and-open-source/
 -   Logo was created with: https://www.freelogodesign.org/
 -   Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin

@@ -38,6 +38,8 @@ private class rflib_TriggerManagerTest {
 
     private static final Exception EX = new MockTriggerHandlerException('This is a MockTriggerHandlerException');
 
+    @TestVisible private static final User BYPASS_TRIGGERS_USER = rflib_UserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
+
     private static void setup(String exceptionBehaviour) {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
             createConfiguration(exceptionBehaviour), 
@@ -59,6 +61,17 @@ private class rflib_TriggerManagerTest {
         rflib_TriggerManager.dispatch(createArgs(createEvent()));
 
         System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+    }
+
+    @IsTest
+    public static void testRun_BypassAllTriggerPermissionSet() {
+        setup(ABORT_TRANSACTION);
+
+        System.runAs(BYPASS_TRIGGERS_USER) {
+            rflib_TriggerManager.dispatch(createArgs(createEvent()));
+    
+            System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        }
     }
 
     @IsTest
