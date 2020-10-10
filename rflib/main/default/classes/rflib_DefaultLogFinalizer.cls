@@ -48,7 +48,7 @@ public class rflib_DefaultLogFinalizer implements rflib_LogFinalizer {
         if (ctx.getResult() == ParentJobResult.SUCCESS) {
             logger.info('Parent Queueable (Job ID: {0}, Request ID: {1}) completed successfully!', new Object[] { jobId, reqId });
         } else {
-            logger.error('Parent Queueable (Job ID: {0}, Request ID: {1}) failed!', new Object[] { jobId, reqId }, ctx.getException());
+            logger.fatal('Parent Queueable (Job ID: {0}, Request ID: {1}) failed!', new Object[] { jobId, reqId }, ctx.getException());
         }
 
         logger.publishBatchedLogEvents();
