@@ -50,7 +50,7 @@ export default class LogEventViewer extends LightningElement {
         if (error) {
             let message = 'Unknown error';
             if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
+                message = error.body.map((e) => e.message).join(', ');
             } else if (typeof error.body.message === 'string') {
                 message = error.body.message;
             }
@@ -63,7 +63,7 @@ export default class LogEventViewer extends LightningElement {
     }
 
     get title() {
-        return this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
+        return this.logEvent.Request_ID__c + ' - ' + this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
     }
 
     get name() {
