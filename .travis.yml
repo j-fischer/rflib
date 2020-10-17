@@ -26,7 +26,7 @@ script:
     - sfdx force:org:display -u ciorg
     - sfdx force:source:push -u ciorg
     - set +e
-    - sfdx force:apex:test:run -u ciorg --codecoverage -r human -d apex_tests/ --wait 10
+    - sfdx force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
     - npm run test:unit:coverage
     - cp ~/apex_tests/test-result-codecoverage.json .
     - bash <(curl -s https://codecov.io/bash)
