@@ -35,9 +35,9 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_TraceId {
     
-    public static String value = UserInfo.getUserId();
+    public static String value = UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId();
     
-    @SuppressWarnings('PMD.EmptyStatementBlock')
     @TestVisible
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     private rflib_TraceId() { }
 }

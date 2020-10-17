@@ -32,7 +32,7 @@ private class rflib_TraceIdTest {
 
     @IsTest
     private static void testValue(){
-        System.assertEquals(UserInfo.getUserId(), rflib_TraceId.value);        
+        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), rflib_TraceId.value);        
     }
 
     @IsTest

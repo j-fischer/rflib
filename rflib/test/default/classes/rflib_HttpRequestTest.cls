@@ -52,7 +52,7 @@ private class rflib_HttpRequestTest {
         HttpResponse actualResponse = req.send();
 
         System.assertNotEquals(null, actualResponse);
-        System.assertEquals(UserInfo.getUserId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderName));
+        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderName));
         
         assertResponse(resp, actualResponse);
     }
