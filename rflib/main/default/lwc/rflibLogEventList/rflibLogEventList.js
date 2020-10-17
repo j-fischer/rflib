@@ -59,6 +59,7 @@ export default class LogEventList extends LightningElement {
     eventsToDisplay = [];
 
     contextSearch;
+    createdBySearch;
     logMessageSearch;
 
     @api
@@ -88,15 +89,16 @@ export default class LogEventList extends LightningElement {
         logger.debug('Display page with index {0}', this.currentPageIndex);
 
         const filteredEvents =
-            this.contextSearch || this.logMessageSearch
+            this.contextSearch || this.createdBySearch || this.logMessageSearch
                 ? this.allEvents.filter(
-                      evt =>
+                      (evt) =>
+                          (!this.createdBySearch || evt.CreatedById.indexOf(this.createdBySearch) > -1) &&
                           (!this.contextSearch || evt.Context__c.indexOf(this.contextSearch) > -1) &&
                           (!this.logMessageSearch || evt.Log_Messages__c.indexOf(this.logMessageSearch) > -1)
                   )
                 : this.allEvents;
 
-        this.filteredEvents = filteredEvents.map(function(evt, index) {
+        this.filteredEvents = filteredEvents.map(function (evt, index) {
             const modifiedEvt = { ...evt };
             modifiedEvt.Id = index;
             return modifiedEvt;
@@ -121,9 +123,18 @@ export default class LogEventList extends LightningElement {
         this.dispatchEvent(event);
     }
 
+    handleCreatedByChanged(event) {
+        if (this.createdBySearch !== event.target.value) {
+            logger.debug('Created by search target={0}', event.target.value);
+            this.createdBySearch = event.target.value;
+            this.currentpage = 1;
+            this.refreshEventList();
+        }
+    }
+
     handleContextKeyChange(event) {
         if (this.contextSearch !== event.target.value) {
-            logger.debug('Search target={0}', event.target.value);
+            logger.debug('Context search target={0}', event.target.value);
             this.contextSearch = event.target.value;
             this.currentpage = 1;
             this.refreshEventList();
@@ -132,7 +143,7 @@ export default class LogEventList extends LightningElement {
 
     handleLogMessageKeyChange(event) {
         if (this.logMessageSearch !== event.target.value) {
-            logger.debug('Search target={0}', event.target.value);
+            logger.debug('Log message search target={0}', event.target.value);
             this.logMessageSearch = event.target.value;
             this.currentpage = 1;
             this.refreshEventList();
@@ -152,7 +163,7 @@ export default class LogEventList extends LightningElement {
         }
         this.selectedRow = currentTarget;
 
-        const evtInfo = this.eventsToDisplay.find(evt => evt.Id === parseInt(logId, 10));
+        const evtInfo = this.eventsToDisplay.find((evt) => evt.Id === parseInt(logId, 10));
         const logSelectedEvent = new CustomEvent('logselected', {
             detail: JSON.stringify(evtInfo)
         });
