@@ -90,7 +90,14 @@ export default class LogEventViewer extends LightningElement {
         );
         element.setAttribute(
             'download',
-            this.logEvent.CreatedById + '_' + this.logEvent.Context__c + '_' + this.logEvent.CreatedDate + '.txt'
+            this.logEvent.CreatedById +
+                '_' +
+                this.logEvent.CreatedDate +
+                '_' +
+                this.logEvent.Request_ID__c +
+                '_' +
+                this.logEvent.Context__c +
+                '.txt'
         );
 
         element.style.display = 'none';
