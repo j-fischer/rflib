@@ -77,6 +77,7 @@ private class rflib_SendLogEventEmailActionTest {
 
     private static List<rflib_Log_Event__e> createLogEventList() {
         rflib_Log_Event__e ev = new rflib_Log_Event__e(
+            Request_ID__c = 'Some Request ID',
             Context__c = 'Context Foo',
             Log_Messages__c = 'Some messages',
             Log_Level__c = 'ERROR'

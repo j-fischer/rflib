@@ -317,6 +317,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     Integer messageSize = messagesAsStr.length();
 
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
+      Request_ID__c = Request.getCurrent().getRequestId(),
       Log_Level__c = logLevel.toString(),
       Context__c = context,
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
