@@ -26,6 +26,10 @@ script:
     - sfdx force:org:display -u ciorg
     - sfdx force:source:push -u ciorg
     - set +e
-    - sfdx force:apex:test:run -u ciorg --codecoverage -r human --wait 10
+    - sfdx force:apex:test:run -u ciorg --codecoverage -r human -d apex_tests/ --wait 10
     - npm run test:unit:coverage
+    - cp ~/apex_tests/test-result-codecoverage.json .
+    - bash <(curl -s https://codecov.io/bash)
+    - rm -f test-result-codecoverage.json
+    - node_modules/codecov/bin/codecov
     - sfdx force:org:delete -u ciorg -p
