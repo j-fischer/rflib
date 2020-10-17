@@ -1,7 +1,6 @@
 {
     "orgName": "RFLIB DEV",
     "edition": "Developer",
-    "release": "Preview",
     "features": ["TransactionFinalizers"],
     "settings": {
         "lightningExperienceSettings": {
