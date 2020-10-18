@@ -225,6 +225,7 @@ private class rflib_TriggerManagerTest {
 
     private static rflib_Log_Event__e createEvent() {
         return new rflib_Log_Event__e(
+            Request_ID__c = 'Some Request ID',
             Log_Level__c = 'INFO',
             Context__c = 'rflib_TriggerManagerTest',
             Log_Messages__c = 'Some log messages'

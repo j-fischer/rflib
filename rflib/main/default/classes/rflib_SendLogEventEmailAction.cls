@@ -38,8 +38,8 @@
 public with sharing class rflib_SendLogEventEmailAction {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_EmailLogEventHandler');
 
-    private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\nContext: {1}\nLog Messages: {2}';
-    private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Context: {1}</h3><p><b>Log Messages:</b> {2}</p>';
+    private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\Request ID: {1}\nContext: {2}\nLog Messages: {3}';
+    private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Request ID: {1}</h3><h3>Context: {2}</h3><p><b>Log Messages:</b> {3}</p>';
 
     @TestVisible
     private static Boolean USE_ORG_WIDE_EMAIL_ADDRESS = true;
@@ -120,8 +120,8 @@ public with sharing class rflib_SendLogEventEmailAction {
         }
 
         mail.setSubject('A Log Event Occurred');
-        mail.setPlainTextBody(String.format(PLAIN_TEXT_MESSAGE, new String[] { event.CreatedById, event.Context__c, event.Log_Messages__c  }));
-        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Context__c, event.Log_Messages__c.replaceAll('(\\r|\\n)+', '<br />')  }));
+        mail.setPlainTextBody(String.format(PLAIN_TEXT_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c  }));
+        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c.replaceAll('(\\r|\\n)+', '<br />')  }));
 
         Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
     }
