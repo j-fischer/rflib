@@ -1,6 +1,10 @@
 sudo: true
 os: trusty
 cache: false
+language: node_js
+node_js:
+    - 'v14' # ends April 2021
+
 env:
     - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
 before_install:
