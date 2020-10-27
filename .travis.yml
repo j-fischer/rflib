@@ -16,6 +16,7 @@ before_install:
     - export SFDX_DISABLE_APP_HUB=true
     - export SFDX_LOG_LEVEL=DEBUG
     - npm install
+    - npm list --depth=0
     - mkdir sfdx
     - wget -qO- $URL | tar xJ -C sfdx --strip-components 1
     - './sfdx/install'
