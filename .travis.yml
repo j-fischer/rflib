@@ -1,6 +1,7 @@
-sudo: true
-os: trusty
-cache: false
+dist: trusty
+cache:
+    npm: false
+
 language: node_js
 node_js:
     - 'v14' # ends April 2021
