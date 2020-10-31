@@ -6,8 +6,6 @@ language: node_js
 node_js:
     - 'v14' # ends April 2021
 
-env:
-    - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
 before_install:
     - openssl aes-256-cbc -K $encrypted_5abe573128c6_key -iv $encrypted_5abe573128c6_iv
       -in assets/server.key.enc -out assets/server.key -d
@@ -17,11 +15,8 @@ before_install:
     - export SFDX_DISABLE_APP_HUB=true
     - export SFDX_LOG_LEVEL=DEBUG
     - npm cache clean --force
+    - npm install sfdx-cli --global
     - npm install
-    - mkdir sfdx
-    - wget -qO- $URL | tar xJ -C sfdx --strip-components 1
-    - './sfdx/install'
-    - export PATH=./sfdx/$(pwd):$PATH
     - sfdx --version
     - sfdx plugins --core
     - sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key
