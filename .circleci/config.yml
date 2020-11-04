@@ -39,14 +39,14 @@ jobs:
                   command: |
                       node_modules/sfdx-cli/bin/run force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
             - run:
+                  name: Define CI Org
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
+            - run:
                   name: Remove Server Key
                   when: always
                   command: |
                       rm assets/server.key
-            - run:
-                  name: Define CI Org
-                  command: |
-                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
             - persist_to_workspace:
                   # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
                   # we'd have to re-run installation for every workflow step.
