@@ -29,18 +29,19 @@ jobs:
                       export SFDX_DOMAIN_RETRY=300
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
-                      npm install sfdx-cli
+                      node -v
+                      npm install sfdx-cli --global
                       npm install
-                      node_modules/sfdx-cli/bin/run --version
-                      node_modules/sfdx-cli/bin/run plugins --core
+                      sfdx --version
+                      sfdx plugins --core
             - run:
                   name: Authenticate DevHub
                   command: |
-                      node_modules/sfdx-cli/bin/run force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
+                      sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
             - run:
                   name: Define CI Org
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
+                      sfdx force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
             - persist_to_workspace:
                   # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
                   # we'd have to re-run installation for every workflow step.
@@ -59,7 +60,7 @@ jobs:
             - run:
                   name: Push Source
                   command: |
-                      node_modules/sfdx-cli/bin/run force:source:push -u ciorg
+                      sfdx force:source:push -u ciorg
     run_apex_tests:
         <<: *defaults
         steps:
@@ -68,7 +69,7 @@ jobs:
             - run:
                   name: Run Apex Tests
                   command: |
-                      node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+                      sfdx force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
     run_lwc_tests:
         <<: *defaults
         steps:
@@ -99,7 +100,7 @@ jobs:
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                      sfdx force:org:delete -u ciorg -p
 
 workflows:
     version: 2.1
