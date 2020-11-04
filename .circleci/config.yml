@@ -115,10 +115,10 @@ workflows:
             - deploy_source:
                   requires:
                       - setup_dx
-            - run_apex_tests:
-                  requires:
-                      - deploy_source
             - run_lwc_tests:
+                  requires:
+                      - setup_dx
+            - run_apex_tests:
                   requires:
                       - deploy_source
             - report_coverage:
