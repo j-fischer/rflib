@@ -3,7 +3,7 @@ version: 2.1
 # Defining default values for all jobs
 defaults: &defaults
     docker:
-        - image: circleci/node:latest
+        - image: circleci/node:lts
 
 jobs:
     setup_dx:
@@ -38,6 +38,11 @@ jobs:
                   name: Authenticate DevHub
                   command: |
                       sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
+            - run:
+                  name: Remove Server Key
+                  when: always
+                  command: |
+                      rm assets/server.key
             - run:
                   name: Define CI Org
                   command: |
