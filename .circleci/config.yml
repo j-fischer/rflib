@@ -1,0 +1,163 @@
+version: 2.1
+
+# Defining default values for all jobs
+defaults: &defaults
+    docker:
+        - image: circleci/node:lts
+
+jobs:
+    setup_project:
+        <<: *defaults
+        steps:
+            - checkout
+            - run:
+                  name: Install Salesforce DX
+                  command: |
+                      openssl aes-256-cbc -k $KEY -in assets/circleci.key.enc -out assets/server.key -d
+                      export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
+                      export SFDX_DOMAIN_RETRY=300
+                      export SFDX_DISABLE_APP_HUB=true
+                      export SFDX_LOG_LEVEL=DEBUG
+                      node -v
+                      npm install sfdx-cli
+                      npm install
+                      node_modules/sfdx-cli/bin/run --version
+                      node_modules/sfdx-cli/bin/run plugins --core
+            - persist_to_workspace:
+                  # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
+                  # we'd have to re-run installation for every workflow step.
+                  #
+                  # Also this step is crucial as we use it to share sfdx config parameters between steps.
+                  root: ~/
+                  paths:
+                      - project/*
+    setup_dx:
+        # This command runs the preparation steps needed for the CI workflow:
+        #
+        # - Installation of the Salesforce CLI using npm
+        # - Authentication of the DevHub
+        # - Creation of a scratch org
+        #
+        # While a scratch org isn't needed in all steps it's still part of the process. The reason for this is
+        # that we need to store the sfdx configuration files for it in the workspace, so that data can be shared
+        # across different workflow steps.
+        #
+        # Keep it simple!
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Authenticate DevHub
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
+            - run:
+                  name: Define CI Org
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
+            - run:
+                  name: Remove Server Key
+                  when: always
+                  command: |
+                      rm assets/server.key
+            - persist_to_workspace:
+                  # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
+                  # we'd have to re-run installation for every workflow step.
+                  #
+                  # Also this step is crucial as we use it to share sfdx config parameters between steps.
+                  root: ~/
+                  paths:
+                      - .sfdx/*
+                      - project/*
+    deploy_source:
+        # This deploys the source to the ci scratch org.
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Push Source
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:source:push -u ciorg
+    run_apex_tests:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Run Apex Tests
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+    run_lwc_tests:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Run LWC Tests
+                  command: |
+                      npm run test:unit:coverage
+    report_coverage:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Report Coverage
+                  command: |
+                      npm run test:unit:coverage
+                      cp ~/apex_tests/test-result-codecoverage.json .
+                      bash <(curl -s https://codecov.io/bash)
+                      rm -f test-result-codecoverage.json
+                      node_modules/codecov/bin/codecov
+    cleanup_scratch_org:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Clean Up
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+
+workflows:
+    version: 2.1
+    build_and_test:
+        jobs:
+            - setup_project
+            - setup_dx:
+                  requires:
+                      - setup_project
+                  filters:
+                      branches:
+                          only: master
+            - deploy_source:
+                  requires:
+                      - setup_dx
+                  filters:
+                      branches:
+                          only: master
+            - run_lwc_tests:
+                  requires:
+                      - setup_project
+            - run_apex_tests:
+                  requires:
+                      - deploy_source
+                  filters:
+                      branches:
+                          only: master
+            - report_coverage:
+                  requires:
+                      - run_apex_tests
+                      - run_lwc_tests
+                  filters:
+                      branches:
+                          only: master
+            - cleanup_scratch_org:
+                  requires:
+                      - setup_dx
+                      - deploy_source
+                      - run_apex_tests
+                  filters:
+                      branches:
+                          only: master
