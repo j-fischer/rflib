@@ -139,7 +139,7 @@ workflows:
                           only: master
             - run_lwc_tests:
                   requires:
-                      - setup_dx
+                      - checkout_project
             - run_apex_tests:
                   requires:
                       - deploy_source
