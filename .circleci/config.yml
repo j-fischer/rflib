@@ -88,6 +88,10 @@ jobs:
                   name: Run Apex Tests
                   command: |
                       node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+            - persist_to_workspace:
+                  root: ~/
+                  paths:
+                      - apex_tests/*
     run_lwc_tests:
         <<: *defaults
         steps:
@@ -105,7 +109,6 @@ jobs:
             - run:
                   name: Report Coverage
                   command: |
-                      npm run test:unit:coverage
                       cp ~/apex_tests/test-result-codecoverage.json .
                       bash <(curl -s https://codecov.io/bash)
                       rm -f test-result-codecoverage.json
