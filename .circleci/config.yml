@@ -6,6 +6,18 @@ defaults: &defaults
         - image: circleci/node:lts
 
 jobs:
+    checkout_project:
+        <<: *defaults
+        steps:
+            - checkout
+            - persist_to_workspace:
+                  # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
+                  # we'd have to re-run installation for every workflow step.
+                  #
+                  # Also this step is crucial as we use it to share sfdx config parameters between steps.
+                  root: ~/
+                  paths:
+                      - project/*
     setup_dx:
         # This command runs the preparation steps needed for the CI workflow:
         #
@@ -20,7 +32,8 @@ jobs:
         # Keep it simple!
         <<: *defaults
         steps:
-            - checkout
+            - attach_workspace:
+                  at: ~/
             - run:
                   name: Install Salesforce DX
                   command: |
@@ -111,16 +124,28 @@ workflows:
     version: 2.1
     build_and_test:
         jobs:
-            - setup_dx
+            - checkout_project
+            - setup_dx:
+                  requires:
+                      - checkout_project
+                  filters:
+                      branches:
+                          only: master
             - deploy_source:
                   requires:
                       - setup_dx
+                  filters:
+                      branches:
+                          only: master
             - run_lwc_tests:
                   requires:
                       - setup_dx
             - run_apex_tests:
                   requires:
                       - deploy_source
+                  filters:
+                      branches:
+                          only: master
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -133,3 +158,6 @@ workflows:
                       - setup_dx
                       - deploy_source
                       - run_apex_tests
+                  filters:
+                      branches:
+                          only: master
