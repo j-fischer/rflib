@@ -71,7 +71,7 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
 
 
     public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
-        private final List<String> capturedLogMessages = new List<String>();
+        public final List<String> capturedLogMessages = new List<String>();
 
         public void debug(LoggingLevel level, String message) {
             capturedLogMessages.add(message);

@@ -29,7 +29,8 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_StopLogTimerFlowAction {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_StopLogTimerFlowAction');
+    @TestVisible
+    private static rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_StopLogTimerFlowAction');
 
     @InvocableMethod(label='Stop Log Timer' category='RFLIB' description='Start a Log Timer')
     public static void stopLogTimer(List<StopLogTimerInfo> logTimerInfos) {
