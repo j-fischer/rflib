@@ -1,3 +1,16 @@
+### RFLIB 2.2.0
+
+Package ID: 04t3h000004jpwzAAA
+Package Alias: RFLIB@2.2.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpwzAAA
+
+-   All metadata was upgrade to API version 50.0
+-   Added input field for User filter Log Monitor
+-   Introduced the Salesforce Request ID into the logging framework
+-   Added Salesforce Request ID to TraceID token to make it completely unique
+-   Added Log Timer actions support for Flow
+-   Updated unit tests for Winter 21 release where new dedicated limits for publishing platform events immediately are introduced. See https://releasenotes.docs.salesforce.com/en-us/winter21/release-notes/rn_platform_events_publish_immediate_limit.htm?edition=&impact=
+
 ### RFLIB-TF 1.0.1
 
 Package ID: 04t3h000004jnfBAAQ
@@ -40,7 +53,7 @@ Package Alias: RFLIB-TF@1.0.0-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWpAAI
 
 -   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB-FS 1.0.0
 
@@ -49,7 +62,7 @@ Package Alias: RFLIB-FS@1.0.0-2
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcXJAAY
 
 -   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB 2.0.0
 
@@ -60,7 +73,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 -   RFLIB 2.0.0 contains the core logging framework. The log event email handler got converted into a Invocable Action, which is used by a Platform Event triggered Flow to send out the email message based on the configuration in the Logger Settings
 -   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
 -   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB 1.0.1
 
