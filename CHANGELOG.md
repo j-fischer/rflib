@@ -1,3 +1,20 @@
+### RFLIB-TF 1.1.0
+
+Package ID: 04t3h000004jpyRAAQ
+Package Alias: RFLIB-TF@1.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpyRAAQ
+
+-   All metadata was upgrade to API version 50.0
+-   Added Custom Permission to allow to bypass all triggers
+
+### RFLIB-FS 1.0.2
+
+Package ID: 04t3h000004jpyMAAQ
+Package Alias: RFLIB-FS@1.0.2-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpyMAAQ
+
+-   All metadata was upgrade to API version 50.0
+
 ### RFLIB 2.2.0
 
 Package ID: 04t3h000004jpwzAAA
