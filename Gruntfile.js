@@ -247,8 +247,8 @@ module.exports = function(grunt) {
         gittag: {
             version: {
                 options: {
-                    tag: '<%= config.package.package %>_v<%= config.version.nextVersion %>',
-                    message: '<%= config.package.package %> - Version <%= config.version.nextVersion %>'
+                    tag: '<%= config.package.package %>_v' + semver.valid(config.package.configuredVersionNumber),
+                    message: '<%= config.package.package %> - Version ' + semver.valid(config.package.configuredVersionNumber)
                 }
             },
         },
