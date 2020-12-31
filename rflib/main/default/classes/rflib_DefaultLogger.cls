@@ -45,6 +45,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private final rflib_DefaultLogger.EventPublisher eventPublisher;
 
   private Integer logCacheSize = 100;
+  private Boolean isLogMaskingEnabled = false;
 
   private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
@@ -117,6 +118,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
       logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
     }
+
+    logger.setLogMaskingState(settings.Enable_Log_Masking__c);
 
     return logger;
   }
@@ -230,6 +233,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     generalLogLevel = newLevel;
   }
 
+  public void setLogMaskingState(Boolean isEnabled) {
+    isLogMaskingEnabled = isEnabled;
+  }
+
   public void trace(String message) {
     trace(message, null);
   }
@@ -316,13 +323,17 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
     Integer messageSize = messagesAsStr.length();
 
+    String logMessages = messageSize < MAX_MESSAGE_SIZE
+      ? messagesAsStr 
+      : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE);
+
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
       Request_ID__c = Request.getCurrent().getRequestId(),
       Log_Level__c = logLevel.toString(),
       Context__c = context,
-      Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
-        ? messagesAsStr 
-        : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE)
+      Log_Messages__c = isLogMaskingEnabled ? 
+        rflib_StringUtil.replaceWithAllMaskingRules(logMessages) :
+        logMessages
     );
 
     if (batchReportingLogLevel.encompasses(logLevel)) {
