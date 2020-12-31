@@ -39,7 +39,7 @@ public class rflib_StringUtil {
         get {
             if (allMaskingRules == null) {
                 // TODO: Replace with new syntax when Spring 21 is released.
-                allMaskingRules = [SELECT Target__c, Target_type__c, Replacement__c FROM rflib_Masking_Rule__mdt WHERE Is_Active__c = true];
+                allMaskingRules = [SELECT Target__c, Target_type__c, Replacement__c FROM rflib_Masking_Rule__mdt WHERE Is_Active__c = true ORDER BY Order__c ASC];
             }
             return allMaskingRules;
         }
@@ -60,7 +60,7 @@ public class rflib_StringUtil {
     
     public static String replaceWithRule(String source, rflib_Masking_Rule__mdt rule) {
         switch on rule.Target_Type__c {
-            when 'Regular Expression' {
+            when 'RegEx' {
                 return source.replaceAll(rule.Target__c, rule.Replacement__c);
             }
         }

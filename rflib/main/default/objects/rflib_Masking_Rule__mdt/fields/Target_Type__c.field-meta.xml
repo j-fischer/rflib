@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Target_Type__c</fullName>
-    <defaultValue>&quot;Regular Expression&quot;</defaultValue>
+    <defaultValue>&quot;RegEx&quot;</defaultValue>
     <description>Identify the target type of the string that that should be identified in a log message.</description>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
@@ -14,7 +14,7 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Regular Expression</fullName>
+                <fullName>RegEx</fullName>
                 <default>true</default>
                 <label>Regular Expression</label>
             </value>
