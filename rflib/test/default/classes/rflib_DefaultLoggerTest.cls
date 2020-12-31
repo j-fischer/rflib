@@ -310,6 +310,47 @@ public class rflib_DefaultLoggerTest {
     Test.stopTest();
   }
 
+  @IsTest
+  private static void testLogMasking() {
+    List<rflib_Masking_Rule__mdt> rules = new List<rflib_Masking_Rule__mdt> {
+      createRule('secret', '****'),
+      createRule('[\\d\\d\\d-\\d\\d\\d-\\d\\d\\d]', '####')
+    };
+    rflib_StringUtil.allMaskingRules = rules;
+
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+    rflib_Logger logger = loggerFactory.createLogger('testLogMasking');
+
+    logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+    logger.setLogMaskingState(true);
+
+    Test.startTest();
+    System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
+    
+    logger.info('This message contains a secret word');
+    logger.info('The SSN is 123-456-789');
+    logger.error('And then an error occurred');
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('message contains'));
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('word'));
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('****'));
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('####'));
+    System.assert(loggerFactory.eventCapture.doesNotContainInAnyMessage('secret'));
+    System.assert(loggerFactory.eventCapture.doesNotContainInAnyMessage('123-456-789'));
+    
+    Test.stopTest();
+  }
+
+  private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
+    return new rflib_Masking_Rule__mdt(
+        Target__c = target,
+        Target_Type__c = 'RegEx',
+        Replacement__c = replacement,
+        Is_Active__c = true,
+        Order__c = 1
+    );
+  }
+
   public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
     private final List<String> capturedLogMessages = new List<String>();
     
