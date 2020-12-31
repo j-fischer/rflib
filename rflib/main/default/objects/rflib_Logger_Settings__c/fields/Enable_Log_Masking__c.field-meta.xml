@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Enable_Log_Masking__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Enables or disables the log masking functionality in RFLIB.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Check this setting to enable masking of text in log messages using the Masking Rule Custom Metadata Type.</inlineHelpText>
+    <label>Enable Log Masking</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>
