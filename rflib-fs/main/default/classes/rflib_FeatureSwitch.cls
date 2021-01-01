@@ -136,11 +136,9 @@ public without sharing class rflib_FeatureSwitch {
             return scopedFeatureSwitchValues.get(UserInfo.getUserName());
         }
 
-        if (!directPublicGroupAssociations.isEmpty()) {
-            for (String groupName : directPublicGroupAssociations) {
-                if (scopedFeatureSwitchValues.containsKey(groupName)) {
-                    return scopedFeatureSwitchValues.get(groupName);
-                }
+        for (String groupName : directPublicGroupAssociations) {
+            if (scopedFeatureSwitchValues.containsKey(groupName)) {
+                return scopedFeatureSwitchValues.get(groupName);
             }
         }
 
