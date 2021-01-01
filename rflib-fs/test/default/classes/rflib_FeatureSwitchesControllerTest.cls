@@ -36,9 +36,10 @@ private class rflib_FeatureSwitchesControllerTest {
 
         System.runAs(rflib_FeatureSwitchTest.USER) {
             Map<String,Boolean> result = rflib_FeatureSwitchesController.getAllSwitchValues();
-            System.assertEquals(4, result.size());
+            System.assertEquals(5, result.size());
 
             System.assertEquals(true, result.get(rflib_FeatureSwitchTest.USER_SWITCH));
+            System.assertEquals(true, result.get(rflib_FeatureSwitchTest.GROUP_SWITCH));
             System.assertEquals(true, result.get(rflib_FeatureSwitchTest.PROFILE_SWITCH));
             System.assertEquals(true, result.get(rflib_FeatureSwitchTest.GLOBAL_SWITCH));
             System.assertEquals(false, result.get(rflib_FeatureSwitchTest.ANOTHER_USER_SWITCH));
