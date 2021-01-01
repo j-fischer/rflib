@@ -22,6 +22,11 @@
                 <label>Profile</label>
             </value>
             <value>
+                <fullName>Group</fullName>
+                <default>false</default>
+                <label>Public Group</label>
+            </value>
+            <value>
                 <fullName>User</fullName>
                 <default>false</default>
                 <label>User</label>

@@ -34,6 +34,7 @@ private class rflib_FeatureSwitchTest {
     private static final String TRIGGER_SWITCH = 'All_Triggers';
 
     @TestVisible private static final String USER_SWITCH = 'FeatureSwitch1';
+    @TestVisible private static final String GROUP_SWITCH = 'FeatureSwitchGroup';
     @TestVisible private static final String PROFILE_SWITCH = 'FeatureSwitch2';
     @TestVisible private static final String GLOBAL_SWITCH = 'FeatureSwitch3';
     @TestVisible private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
@@ -46,6 +47,13 @@ private class rflib_FeatureSwitchTest {
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
             USER_SWITCH => new Map<String,Boolean> {
                 'john.smith@rflib.com' => true,
+                'Some_Group' => false,
+                'Standard User' => false,
+                rflib_FeatureSwitch.GLOBAL_SCOPE => false
+            },
+
+            GROUP_SWITCH => new Map<String,Boolean> {
+                'Some_Group' => true,
                 'Standard User' => false,
                 rflib_FeatureSwitch.GLOBAL_SCOPE => false
             },
@@ -65,6 +73,18 @@ private class rflib_FeatureSwitchTest {
         };
 
         rflib_FeatureSwitch.DEFAULT_VALUE = false;
+
+        Group someGroup = new Group(
+            DeveloperName = 'Some_Group',
+            Name = 'Some Group'
+        );
+
+        insert someGroup;
+
+        insert new GroupMember(
+            GroupId = someGroup.Id,
+            UserOrGroupId = USER.Id
+        );
     }
 
     @IsTest
@@ -74,6 +94,16 @@ private class rflib_FeatureSwitchTest {
         System.runAs(USER) {
            System.assertEquals(true, rflib_FeatureSwitch.isTurnedOn(USER_SWITCH));
            System.assertEquals(false, rflib_FeatureSwitch.isTurnedOff(USER_SWITCH));
+        }
+    }
+
+    @IsTest
+    private static void testGroupSwitch() {
+        setup();
+
+        System.runAs(USER) {
+           System.assertEquals(true, rflib_FeatureSwitch.isTurnedOn(GROUP_SWITCH));
+           System.assertEquals(false, rflib_FeatureSwitch.isTurnedOff(GROUP_SWITCH));
         }
     }
 
@@ -123,9 +153,10 @@ private class rflib_FeatureSwitchTest {
 
         System.runAs(USER) {
             Map<String,Boolean> result = rflib_FeatureSwitch.getAllScopedValues();
-            System.assertEquals(4, result.size());
+            System.assertEquals(5, result.size());
 
             System.assertEquals(true, result.get(USER_SWITCH));
+            System.assertEquals(true, result.get(GROUP_SWITCH));
             System.assertEquals(true, result.get(PROFILE_SWITCH));
             System.assertEquals(true, result.get(GLOBAL_SWITCH));
             System.assertEquals(false, result.get(ANOTHER_USER_SWITCH));

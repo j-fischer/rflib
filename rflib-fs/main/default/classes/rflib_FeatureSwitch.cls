@@ -55,6 +55,16 @@ public without sharing class rflib_FeatureSwitch {
         private set;
     }
 
+    private static List<String> directPublicGroupAssociations {
+        get {
+            if (directPublicGroupAssociations == null) {
+                directPublicGroupAssociations = getAllDirectPublicGroupAssociationsForUser();
+            }
+            return directPublicGroupAssociations;
+        }
+        private set;
+    }
+
     private static String CACHED_PROFILE_NAME = null;
 
     /**
@@ -126,6 +136,12 @@ public without sharing class rflib_FeatureSwitch {
             return scopedFeatureSwitchValues.get(UserInfo.getUserName());
         }
 
+        for (String groupName : directPublicGroupAssociations) {
+            if (scopedFeatureSwitchValues.containsKey(groupName)) {
+                return scopedFeatureSwitchValues.get(groupName);
+            }
+        }
+
         String profileName = getProfileName(UserInfo.getProfileId());
         if (scopedFeatureSwitchValues.containsKey(profileName)) {
             return scopedFeatureSwitchValues.get(profileName);
@@ -168,6 +184,20 @@ public without sharing class rflib_FeatureSwitch {
             } else {
                 scopedSwitchSettings.put(featureSwitch.Scope_Name__c, featureSwitch.Turned_On__c);
             }
+        }
+
+        return result;
+    }
+
+    private static List<String> getAllDirectPublicGroupAssociationsForUser() {
+        Id userId = UserInfo.getUserId();
+        List<GroupMember> groupMemberships = [SELECT GroupId, Group.DeveloperName FROM GroupMember WHERE UserOrGroupId= :userId AND Group.Type = 'Regular' ORDER BY Group.DeveloperName ASC];
+
+        LOGGER.debug('Group memberships=' + groupMemberships);
+
+        List<String> result = new List<String>();
+        for (GroupMember gm : groupMemberships) {
+            result.add(gm.Group.DeveloperName);
         }
 
         return result;
