@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Active__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description>Determines whether a marking rule is active or not.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Activate or deactivate a masking rule. If deactivated, it will not be applied to Log Event messages.</inlineHelpText>
+    <label>Active</label>
+    <type>Checkbox</type>
+</CustomField>

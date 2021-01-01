@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <help><!-- Identify the target based on the target type that should be replaced in the Log Message. --></help>
+    <label><!-- Target --></label>
+    <name>Target__c</name>
+</CustomFieldTranslation>
