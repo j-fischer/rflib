@@ -321,19 +321,21 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private void reportLogs(rflib_LogLevel logLevel) {
     String messagesAsStr = String.join(LOG_STATEMENTS, '\n');
-    Integer messageSize = messagesAsStr.length();
-
-    String logMessages = messageSize < MAX_MESSAGE_SIZE
-      ? messagesAsStr 
-      : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE);
-
+    
+    // It is important to run the masking rules first as those could change the size of the string, possibly making it larger.
+    String logMessages = isLogMaskingEnabled ? 
+      rflib_StringUtil.replaceWithAllMaskingRules(messagesAsStr) :
+      messagesAsStr;
+    
+    Integer messageSize = logMessages.length();
+    
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
       Request_ID__c = Request.getCurrent().getRequestId(),
       Log_Level__c = logLevel.toString(),
       Context__c = context,
-      Log_Messages__c = isLogMaskingEnabled ? 
-        rflib_StringUtil.replaceWithAllMaskingRules(logMessages) :
-        logMessages
+      Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
+        ? logMessages 
+        : logMessages.substring(messageSize - MAX_MESSAGE_SIZE)
     );
 
     if (batchReportingLogLevel.encompasses(logLevel)) {
