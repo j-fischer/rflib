@@ -47,13 +47,13 @@ public class rflib_StringUtil {
     }
 
     /**     
-     * Replace parts of a text based on all active Masking rules that are stored in the Masking
-     * Rule Custom Metadata Type. The rules will be appliead based on the order defined in the records
-     * and used to ensure that protected information such as PII can be removed from larger text 
+     * Replace parts of a text using all active Masking rules that are stored in the Masking
+     * Rule Custom Metadata Type. The rules will be applied based on the order defined in the records
+     * and used to ensure that protected information such as PII is removed from larger text 
      * paragraphs. 
      * 
      * @param  source The source that may require text replacements. 
-     * @return        The source with the all targets of the given rule replaced. 
+     * @return        The source with all targets of the given rule replaced. 
      */
     public static String replaceWithAllMaskingRules(String source) {
         return replaceWithRules(source, allMaskingRules);
@@ -61,12 +61,12 @@ public class rflib_StringUtil {
     
     /**
      * Replace parts of a text based on a multiple Masking rules that are provided. It can be 
-     * used to ensure that protected information such as PII can be removed from larger text 
+     * used to ensure that protected information such as PII is removed from larger text 
      * paragraphs. 
      * 
      * @param  source The source that may require text replacements. 
      * @param  rules  The Masking Rules that will be applied to the source in order.
-     * @return        The source with the all targets of the given rule replaced. 
+     * @return        The source with all targets of the given rule replaced. 
      */
     public static String replaceWithRules(String source, List<rflib_Masking_Rule__mdt> rules) {
         String result = source;
@@ -78,12 +78,12 @@ public class rflib_StringUtil {
     
     /**
      * Replace parts of a text based on a single Masking rule that is provided. It can be 
-     * used to ensure that protected information such as PII can be removed from larger text 
+     * used to ensure that protected information such as PII is removed from larger text 
      * paragraphs. 
      * 
      * @param  source The source that may require text replacements. 
      * @param  rule   The Masking Rule that will be applied to the source.
-     * @return        The source with the all targets of the given rule replaced. 
+     * @return        The source with all targets of the given rule replaced. 
      */
     public static String replaceWithRule(String source, rflib_Masking_Rule__mdt rule) {
         switch on rule.Target_Type__c {
