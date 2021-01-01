@@ -31,6 +31,7 @@
 public class rflib_MockLogger implements rflib_Logger {
     
     public Integer logCacheSize;
+    public Boolean isLogMaksingEnabled;
     public rflib_LogLevel reportingLogLevel;
     public rflib_LogLevel flushLogCacheLevel;
     public rflib_LogLevel batchReportingLogLevel;
@@ -65,6 +66,10 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public void setGeneralLogLevel(rflib_LogLevel newLevel) {
         this.generalLogLevel = newLevel;
+    }
+
+    public void setLogMaskingState(Boolean isEnabled) {
+        this.isLogMaksingEnabled = isEnabled;
     }
 
     public void trace(String message) {

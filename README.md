@@ -1,6 +1,6 @@
 # Reliability Force
 
-[![Build Status](https://travis-ci.org/j-fischer/rflib.svg?branch=master)](https://travis-ci.org/j-fischer/rflib)
+[![Build Status](https://img.shields.io/circleci/build/github/j-fischer/rflib/master)](https://travis-ci.org/j-fischer/rflib) ![GitHub](https://img.shields.io/github/license/j-fischer/rflib) ![GitHub package.json version](https://img.shields.io/github/package-json/v/j-fischer/rflib) [![codecov](https://codecov.io/gh/j-fischer/rflib/branch/master/graph/badge.svg)](https://codecov.io/gh/j-fischer/rflib)
 
 The goal of this library is to help developers to create clean, production-ready code with a high level of operational supportability.
 
@@ -50,9 +50,9 @@ https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_
 To install latest package via SFDX CLI Plugin:
 
 ```
-sfdx sforce:package:install -p RFLIB@2.1.0-3 -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p RFLIB-FS@1.0.1-1 -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p RFLIB-TF@1.0.1-3 -w 10 -s AllUsers -u <your org alias>
+sfdx sforce:package:install -p 04t3h000004jpwzAAA -w 10 -s AllUsers -u <your org alias>
+sfdx sforce:package:install -p 04t3h000004jpyMAAQ -w 10 -s AllUsers -u <your org alias>
+sfdx sforce:package:install -p 04t3h000004jq2OAAQ -w 10 -s AllUsers -u <your org alias>
 ```
 
 To deploy code:
@@ -83,6 +83,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 
 -   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
+-   "Bypass All Trigger" Custom Permission was inspired by: https://github.com/appero-com/MyTriggers
 -   The unlocked packaged was created with the help of Andrew Fawcett: https://andyinthecloud.com/2018/06/16/salesforce-dx-packages-and-open-source/
 -   Logo was created with: https://www.freelogodesign.org/
 -   Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin

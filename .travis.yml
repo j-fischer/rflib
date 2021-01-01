@@ -1,8 +1,11 @@
-sudo: true
-os: trusty
-cache: false
-env:
-    - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
+dist: trusty
+cache:
+    npm: false
+
+language: node_js
+node_js:
+    - 'v14' # ends April 2021
+
 before_install:
     - openssl aes-256-cbc -K $encrypted_5abe573128c6_key -iv $encrypted_5abe573128c6_iv
       -in assets/server.key.enc -out assets/server.key -d
@@ -11,11 +14,9 @@ before_install:
     - export SFDX_DOMAIN_RETRY=300
     - export SFDX_DISABLE_APP_HUB=true
     - export SFDX_LOG_LEVEL=DEBUG
+    - npm cache clean --force
+    - npm install sfdx-cli --global
     - npm install
-    - mkdir sfdx
-    - wget -qO- $URL | tar xJ -C sfdx --strip-components 1
-    - './sfdx/install'
-    - export PATH=./sfdx/$(pwd):$PATH
     - sfdx --version
     - sfdx plugins --core
     - sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key
@@ -26,6 +27,10 @@ script:
     - sfdx force:org:display -u ciorg
     - sfdx force:source:push -u ciorg
     - set +e
-    - sfdx force:apex:test:run -u ciorg --codecoverage -r human --wait 10
+    - sfdx force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
     - npm run test:unit:coverage
+    - cp ~/apex_tests/test-result-codecoverage.json .
+    - bash <(curl -s https://codecov.io/bash)
+    - rm -f test-result-codecoverage.json
+    - node_modules/codecov/bin/codecov
     - sfdx force:org:delete -u ciorg -p

@@ -35,12 +35,18 @@ public class rflib_UserFactory {
         return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
     }
 
+    public static User insertWithCustomPermissionAndRetrieve(String firstName, String lastName, String profileName, String customPermissionApiName) {
+        User u = new Builder(firstName, lastName, profileName).withCustomPermission(customPermissionApiName).persistWithPermissions();
+        return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
+    }
+
     private rflib_UserFactory() { }
 
     public class Builder {
 
         private final SObject record;
         private final List<String> fieldNames = new List<String>();
+        private final Set<String> assignedCustomPermissions = new Set<String>();
 
         public Builder(String firstName, String lastName, String profileName) {
             String email = firstName + '.' + lastName + '@rflib.com';
@@ -64,6 +70,11 @@ public class rflib_UserFactory {
             return this;
         }
 
+        public Builder withCustomPermission(String apiName) {
+            assignedCustomPermissions.add(apiName);
+            return this;
+        }
+
         public User create() {
             return (User) record;
         }
@@ -71,6 +82,45 @@ public class rflib_UserFactory {
         public User persist() {
             insert record;
             return (User) record;
+        }
+
+        public User persistWithPermissions() {
+            User userRecord = (User) record;
+            insert userRecord;
+
+            PermissionSet permissionSet = new PermissionSet(
+                Name = 'rflib' + userRecord.Firstname + userRecord.Lastname, 
+                Label = userRecord.Username
+            );
+
+            insert permissionSet;
+
+            insert new PermissionSetAssignment(
+                PermissionSetId = permissionSet.Id, 
+                AssigneeId = record.Id
+            );
+
+            List<SetupEntityAccess> customPermissionAssignments = new List<SetupEntityAccess>();
+            for (CustomPermission cp : getCustomPermissions(assignedCustomPermissions)) {
+                customPermissionAssignments.add(new SetupEntityAccess(
+                    ParentId = permissionSet.Id, 
+                    SetupEntityId = cp.Id
+                ));
+            }
+
+            insert customPermissionAssignments;
+
+            return userRecord;
+        }
+
+        private List<CustomPermission> getCustomPermissions(Set<String> apiNames) {
+            List<CustomPermission> result = [
+                SELECT Id
+                FROM CustomPermission
+                WHERE DeveloperName IN :apiNames
+            ];
+
+            return result;
         }
     }
 }

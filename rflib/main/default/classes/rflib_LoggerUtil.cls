@@ -33,6 +33,7 @@
  */ 
 public with sharing class rflib_LoggerUtil {
     
+    @TestVisible
     private static rflib_LoggerFactory loggerFactory;
 
     /**

@@ -46,6 +46,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private final List<String> logMessages;
 
   private Integer logCacheSize = 100;
+  private Boolean isLogMaskingEnabled = false;
 
   private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
   private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
@@ -118,6 +119,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
       logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
     }
+
+    logger.setLogMaskingState(settings.Enable_Log_Masking__c);
 
     return logger;
   }
@@ -240,6 +243,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     generalLogLevel = newLevel;
   }
 
+  public void setLogMaskingState(Boolean isEnabled) {
+    isLogMaskingEnabled = isEnabled;
+  }
+
   public void trace(String message) {
     trace(message, null);
   }
@@ -324,14 +331,21 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   private void reportLogs(rflib_LogLevel logLevel) {
     String messagesAsStr = String.join(logMessages, '\n');
-    Integer messageSize = messagesAsStr.length();
-
+    
+    // It is important to run the masking rules first as those could change the size of the string, possibly making it larger.
+    String maskedLogMessagesIfApplicable = isLogMaskingEnabled ? 
+      rflib_StringUtil.replaceWithAllMaskingRules(messagesAsStr) :
+      messagesAsStr;
+    
+    Integer messageSize = maskedLogMessagesIfApplicable.length();
+    
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
+      Request_ID__c = Request.getCurrent().getRequestId(),
       Log_Level__c = logLevel.toString(),
       Context__c = context,
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
-        ? messagesAsStr 
-        : messagesAsStr.substring(messageSize - MAX_MESSAGE_SIZE)
+        ? maskedLogMessagesIfApplicable 
+        : maskedLogMessagesIfApplicable.substring(messageSize - MAX_MESSAGE_SIZE)
     );
 
     if (batchReportingLogLevel.encompasses(logLevel)) {

@@ -105,6 +105,16 @@ public interface rflib_Logger {
   void setGeneralLogLevel(rflib_LogLevel newLevel);
 
   /**
+   * Enable or disable log masking. If enabled, it will use the active Masking Rule Custom Metadata Type rules
+   * to replace sensitive data in the log messages. 
+   *
+   * rflib_DefaultLogger's Log Masking is desabled by default.
+   *
+   * @param  isEnabled The new state whether log masking is enabled or not.
+   */
+  void setLogMaskingState(Boolean isEnabled);
+
+  /**
    * Write a TRACE log statement. 
    * @param  message The message to be logged. 
    */

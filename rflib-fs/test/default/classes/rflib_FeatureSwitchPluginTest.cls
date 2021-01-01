@@ -63,6 +63,17 @@ private class rflib_FeatureSwitchPluginTest {
         rflib_FeatureSwitchTest.setup();
         
         executePluginAndAssertSwitchOff(rflib_FeatureSwitchTest.ANOTHER_USER_SWITCH);
+    
+    }
+
+    @IsTest
+    private static void testDescribe() {
+        System.runAs(rflib_FeatureSwitchTest.USER) {
+
+            Process.PluginDescribeResult result = new rflib_FeatureSwitchPlugin().describe();
+
+            System.assertEquals('rflib', result.tag);
+        }
     }
 
     private static void executePluginAndAssertSwitchOn(String switchName) {

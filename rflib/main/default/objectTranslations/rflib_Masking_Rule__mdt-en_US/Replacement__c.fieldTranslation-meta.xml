@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <help><!-- The replacement that should be used for the identified string instead. --></help>
+    <label><!-- Replacement --></label>
+    <name>Replacement__c</name>
+</CustomFieldTranslation>

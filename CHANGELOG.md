@@ -1,12 +1,32 @@
-### RFLIB 2.1.0
+### RFLIB-TF 1.1.0
 
-Package ID: 04t3h000004jnf6AAA
-Package Alias: RFLIB@2.1.0-3
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jnf6AAA
+Package ID: 04t3h000004jq2OAAQ
+Package Alias: RFLIB-TF@1.1.0-3
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jq2OAAQ
 
--   Introduced Log Timer for LWC, Aura, and Apex to add a log statement including the duration of the timer
--   Added new custom setting to set the log level for when to flush log statements after a Log Event is published, default level is NONE
--   Fixed bug where the Log Reporting Level did not allow for NONE as a valid value
+-   All metadata was upgrade to API version 50.0
+-   Added Custom Permission to allow to bypass all triggers
+
+### RFLIB-FS 1.0.2
+
+Package ID: 04t3h000004jpyMAAQ
+Package Alias: RFLIB-FS@1.0.2-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpyMAAQ
+
+-   All metadata was upgrade to API version 50.0
+
+### RFLIB 2.2.0
+
+Package ID: 04t3h000004jpwzAAA
+Package Alias: RFLIB@2.2.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpwzAAA
+
+-   All metadata was upgrade to API version 50.0
+-   Added input field for User filter Log Monitor
+-   Introduced the Salesforce Request ID into the logging framework
+-   Added Salesforce Request ID to TraceID token to make it completely unique
+-   Added Log Timer actions support for Flow
+-   Updated unit tests for Winter 21 release where new dedicated limits for publishing platform events immediately are introduced. See https://releasenotes.docs.salesforce.com/en-us/winter21/release-notes/rn_platform_events_publish_immediate_limit.htm?edition=&impact=
 
 ### RFLIB-TF 1.0.1
 
@@ -16,6 +36,16 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 
 -   Fixed issue with rflib_MockTriggerConfigQueryLocator that would fail tests for regular custom or standard objects
 -   Updated project dependency for RFLIB to version 2.1
+
+### RFLIB 2.1.0
+
+Package ID: 04t3h000004jnf6AAA
+Package Alias: RFLIB@2.1.0-3
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jnf6AAA
+
+-   Introduced Log Timer for LWC, Aura, and Apex to add a log statement including the duration of the timer
+-   Added new custom setting to set the log level for when to flush log statements after a Log Event is published, default level is NONE
+-   Fixed bug where the Log Reporting Level did not allow for NONE as a valid value
 
 ### RFLIB-FS 1.0.1
 
@@ -40,7 +70,7 @@ Package Alias: RFLIB-TF@1.0.0-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcWpAAI
 
 -   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB-FS 1.0.0
 
@@ -49,7 +79,7 @@ Package Alias: RFLIB-FS@1.0.0-2
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bcXJAAY
 
 -   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB 2.0.0
 
@@ -60,7 +90,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 -   RFLIB 2.0.0 contains the core logging framework. The log event email handler got converted into a Invocable Action, which is used by a Platform Event triggered Flow to send out the email message based on the configuration in the Logger Settings
 -   RFLIB-FS 1.0.0 contains the Feature Switch framework and depends on RFLIB 2.0.0
 -   RFLLB-TF 1.0.0 contains the Trigger Framework, which depends on RFLIB 2.0.0 and RFLIB-FS 1.0.0
--   All metadata was upgrade to API version 49.0.
+-   All metadata was upgrade to API version 49.0
 
 ### RFLIB 1.0.1
 

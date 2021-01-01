@@ -69,6 +69,11 @@ public inherited sharing class rflib_TriggerManager {
             return;
         }
 
+        if (FeatureManagement.checkPermission('rflib_Bypass_All_Triggers')) {
+            LOGGER.warn('"Bypass All Triggers" permission detected, exiting trigger execution.');
+            return;
+        }
+
         try {
             runHandlers(args, handlers);
         } finally {

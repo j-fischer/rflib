@@ -247,8 +247,8 @@ module.exports = function(grunt) {
         gittag: {
             version: {
                 options: {
-                    tag: '<%= config.package.package %>_v<%= config.version.nextVersion %>',
-                    message: '<%= config.package.package %> - Version <%= config.version.nextVersion %>'
+                    tag: '<%= config.package.package %>_v<%= config.package.configuredVersionNumber %>',
+                    message: '<%= config.package.package %> - Version <%= config.package.configuredVersionNumber %>'
                 }
             },
         },
@@ -292,7 +292,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass --wait 20'
+                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass -c --wait 30'
             },
 
             'force-install-latest': {

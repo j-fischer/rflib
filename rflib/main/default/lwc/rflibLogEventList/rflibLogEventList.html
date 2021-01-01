@@ -33,7 +33,16 @@
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
             <div class="slds-grid">
-                <div class="sdls-col slds-size_1-of-3 slds-m-right_x-small">
+                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
+                    <lightning-input
+                        type="search"
+                        onchange={handleCreatedByChanged}
+                        class="slds-m-bottom_small"
+                        placeholder="Search created by..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
                     <lightning-input
                         type="search"
                         onchange={handleContextKeyChange}
@@ -42,11 +51,11 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="slds-col slds-size_2-of-3">
+                <div class="slds-col slds-size_2-of-4">
                     <lightning-input
                         type="search"
                         onchange={handleLogMessageKeyChange}
-                        class="slds-m-bottom_small"
+                        class="slds-m-bottom_small slds-m-right_small"
                         placeholder="Search log messages..."
                     >
                     </lightning-input>
@@ -59,10 +68,13 @@
                     <thead>
                         <tr class="slds-text-heading_label">
                             <th scope="col">
+                                <div class="slds-truncate" title="Date">Date</div>
+                            </th>
+                            <th scope="col">
                                 <div class="slds-truncate" title="Created By">Create By</div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Date">Date</div>
+                                <div class="slds-truncate" title="Request ID">Request ID</div>
                             </th>
                             <th scope="col">
                                 <div class="slds-truncate" title="Level">Level</div>
@@ -70,17 +82,11 @@
                             <th scope="col">
                                 <div class="slds-truncate" title="Context">Context</div>
                             </th>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Message">Message</div>
-                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
                             <tr class="clickable" key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
-                                <td class="slds-truncate">
-                                    <div>{evt.CreatedById}</div>
-                                </td>
                                 <td class="slds-truncate">
                                     <div>
                                         <lightning-formatted-date-time
@@ -95,14 +101,17 @@
                                         </lightning-formatted-date-time>
                                     </div>
                                 </td>
+                                <td class="slds-truncate">
+                                    <div>{evt.CreatedById}</div>
+                                </td>
+                                <td class="slds-truncate">
+                                    <div>{evt.Request_ID__c}</div>
+                                </td>
                                 <td>
                                     <div class="slds-truncate">{evt.Log_Level__c}</div>
                                 </td>
                                 <td>
                                     <div class="slds-truncate">{evt.Context__c}</div>
-                                </td>
-                                <td>
-                                    <div class="slds-truncate" title={evt.Log_Messages__c}>{evt.Log_Messages__c}</div>
                                 </td>
                             </tr>
                         </template>
