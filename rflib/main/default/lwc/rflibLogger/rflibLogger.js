@@ -175,7 +175,6 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
                     timerName,
                     duration,
                     threshold
-                    
                 ]);
             }
         } else {

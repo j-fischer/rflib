@@ -26,22 +26,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
-@SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
+/**
+ * @group Logger
+ * @description System.Finalizer implementation to log the result of the parent transaction and to publish any logs if needed.
+ */ 
+public class rflib_DefaultLogFinalizer implements rflib_LogFinalizer {
+    
+    private rflib_Logger logger;
+    
+    public void setLogger(rflib_Logger logger) {
+        this.logger = logger;
+    }
 
-        upsert settings;
+    public void execute(FinalizerContext ctx) {   
+        String reqId = ctx.getRequestId();
+        String jobId = ctx.getAsyncApexJobId();
+
+        System.assert(logger != null, 'Logger is null');
+
+        if (ctx.getResult() == ParentJobResult.SUCCESS) {
+            logger.info('Parent Queueable (Job ID: {0}, Request ID: {1}) completed successfully!', new Object[] { jobId, reqId });
+        } else {
+            logger.fatal('Parent Queueable (Job ID: {0}, Request ID: {1}) failed!', new Object[] { jobId, reqId }, ctx.getException());
+        }
+
+        logger.publishBatchedLogEvents();
     }
 }

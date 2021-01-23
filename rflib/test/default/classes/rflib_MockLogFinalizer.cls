@@ -28,20 +28,19 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public class rflib_MockLogFinalizer implements rflib_LogFinalizer {
+    
+    public Boolean finalizerInvoked = false;
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'DEBUG';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
+    private rflib_Logger logger;
 
-        upsert settings;
+    public void setLogger(rflib_Logger logger) {
+        this.logger = logger;
+    }
+
+    public void execute(FinalizerContext ctx) {   
+        System.assert(logger != null, 'Logger is null');
+
+        finalizerInvoked = true;
     }
 }
