@@ -1,3 +1,11 @@
+### RFLIB-FS 1.1.0
+
+Package ID: 04t3h000004jqXEAAY
+Package Alias: RFLIB-FS@1.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jqXEAAY
+
+-   Added new feature switch scope type called "Public Group" which allows for overwrites using direct public group memberships
+
 ### RFLIB-TF 1.1.0
 
 Package ID: 04t3h000004jq2OAAQ
