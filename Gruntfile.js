@@ -355,7 +355,6 @@ module.exports = function(grunt) {
         tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
         tasks.push('gitcommit:version');
-        tasks.push('gitpush:origin');
 
         grunt.task.run(tasks);
     });
