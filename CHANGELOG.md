@@ -1,3 +1,12 @@
+### RFLIB-FS 2.3.0
+
+Package ID: 04t3h000004jqfnAAA
+Package Alias: RFLIB@2.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jqfnAAA
+
+-   Implemented finalizer interface support for Queueables
+-   Provided the ability to mask text within the collected log messages when publishing a log event
+
 ### RFLIB-FS 1.1.0
 
 Package ID: 04t3h000004jqXEAAY
@@ -12,7 +21,7 @@ Package ID: 04t3h000004jq2OAAQ
 Package Alias: RFLIB-TF@1.1.0-3
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jq2OAAQ
 
--   All metadata was upgrade to API version 50.0
+-   All metadata was upgraded to API version 50.0
 -   Added Custom Permission to allow to bypass all triggers
 
 ### RFLIB-FS 1.0.2
@@ -21,7 +30,7 @@ Package ID: 04t3h000004jpyMAAQ
 Package Alias: RFLIB-FS@1.0.2-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpyMAAQ
 
--   All metadata was upgrade to API version 50.0
+-   All metadata was upgraded to API version 50.0
 
 ### RFLIB 2.2.0
 
@@ -29,7 +38,7 @@ Package ID: 04t3h000004jpwzAAA
 Package Alias: RFLIB@2.2.0-2
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jpwzAAA
 
--   All metadata was upgrade to API version 50.0
+-   All metadata was upgraded to API version 50.0
 -   Added input field for User filter Log Monitor
 -   Introduced the Salesforce Request ID into the logging framework
 -   Added Salesforce Request ID to TraceID token to make it completely unique
