@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of mosquitto nor the names of its
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 ({
-    doInit: function(component) {
+    doInit: function (component) {
         var name = component.get('v.name');
         var appendComponentId = component.get('v.appendComponentId');
 
@@ -41,7 +41,7 @@
         component.set('v.logger', logger);
     },
 
-    setConfig: function(component, event) {
+    setConfig: function (component, event) {
         var params = event.getParam('arguments');
         if (params) {
             var logger = component.get('v.logger');
@@ -49,32 +49,32 @@
         }
     },
 
-    trace: function(component, event, helper) {
+    trace: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.trace.apply(logger, helper.getArgs(event, helper));
     },
 
-    debug: function(component, event, helper) {
+    debug: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.debug.apply(logger, helper.getArgs(event, helper));
     },
 
-    info: function(component, event, helper) {
+    info: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.info.apply(logger, helper.getArgs(event, helper));
     },
 
-    warn: function(component, event, helper) {
+    warn: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.warn.apply(logger, helper.getArgs(event, helper));
     },
 
-    error: function(component, event, helper) {
+    error: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.error.apply(logger, helper.getArgs(event, helper));
     },
 
-    fatal: function(component, event, helper) {
+    fatal: function (component, event, helper) {
         var logger = component.get('v.logger');
         logger.fatal.apply(logger, helper.getArgs(event, helper));
     }

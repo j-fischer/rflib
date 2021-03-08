@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of mosquitto nor the names of its
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -32,17 +32,17 @@ import getAllFeatureSwitches from '@salesforce/apex/rflib_FeatureSwitchesControl
 const logger = createLogger('rflibFeatureSwitches');
 
 const getAllFeatureSwitchPromise = getAllFeatureSwitches()
-    .then(result => {
+    .then((result) => {
         logger.info('Received all feature switch values: ' + JSON.stringify(result));
         return result;
     })
-    .catch(error => {
+    .catch((error) => {
         logger.error('Failed to retrieve feature switches from server: ' + JSON.stringify(error));
         throw error;
     });
 
-const isFeatureSwitchTurnedOn = name => {
-    return getAllFeatureSwitchPromise.then(result => {
+const isFeatureSwitchTurnedOn = (name) => {
+    return getAllFeatureSwitchPromise.then((result) => {
         let switchValue = !!result[name];
         logger.info('Feature Switch with name {0} is turned on? {1}', name, switchValue);
         return switchValue;

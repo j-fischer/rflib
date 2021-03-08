@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of mosquitto nor the names of its
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -92,7 +92,7 @@ export default class LogEventMonitor extends LightningElement {
     connectedCallback() {
         let _this = this;
 
-        this.messageCallback = function(msg) {
+        this.messageCallback = function (msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
             _this.numTotalRecords = _this.capturedEvents.length;
@@ -112,7 +112,7 @@ export default class LogEventMonitor extends LightningElement {
         );
 
         const _this = this;
-        const connectToServer = function() {
+        const connectToServer = function () {
             logger.debug('connectToServer()');
             if (newConnectionMode) {
                 _this.currentConnectionMode =
@@ -132,7 +132,7 @@ export default class LogEventMonitor extends LightningElement {
         };
 
         if (this.currentConnectionMode.value !== CONNECTION_MODE.DISCONNECTED.value) {
-            unsubscribe(this.subscription, response => {
+            unsubscribe(this.subscription, (response) => {
                 logger.debug('unsubscribe() response: ', JSON.stringify(response));
                 this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
                 this.subscription = null;
@@ -152,7 +152,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     createSubscriptionResponseHandler(component) {
-        return function(response) {
+        return function (response) {
             logger.debug('Successfully subscribed to: ' + response.channel);
             component.subscription = response;
         };
@@ -160,7 +160,7 @@ export default class LogEventMonitor extends LightningElement {
 
     registerErrorListener() {
         logger.debug('Registering Error Listener');
-        onError(error => {
+        onError((error) => {
             logger.debug('Received error from server: {0}', JSON.stringify(error));
             this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
         });
