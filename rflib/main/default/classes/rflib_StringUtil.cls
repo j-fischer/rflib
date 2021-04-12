@@ -39,7 +39,7 @@ public class rflib_StringUtil {
         get {
             if (allMaskingRules == null) {
                 // TODO: Replace with new syntax when Spring 21 is released.
-                allMaskingRules = [SELECT Target__c, Target_type__c, Replacement__c FROM rflib_Masking_Rule__mdt WHERE Is_Active__c = true ORDER BY Order__c ASC];
+                allMaskingRules = rflib_Masking_Rule__mdt.getAll().values();
             }
             return allMaskingRules;
         }
