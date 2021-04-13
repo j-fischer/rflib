@@ -35,13 +35,24 @@
 public class rflib_StringUtil {
     
     @TestVisible
-    private static List<rflib_Masking_Rule__mdt> allMaskingRules {
+    private static List<rflib_Masking_Rule__mdt> allActiveMaskingRules {
         get {
-            if (allMaskingRules == null) {
-                // TODO: Replace with new syntax when Spring 21 is released.
-                allMaskingRules = rflib_Masking_Rule__mdt.getAll().values();
+            if (allActiveMaskingRules == null) {
+                List<WrappedMaskingRules> wrappedMaskingRules = new List<WrappedMaskingRules>();
+                for (rflib_Masking_Rule__mdt rule : rflib_Masking_Rule__mdt.getAll().values()) {
+                    if (rule.Is_Active__c) {
+                        wrappedMaskingRules.add(new WrappedMaskingRules(rule));
+                    }
+                }
+
+                wrappedMaskingRules.sort();
+                
+                allActiveMaskingRules = new List<rflib_Masking_Rule__mdt>();
+                for (WrappedMaskingRules wrapper : wrappedMaskingRules) {
+                    allActiveMaskingRules.add(wrapper.rule);
+                }
             }
-            return allMaskingRules;
+            return allActiveMaskingRules;
         }
         private set;
     }
@@ -56,7 +67,7 @@ public class rflib_StringUtil {
      * @return        The source with all targets of the given rule replaced. 
      */
     public static String replaceWithAllMaskingRules(String source) {
-        return replaceWithRules(source, allMaskingRules);
+        return replaceWithRules(source, allActiveMaskingRules);
     }
     
     /**
@@ -96,4 +107,36 @@ public class rflib_StringUtil {
     
     @SuppressWarnings('PMD.EmptyStatementBlock')
     private rflib_StringUtil() { }
+
+    public class WrappedMaskingRules {
+        public rflib_Masking_Rule__mdt rule;
+        
+        public WrappedMaskingRules(rflib_Masking_Rule__mdt rule) {
+           this.rule = rule;
+        }
+        
+        public Integer compareTo(Object compareTo) {
+            WrappedMaskingRules compareToRule = (WrappedMaskingRules) compareTo;
+            
+            if (compareTo == null) {
+                return 1;
+            } else if (rule == null && compareToRule.rule == null){
+                return 0;
+            } else if (rule == null && compareToRule.rule != null){
+                return -1;
+            } else if (rule != null && compareToRule.rule == null){
+                return 1;
+            } if (rule.Order__c == null && compareToRule.rule.Order__c != null){
+                return -1;
+            } else if (rule.Order__c != null && compareToRule.rule.Order__c == null){
+                return 1;
+            } else if (rule.Order__c > compareToRule.rule.Order__c) {
+                return 1;
+            } else if (rule.Order__c < compareToRule.rule.Order__c) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    }
 }

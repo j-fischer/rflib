@@ -285,6 +285,17 @@ public inherited sharing class rflib_TriggerManager {
         
         public Integer compareTo(Object compareTo) {
             TriggerConfigurationWrapper compareToConfig = (TriggerConfigurationWrapper) compareTo;
+
+            if (compareToConfig == null) {
+                return 1;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig == null) {
+                return 0;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig != null) {
+                return -1;
+            } else if (triggerConfig != null && compareToConfig.triggerConfig == null) {
+                return 1;
+            }
+
             Integer returnValue = compareFieldValue(compareToConfig, 'Order__c');
             
             return returnValue != 0
