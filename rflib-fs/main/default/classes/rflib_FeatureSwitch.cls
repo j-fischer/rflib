@@ -165,10 +165,7 @@ public without sharing class rflib_FeatureSwitch {
     }
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {
-        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = [
-            SELECT Switch_Name__c, Scope_Name__c, Scope_Type__c, Turned_On__c 
-            FROM rflib_Feature_Switch__mdt
-        ];
+        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = rflib_Feature_Switch__mdt.getAll().values();
 
         LOGGER.trace('All feature switch values: ' + JSON.serialize(allFeaturesSwitches));
 

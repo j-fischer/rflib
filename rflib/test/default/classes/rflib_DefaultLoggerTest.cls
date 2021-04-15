@@ -316,7 +316,7 @@ public class rflib_DefaultLoggerTest {
       createRule('secret', '****'),
       createRule('[\\d\\d\\d-\\d\\d\\d-\\d\\d\\d]', '####')
     };
-    rflib_StringUtil.allMaskingRules = rules;
+    rflib_StringUtil.allActiveMaskingRules = rules;
 
     rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 

@@ -47,7 +47,7 @@ public with sharing class rflib_GlobalSettings {
 
     private static String getSetting(String name) {
         if (SETTINGS.isEmpty()) {
-            for (rflib_Global_Setting__mdt setting : [SELECT DeveloperName, Value__c FROM rflib_Global_Setting__mdt]) {
+            for (rflib_Global_Setting__mdt setting : rflib_Global_Setting__mdt.getAll().values()) {
                 SETTINGS.put(setting.DeveloperName, setting.Value__c);
             }
         }

@@ -253,14 +253,68 @@ public inherited sharing class rflib_TriggerManager {
     }
 
     public class DefaultTriggerConfigurationQueryLocator implements ITriggerConfigurationQueryLocator {
+
+        @TestVisible
+        private List<rflib_Trigger_Configuration__mdt> allConfigValues = rflib_Trigger_Configuration__mdt.getAll().values();
+
         public List<rflib_Trigger_Configuration__mdt> getRecords(String objectTypeName, String triggerEvent) {
-            return [SELECT Class_Name__c, Order__c, Exception_Behavior__c
-             FROM rflib_Trigger_Configuration__mdt
-             WHERE Active__c = true
-             AND Object_Name__c = :objectTypeName 
-             AND Event__c = :triggerEvent
-             ORDER BY Order__c, Class_Name__c ASC
-            ];
+            List<TriggerConfigurationWrapper> sortable = new List<TriggerConfigurationWrapper>();
+            for (rflib_Trigger_Configuration__mdt config : allConfigValues) {
+                if (config.Active__c && config.Object_Name__c == objectTypeName && config.Event__c == triggerEvent) {
+                    sortable.add(new TriggerConfigurationWrapper(config));
+                }
+            }
+
+            sortable.sort();
+
+            List<rflib_Trigger_Configuration__mdt> result = new List<rflib_Trigger_Configuration__mdt>();
+            for (TriggerConfigurationWrapper configWrapper : sortable) {
+                result.add(configWrapper.triggerConfig);
+            }
+            return result;
+        }
+    }
+
+    public class TriggerConfigurationWrapper implements Comparable {
+ 
+        public rflib_Trigger_Configuration__mdt triggerConfig;
+        
+        public TriggerConfigurationWrapper(rflib_Trigger_Configuration__mdt triggerConfig) {
+           this.triggerConfig = triggerConfig;
+        }
+        
+        public Integer compareTo(Object compareTo) {
+            TriggerConfigurationWrapper compareToConfig = (TriggerConfigurationWrapper) compareTo;
+
+            if (compareToConfig == null) {
+                return 1;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig == null) {
+                return 0;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig != null) {
+                return -1;
+            } else if (triggerConfig != null && compareToConfig.triggerConfig == null) {
+                return 1;
+            }
+
+            Integer returnValue = compareFieldValue(compareToConfig, 'Order__c');
+            
+            return returnValue != 0
+                ? returnValue
+                : compareFieldValue(compareToConfig, 'Class_Name__c');
+        }
+
+        private Integer compareFieldValue(TriggerConfigurationWrapper compareTo, String fieldName) {
+            Integer returnValue = 0;
+            if ((triggerConfig.get(fieldName) == null) && (compareTo.triggerConfig.get(fieldName) != null)){
+                returnValue = -1;
+            } else if ((triggerConfig.get(fieldName) != null) && (compareTo.triggerConfig.get(fieldName) == null)){
+                returnValue = 1;
+            } else if (String.valueOf(triggerConfig.get(fieldName)) > String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+                returnValue = 1;
+            } else if (String.valueOf(triggerConfig.get(fieldName)) < String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+                returnValue = -1;
+            }        
+            return returnValue;                  
         }
     }
 }
