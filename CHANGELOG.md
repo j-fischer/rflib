@@ -1,4 +1,4 @@
-### RFLIB-FS 2.3.0
+### RFLIB 2.3.0
 
 Package ID: 04t3h000004jqfnAAA
 Package Alias: RFLIB@2.3.0-1
