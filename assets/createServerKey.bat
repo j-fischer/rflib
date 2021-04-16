@@ -17,7 +17,7 @@ set /p ENCRYPTION_KEY=
 echo Enter IV
 set /p ENCRYPTION_IV=
 
-openssl enc -nosalt -aes-256-cbc -in server.key -out server.key.enc -base64 -K %ENCRYPTION_KEY% -iv %ENCRYPTION_IV%
+openssl enc -nosalt -aes-256-cbc -in server.key -out server.key.enc -base64 -K %ENCRYPTION_KEY% -iv %ENCRYPTION_IV% -md md5
 
 del server.csr
 del server.pass.key

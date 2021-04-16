@@ -14,7 +14,7 @@ jobs:
                   name: Install Salesforce DX
                   command: |
                       openssl version
-                      openssl aes-256-cbc -K $ENCRYPTION_KEY -in assets/server.key.enc -out assets/server.key -d -iv $ENCRYPTION_IV
+                      openssl aes-256-cbc -in assets/server.key.enc -out assets/server.key -d -K $ENCRYPTION_KEY -iv $ENCRYPTION_IV -md md5
                       export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
                       export SFDX_DOMAIN_RETRY=300
                       export SFDX_DISABLE_APP_HUB=true
