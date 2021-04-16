@@ -4,8 +4,8 @@
             "path": "rflib",
             "default": true,
             "package": "RFLIB",
-            "versionName": "ver 2.3.0",
-            "versionNumber": "2.3.0.NEXT",
+            "versionName": "ver 2.4.0",
+            "versionNumber": "2.4.0.NEXT",
             "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md"
         },
@@ -75,6 +75,7 @@
         "RFLIB-TF@1.1.0-1": "04t3h000004jpyRAAQ",
         "RFLIB-TF@1.1.0-3": "04t3h000004jq2OAAQ",
         "RFLIB-FS@1.1.0-1": "04t3h000004jqXEAAY",
-        "RFLIB@2.3.0-1": "04t3h000004jqfnAAA"
+        "RFLIB@2.3.0-1": "04t3h000004jqfnAAA",
+        "RFLIB@2.4.0-1": "04t3h000004RczlAAC"
     }
 }

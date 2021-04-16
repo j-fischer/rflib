@@ -1,3 +1,11 @@
+### RFLIB 2.4.0
+
+Package ID: 04t3h000004RczlAAC
+Package Alias: RFLIB@2.4.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RczlAAC
+
+-   Replaced queries for Custom Metadata Type `rflib_Global_Setting__mdt` with the new Apex API methods
+
 ### RFLIB 2.3.0
 
 Package ID: 04t3h000004jqfnAAA
