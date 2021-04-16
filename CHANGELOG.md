@@ -1,3 +1,12 @@
+### RFLIB-FS 1.2.0
+
+Package ID: 04t3h000004RczqAAC
+Package Alias: RFLIB-FS@1.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RczqAAC
+
+-   Replaced queries for Custom Metadata Type `rflib_Feature_Switch__mdt` with the new Apex API methods
+-   Changed log levels of some framework log messages from DEBUG to TRACE
+
 ### RFLIB 2.4.0
 
 Package ID: 04t3h000004RczlAAC
