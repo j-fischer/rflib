@@ -43,7 +43,8 @@
         "lint-staged": "^10.4.2",
         "lodash": "^4.17.20",
         "prettier": "^2.1.2",
-        "semver": "^7.3.2"
+        "semver": "^7.3.2",
+        "time-grunt": "^2.0.0"
     },
     "husky": {
         "hooks": {
