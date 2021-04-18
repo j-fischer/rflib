@@ -10,6 +10,20 @@
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md"
         },
         {
+            "path": "rflib-el",
+            "default": false,
+            "package": "RFLIB-EL",
+            "versionName": "ver 1.0.0",
+            "versionNumber": "1.0.0.NEXT",
+            "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
+            "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+            "dependencies": [
+                {
+                    "package": "RFLIB@2.2.0-2"
+                }
+            ]
+        },
+        {
             "path": "rflib-fs",
             "default": false,
             "package": "RFLIB-FS",
