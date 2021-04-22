@@ -50,9 +50,9 @@ https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_
 To install latest package via SFDX CLI Plugin:
 
 ```
-sfdx sforce:package:install -p 04t3h000004jpwzAAA -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p 04t3h000004jpyMAAQ -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p 04t3h000004jq2OAAQ -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p 04t3h000004jpwzAAA -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p 04t3h000004jpyMAAQ -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p 04t3h000004jq2OAAQ -w 10 -s AllUsers -u <your org alias>
 ```
 
 To deploy code:
