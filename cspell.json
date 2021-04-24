@@ -1,0 +1,39 @@
+{
+    "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/master/cspell.schema.json",
+    "version": "0.2",
+    "dictionaryDefinitions": [
+        {
+            "name": "workspace",
+            "path": "./cspell-dict.txt",
+            "description": "Custom Workspace Dictionary",
+            "addWords": true,
+            "scope": "workspace"
+        }
+    ],
+    "dictionaries": ["workspace"],
+    "ignorePaths": [
+        ".eslintignore",
+        ".gitattributes",
+        ".gitignore",
+        ".prettierignore",
+        "**/.gitignore",
+        "**/.vscode/**",
+        "**/.sfdx/**",
+        "**/.tmp/**",
+        "**/{cspell.*,cSpell.*,.cspell.*,cspell.config.*}",
+        "*.{png,jpg,pdf}",
+        "**/*.snap",
+        "**/*.trie",
+        "**/coverage/**",
+        "**/dist/**",
+        "**/jest.config.js",
+        "**/node_modules/**",
+        "**/package*.json",
+        "**/tsconfig.json",
+        "cspell.json",
+        "lcov.info",
+        "Gruntfile.json",
+        "package*.json"
+    ],
+    "ignoreWords": ["commitcomment"]
+}

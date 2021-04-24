@@ -47,12 +47,10 @@ To install package via browser:
 
 https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_ID>
 
-To install latest package via SFDX CLI Plugin:
+To install package via SFDX CLI Plugin:
 
 ```
-sfdx force:package:install -p 04t3h000004jpwzAAA -w 10 -s AllUsers -u <your org alias>
-sfdx force:package:install -p 04t3h000004jpyMAAQ -w 10 -s AllUsers -u <your org alias>
-sfdx force:package:install -p 04t3h000004jq2OAAQ -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p <Package ID> -w 10 -s AllUsers -u <your org alias>
 ```
 
 To deploy code:
@@ -64,7 +62,7 @@ To deploy code:
 
 ## Documentation
 
-Documentation such as How To's and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki/Ops-Center-Logging-Dashboard).
+Documentation such as "How To's" and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki/Ops-Center-Logging-Dashboard).
 
 ## Log Event Dashboard
 
