@@ -1,3 +1,11 @@
+### RFLIB-TF 1.2.0
+
+Package ID: 04t3h000004Rd1IAAS
+Package Alias: RFLIB-TF@1.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004Rd1IAAS
+
+-   Replaced queries for Custom Metadata Type `rflib_Trigger_Configuration__mdt` with the new Apex API methods
+
 ### RFLIB-FS 1.2.0
 
 Package ID: 04t3h000004RczqAAC
