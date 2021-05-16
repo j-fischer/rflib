@@ -1,0 +1,98 @@
+<!--
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <div class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate">
+                                        {numTotalRecords} Total Permission Records
+                                    </span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <ul class="slds-button-group-list">
+                            <li class="slds-m-horizontal_xx-small">
+                                <lightning-button-menu label="Select Permission Type" onselect={changePermissionType}>
+                                    <template for:each={permissionTypes} for:item="menuItem">
+                                        <lightning-menu-item
+                                            key={menuItem.id}
+                                            value={menuItem.value}
+                                            label={menuItem.label}
+                                            disabled={menuItem.disabled}
+                                        >
+                                        </lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slds-grid">
+        <div class="slds-col slds-size_1-of-1">
+            <lightning-card>
+                <!-- <template if:true={isFieldPermissions}> -->
+                <c-rflib-field-permissions-list
+                    permission-records={permissionRecords}
+                    current-page={page}
+                    page-size={pageSize}
+                    onrefreshed={handleRefreshed}
+                >
+                </c-rflib-field-permissions-list>
+                <!-- </template> -->
+                <div class="slds-m-around_medium">
+                    <c-rflib-paginator
+                        onprevious={handlePrevious}
+                        onnext={handleNext}
+                        onfirst={handleFirst}
+                        onlast={handleLast}
+                        current-page={page}
+                        total-records={numDisplayedRecords}
+                        page-size={pageSize}
+                    >
+                    </c-rflib-paginator>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

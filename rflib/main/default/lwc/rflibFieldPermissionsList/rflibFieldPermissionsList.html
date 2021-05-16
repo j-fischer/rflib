@@ -1,0 +1,128 @@
+<!--
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * This component was inspired by:
+ * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
+-->
+<template>
+    <lightning-card title={title} icon-name="utility:list">
+        <div class="slds-m-around_medium">
+            <div class="slds-grid">
+                <div
+                    class="sdls-col slds-size_3-of-12 slds-m-right_x-small"
+                    onkeypress={handleSecurityObjectNameKeyPress}
+                >
+                    <lightning-input
+                        type="search"
+                        onchange={handleSecurityObjectNameChanged}
+                        class="slds-m-bottom_small"
+                        variant="label-hidden"
+                        placeholder="Search profile/permission set name..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="sdls-col slds-size_3-of-12 slds-m-right_x-small" onkeypress={handleObjectSearchKeyPress}>
+                    <lightning-input
+                        type="search"
+                        onchange={handleObjectSearchKeyChange}
+                        class="slds-m-bottom_small"
+                        variant="label-hidden"
+                        placeholder="Search Object..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_4-of-12" onkeypress={handleFieldSearchKeyPress}>
+                    <lightning-input
+                        type="search"
+                        onchange={handleFieldSearchKeyChange}
+                        class="slds-m-bottom_small slds-m-right_small"
+                        variant="label-hidden"
+                        placeholder="Search field..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <lightning-button type="submit" label="Search" onclick={executeSearch}> </lightning-button>
+                </div>
+            </div>
+            <template if:true={recordsToDisplay}>
+                <table
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                >
+                    <thead>
+                        <tr class="slds-text-heading_label">
+                            <th scope="col">
+                                <div class="slds-truncate" title="Profile/Permission Set Name">
+                                    Profile/Permission Set Name
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Object">Object</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Field">Field</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Read Access">Read Access</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Edit Access">Edit Access</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={recordsToDisplay} for:item="rec">
+                            <tr class="clickable" key={rec.id} data-log-id={rec.Id} onclick={handleLogSelected}>
+                                <td class="slds-truncate">
+                                    <div>
+                                        <div>{rec.securityObjectName}</div>
+                                    </div>
+                                </td>
+                                <td class="slds-truncate">
+                                    <div>{rec.sObjectType}</div>
+                                </td>
+                                <td class="slds-truncate">
+                                    <div>{rec.fieldName}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{rec.permissionRead}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate">{rec.permissionEdit}</div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+        </div>
+        <p class="slds-m-around_medium">
+            <b>{filteredRecordsCount} </b> Page <b>{currentPage}</b> of <b> {totalPages}</b>
+        </p>
+    </lightning-card>
+</template>
