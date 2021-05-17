@@ -28,6 +28,10 @@
 -->
 <template>
     <div class="slds-page-header">
+        <div if:true={isLoadingRecords}>
+            <lightning-spinner class="slds-is-fixed" size="large" alternative-text="Loading records...">
+            </lightning-spinner>
+        </div>
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
                 <div class="slds-media">

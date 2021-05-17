@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { LightningElement, track } from 'lwc';
+import { LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllProfiles';
 //import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllPermissionSets';
@@ -48,23 +48,27 @@ const PERMISSION_TYPES = {
 const logger = createLogger('PermissionDashboard');
 
 export default class LogEventMonitor extends LightningElement {
-    @track page = 1;
-    @track pageSize = DEFAULT_PAGE_SIZE;
-    @track numDisplayedRecords;
-    @track numTotalRecords;
+    page = 1;
+    pageSize = DEFAULT_PAGE_SIZE;
+    numDisplayedRecords;
+    numTotalRecords;
 
-    @track currentPermissionType = PERMISSION_TYPES.FIELD_PERMISSIONS;
-    @track permissionRecords = [];
+    currentPermissionType = PERMISSION_TYPES.FIELD_PERMISSIONS;
+    permissionRecords = [];
+    isLoadingRecords = false;
 
     connectedCallback() {
+        this.isLoadingRecords = true;
         getFieldLevelSecurityForAllProfiles()
             .then((result) => {
                 logger.debug('Received field permissions for all profiles, size={0}', result.length);
                 this.permissionRecords = result;
                 this.numTotalRecords = result.length;
+                this.isLoadingRecords = false;
             })
             .catch((error) => {
                 logger.debug('Failed to retrieve field permissions for all profiles', error);
+                this.isLoadingRecords = false;
             });
     }
 
