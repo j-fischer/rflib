@@ -45,6 +45,7 @@
                                 </h1>
                             </div>
                         </div>
+                        <p class="slds-page-header__name-meta">Permission Types • {currentPermissionType.label}</p>
                     </div>
                 </div>
             </div>
@@ -53,7 +54,11 @@
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
                             <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu label="Select Permission Type" onselect={changePermissionType}>
+                                <lightning-button-menu
+                                    label="Select Permission Type"
+                                    menu-alignment="right"
+                                    onselect={changePermissionType}
+                                >
                                     <template for:each={permissionTypes} for:item="menuItem">
                                         <lightning-menu-item
                                             key={menuItem.id}
@@ -75,15 +80,14 @@
     <div class="slds-grid">
         <div class="slds-col slds-size_1-of-1">
             <lightning-card>
-                <!-- <template if:true={isFieldPermissions}> -->
-                <c-rflib-field-permissions-list
+                <c-rflib-permissions-table
+                    is-field-permissions={isFieldPermissions}
                     permission-records={permissionRecords}
                     current-page={page}
                     page-size={pageSize}
                     onrefreshed={handleRefreshed}
                 >
-                </c-rflib-field-permissions-list>
-                <!-- </template> -->
+                </c-rflib-permissions-table>
                 <div class="slds-m-around_medium">
                     <c-rflib-paginator
                         onprevious={handlePrevious}

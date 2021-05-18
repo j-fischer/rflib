@@ -39,6 +39,7 @@ public with sharing class rflib_PermissionDashboardController {
                 FROM FieldPermissions 
                 WHERE Parent.IsOwnedByProfile = true 
                 ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
+                LIMIT 50000
             ]);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all profiles', ex);
@@ -54,9 +55,44 @@ public with sharing class rflib_PermissionDashboardController {
                 FROM FieldPermissions 
                 WHERE Parent.IsOwnedByProfile = false 
                 ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
+                LIMIT 50000
             ]);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable = true)
+    public static List<PermissionInfo> getObjectLevelSecurityForAllProfiles(){
+        try {
+            return convertToPermissionInfo([
+                SELECT Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, 
+                    PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
+                FROM ObjectPermissions 
+                WHERE Parent.IsOwnedByProfile = true 
+                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType
+                LIMIT 50000
+            ]);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve object level security for all profiles', ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable = true)
+    public static List<PermissionInfo> getObjectLevelSecurityForAllPermissionSets(){
+        try {
+            return convertToPermissionInfo([
+                SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, 
+                    PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
+                FROM ObjectPermissions 
+                WHERE Parent.IsOwnedByProfile = false 
+                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType
+                LIMIT 50000
+            ]);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
             throw new AuraHandledException(ex.getMessage());
         }
     }
@@ -69,6 +105,14 @@ public with sharing class rflib_PermissionDashboardController {
         return result;
     }
 
+    private static List<PermissionInfo> convertToPermissionInfo(List<ObjectPermissions> objectPermissionsList) {
+        List<PermissionInfo> result = new List<PermissionInfo>();
+        for (ObjectPermissions op : objectPermissionsList) {
+            result.add(new PermissionInfo(op));
+        }
+        return result;
+    }
+
     public class PermissionInfo {
         @AuraEnabled public String securityType;
         @AuraEnabled public String securityObjectName;
@@ -76,6 +120,10 @@ public with sharing class rflib_PermissionDashboardController {
         @AuraEnabled public String fieldName;
         @AuraEnabled public Boolean permissionEdit;
         @AuraEnabled public Boolean permissionRead;
+        @AuraEnabled public Boolean permissionCreate;
+        @AuraEnabled public Boolean permissionDelete;
+        @AuraEnabled public Boolean permissionViewAll;
+        @AuraEnabled public Boolean permissionModifyAll;
 
         public PermissionInfo(FieldPermissions record) {
             this.securityType = record.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
@@ -84,6 +132,19 @@ public with sharing class rflib_PermissionDashboardController {
             this.fieldName = record.Field.substringAfter('.');
             this.permissionEdit = record.PermissionsEdit;
             this.permissionRead = record.PermissionsRead;
+        }
+
+        
+        public PermissionInfo(ObjectPermissions record) {
+            this.securityType = record.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
+            this.securityObjectName =  record.Parent.IsOwnedByProfile ? record.Parent.Profile.Name : record.Parent.Label;
+            this.sObjectType = record.SObjectType;
+            this.permissionEdit = record.PermissionsEdit;
+            this.permissionRead = record.PermissionsRead;
+            this.permissionCreate = record.PermissionsCreate;
+            this.permissionDelete = record.PermissionsDelete;
+            this.permissionViewAll = record.PermissionsViewAllRecords;
+            this.permissionModifyAll = record.PermissionsModifyAllRecords;
         }
     }
 }

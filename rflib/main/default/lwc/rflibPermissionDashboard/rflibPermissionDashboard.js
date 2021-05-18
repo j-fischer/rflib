@@ -29,19 +29,31 @@
 import { LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllProfiles';
-//import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllPermissionSets';
+import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllPermissionSets';
+import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionDashboardController.getObjectLevelSecurityForAllProfiles';
+import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getObjectLevelSecurityForAllPermissionSets';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PERMISSION_TYPES = {
-    OBJECT_PERMISSIONS: {
+    OBJECT_PERMISSIONS_PROFILES: {
         id: '1',
-        value: 'ObjectPermissions',
-        label: 'Object Permission'
+        value: 'ObjectPermissionsProfiles',
+        label: 'Object Permission For Profiles'
     },
-    FIELD_PERMISSIONS: {
+    OBJECT_PERMISSIONS_PERMISSION_SETS: {
         id: '2',
-        value: 'FieldPermissions',
-        label: 'Field Permissions'
+        value: 'ObjectPermissionsPermissionSets',
+        label: 'Object Permission For Permission Sets'
+    },
+    FIELD_PERMISSIONS_PROFILES: {
+        id: '3',
+        value: 'FieldPermissionsProfiles',
+        label: 'Field Permissions for Profiles'
+    },
+    FIELD_PERMISSIONS_PERMISSION_SETS: {
+        id: '4',
+        value: 'FieldPermissionsPermissionSets',
+        label: 'Field Permissions for Permission Sets'
     }
 };
 
@@ -53,32 +65,29 @@ export default class LogEventMonitor extends LightningElement {
     numDisplayedRecords;
     numTotalRecords;
 
-    currentPermissionType = PERMISSION_TYPES.FIELD_PERMISSIONS;
+    currentPermissionType = PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES;
     permissionRecords = [];
     isLoadingRecords = false;
 
     connectedCallback() {
-        this.isLoadingRecords = true;
-        getFieldLevelSecurityForAllProfiles()
-            .then((result) => {
-                logger.debug('Received field permissions for all profiles, size={0}', result.length);
-                this.permissionRecords = result;
-                this.numTotalRecords = result.length;
-                this.isLoadingRecords = false;
-            })
-            .catch((error) => {
-                logger.debug('Failed to retrieve field permissions for all profiles', error);
-                this.isLoadingRecords = false;
-            });
+        this.loadPermissions();
     }
 
     get isFieldPermissions() {
-        return this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS;
+        return (
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES ||
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS
+        );
     }
 
     get permissionTypes() {
         const permissionTypes = JSON.parse(
-            JSON.stringify([PERMISSION_TYPES.OBJECT_PERMISSIONS, PERMISSION_TYPES.FIELD_PERMISSIONS])
+            JSON.stringify([
+                PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES,
+                PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SETS,
+                PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES,
+                PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS
+            ])
         );
 
         let i,
@@ -99,7 +108,48 @@ export default class LogEventMonitor extends LightningElement {
             this.currentPermissionType.value
         );
 
-        //const _this = this;
+        this.currentPermissionType = Object.values(PERMISSION_TYPES).find((perm) => perm.value === newPermissionType);
+
+        this.loadPermissions();
+    }
+
+    loadPermissions() {
+        logger.debug('Loading permissions for type: ' + this.currentPermissionType.value);
+
+        let remoteAction = null;
+        switch (this.currentPermissionType.value) {
+            case PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES.value:
+                remoteAction = getObjectLevelSecurityForAllProfiles;
+                break;
+
+            case PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SETS.value:
+                remoteAction = getObjectLevelSecurityForAllPermissionSets;
+                break;
+
+            case PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES.value:
+                remoteAction = getFieldLevelSecurityForAllProfiles;
+                break;
+
+            case PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS.value:
+                remoteAction = getFieldLevelSecurityForAllPermissionSets;
+                break;
+
+            default:
+                logger.error('Unknown permission type: ' + this.currentPermissionType.value);
+        }
+
+        this.isLoadingRecords = true;
+        remoteAction()
+            .then((result) => {
+                logger.debug('Received field permissions for all profiles, size={0}', result.length);
+                this.permissionRecords = result;
+                this.numTotalRecords = result.length;
+                this.isLoadingRecords = false;
+            })
+            .catch((error) => {
+                logger.debug('Failed to retrieve field permissions for all profiles', error);
+                this.isLoadingRecords = false;
+            });
     }
 
     handlePrevious() {

@@ -36,6 +36,7 @@ const logger = createLogger('FieldPermissionsList');
 
 export default class RflibFieldPermissionsList extends LightningElement {
     @api pageSize;
+    @api isFieldPermissions;
 
     @api
     get currentPage() {

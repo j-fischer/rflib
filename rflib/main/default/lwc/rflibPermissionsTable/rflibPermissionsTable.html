@@ -56,16 +56,18 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="slds-col slds-size_4-of-12" onkeypress={handleFieldSearchKeyPress}>
-                    <lightning-input
-                        type="search"
-                        onchange={handleFieldSearchKeyChange}
-                        class="slds-m-bottom_small slds-m-right_small"
-                        variant="label-hidden"
-                        placeholder="Search field..."
-                    >
-                    </lightning-input>
-                </div>
+                <template if:true={isFieldPermissions}>
+                    <div class="slds-col slds-size_4-of-12" onkeypress={handleFieldSearchKeyPress}>
+                        <lightning-input
+                            type="search"
+                            onchange={handleFieldSearchKeyChange}
+                            class="slds-m-bottom_small slds-m-right_small"
+                            variant="label-hidden"
+                            placeholder="Search field..."
+                        >
+                        </lightning-input>
+                    </div>
+                </template>
                 <div class="slds-col slds-size_2-of-12">
                     <lightning-button type="submit" label="Search" onclick={executeSearch}> </lightning-button>
                 </div>
@@ -84,15 +86,33 @@
                             <th scope="col">
                                 <div class="slds-truncate" title="Object">Object</div>
                             </th>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Field">Field</div>
-                            </th>
+                            <template if:true={isFieldPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Field">Field</div>
+                                </th>
+                            </template>
                             <th scope="col">
                                 <div class="slds-truncate" title="Read Access">Read Access</div>
                             </th>
+                            <template if:false={isFieldPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Create Access">Create Access</div>
+                                </th>
+                            </template>
                             <th scope="col">
                                 <div class="slds-truncate" title="Edit Access">Edit Access</div>
                             </th>
+                            <template if:false={isFieldPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Delete Access">Delete Access</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="View All">View All</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Modify All">Modify All</div>
+                                </th>
+                            </template>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,15 +126,33 @@
                                 <td class="slds-truncate">
                                     <div>{rec.sObjectType}</div>
                                 </td>
-                                <td class="slds-truncate">
-                                    <div>{rec.fieldName}</div>
-                                </td>
+                                <template if:true={isFieldPermissions}>
+                                    <td class="slds-truncate">
+                                        <div>{rec.fieldName}</div>
+                                    </td>
+                                </template>
                                 <td>
                                     <div class="slds-truncate">{rec.permissionRead}</div>
                                 </td>
+                                <template if:false={isFieldPermissions}>
+                                    <td class="slds-truncate">
+                                        <div>{rec.permissionCreate}</div>
+                                    </td>
+                                </template>
                                 <td>
                                     <div class="slds-truncate">{rec.permissionEdit}</div>
                                 </td>
+                                <template if:false={isFieldPermissions}>
+                                    <td class="slds-truncate">
+                                        <div>{rec.permissionDelete}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div>{rec.permissionViewAll}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div>{rec.permissionModifyAll}</div>
+                                    </td>
+                                </template>
                             </tr>
                         </template>
                     </tbody>
