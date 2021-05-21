@@ -88,6 +88,10 @@ export default class RflibFieldPermissionsList extends LightningElement {
         this.displayedPageIndex = this.currentPageIndex;
         logger.debug('Display page with index {0}', this.currentPageIndex);
 
+        if (!this.isFieldPermissions) {
+            this.fieldSearch = null;
+        }
+
         const filteredRecords =
             this.securityObjectNameSearch || this.objectSearch || this.fieldSearch
                 ? this.allRecords.filter(
