@@ -8,5 +8,16 @@ Fabien
 Taillon
 Fawcett
 To's
+currentpage
+onrefreshed
+onprevious
+onnext
+onfirst
+onlast
+cacheable
+Sobject
+Flexi
+flexi
+flexipage
 seleceted
 logselected

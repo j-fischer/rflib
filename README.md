@@ -73,6 +73,16 @@ To enabled the Ops Center application, simply assign the `Ops Center Access` Per
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Monitor_Dashboard.gif 'Log Monitor Dashboard')
 
+## Permissions Explorer
+
+Review object and field permissions for profiles and permission Sets easily within the same user interface. Many problems encountered in an org trace back
+to access issues. Using the Setup interface to review access for users is pretty inefficient. This dashboard provides access to all profiles and permissions
+and allows for quick filtering of the results.
+
+To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permissions_Explorer.gif 'Permissions Explorer')
+
 ## Updates
 
 See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md) for versions, install links and package IDs.

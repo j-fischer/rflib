@@ -19,6 +19,7 @@
         "**/.gitignore",
         "**/.vscode/**",
         "**/.sfdx/**",
+        "**/.circleci/**",
         "**/.tmp/**",
         "**/{cspell.*,cSpell.*,.cspell.*,cspell.config.*}",
         "*.{png,jpg,pdf}",

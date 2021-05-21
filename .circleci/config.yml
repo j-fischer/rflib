@@ -132,24 +132,15 @@ workflows:
             - setup_dx:
                   requires:
                       - setup_project
-                  filters:
-                      branches:
-                          only: master
             - deploy_source:
                   requires:
                       - setup_dx
-                  filters:
-                      branches:
-                          only: master
             - run_lwc_tests:
                   requires:
                       - setup_project
             - run_apex_tests:
                   requires:
                       - deploy_source
-                  filters:
-                      branches:
-                          only: master
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -162,6 +153,3 @@ workflows:
                       - setup_dx
                       - deploy_source
                       - run_apex_tests
-                  filters:
-                      branches:
-                          only: master
