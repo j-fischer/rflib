@@ -3,13 +3,13 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>rflibPermissionDashboard</componentName>
+                <componentName>rflibPermissionsExplorer</componentName>
             </componentInstance>
         </itemInstances>
         <name>main</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Permissions Dashboard</masterLabel>
+    <masterLabel>Permissions Explorer</masterLabel>
     <template>
         <name>flexipage:defaultAppHomeTemplate</name>
     </template>

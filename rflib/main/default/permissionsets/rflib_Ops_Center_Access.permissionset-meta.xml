@@ -20,4 +20,8 @@
         <tab>rflib_Log_Monitor</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <tabSettings>
+        <tab>rflib_Permissions_Explorer</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>

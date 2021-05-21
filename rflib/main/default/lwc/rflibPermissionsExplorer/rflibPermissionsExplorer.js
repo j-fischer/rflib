@@ -28,10 +28,10 @@
  */
 import { LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
-import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllProfiles';
-import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getFieldLevelSecurityForAllPermissionSets';
-import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionDashboardController.getObjectLevelSecurityForAllProfiles';
-import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionDashboardController.getObjectLevelSecurityForAllPermissionSets';
+import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles';
+import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
+import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
+import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PERMISSION_TYPES = {
@@ -57,9 +57,9 @@ const PERMISSION_TYPES = {
     }
 };
 
-const logger = createLogger('PermissionDashboard');
+const logger = createLogger('PermissionsExplorer');
 
-export default class LogEventMonitor extends LightningElement {
+export default class PermissionsExplorer extends LightningElement {
     page = 1;
     pageSize = DEFAULT_PAGE_SIZE;
     numDisplayedRecords;

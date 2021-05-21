@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_PermissionDashboardController {
+public with sharing class rflib_PermissionsExplorerController {
     
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PermissionDashboardController');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PermissionsExplorerController');
 
     @AuraEnabled(cacheable = true)
     public static List<PermissionInfo> getFieldLevelSecurityForAllProfiles(){
