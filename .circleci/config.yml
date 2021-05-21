@@ -145,6 +145,9 @@ workflows:
                   requires:
                       - run_apex_tests
                       - run_lwc_tests
+                  filters:
+                      branches:
+                          only: master
             - cleanup_scratch_org:
                   requires:
                       - setup_dx
