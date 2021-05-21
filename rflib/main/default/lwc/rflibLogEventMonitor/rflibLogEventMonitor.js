@@ -191,7 +191,10 @@ export default class LogEventMonitor extends LightningElement {
 
     handleRefreshed(event) {
         logger.debug('Records loaded, count={0}', event.detail);
-        this.numDisplayedRecords = event.detail;
+        const eventDetails = JSON.parse(event.detail);
+
+        this.page = eventDetails.currentPage;
+        this.numDisplayedRecords = eventDetails.numDisplayedRecords;
         this.totalPages = Math.ceil(this.numDisplayedRecords / this.pageSize);
     }
 

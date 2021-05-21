@@ -118,7 +118,10 @@ export default class LogEventList extends LightningElement {
         }
 
         const event = new CustomEvent('refreshed', {
-            detail: this.filteredRecordCount
+            detail: JSON.stringify({
+                numDisplayedRecords: this.filteredRecordCount,
+                currentPage: this.currentPageIndex + 1
+            })
         });
         this.dispatchEvent(event);
     }
@@ -127,7 +130,7 @@ export default class LogEventList extends LightningElement {
         if (this.createdBySearch !== event.target.value) {
             logger.debug('Created by search target={0}', event.target.value);
             this.createdBySearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }
@@ -136,7 +139,7 @@ export default class LogEventList extends LightningElement {
         if (this.contextSearch !== event.target.value) {
             logger.debug('Context search target={0}', event.target.value);
             this.contextSearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }
@@ -145,7 +148,7 @@ export default class LogEventList extends LightningElement {
         if (this.logMessageSearch !== event.target.value) {
             logger.debug('Log message search target={0}', event.target.value);
             this.logMessageSearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }
