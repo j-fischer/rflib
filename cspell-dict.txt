@@ -19,3 +19,5 @@ Sobject
 Flexi
 flexi
 flexipage
+seleceted
+logselected
