@@ -1,3 +1,12 @@
+### RFLIB 2.5.0
+
+Package ID: 04t3h000004Rd7uAAC
+Package Alias: RFLIB@2.5.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004Rd7uAAC
+
+-   Added initial version of Permission Explorer
+-   Fixed issue with navigation buttons in Log Monitor getting confused when searching for Log Events
+
 ### RFLIB-TF 1.2.0
 
 Package ID: 04t3h000004Rd1IAAS

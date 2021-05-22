@@ -34,7 +34,8 @@
         "cspell.json",
         "lcov.info",
         "Gruntfile.json",
-        "package*.json"
+        "package*.json",
+        "CHANGELOG.md"
     ],
     "ignoreWords": ["commitcomment"]
 }
