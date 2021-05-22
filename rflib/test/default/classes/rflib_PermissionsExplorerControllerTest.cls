@@ -33,55 +33,59 @@ private class rflib_PermissionsExplorerControllerTest {
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetFieldLevelSecurityForAllProfiles_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles();
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        
+        System.assert(records.size() > 0);
 
-        System.assert(result.size() > 0);
-
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
         System.assertEquals('Profile', info.securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
+        System.assertNotEquals(null, info.PermissionsRead);
+        System.assertNotEquals(null, info.PermissionsEdit);
     }
 
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetFieldLevelSecurityForAllPermissionSets_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets();
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
         System.assertEquals([SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
         FROM FieldPermissions 
         WHERE Parent.IsOwnedByProfile = false 
         ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-        LIMIT 50000].size(), result.size());
+        LIMIT 50000].size(), records.size());
     }
 
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetObjectLevelSecurityForAllProfiles_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles();
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
-        System.assert(result.size() > 0);
+        System.assert(records.size() > 0);
 
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
         System.assertEquals('Profile', info.securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
-        System.assertNotEquals(null, info.permissionCreate);
-        System.assertNotEquals(null, info.permissionDelete);
+        System.assertNotEquals(null, info.PermissionsRead);
+        System.assertNotEquals(null, info.PermissionsEdit);
+        System.assertNotEquals(null, info.PermissionsCreate);
+        System.assertNotEquals(null, info.PermissionsDelete);
     }
 
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetObjectLevelSecurityForAllPermissionSets_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets();
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
-        System.assert(result.size() > 0);
+        System.assert(records.size() > 0);
         
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
-        System.assertEquals('PermissionSet', result.get(0).securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
-        System.assertNotEquals(null, info.permissionCreate);
-        System.assertNotEquals(null, info.permissionDelete);
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
+        System.assertEquals('PermissionSet', records.get(0).securityType);
+        System.assertNotEquals(null, info.PermissionsRead);
+        System.assertNotEquals(null, info.PermissionsEdit);
+        System.assertNotEquals(null, info.PermissionsCreate);
+        System.assertNotEquals(null, info.PermissionsDelete);
     }
 }

@@ -32,10 +32,10 @@ public with sharing class rflib_PermissionsExplorerController {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PermissionsExplorerController');
 
     @AuraEnabled(cacheable = true)
-    public static List<PermissionInfo> getFieldLevelSecurityForAllProfiles(){
+    public static QueryResult getFieldLevelSecurityForAllProfiles(){
         try {
             return convertToPermissionInfo([
-                SELECT Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
+                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
                 FROM FieldPermissions 
                 WHERE Parent.IsOwnedByProfile = true 
                 ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
@@ -48,10 +48,10 @@ public with sharing class rflib_PermissionsExplorerController {
     }
 
     @AuraEnabled(cacheable = true)
-    public static List<PermissionInfo> getFieldLevelSecurityForAllPermissionSets(){
+    public static QueryResult getFieldLevelSecurityForAllPermissionSets(){
         try {
             return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
+                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
                 FROM FieldPermissions 
                 WHERE Parent.IsOwnedByProfile = false 
                 ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
@@ -64,10 +64,10 @@ public with sharing class rflib_PermissionsExplorerController {
     }
 
     @AuraEnabled(cacheable = true)
-    public static List<PermissionInfo> getObjectLevelSecurityForAllProfiles(){
+    public static QueryResult getObjectLevelSecurityForAllProfiles(){
         try {
             return convertToPermissionInfo([
-                SELECT Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, 
+                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, 
                     PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
                 FROM ObjectPermissions 
                 WHERE Parent.IsOwnedByProfile = true 
@@ -81,10 +81,10 @@ public with sharing class rflib_PermissionsExplorerController {
     }
 
     @AuraEnabled(cacheable = true)
-    public static List<PermissionInfo> getObjectLevelSecurityForAllPermissionSets(){
+    public static QueryResult getObjectLevelSecurityForAllPermissionSets(){
         try {
             return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, 
+                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, 
                     PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
                 FROM ObjectPermissions 
                 WHERE Parent.IsOwnedByProfile = false 
@@ -97,54 +97,87 @@ public with sharing class rflib_PermissionsExplorerController {
         }
     }
 
-    private static List<PermissionInfo> convertToPermissionInfo(List<FieldPermissions> fieldPermissionsList) {
-        List<PermissionInfo> result = new List<PermissionInfo>();
+    private static QueryResult convertToPermissionInfo(List<FieldPermissions> fieldPermissionsList) {
+        QueryResult result = new QueryResult();
         for (FieldPermissions fp : fieldPermissionsList) {
-            result.add(new PermissionInfo(fp));
+            result.records.add(new PermissionInfo(fp));
         }
         return result;
     }
 
-    private static List<PermissionInfo> convertToPermissionInfo(List<ObjectPermissions> objectPermissionsList) {
-        List<PermissionInfo> result = new List<PermissionInfo>();
+    private static QueryResult convertToPermissionInfo(List<ObjectPermissions> objectPermissionsList) {
+        QueryResult result = new QueryResult();
         for (ObjectPermissions op : objectPermissionsList) {
-            result.add(new PermissionInfo(op));
+            result.records.add(new PermissionInfo(op));
         }
         return result;
     }
 
+    public class QueryResult {
+        @AuraEnabled public List<PermissionInfo> records = new List<PermissionInfo>();
+        @AuraEnabled public String nextRecordsUrl;
+    }
+
+    @SuppressWarnings('PMD.VariableNamingConventions')
+    public class ParentInfo {
+        @AuraEnabled public Boolean IsOwnedByProfile;
+        @AuraEnabled public String Label;
+        @AuraEnabled public ProfileInfo Profile = new ProfileInfo();
+
+        public ParentInfo(Boolean isOwnedByProfile, String label, String profileName) {
+            this.IsOwnedByProfile = isOwnedByProfile;
+            this.Label = label;
+            this.Profile.Name = profileName;
+        }
+    }
+    
+    @SuppressWarnings('PMD.VariableNamingConventions')
+    public class ProfileInfo {
+        @AuraEnabled public String Name;
+    }
+    
+    @SuppressWarnings('PMD.VariableNamingConventions')
     public class PermissionInfo {
-        @AuraEnabled public String securityType;
-        @AuraEnabled public String securityObjectName;
-        @AuraEnabled public String sObjectType;
-        @AuraEnabled public String fieldName;
-        @AuraEnabled public Boolean permissionEdit;
-        @AuraEnabled public Boolean permissionRead;
-        @AuraEnabled public Boolean permissionCreate;
-        @AuraEnabled public Boolean permissionDelete;
-        @AuraEnabled public Boolean permissionViewAll;
-        @AuraEnabled public Boolean permissionModifyAll;
+        @AuraEnabled public ParentInfo Parent;
+        @AuraEnabled public String SobjectType;
+        @AuraEnabled public String Field;
+        @AuraEnabled public Boolean PermissionsEdit;
+        @AuraEnabled public Boolean PermissionsRead;
+        @AuraEnabled public Boolean PermissionsCreate;
+        @AuraEnabled public Boolean PermissionsDelete;
+        @AuraEnabled public Boolean PermissionsViewAllRecords;
+        @AuraEnabled public Boolean PermissionsModifyAllRecords;
+
+        @AuraEnabled public String SecurityType {
+            get {
+                return this.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
+            }
+        }
+        @AuraEnabled public String SecurityObjectName {
+            get {
+                return this.Parent.IsOwnedByProfile ? this.Parent.Profile.Name : this.Parent.Label;
+            }
+        }
 
         public PermissionInfo(FieldPermissions record) {
-            this.securityType = record.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
-            this.securityObjectName =  record.Parent.IsOwnedByProfile ? record.Parent.Profile.Name : record.Parent.Label;
-            this.sObjectType = record.SObjectType;
-            this.fieldName = record.Field.substringAfter('.');
-            this.permissionEdit = record.PermissionsEdit;
-            this.permissionRead = record.PermissionsRead;
-        }
+            this.SobjectType = record.SobjectType;
+            this.Field = record.Field.substringAfter('.');
+            this.PermissionsEdit = record.PermissionsEdit;
+            this.PermissionsRead = record.PermissionsRead;
 
+            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.Label, record.Parent.Profile.Name);
+        }
         
         public PermissionInfo(ObjectPermissions record) {
-            this.securityType = record.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
-            this.securityObjectName =  record.Parent.IsOwnedByProfile ? record.Parent.Profile.Name : record.Parent.Label;
-            this.sObjectType = record.SObjectType;
-            this.permissionEdit = record.PermissionsEdit;
-            this.permissionRead = record.PermissionsRead;
-            this.permissionCreate = record.PermissionsCreate;
-            this.permissionDelete = record.PermissionsDelete;
-            this.permissionViewAll = record.PermissionsViewAllRecords;
-            this.permissionModifyAll = record.PermissionsModifyAllRecords;
+            this.SobjectType = record.SobjectType;
+            this.PermissionsEdit = record.PermissionsEdit;
+            this.PermissionsRead = record.PermissionsRead;
+            this.PermissionsCreate = record.PermissionsCreate;
+            this.PermissionsDelete = record.PermissionsDelete;
+            this.PermissionsViewAllRecords = record.PermissionsViewAllRecords;
+            this.PermissionsModifyAllRecords = record.PermissionsModifyAllRecords;
+
+            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.Label, record.Parent.Profile.Name);
         }
     }
 }

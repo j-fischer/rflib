@@ -120,37 +120,37 @@
                             <tr class="clickable" key={rec.id} data-log-id={rec.Id} onclick={handleLogSelected}>
                                 <td class="slds-truncate">
                                     <div>
-                                        <div>{rec.securityObjectName}</div>
+                                        <div>{rec.SecurityObjectName}</div>
                                     </div>
                                 </td>
                                 <td class="slds-truncate">
-                                    <div>{rec.sObjectType}</div>
+                                    <div>{rec.SobjectType}</div>
                                 </td>
                                 <template if:true={isFieldPermissions}>
                                     <td class="slds-truncate">
-                                        <div>{rec.fieldName}</div>
+                                        <div>{rec.Field}</div>
                                     </td>
                                 </template>
                                 <td>
-                                    <div class="slds-truncate">{rec.permissionRead}</div>
+                                    <div class="slds-truncate">{rec.PermissionsRead}</div>
                                 </td>
                                 <template if:false={isFieldPermissions}>
                                     <td class="slds-truncate">
-                                        <div>{rec.permissionCreate}</div>
+                                        <div>{rec.PermissionsCreate}</div>
                                     </td>
                                 </template>
                                 <td>
-                                    <div class="slds-truncate">{rec.permissionEdit}</div>
+                                    <div class="slds-truncate">{rec.PermissionsEdit}</div>
                                 </td>
                                 <template if:false={isFieldPermissions}>
                                     <td class="slds-truncate">
-                                        <div>{rec.permissionDelete}</div>
+                                        <div>{rec.PermissionsDelete}</div>
                                     </td>
                                     <td class="slds-truncate">
-                                        <div>{rec.permissionViewAll}</div>
+                                        <div>{rec.PermissionsViewAllRecords}</div>
                                     </td>
                                     <td class="slds-truncate">
-                                        <div>{rec.permissionModifyAll}</div>
+                                        <div>{rec.PermissionsModifyAllRecords}</div>
                                     </td>
                                 </template>
                             </tr>

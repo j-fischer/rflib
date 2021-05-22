@@ -142,7 +142,7 @@ export default class PermissionsExplorer extends LightningElement {
         remoteAction()
             .then((result) => {
                 logger.debug('Received field permissions for all profiles, size={0}', result.length);
-                this.permissionRecords = result;
+                this.permissionRecords = result.records;
                 this.numTotalRecords = result.length;
                 this.isLoadingRecords = false;
             })
