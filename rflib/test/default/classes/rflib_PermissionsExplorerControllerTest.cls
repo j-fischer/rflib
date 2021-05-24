@@ -33,7 +33,7 @@ private class rflib_PermissionsExplorerControllerTest {
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetFieldLevelSecurityForAllProfiles_Success() {
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         
         System.assert(records.size() > 0);
@@ -47,7 +47,7 @@ private class rflib_PermissionsExplorerControllerTest {
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetFieldLevelSecurityForAllPermissionSets_Success() {
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
         System.assertEquals([SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
@@ -60,7 +60,7 @@ private class rflib_PermissionsExplorerControllerTest {
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetObjectLevelSecurityForAllProfiles_Success() {
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
         System.assert(records.size() > 0);
@@ -76,7 +76,7 @@ private class rflib_PermissionsExplorerControllerTest {
     @IsTest
     @SuppressWarnings('PMD.ClassNamingConventions')
     private static void testGetObjectLevelSecurityForAllPermissionSets_Success() {
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
         System.assert(records.size() > 0);

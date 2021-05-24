@@ -31,74 +31,127 @@ public with sharing class rflib_PermissionsExplorerController {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PermissionsExplorerController');
 
+    private static final String FLS_SEARCH_TYPE = 'FLS';
+    private static final String OBJ_SEARCH_TYPE = 'OBJ';
+    
+    private static final String COUNT = 'SELECT COUNT()';
+    private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead';
+    private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
+    
+    private static final String FLS_TABLE = ' FROM FieldPermissions';
+    private static final String OBJ_TABLE = ' FROM ObjectPermissions';
+
+    private static final String PROFILE_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = true';
+    private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false';
+    
+    private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
+    private static final String OBJ_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType'; 
+
     @AuraEnabled(cacheable = true)
-    public static QueryResult getFieldLevelSecurityForAllProfiles(){
+    public static QueryResult getFieldLevelSecurityForAllProfiles(String servicePath){
         try {
-            return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
-                FROM FieldPermissions 
-                WHERE Parent.IsOwnedByProfile = true 
-                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-                LIMIT 50000
-            ]);
-        } catch (Exception ex) {
-            LOGGER.error('Failed to retrieve field level security for all profiles', ex);
+            LOGGER.info('getFieldLevelSecurityForAllProfiles: servicePath=' + servicePath);
+            return useRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
+            } catch (Exception ex) {
+                LOGGER.error('Failed to retrieve field level security for all profiles', ex);
             throw new AuraHandledException(ex.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable = true)
-    public static QueryResult getFieldLevelSecurityForAllPermissionSets(){
+    public static QueryResult getFieldLevelSecurityForAllPermissionSets(String servicePath) {
         try {
-            return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
-                FROM FieldPermissions 
-                WHERE Parent.IsOwnedByProfile = false 
-                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-                LIMIT 50000
-            ]);
+            LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
+            return useRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
             throw new AuraHandledException(ex.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable = true)
-    public static QueryResult getObjectLevelSecurityForAllProfiles(){
+    public static QueryResult getObjectLevelSecurityForAllProfiles(String servicePath){
         try {
-            return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, 
-                    PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
-                FROM ObjectPermissions 
-                WHERE Parent.IsOwnedByProfile = true 
-                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType
-                LIMIT 50000
-            ]);
+            LOGGER.info('getObjectLevelSecurityForAllProfiles: servicePath=' + servicePath);
+            return useRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all profiles', ex);
             throw new AuraHandledException(ex.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable = true)
-    public static QueryResult getObjectLevelSecurityForAllPermissionSets(){
+    public static QueryResult getObjectLevelSecurityForAllPermissionSets(String servicePath){
         try {
-            return convertToPermissionInfo([
-                SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, 
-                    PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords 
-                FROM ObjectPermissions 
-                WHERE Parent.IsOwnedByProfile = false 
-                ORDER BY Parent.Profile.Name, Parent.Label, SobjectType
-                LIMIT 50000
-            ]);
-        } catch (Exception ex) {
-            LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
-            throw new AuraHandledException(ex.getMessage());
+            LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
+            return useRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
+            } catch (Exception ex) {
+                LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
+                throw new AuraHandledException(ex.getMessage());
+            }
         }
+        
+    private static Boolean useRestQueryModel() {
+        rflib_Global_Setting__mdt queryMode = rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled');
+
+        LOGGER.info('REST API Enabled: {0}', new Object[] { queryMode } );
+        return String.isNotBlank(queryMode.Value__c) && Boolean.valueOf(queryMode.Value__c);
+    }
+
+    @SuppressWarnings('PMD.ApexSOQLInjection')
+    private static QueryResult queryFieldPermissionsApex(String searchType, String condition) {
+        Boolean isFlsSearch = searchType == FLS_SEARCH_TYPE;
+
+        String fieldSelection = isFlsSearch ? FLS_FIELDS : OBJ_FIELDS;
+        String tableName = isFlsSearch ? FLS_TABLE : OBJ_TABLE;
+        String sortOrder = isFlsSearch ? FLS_ORDER : OBJ_ORDER;
+        String query = fieldSelection + tableName + condition + sortOrder;
+
+
+        return isFlsSearch
+            ? convertToPermissionInfo((List<FieldPermissions>) Database.query(query + ' LIMIT 49999'))
+            : convertToPermissionInfo((List<ObjectPermissions>) Database.query(query + ' LIMIT 49999'));       
+    }
+    
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    private static QueryResult queryFieldPermissionsRest(String servicePath, String searchType, String condition) {
+        String fieldSelection = searchType == FLS_SEARCH_TYPE ? FLS_FIELDS : OBJ_FIELDS;
+        String tableName = searchType == FLS_SEARCH_TYPE ? FLS_TABLE : OBJ_TABLE;
+        String sortOrder = searchType == FLS_SEARCH_TYPE ? FLS_ORDER : OBJ_ORDER;
+
+        Integer totalNumOfRecords = Database.countQuery(COUNT + tableName + condition);
+        
+        if (totalNumOfRecords < 50000) {
+            LOGGER.info('Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
+            return queryFieldPermissionsApex(searchType, condition);
+        }
+        
+        String query = fieldSelection + tableName + condition + sortOrder;
+        String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v51.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
+        
+        rflib_HttpRequest req = new rflib_HttpRequest();        
+        req.setEndpoint('callout:rflib_SF_REST_API' + urlPath);
+        req.setMethod('GET');
+        
+        HTTPResponse res = req.send();
+            
+        QueryResult result = (QueryResult) JSON.deserialize(res.getBody(), QueryResult.class);
+        result.totalNumOfRecords = totalNumOfRecords;
+        return result;
     }
 
     private static QueryResult convertToPermissionInfo(List<FieldPermissions> fieldPermissionsList) {
         QueryResult result = new QueryResult();
+        result.totalNumOfRecords = fieldPermissionsList.size();
+
         for (FieldPermissions fp : fieldPermissionsList) {
             result.records.add(new PermissionInfo(fp));
         }
@@ -107,6 +160,8 @@ public with sharing class rflib_PermissionsExplorerController {
 
     private static QueryResult convertToPermissionInfo(List<ObjectPermissions> objectPermissionsList) {
         QueryResult result = new QueryResult();
+        result.totalNumOfRecords = objectPermissionsList.size();
+
         for (ObjectPermissions op : objectPermissionsList) {
             result.records.add(new PermissionInfo(op));
         }
@@ -116,6 +171,7 @@ public with sharing class rflib_PermissionsExplorerController {
     public class QueryResult {
         @AuraEnabled public List<PermissionInfo> records = new List<PermissionInfo>();
         @AuraEnabled public String nextRecordsUrl;
+        @AuraEnabled public Integer totalNumOfRecords;
     }
 
     @SuppressWarnings('PMD.VariableNamingConventions')
@@ -130,7 +186,7 @@ public with sharing class rflib_PermissionsExplorerController {
             this.Profile.Name = profileName;
         }
     }
-    
+
     @SuppressWarnings('PMD.VariableNamingConventions')
     public class ProfileInfo {
         @AuraEnabled public String Name;

@@ -30,3 +30,13 @@
 .flex-layout {
     align-items: stretch;
 }
+
+.spinner-large::after {
+    position: absolute;
+    content: attr(data-text);
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: large;
+    top: calc(50% + 3em);
+}

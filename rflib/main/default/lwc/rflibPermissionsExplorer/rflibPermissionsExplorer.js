@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import { LightningElement } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles';
 import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
@@ -68,6 +69,7 @@ export default class PermissionsExplorer extends LightningElement {
     currentPermissionType = PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES;
     permissionRecords = [];
     isLoadingRecords = false;
+    progressText = 'Loading Permissions';
 
     connectedCallback() {
         this.loadPermissions();
@@ -138,18 +140,51 @@ export default class PermissionsExplorer extends LightningElement {
                 logger.error('Unknown permission type: ' + this.currentPermissionType.value);
         }
 
+        this.permissionRecords = [];
+        this.numTotalRecords = 0;
+
+        const loadingPermissionsLabel = 'Loading Permissions';
+        this.progressText = loadingPermissionsLabel;
+
+        const retrievePermissionsCallback = (result) => {
+            logger.debug('Received field permission records: nextRecordsUrl={0}', result.nextRecordsUrl);
+            this.permissionRecords = this.permissionRecords.concat(result.records);
+            this.numTotalRecords = this.permissionRecords.length;
+
+            this.progressText =
+                loadingPermissionsLabel + ' (' + this.numTotalRecords + ' / ' + result.totalNumOfRecords + ')';
+
+            if (result.nextRecordsUrl) {
+                return remoteAction({ servicePath: result.nextRecordsUrl }).then(retrievePermissionsCallback);
+            }
+
+            this.isLoadingRecords = false;
+            return Promise.resolve();
+        };
+
         this.isLoadingRecords = true;
-        remoteAction()
-            .then((result) => {
-                logger.debug('Received field permissions for all profiles, size={0}', result.length);
-                this.permissionRecords = result.records;
-                this.numTotalRecords = result.length;
-                this.isLoadingRecords = false;
-            })
-            .catch((error) => {
-                logger.debug('Failed to retrieve field permissions for all profiles', error);
-                this.isLoadingRecords = false;
-            });
+
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            // The cached responses for a permission type instead of making the HTTP requests.
+            // Using timeout to guarantee rendering of spinner widget, which may not happen if the browser accesses
+            remoteAction()
+                .then(retrievePermissionsCallback)
+                .catch((error) => {
+                    logger.error(
+                        'Failed to retrieve all field permissions for all profiles. Error={0}',
+                        JSON.stringify(error)
+                    );
+                    this.isLoadingRecords = false;
+
+                    const evt = new ShowToastEvent({
+                        title: 'Failed to retrieve permissions',
+                        message: 'An error occurred: ' + (error instanceof String ? error : JSON.stringify(error)),
+                        variant: 'error'
+                    });
+                    this.dispatchEvent(evt);
+                });
+        }, 0);
     }
 
     handlePrevious() {
