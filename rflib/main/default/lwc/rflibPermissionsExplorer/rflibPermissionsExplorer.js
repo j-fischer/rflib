@@ -159,6 +159,21 @@ export default class PermissionsExplorer extends LightningElement {
             }
 
             this.isLoadingRecords = false;
+
+            if (this.numTotalRecords < result.totalNumOfRecords) {
+                const evt = new ShowToastEvent({
+                    title: 'Permissions Incomplete',
+                    message:
+                        'Only ' +
+                        this.numTotalRecords +
+                        ' of ' +
+                        result.totalNumOfRecords +
+                        ' permission records were retrieved. To load all records, please enable the REST API functionality.',
+                    variant: 'warning',
+                    mode: 'sticky'
+                });
+                this.dispatchEvent(evt);
+            }
             return Promise.resolve();
         };
 
