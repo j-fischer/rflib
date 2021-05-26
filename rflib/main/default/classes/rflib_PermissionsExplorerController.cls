@@ -34,18 +34,22 @@ public with sharing class rflib_PermissionsExplorerController {
     private static final String FLS_SEARCH_TYPE = 'FLS';
     private static final String OBJ_SEARCH_TYPE = 'OBJ';
     
-    private static final String COUNT = 'SELECT COUNT()';
-    private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead';
-    private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
-    
-    private static final String FLS_TABLE = ' FROM FieldPermissions';
-    private static final String OBJ_TABLE = ' FROM ObjectPermissions';
+    @TestVisible private static final String COUNT = 'SELECT COUNT()';
+    @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead';
+    @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
+ 
+    @TestVisible private static final String FLS_TABLE = ' FROM FieldPermissions';
+    @TestVisible private static final String OBJ_TABLE = ' FROM ObjectPermissions';
 
-    private static final String PROFILE_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = true';
-    private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false';
-    
-    private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
-    private static final String OBJ_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType'; 
+    @TestVisible private static final String PROFILE_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = true';
+    @TestVisible private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false';
+ 
+    @TestVisible private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
+    @TestVisible private static final String OBJ_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType'; 
+
+    @TestVisible private static rflib_Global_Setting__mdt queryMode = rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled');
+
+    @TestVisible private static QueryExecutor queryExecutor  = new DatabaseQueryExecutor();
 
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllProfiles(String servicePath){
@@ -100,8 +104,6 @@ public with sharing class rflib_PermissionsExplorerController {
         }
         
     private static Boolean useRestQueryModel() {
-        rflib_Global_Setting__mdt queryMode = rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled');
-
         LOGGER.info('REST API Enabled: {0}', new Object[] { queryMode } );
         return String.isNotBlank(queryMode.Value__c) && Boolean.valueOf(queryMode.Value__c);
     }
@@ -117,8 +119,8 @@ public with sharing class rflib_PermissionsExplorerController {
 
 
         return isFlsSearch
-            ? convertToPermissionInfo((List<FieldPermissions>) Database.query(query + ' LIMIT 49999'))
-            : convertToPermissionInfo((List<ObjectPermissions>) Database.query(query + ' LIMIT 49999'));       
+            ? convertToPermissionInfo((List<FieldPermissions>) queryExecutor.query(query + ' LIMIT 49999'))
+            : convertToPermissionInfo((List<ObjectPermissions>) queryExecutor.query(query + ' LIMIT 49999'));       
     }
     
     @SuppressWarnings('PMD.ExcessiveParameterList')
@@ -127,7 +129,7 @@ public with sharing class rflib_PermissionsExplorerController {
         String tableName = searchType == FLS_SEARCH_TYPE ? FLS_TABLE : OBJ_TABLE;
         String sortOrder = searchType == FLS_SEARCH_TYPE ? FLS_ORDER : OBJ_ORDER;
 
-        Integer totalNumOfRecords = Database.countQuery(COUNT + tableName + condition);
+        Integer totalNumOfRecords = queryExecutor.countQuery(COUNT + tableName + condition);
         
         if (totalNumOfRecords < 50000) {
             LOGGER.info('Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
@@ -166,6 +168,21 @@ public with sharing class rflib_PermissionsExplorerController {
             result.records.add(new PermissionInfo(op));
         }
         return result;
+    }
+
+    public interface QueryExecutor {
+        Integer countQuery(String query);
+        List<SObject> query(String query);
+    }
+
+    public class DatabaseQueryExecutor implements QueryExecutor {
+        public Integer countQuery(String query) {
+            return Database.countQuery(query);
+        }
+
+        public List<SObject> query(String query) {
+            return Database.query(query);
+        }
     }
 
     public class QueryResult {
