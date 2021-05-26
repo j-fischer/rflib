@@ -170,11 +170,13 @@ public with sharing class rflib_PermissionsExplorerController {
         return result;
     }
 
+    //TODO: Refactor to rflib_QueryExecutor using its own file.
     public interface QueryExecutor {
         Integer countQuery(String query);
         List<SObject> query(String query);
     }
-
+    
+    //TODO: Refactor to rflib_QueryExecutor using its own file.
     public class DatabaseQueryExecutor implements QueryExecutor {
         public Integer countQuery(String query) {
             return Database.countQuery(query);
