@@ -49,7 +49,7 @@ public with sharing class rflib_PermissionsExplorerController {
 
     @TestVisible private static rflib_Global_Setting__mdt queryMode = rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled');
 
-    @TestVisible private static QueryExecutor queryExecutor  = new DatabaseQueryExecutor();
+    @TestVisible private static rflib_QueryExecutor queryExecutor  = new rflib_DatabaseQueryExecutor();
 
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllProfiles(String servicePath){
@@ -168,23 +168,6 @@ public with sharing class rflib_PermissionsExplorerController {
             result.records.add(new PermissionInfo(op));
         }
         return result;
-    }
-
-    //TODO: Refactor to rflib_QueryExecutor using its own file.
-    public interface QueryExecutor {
-        Integer countQuery(String query);
-        List<SObject> query(String query);
-    }
-    
-    //TODO: Refactor to rflib_QueryExecutor using its own file.
-    public class DatabaseQueryExecutor implements QueryExecutor {
-        public Integer countQuery(String query) {
-            return Database.countQuery(query);
-        }
-
-        public List<SObject> query(String query) {
-            return Database.query(query);
-        }
     }
 
     public class QueryResult {

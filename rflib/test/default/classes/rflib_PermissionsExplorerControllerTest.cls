@@ -69,7 +69,7 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
         setup(true);
 
-        rflib_PermissionsExplorerController.queryExecutor = new MockQueryExecutor(
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             49999, 
             Database.query(FLS_PROFILE_QUERY)
         );
@@ -85,7 +85,7 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
         setup(true);
 
-        rflib_PermissionsExplorerController.queryExecutor = new MockQueryExecutor(
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             50000, 
             null
         );
@@ -132,7 +132,7 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
         setup(true);
 
-        rflib_PermissionsExplorerController.queryExecutor = new MockQueryExecutor(
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             49999, 
             Database.query(OBJ_PROFILE_QUERY)
         );
@@ -148,7 +148,7 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
         setup(true);
 
-        rflib_PermissionsExplorerController.queryExecutor = new MockQueryExecutor(
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             50000, 
             null
         );
@@ -216,25 +216,5 @@ private class rflib_PermissionsExplorerControllerTest {
         req.setMethod(METHOD);
 
         return req;
-    }
-
-    //TODO: Refactor to rflib_QueryExecutor using its own file.
-    public class MockQueryExecutor implements rflib_PermissionsExplorerController.QueryExecutor {
-
-        private final Integer countResult;
-        private final List<SObject> queryResult;
-
-        public MockQueryExecutor(Integer countResult, List<SObject> queryResult) {
-            this.countResult = countResult;
-            this.queryResult = queryResult;
-        }
-
-        public Integer countQuery(String query) {
-            return countResult;
-        }
-
-        public List<SObject> query(String query) {
-            return queryResult;
-        }
     }
 }
