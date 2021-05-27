@@ -58,9 +58,9 @@ public with sharing class rflib_PermissionsExplorerController {
             return useRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
-            } catch (Exception ex) {
-                LOGGER.error('Failed to retrieve field level security for all profiles', ex);
-            throw new AuraHandledException(ex.getMessage());
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve field level security for all profiles', ex);
+            throw createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -73,7 +73,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -86,7 +86,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all profiles', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -97,11 +97,11 @@ public with sharing class rflib_PermissionsExplorerController {
             return useRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
-            } catch (Exception ex) {
-                LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
-                throw new AuraHandledException(ex.getMessage());
-            }
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
+            throw createAuraHandledException(ex.getMessage());
         }
+    }
         
     private static Boolean useRestQueryModel() {
         LOGGER.info('REST API Enabled: {0}', new Object[] { queryMode } );
@@ -168,6 +168,12 @@ public with sharing class rflib_PermissionsExplorerController {
             result.records.add(new PermissionInfo(op));
         }
         return result;
+    }
+
+    private static AuraHandledException createAuraHandledException(String message) {
+        AuraHandledException ex = new AuraHandledException(message);
+        ex.setMessage(message);
+        return ex;
     }
 
     public class QueryResult {
