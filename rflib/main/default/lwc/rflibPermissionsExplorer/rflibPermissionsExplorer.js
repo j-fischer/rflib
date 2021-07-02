@@ -110,9 +110,9 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType.value
         );
 
-        this.currentPermissionType = Object.keys(PERMISSION_TYPES).find(
-            (key) => PERMISSION_TYPES[key].value === newPermissionType
-        );
+        this.currentPermissionType = Object.keys(PERMISSION_TYPES)
+            .map((key) => PERMISSION_TYPES[key])
+            .find((permType) => permType.value === newPermissionType);
 
         this.loadPermissions();
     }
@@ -244,12 +244,5 @@ export default class PermissionsExplorer extends LightningElement {
     handlePageChange(event) {
         logger.debug('Page changed, current page={0}', event.detail);
         this.page = event.detail;
-    }
-
-    handleLogSelected(event) {
-        const logEvent = JSON.parse(event.detail);
-        logger.debug('Log selected with id={0}', logEvent.Id);
-
-        this.selectedLogEvent = logEvent;
     }
 }
