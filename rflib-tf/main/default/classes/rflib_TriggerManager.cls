@@ -146,7 +146,7 @@ public inherited sharing class rflib_TriggerManager {
             activeTriggers.add(handlerInfo.Class_Name__c);
             Type handlerType = Type.forName(handlerInfo.Class_Name__c);
             if (handlerType == null) {
-                LOGGER.warn('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
+                LOGGER.error('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
                 continue;
             }
             rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
