@@ -225,6 +225,11 @@ export default class PermissionsExplorer extends LightningElement {
         this.page = this.totalPages;
     }
 
+    handleGoToPage(evt) {
+        logger.debug('Navigate to page, current page={0}', evt.detail);
+        this.page = evt.detail;
+    }
+
     handleRefreshed(event) {
         logger.debug('Records loaded, details={0}', event.detail);
         const eventDetails = JSON.parse(event.detail);
