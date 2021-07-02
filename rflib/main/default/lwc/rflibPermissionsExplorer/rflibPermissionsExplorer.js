@@ -108,7 +108,9 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType.value
         );
 
-        this.currentPermissionType = Object.values(PERMISSION_TYPES).find((perm) => perm.value === newPermissionType);
+        this.currentPermissionType = Object.keys(PERMISSION_TYPES).find(
+            (key) => PERMISSION_TYPES[key].value === newPermissionType
+        );
 
         this.loadPermissions();
     }
