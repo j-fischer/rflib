@@ -117,7 +117,7 @@
                     </thead>
                     <tbody>
                         <template for:each={recordsToDisplay} for:item="rec">
-                            <tr class="clickable" key={rec.id} data-log-id={rec.Id} onclick={handleLogSelected}>
+                            <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
                                 <td class="slds-truncate">
                                     <div>
                                         <div>{rec.securityObjectName}</div>
