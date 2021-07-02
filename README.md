@@ -81,7 +81,7 @@ and allows for quick filtering of the results.
 
 To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
 
-![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permissions_Explorer.gif 'Permissions Explorer')
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permission_Explorer.gif 'Permissions Explorer')
 
 ## Updates
 
