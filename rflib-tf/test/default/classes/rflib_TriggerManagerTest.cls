@@ -127,7 +127,7 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
-    public static void testOnConsecutiveRun_Sucess() {
+    public static void testOnConsecutiveRun_Success() {
         setup(ABORT_TRANSACTION);
 
         rflib_Log_Event__e ev = createEvent();
@@ -212,9 +212,9 @@ private class rflib_TriggerManagerTest {
             config3,
             config2,
             config1,
-            createConfiguration(false, 'InvalidHander', OBJECT_TYPE_NAME, AFTER_INSERT, 1, ABORT_TRANSACTION),
+            createConfiguration(false, 'InvalidHandler', OBJECT_TYPE_NAME, AFTER_INSERT, 1, ABORT_TRANSACTION),
             createConfiguration(true, 'InvalidHandler', 'SomeOtherObject', AFTER_INSERT, 1, ABORT_TRANSACTION),
-            createConfiguration(true, 'InvalidHander', OBJECT_TYPE_NAME, TriggerOperation.AFTER_UPDATE.name(), 1, ABORT_TRANSACTION)
+            createConfiguration(true, 'InvalidHandler', OBJECT_TYPE_NAME, TriggerOperation.AFTER_UPDATE.name(), 1, ABORT_TRANSACTION)
         };
 
         rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator locator = new rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator();
@@ -248,6 +248,23 @@ private class rflib_TriggerManagerTest {
         System.assertEquals(1, wrapper3.compareTo(wrapper1));
         System.assertEquals(-1, wrapper5.compareTo(wrapper2));
         System.assertEquals(1, wrapper2.compareTo(wrapper5));
+    }
+
+    @IsTest
+    public static void testInvalidHandlerName() {
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+            createConfiguration('rflib_InvalidClassName', 1), 
+            OBJECT_TYPE_NAME, 
+            AFTER_INSERT
+        );
+
+        rflib_Log_Event__e ev = createEvent();
+        
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        }
     }
 
     private static rflib_TriggerManager.Args assertRunTriggerArgs(rflib_Log_Event__e ev) {
