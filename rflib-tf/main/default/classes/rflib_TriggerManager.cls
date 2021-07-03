@@ -29,7 +29,7 @@
 
 /**
  * @group Trigger
- * @description This is the core class to manage the invocation of tflib_ITriggerHandler implementations
+ * @description This is the core class to manage the invocation of rflib_ITriggerHandler implementations
  *              based on the configuration in the Custom Metadata. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
@@ -45,7 +45,7 @@ public inherited sharing class rflib_TriggerManager {
     private static ITriggerConfigurationQueryLocator QUERY_LOCATOR = new DefaultTriggerConfigurationQueryLocator();
 
     /**
-     * Call this method from any trigger with the respective object type. The framwork will handle the rest. 
+     * Call this method from any trigger with the respective object type. The framework will handle the rest. 
      * @param  objectType SObjectType for the trigger that invokes the Manager.
      */
     public static void dispatch(Schema.SObjectType objectType) {
@@ -145,6 +145,10 @@ public inherited sharing class rflib_TriggerManager {
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
             activeTriggers.add(handlerInfo.Class_Name__c);
             Type handlerType = Type.forName(handlerInfo.Class_Name__c);
+            if (handlerType == null) {
+                LOGGER.error('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
+                continue;
+            }
             rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
 
             Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';

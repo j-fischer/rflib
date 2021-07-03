@@ -1,3 +1,12 @@
+### RFLIB-TF 1.3.0
+
+Package ID: 04t3h000004RdLOAA0
+Package Alias: RFLIB-TF@1.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdLOAA0
+
+-   [Issue #31](https://github.com/j-fischer/rflib/issues/31) - Improved error handling if there are invalid trigger handler names in the configuration
+-   [Issue #30](https://github.com/j-fischer/rflib/issues/30) - Improved `rflib_MockTriggerConfigQueryLocator` to allow for setting multiple object handlers in a trigger unit test class
+
 ### RFLIB 2.5.0
 
 Package ID: 04t3h000004Rd7uAAC

@@ -30,26 +30,36 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockTriggerConfigQueryLocator implements rflib_TriggerManager.ITriggerConfigurationQueryLocator {
 
-    public final String expectedObjectType;
-    public final String expectedTriggerEvent;
-    
-    private final List<rflib_Trigger_Configuration__mdt> configRecords;
-    
+    private final Map<String, Map<String, List<rflib_Trigger_Configuration__mdt>>> configRecords;
+
     public rflib_MockTriggerConfigQueryLocator(rflib_Trigger_Configuration__mdt configRecord, String expectedObjectType, String expectedTriggerEvent) {
         this(new List<rflib_Trigger_Configuration__mdt>{ configRecord }, expectedObjectType, expectedTriggerEvent);
     }
 
     public rflib_MockTriggerConfigQueryLocator(List<rflib_Trigger_Configuration__mdt> configRecords, String expectedObjectType, String expectedTriggerEvent) {
+        this(new Map<String, Map<String, List<rflib_Trigger_Configuration__mdt>>> { 
+            expectedObjectType => new Map<String, List<rflib_Trigger_Configuration__mdt>> {
+                expectedTriggerEvent => configRecords
+            }
+        });
+    }
+
+    public rflib_MockTriggerConfigQueryLocator(Map<String, Map<String, List<rflib_Trigger_Configuration__mdt>>> configRecords) {
         this.configRecords = configRecords;
-        this.expectedObjectType = expectedObjectType;
-        this.expectedTriggerEvent = expectedTriggerEvent;
     }
 
     public List<rflib_Trigger_Configuration__mdt> getRecords(String objectType, String triggerEvent) {
-        if (objectType != expectedObjectType || triggerEvent != expectedTriggerEvent) {
+
+        Map<String, List<rflib_Trigger_Configuration__mdt>> objectConfigurations = configRecords.get(objectType);
+        if (objectConfigurations == null) {
             return new List<rflib_Trigger_Configuration__mdt>();
         }
 
-        return configRecords;
+        List<rflib_Trigger_Configuration__mdt> operationsConfiguration = objectConfigurations.get(triggerEvent);
+        if (operationsConfiguration == null) {
+            return new List<rflib_Trigger_Configuration__mdt>();
+        }
+
+        return operationsConfiguration;
     }
 }

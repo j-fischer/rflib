@@ -81,7 +81,7 @@ and allows for quick filtering of the results.
 
 To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
 
-![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permissions_Explorer.gif 'Permissions Explorer')
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permission_Explorer.gif 'Permissions Explorer')
 
 ## Updates
 
@@ -97,3 +97,4 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 -   Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin
 -   Thanks to René Winkelmeyer for his SFDX CLI Plugin: https://github.com/muenzpraeger/sfdx-plugin
 -   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
+-   Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader

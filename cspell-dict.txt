@@ -30,3 +30,5 @@ lastpage
 firstpage
 gotopage
 ongotopage
+instanceof
+Behaviour
