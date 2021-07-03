@@ -21,3 +21,5 @@ flexi
 flexipage
 seleceted
 logselected
+instanceof
+Behaviour
