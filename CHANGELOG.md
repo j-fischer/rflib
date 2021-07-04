@@ -1,3 +1,12 @@
+### RFLIB 2.6.0
+
+Package ID: 04t3h000004RdLTAA0
+Package Alias: RFLIB@2.6.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdLTAA0
+
+-   Added support for querying over 50,000 permissions in Permission Explorer using the REST API
+-   Moved MockQueryExecutor from RFLIB-FS to RFLIB package
+
 ### RFLIB-TF 1.3.0
 
 Package ID: 04t3h000004RdLOAA0
