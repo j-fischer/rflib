@@ -311,6 +311,10 @@ module.exports = function(grunt) {
                 command: 'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %>'
             },
 
+            'force-create-qa-user': {
+                command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa-user --definitionfile config/qa-user-def.json'
+            },
+
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
             },

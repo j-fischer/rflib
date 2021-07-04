@@ -30,58 +30,294 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_PermissionsExplorerControllerTest {
     
-    @IsTest
-    @SuppressWarnings('PMD.ClassNamingConventions')
-    private static void testGetFieldLevelSecurityForAllProfiles_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles();
+    private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v51.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}';
+    private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v51.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}';
 
-        System.assert(result.size() > 0);
+    private static final String FLS_PROFILE_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
+        + rflib_PermissionsExplorerController.FLS_TABLE
+        + rflib_PermissionsExplorerController.PROFILE_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.FLS_ORDER;
 
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
-        System.assertEquals('Profile', info.securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
+    private static final String FLS_PERMISSION_SET_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
+        + rflib_PermissionsExplorerController.FLS_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.FLS_ORDER;
+    
+    private static final String OBJ_PROFILE_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
+        + rflib_PermissionsExplorerController.OBJ_TABLE
+        + rflib_PermissionsExplorerController.PROFILE_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.OBJ_ORDER;
+
+    private static final String OBJ_PERMISSION_SET_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
+        + rflib_PermissionsExplorerController.OBJ_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.OBJ_ORDER;
+
+    private static final String ENDPOINT = 'callout:rflib_SF_REST_API';
+    private static final String ENDPOINT_PATH = '/services/data/v51.0/query?q=';
+    private static final String METHOD = 'GET';
+
+    private static void setup(Boolean isRestApiEnabled) {
+        rflib_PermissionsExplorerController.queryMode = new rflib_Global_Setting__mdt(
+            Value__c = String.valueOf(isRestApiEnabled)
+        );
     }
 
     @IsTest
-    @SuppressWarnings('PMD.ClassNamingConventions')
-    private static void testGetFieldLevelSecurityForAllPermissionSets_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets();
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiDisabled() {
+        setup(false);
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        
+        assertFieldPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            49999, 
+            Database.query(FLS_PROFILE_QUERY)
+        );
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        
+        assertFieldPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(FLS_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(FLS_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        
+        assertFieldPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(FLS_PROFILE_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        try {
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityForAllPermissionSets_RestApiDisabled() {
+        setup(false);
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
 
         System.assertEquals([SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
         FROM FieldPermissions 
         WHERE Parent.IsOwnedByProfile = false 
         ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-        LIMIT 50000].size(), result.size());
+        LIMIT 50000].size(), records.size());
     }
 
     @IsTest
-    @SuppressWarnings('PMD.ClassNamingConventions')
-    private static void testGetObjectLevelSecurityForAllProfiles_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles();
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityForAllPermissionSets_Fails() {
+        setup(true);
 
-        System.assert(result.size() > 0);
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
 
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
-        System.assertEquals('Profile', info.securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
-        System.assertNotEquals(null, info.permissionCreate);
-        System.assertNotEquals(null, info.permissionDelete);
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(FLS_PERMISSION_SET_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        try {
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
     }
 
     @IsTest
-    @SuppressWarnings('PMD.ClassNamingConventions')
-    private static void testGetObjectLevelSecurityForAllPermissionSets_Success() {
-        List<rflib_PermissionsExplorerController.PermissionInfo> result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets();
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiDisabled() {
+        setup(false);
 
-        System.assert(result.size() > 0);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+
+        assertObjectPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            49999, 
+            Database.query(OBJ_PROFILE_QUERY)
+        );
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         
-        rflib_PermissionsExplorerController.PermissionInfo info = result.get(0);
-        System.assertEquals('PermissionSet', result.get(0).securityType);
-        System.assertNotEquals(null, info.permissionRead);
-        System.assertNotEquals(null, info.permissionEdit);
-        System.assertNotEquals(null, info.permissionCreate);
-        System.assertNotEquals(null, info.permissionDelete);
+        assertObjectPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(OBJ_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        
+        assertObjectPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetObjectLevelSecurityForAllProfiles_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(OBJ_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        try {
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityForAllPermissionSets_RestApiDisabled() {
+        setup(false);
+        
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+
+        assertObjectPermissionsResult(records, 'PermissionSet');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityForAllPermissionSets_Fails() {
+        setup(true);
+        
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PERMISSION_SET_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(OBJ_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        try {
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+    }
+
+    private static void assertObjectPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
+        System.assert(records.size() > 0);
+
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
+        System.assertEquals(expectedSecurityType, info.securityType);
+        System.assertNotEquals(null, info.PermissionsRead);
+        System.assertNotEquals(null, info.PermissionsEdit);
+        System.assertNotEquals(null, info.PermissionsCreate);
+        System.assertNotEquals(null, info.PermissionsDelete);
+    }
+
+    private static void assertFieldPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
+        System.assert(records.size() > 0);
+
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
+        System.assertEquals(expectedSecurityType, info.securityType);
+        System.assertNotEquals(null, info.PermissionsRead);
+        System.assertNotEquals(null, info.PermissionsEdit);
+    }
+
+    private static HttpResponse createResponse(String body) {
+        HttpResponse response = new HttpResponse();
+        response.setStatusCode(200);
+        response.setBody(body);
+
+        return response;
+    }
+
+    private static rflib_HttpRequest createRequest(String path) {
+        rflib_HttpRequest req = new rflib_HttpRequest();
+        req.setEndpoint(ENDPOINT + path);
+        req.setMethod(METHOD);
+
+        return req;
     }
 }

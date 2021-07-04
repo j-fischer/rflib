@@ -35,8 +35,14 @@ export default class Paginator extends LightningElement {
     @api currentPage;
     @api pageSize;
 
+    @api shouldDisplayPageSelection = false;
+
     lastpage = false;
     firstpage = false;
+
+    get totalPages() {
+        return Math.ceil(this.totalRecords / this.pageSize);
+    }
 
     get shouldDisableFirstButton() {
         if (this.currentPage === 1) {
@@ -46,7 +52,7 @@ export default class Paginator extends LightningElement {
     }
 
     get shouldDisableLastButton() {
-        if (this.totalRecords === 0 || Math.ceil(this.totalRecords / this.pageSize) === this.currentPage) {
+        if (this.totalRecords === 0 || this.totalPages === this.currentPage) {
             return true;
         }
         return false;
@@ -66,5 +72,14 @@ export default class Paginator extends LightningElement {
 
     handleLast() {
         this.dispatchEvent(new CustomEvent('last'));
+    }
+
+    handlePageNumberChange(evt) {
+        if (evt.keyCode === 13) {
+            let selectedPage =
+                evt.target.value > this.totalPages ? this.totalPages : evt.target.value < 1 ? 1 : evt.target.value;
+
+            this.dispatchEvent(new CustomEvent('gotopage', { detail: selectedPage }));
+        }
     }
 }

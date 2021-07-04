@@ -29,7 +29,12 @@
 <template>
     <div class="slds-page-header">
         <div if:true={isLoadingRecords}>
-            <lightning-spinner class="slds-is-fixed" size="large" alternative-text="Loading records...">
+            <lightning-spinner
+                class="slds-is-fixed spinner-large"
+                size="large"
+                alternative-text="Loading records..."
+                data-text={progressText}
+            >
             </lightning-spinner>
         </div>
         <div class="slds-page-header__row">
@@ -94,9 +99,11 @@
                         onnext={handleNext}
                         onfirst={handleFirst}
                         onlast={handleLast}
+                        ongotopage={handleGoToPage}
                         current-page={page}
                         total-records={numDisplayedRecords}
                         page-size={pageSize}
+                        should-display-page-selection="true"
                     >
                     </c-rflib-paginator>
                 </div>

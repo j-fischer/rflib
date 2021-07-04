@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,17 +26,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- 
-.flex-layout {
-    align-items: stretch;
-}
+@IsTest
+@SuppressWarnings('PMD.ClassNamingConventions')
+public class rflib_MockQueryExecutor implements rflib_QueryExecutor {
+    
+    private final Integer countResult;
+    private final List<SObject> queryResult;
 
-.spinner-large::after {
-    position: absolute;
-    content: attr(data-text);
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
-    font-size: large;
-    top: calc(50% + 3em);
+    public rflib_MockQueryExecutor(Integer countResult, List<SObject> queryResult) {
+        this.countResult = countResult;
+        this.queryResult = queryResult;
+    }
+
+    public Integer countQuery(String query) {
+        return countResult;
+    }
+
+    public List<SObject> query(String query) {
+        return queryResult;
+    }
 }

@@ -4,6 +4,10 @@
         <application>rflib_Ops_Center</application>
         <visible>true</visible>
     </applicationVisibilities>
+    <classAccesses>
+        <apexClass>rflib_PermissionsExplorerController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <description>This permission set provides a user with access to the Ops Dashboard application and the Log Event object.</description>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Ops Center Access</label>
@@ -24,4 +28,8 @@
         <tab>rflib_Permissions_Explorer</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ApiEnabled</name>
+    </userPermissions>
 </PermissionSet>

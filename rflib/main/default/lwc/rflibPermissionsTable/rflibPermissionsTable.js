@@ -97,9 +97,9 @@ export default class RflibFieldPermissionsList extends LightningElement {
                 ? this.allRecords.filter(
                       (rec) =>
                           (!this.securityObjectNameSearch ||
-                              rec.securityObjectName.indexOf(this.securityObjectNameSearch) > -1) &&
-                          (!this.objectSearch || rec.sObjectType.indexOf(this.objectSearch) > -1) &&
-                          (!this.fieldSearch || rec.fieldName.indexOf(this.fieldSearch) > -1)
+                              rec.SecurityObjectName.indexOf(this.securityObjectNameSearch) > -1) &&
+                          (!this.objectSearch || rec.SobjectType.indexOf(this.objectSearch) > -1) &&
+                          (!this.fieldSearch || rec.Field.indexOf(this.fieldSearch) > -1)
                   )
                 : this.allRecords;
 

@@ -21,5 +21,14 @@ flexi
 flexipage
 seleceted
 logselected
+SOQL
+callout
+sobjects
+chevronleft
+chevronright
+lastpage
+firstpage
+gotopage
+ongotopage
 instanceof
 Behaviour
