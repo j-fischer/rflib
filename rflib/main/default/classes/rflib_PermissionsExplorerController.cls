@@ -147,6 +147,12 @@ public with sharing class rflib_PermissionsExplorerController {
             
         QueryResult result = (QueryResult) JSON.deserialize(res.getBody(), QueryResult.class);
         result.totalNumOfRecords = totalNumOfRecords;
+
+        if (searchType == FLS_SEARCH_TYPE) {
+            for (PermissionInfo pi : result.records) {
+                pi.Field = pi.Field.substringAfter('.');
+            }
+        }
         return result;
     }
 

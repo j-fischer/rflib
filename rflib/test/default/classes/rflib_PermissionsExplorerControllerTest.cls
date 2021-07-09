@@ -109,6 +109,8 @@ private class rflib_PermissionsExplorerControllerTest {
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         
         assertFieldPermissionsResult(records, 'Profile');
+
+        System.assert(records.get(0).Field.containsNone('.'));
     }
 
     @IsTest
