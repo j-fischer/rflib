@@ -144,6 +144,11 @@ public with sharing class rflib_PermissionsExplorerController {
         req.setMethod('GET');
         
         HTTPResponse res = req.send();
+
+        if (res.getStatusCode() != 200) {
+            List<RestError> errors = (List<RestError>) JSON.deserialize(res.getBody(), List<RestError>.class);
+            throw createRestException(errors);
+        }
             
         QueryResult result = (QueryResult) JSON.deserialize(res.getBody(), QueryResult.class);
         result.totalNumOfRecords = totalNumOfRecords;
@@ -174,6 +179,14 @@ public with sharing class rflib_PermissionsExplorerController {
             result.records.add(new PermissionInfo(op));
         }
         return result;
+    }
+
+    private static RestException createRestException(List<RestError> errors) {
+        if (errors.size() == 0) {
+            return new RestException('Unknown REST error');
+        }
+
+        return new RestException(errors.get(0).message);
     }
 
     private static AuraHandledException createAuraHandledException(String message) {
@@ -250,4 +263,12 @@ public with sharing class rflib_PermissionsExplorerController {
             this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.Label, record.Parent.Profile.Name);
         }
     }
+    
+    public class RestError {
+        @AuraEnabled public String message;
+        @AuraEnabled public String errorCode;
+    }
+
+    public class RestException extends Exception { }
+
 }

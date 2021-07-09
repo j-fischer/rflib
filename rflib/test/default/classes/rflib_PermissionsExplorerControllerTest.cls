@@ -32,6 +32,7 @@ private class rflib_PermissionsExplorerControllerTest {
     
     private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v51.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}';
     private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v51.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}';
+    private static final String ERR_RESPONSE = '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]';
 
     private static final String FLS_PROFILE_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
         + rflib_PermissionsExplorerController.FLS_TABLE
@@ -111,6 +112,29 @@ private class rflib_PermissionsExplorerControllerTest {
         assertFieldPermissionsResult(records, 'Profile');
 
         System.assert(records.get(0).Field.containsNone('.'));
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest_RequestFails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(FLS_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(401, ERR_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        try {
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals('Session expired or invalid', actualEx.getMessage());
+        }
     }
 
     @IsTest
@@ -308,8 +332,12 @@ private class rflib_PermissionsExplorerControllerTest {
     }
 
     private static HttpResponse createResponse(String body) {
+        return createResponse(200, body);
+    }
+
+    private static HttpResponse createResponse(Integer statusCode, String body) {
         HttpResponse response = new HttpResponse();
-        response.setStatusCode(200);
+        response.setStatusCode(statusCode);
         response.setBody(body);
 
         return response;
