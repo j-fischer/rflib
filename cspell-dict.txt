@@ -32,3 +32,4 @@ gotopage
 ongotopage
 instanceof
 Behaviour
+summarydetail

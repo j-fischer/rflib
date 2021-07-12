@@ -33,8 +33,9 @@ import { createLogger } from 'c/rflibLogger';
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import PHONE_FIELD from '@salesforce/schema/User.Phone';
 import EMAIL_FIELD from '@salesforce/schema/User.Email';
+import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 
-const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD];
+const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
 const LOGGER = createLogger('LogEventViewer');
 
@@ -76,6 +77,10 @@ export default class LogEventViewer extends LightningElement {
 
     get email() {
         return getFieldValue(this.user, EMAIL_FIELD);
+    }
+
+    get profile() {
+        return getFieldValue(this.user, PROFILE_FIELD);
     }
 
     get hasEvent() {

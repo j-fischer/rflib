@@ -57,10 +57,15 @@
                         <div class="slds-form-element__static">{logEvent.CreatedById}</div>
                     </template>
                     <template if:true={user.id}>
-                        <div class="slds-form-element__static">
-                            Name: {name}<br />
-                            Email: {email}<br />
-                            Phone: {phone}
+                        <div class="slds-form-element__static slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div>Name: {name}</div>
+                                <div>Profile: {profile}</div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div>Email: {email}</div>
+                                <div>Phone: {phone}</div>
+                            </div>
                         </div>
                     </template>
                 </div>
