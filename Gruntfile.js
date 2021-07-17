@@ -373,6 +373,7 @@ module.exports = function(grunt) {
         grunt.task.run([
             'prompt:alias',
             'shell:force-create-org-default',
+            'force-create-qa-user',
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
