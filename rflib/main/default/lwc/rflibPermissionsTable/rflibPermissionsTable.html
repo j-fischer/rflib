@@ -40,11 +40,15 @@
                     <lightning-input
                         type="search"
                         onchange={handleSecurityObjectNameChanged}
-                        class="slds-m-bottom_small"
                         variant="label-hidden"
                         placeholder="Search profile/permission set name..."
+                        value={securityObjectNameSearch}
                     >
                     </lightning-input>
+                    <template if:true={isProfilePermissions}>
+                        <c-rflib-user-profile-resolver onprofileselected={handleProfileSelected}>
+                        </c-rflib-user-profile-resolver>
+                    </template>
                 </div>
                 <div class="sdls-col slds-size_3-of-12 slds-m-right_x-small" onkeypress={handleObjectSearchKeyPress}>
                     <lightning-input

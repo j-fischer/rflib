@@ -33,3 +33,5 @@ ongotopage
 instanceof
 Behaviour
 summarydetail
+onprofileselected
+profileselected

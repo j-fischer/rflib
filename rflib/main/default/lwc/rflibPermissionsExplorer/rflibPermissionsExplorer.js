@@ -82,6 +82,13 @@ export default class PermissionsExplorer extends LightningElement {
         );
     }
 
+    get isProfilePermissions() {
+        return (
+            this.currentPermissionType === PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES ||
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES
+        );
+    }
+
     get permissionTypes() {
         const permissionTypes = JSON.parse(
             JSON.stringify([

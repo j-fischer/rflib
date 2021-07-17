@@ -37,6 +37,7 @@ const logger = createLogger('FieldPermissionsList');
 export default class RflibFieldPermissionsList extends LightningElement {
     @api pageSize;
     @api isFieldPermissions;
+    @api isProfilePermissions;
 
     @api
     get currentPage() {
@@ -179,5 +180,12 @@ export default class RflibFieldPermissionsList extends LightningElement {
             logger.debug('Setting field search target={0}', event.target.value);
             this.fieldSearch = event.target.value;
         }
+    }
+
+    handleProfileSelected(event) {
+        logger.debug('Profile selected, name={0}', event.detail);
+        const profileName = event.detail;
+
+        this.securityObjectNameSearch = profileName;
     }
 }
