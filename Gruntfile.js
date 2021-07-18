@@ -312,7 +312,7 @@ module.exports = function(grunt) {
             },
 
             'force-create-qa-user': {
-                command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa-user --definitionfile config/qa-user-def.json'
+                command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa_user --definitionfile config/qa-user-def.json'
             },
 
             'test-lwc': {
@@ -373,7 +373,7 @@ module.exports = function(grunt) {
         grunt.task.run([
             'prompt:alias',
             'shell:force-create-org-default',
-            'force-create-qa-user',
+            'shell:force-create-qa-user',
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-test',
