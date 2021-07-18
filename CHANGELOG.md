@@ -5,7 +5,7 @@ Package Alias: RFLIB@2.7.0-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdZsAAK
 
 -   Permission Explorer: Optimized FLS query to return Fields stripped of their object name when using the REST API
--   Permission Explorer: Added new component to resolve profile name by User Id to simplify entering of filter criteria.
+-   Permission Explorer: Added new component to resolve profile name by User Id to simplify entering of filter criteria
 -   Log Monitor: Added profile to the display of the user details in the Log Event Viewer
 -   Log Monitor: Fixed issue in the Ops Center Access Permission Set, which prevented non-admin users from receiving Log Events
 
