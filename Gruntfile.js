@@ -259,7 +259,7 @@ module.exports = function(grunt) {
         gitpush: {
             origin: {
                 options: {
-                    tag: true
+                    tags: true
                 }
             }
         },
