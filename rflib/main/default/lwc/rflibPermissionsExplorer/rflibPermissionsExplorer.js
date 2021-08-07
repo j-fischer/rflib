@@ -58,6 +58,10 @@ const PERMISSION_TYPES = {
     }
 };
 
+const OBJECT_PERMISSIONS_CSV_HEADER =
+    '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL","MODIFY ALL"\r\n';
+const FIELD_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS"\r\n';
+
 const logger = createLogger('PermissionsExplorer');
 
 export default class PermissionsExplorer extends LightningElement {
@@ -107,6 +111,10 @@ export default class PermissionsExplorer extends LightningElement {
         }
 
         return permissionTypes;
+    }
+
+    get hasRecords() {
+        return this.numTotalRecords > 0;
     }
 
     changePermissionType(event) {
@@ -209,6 +217,68 @@ export default class PermissionsExplorer extends LightningElement {
                     this.dispatchEvent(evt);
                 });
         }, 0);
+    }
+
+    exportToCsv() {
+        logger.debug('Export to CSV: type={0}, numRecords={1}', this.currentPermissionType.value, this.numTotalRecords);
+        let csvContent = '';
+
+        if (this.isFieldPermissions) {
+            csvContent += FIELD_PERMISSIONS_CSV_HEADER;
+
+            let i;
+            for (i = 0; i < this.numTotalRecords; i++) {
+                let permission = this.permissionRecords[i];
+                csvContent +=
+                    '"' +
+                    permission.SecurityObjectName +
+                    '","' +
+                    permission.SobjectType +
+                    '","' +
+                    permission.Field +
+                    '","' +
+                    permission.PermissionsRead +
+                    '","' +
+                    permission.PermissionsEdit +
+                    '"\r\n';
+            }
+        } else {
+            csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
+
+            let i;
+            for (i = 0; i < this.numTotalRecords; i++) {
+                let permission = this.permissionRecords[i];
+                csvContent +=
+                    '"' +
+                    permission.SecurityObjectName +
+                    '","' +
+                    permission.SobjectType +
+                    '","' +
+                    permission.PermissionsRead +
+                    '","' +
+                    permission.PermissionsCreate +
+                    '","' +
+                    permission.PermissionsEdit +
+                    '","' +
+                    permission.PermissionsDelete +
+                    '","' +
+                    permission.PermissionsViewAllRecords +
+                    '","' +
+                    permission.PermissionsModifyAllRecords +
+                    '"\r\n';
+            }
+        }
+
+        let element = document.createElement('a');
+        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+        element.setAttribute('download', this.currentPermissionType.value + '_' + new Date().toISOString() + '.csv');
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     }
 
     handlePrevious() {
