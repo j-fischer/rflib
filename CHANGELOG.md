@@ -1,3 +1,11 @@
+### RFLIB 2.8.0
+
+Package ID: 04t3h000004RdhnAAC
+Package Alias: RFLIB@2.8.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdhnAAC
+
+-   Permission Explorer: Added Export to CSV button to Permission Explorer
+
 ### RFLIB-TF 1.3.1
 
 Package ID: 04t3h000004RdhiAAC
