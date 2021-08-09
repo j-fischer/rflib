@@ -34,12 +34,16 @@ private class rflib_TriggerManagerTest {
     private static final String CATCH_EXCEPTION = 'Catch Exception';
 
     private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
+    private static final String AFTER_UPDATE = TriggerOperation.AFTER_UPDATE.name();
     private static final String OBJECT_TYPE_NAME = rflib_Log_Event__e.SObjectType.getDescribe().getName();
 
     private static final Exception EX = new MockTriggerHandlerException('This is a MockTriggerHandlerException');
 
     private static final User STANDARD_USER = rflib_UserFactory.insertAndRetrieve('Jane', 'Smith', 'Standard User');
     private static final User BYPASS_TRIGGERS_USER = rflib_UserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
+
+    private static Boolean SIMPLE_HANDLER_MOCK_RUN_INVOKED = false;
+    private static Boolean SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = false;
 
     private static void setup(String exceptionBehaviour) {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
@@ -267,6 +271,31 @@ private class rflib_TriggerManagerTest {
         }
     }
 
+    @IsTest
+    public static void testChainedHandlerInvocation() {
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+            new Map<String, Map<String, List<rflib_Trigger_Configuration__mdt>>> { 
+                OBJECT_TYPE_NAME => new Map<String, List<rflib_Trigger_Configuration__mdt>> {
+                    AFTER_INSERT => new List<rflib_Trigger_Configuration__mdt> { createConfiguration(ABORT_TRANSACTION) },
+                    AFTER_UPDATE => new List<rflib_Trigger_Configuration__mdt> { createConfiguration(true, 'rflib_TriggerManagerTest.SimpleMockTriggerHandler', OBJECT_TYPE_NAME, AFTER_UPDATE, 1, ABORT_TRANSACTION) }
+                }
+            }
+        );
+        
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_MockTriggerHandler.ACTION_WHEN_CALLED = new TriggerChainRun(createArgs(ev, TriggerOperation.AFTER_UPDATE));
+
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev);
+            
+            System.assertEquals(true, SIMPLE_HANDLER_MOCK_RUN_INVOKED);
+            System.assertEquals(false, SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED);
+        }
+    }
+
     private static rflib_TriggerManager.Args assertRunTriggerArgs(rflib_Log_Event__e ev) {
         System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
 
@@ -290,9 +319,13 @@ private class rflib_TriggerManagerTest {
     }
 
     private static rflib_TriggerManager.Args createArgs(rflib_Log_Event__e record) {
+        return createArgs(record, TriggerOperation.AFTER_INSERT);
+    }
+
+    private static rflib_TriggerManager.Args createArgs(rflib_Log_Event__e record, TriggerOperation operation) {
         return new rflib_TriggerManager.Args(
             rflib_Log_Event__e.SObjectType,
-            TriggerOperation.AFTER_INSERT,
+            operation,
             new List<SObject>(),
             new Map<Id, SObject>(),
             new List<SObject> { record },
@@ -359,6 +392,32 @@ private class rflib_TriggerManagerTest {
             }
 
             return null;
+        }
+    }
+
+    public class TriggerChainRun implements Callable {
+        
+        private rflib_TriggerManager.Args triggerArgs;
+
+        public TriggerChainRun(rflib_TriggerManager.Args triggerArgs) {
+            this.triggerArgs = triggerArgs;
+        }
+        
+        public Object call(String action, Map<String, Object> args) {
+            rflib_TriggerManager.dispatch(triggerArgs);
+
+            return null;
+        }
+    }
+
+    public class SimpleMockTriggerHandler implements rflib_TriggerHandler {
+    
+        public void run(rflib_TriggerManager.Args args) {
+            SIMPLE_HANDLER_MOCK_RUN_INVOKED = true;
+        }
+    
+        public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+            SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = true;
         }
     }
 
