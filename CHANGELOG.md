@@ -1,3 +1,11 @@
+### RFLIB-TF 1.3.1
+
+Package ID: 04t3h000004RdhiAAC
+Package Alias: RFLIB-TF@1.3.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdhiAAC
+
+-   [Issue #35](https://github.com/j-fischer/rflib/issues/35) - Updated TriggerManager to track active handlers on a per Object and Trigger Operation basis, invoking onConsecutive run only if the particular handler did complete the handling of an event previously
+
 ### RFLIB 2.7.0
 
 Package ID: 04t3h000004RdZsAAK
