@@ -37,7 +37,7 @@ public inherited sharing class rflib_TriggerManager {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_TriggerManager');
 
-    private static rflib_TriggerHandler ACTIVE_HANDLER;
+    private static Map<String, rflib_TriggerHandler> ACTIVE_HANDLERS = new Map<String, rflib_TriggerHandler>();
 
     private static Map<rflib_TriggerManager.Args, Integer> ON_CONSECUTIVE_RUN_COUNTERS = new Map<rflib_TriggerManager.Args,Integer>();
 
@@ -78,7 +78,7 @@ public inherited sharing class rflib_TriggerManager {
             runHandlers(args, handlers);
         } finally {
             // If active handler is not NULL, we are in a recursive loop and need to wait for the root transaction to complete.
-            if (ACTIVE_HANDLER == null) {
+            if (ACTIVE_HANDLERS.isEmpty() == null) {
                 LOGGER.publishBatchedLogEvents();
             }
         }
@@ -88,11 +88,13 @@ public inherited sharing class rflib_TriggerManager {
         for (TriggerHandlerInfo handlerInfo : handlers) {
             rflib_TriggerHandler handler = handlerInfo.handler;
 
-            LOGGER.debug('Is consecutive run? ' + (ACTIVE_HANDLER != null));
+            String recursionKey = getRecursionKey(args, handlerInfo);
+            rflib_TriggerHandler activeHandler = ACTIVE_HANDLERS.get(recursionKey);
+            LOGGER.debug('Is consecutive run? ' + (activeHandler != null));
 
-            if (ACTIVE_HANDLER == null) {
+            if (activeHandler == null) {
                 try {
-                    ACTIVE_HANDLER = handler;
+                    ACTIVE_HANDLERS.put(recursionKey, handler);
                     handler.run(args);
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
@@ -103,11 +105,11 @@ public inherited sharing class rflib_TriggerManager {
                         throw ex;
                     }
                 } finally {
-                    ACTIVE_HANDLER = null;
+                    ACTIVE_HANDLERS.remove(recursionKey);
                 }
             }
 
-            if (ACTIVE_HANDLER != null) {
+            if (activeHandler != null) {
                 try {
                     handler.onConsecutiveRun(args, incrementAndGetCounter(args));
                 } catch (Exception ex) {
@@ -158,6 +160,12 @@ public inherited sharing class rflib_TriggerManager {
         LOGGER.debug('{0} active trigger(s) found for operation {1} on object type {2}: {3}', new List<Object> { activeTriggers.size(), args.operation, sObjectName, String.join(activeTriggers, ',') });
 
         return result;
+    }
+
+    private static String getRecursionKey(rflib_TriggerManager.Args args, TriggerHandlerInfo handlerInfo) {
+        return args.objectType.getDescribe().getName() + '_' +
+            args.operation + '_' +
+            handlerInfo.handlerType.getName();
     }
 
     public class TriggerHandlerInfo {

@@ -35,3 +35,4 @@ Behaviour
 summarydetail
 onprofileselected
 profileselected
+CONSECUTIVERUN
