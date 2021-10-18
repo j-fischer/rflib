@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Request_ID__c</fullName>
+    <description>Represents the unique Salesforce Request ID that is assigned to every transaction. This ID can be used to associate the Log Event with Apex Debug Log files and other areas such as Event Monitoring.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Represents the unique Salesforce Request ID that is assigned to every transaction. This ID can be used to associate the Log Event with Apex Debug Log files and other areas such as Event Monitoring.</inlineHelpText>
+    <label>Request ID</label>
+    <length>40</length>
+    <required>true</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
