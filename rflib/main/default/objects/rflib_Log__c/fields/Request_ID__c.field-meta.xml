@@ -3,12 +3,10 @@
     <fullName>Request_ID__c</fullName>
     <description>Represents the unique Salesforce Request ID that is assigned to every transaction. This ID can be used to associate the Log Event with Apex Debug Log files and other areas such as Event Monitoring.</description>
     <externalId>false</externalId>
-    <isFilteringDisabled>false</isFilteringDisabled>
-    <isNameField>false</isNameField>
-    <isSortingDisabled>false</isSortingDisabled>
     <label>Request ID</label>
-    <length>255</length>
+    <length>40</length>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
 </CustomField>

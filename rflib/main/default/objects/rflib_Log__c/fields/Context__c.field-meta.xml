@@ -3,12 +3,10 @@
     <fullName>Context__c</fullName>
     <description>The context of the logger instance who reported the event.</description>
     <externalId>false</externalId>
-    <isFilteringDisabled>false</isFilteringDisabled>
-    <isNameField>false</isNameField>
-    <isSortingDisabled>false</isSortingDisabled>
     <label>Context</label>
-    <length>255</length>
+    <length>40</length>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
 </CustomField>
