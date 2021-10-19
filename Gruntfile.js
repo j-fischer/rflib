@@ -305,7 +305,7 @@ module.exports = function(grunt) {
 
             'force-install-streaming-monitor': {
                 command:
-                    'sfdx force:package:install --package 04t1t000003DLAQAA4 -u <%= config.alias %> -w 10 && sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
+                    'sfdx force:package:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
             },
 
             'force-promote': {
@@ -378,8 +378,8 @@ module.exports = function(grunt) {
         grunt.task.run([
             'prompt:alias',
             'shell:force-create-org-default',
-            'shell:force-create-qa-user',
             'shell:force-push',
+            'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-test',
             'shell:test-lwc',
