@@ -41,7 +41,6 @@
                                 </h1>
                             </div>
                         </div>
-                        <p class="slds-page-header__name-meta">Connection Status • {currentConnectionMode.label}</p>
                     </div>
                 </div>
             </div>
@@ -50,7 +49,10 @@
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
                             <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu label="Change Connection Mode" onselect={changeConnectionMode}>
+                                <lightning-button-menu
+                                    label={currentConnectionMode.label}
+                                    onselect={changeConnectionMode}
+                                >
                                     <template for:each={connectionModes} for:item="menuItem">
                                         <lightning-menu-item
                                             key={menuItem.id}
@@ -64,6 +66,11 @@
                             </li>
                             <li class="slds-m-horizontal_xx-small">
                                 <button class="slds-button slds-button_neutral" onclick={clearLogs}>Clear Logs</button>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small">
+                                <button class="slds-button slds-button_neutral" onclick={clearArchive}>
+                                    Clear Archive
+                                </button>
                             </li>
                         </ul>
                     </div>
@@ -101,7 +108,7 @@
             <template if:true={hasLogEvent}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
-                    user-id={selectedLogEvent.CreatedById}
+                    user-id={selectedLogEventCreatedById}
                 ></c-rflib-log-event-viewer>
             </template>
         </div>

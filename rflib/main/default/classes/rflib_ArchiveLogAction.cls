@@ -74,6 +74,7 @@ public with sharing class rflib_ArchiveLogAction {
     private static rflib_Log_Archive__b createArchiveLogRecord(rflib_Log_Event__e evt) {
         rflib_Log_Archive__b log = new rflib_Log_Archive__b();
         log.CreatedDate__c = evt.CreatedDate;
+        log.CreatedById__c = evt.CreatedById;
         log.Context__c = evt.Context__c;
         log.Log_Level__c = evt.Log_Level__c;
         log.Request_ID__c = evt.Request_ID__c;

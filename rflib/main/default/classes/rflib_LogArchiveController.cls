@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@SuppressWarnings('PMD.ClassNamingConventions')
+public class rflib_LogArchiveController {
+    
+    @AuraEnabled
+    public static List<rflib_Log_Archive__b> getArchivedRecords(){
+        try {
+            return [SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c FROM rflib_Log_Archive__b];
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 
- .selected {
-    background-color: var(--lwc-colorBackgroundRowNew);
+    @AuraEnabled
+    public static void clearArchive(){
+        try {
+            List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b>();
+            records.addAll([SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c FROM rflib_Log_Archive__b ORDER BY CreatedDate__c ASC]);
+            Database.deleteImmediate(records);
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 }
-
-.slds-table_striped tbody tr:nth-of-type(even).selected > td {
-    background-color: var(--lwc-colorBackgroundRowNew);
- }

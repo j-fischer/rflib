@@ -27,10 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
- .selected {
-    background-color: var(--lwc-colorBackgroundRowNew);
+:host {
+    display: table-row;
+    cursor: pointer;
 }
-
-.slds-table_striped tbody tr:nth-of-type(even).selected > td {
-    background-color: var(--lwc-colorBackgroundRowNew);
- }

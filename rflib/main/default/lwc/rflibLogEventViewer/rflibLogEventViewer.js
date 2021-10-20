@@ -63,6 +63,14 @@ export default class LogEventViewer extends LightningElement {
         }
     }
 
+    get createdBy() {
+        return this.logEvent.CreatedById || this.logEvent.CreatedById__c;
+    }
+
+    get createdDate() {
+        return this.logEvent.CreatedDate || this.logEvent.CreatedDate__c;
+    }
+
     get title() {
         return this.logEvent.Request_ID__c + ' - ' + this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
     }
@@ -95,9 +103,9 @@ export default class LogEventViewer extends LightningElement {
         );
         element.setAttribute(
             'download',
-            this.logEvent.CreatedById +
+            this.createdBy() +
                 '_' +
-                this.logEvent.CreatedDate +
+                this.createdDate() +
                 '_' +
                 this.logEvent.Request_ID__c +
                 '_' +

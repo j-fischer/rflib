@@ -36,3 +36,4 @@ summarydetail
 onprofileselected
 profileselected
 CONSECUTIVERUN
+onlogselected

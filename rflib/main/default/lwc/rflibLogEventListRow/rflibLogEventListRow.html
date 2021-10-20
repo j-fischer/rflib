@@ -1,4 +1,4 @@
-/*
+<!--
  * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
@@ -25,12 +25,35 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
- .selected {
-    background-color: var(--lwc-colorBackgroundRowNew);
-}
-
-.slds-table_striped tbody tr:nth-of-type(even).selected > td {
-    background-color: var(--lwc-colorBackgroundRowNew);
- }
+ *
+ * This component was inspired by:
+ * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
+-->
+<template>
+    <td class="slds-truncate">
+        <div>
+            <lightning-formatted-date-time
+                value={createdDate}
+                year="numeric"
+                day="2-digit"
+                month="2-digit"
+                hour="2-digit"
+                minute="2-digit"
+                second="2-digit"
+            >
+            </lightning-formatted-date-time>
+        </div>
+    </td>
+    <td class="slds-truncate">
+        <div>{createdBy}</div>
+    </td>
+    <td class="slds-truncate">
+        <div>{evt.Request_ID__c}</div>
+    </td>
+    <td>
+        <div class="slds-truncate">{evt.Log_Level__c}</div>
+    </td>
+    <td>
+        <div class="slds-truncate">{evt.Context__c}</div>
+    </td>
+</template>
