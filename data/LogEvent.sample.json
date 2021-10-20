@@ -1,0 +1,8 @@
+{
+    "CreatedDate": "2021-10-19T00:00:00Z",
+    "Log_Messages__c": "Some message",
+    "Log_Level__c": "WARN",
+    "Context__c": "Streaming Monitor",
+    "Request_ID__c": "abc123",
+    "CreatedById__c": "0051D000008sEVU"
+}
