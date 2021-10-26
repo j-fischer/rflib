@@ -48,8 +48,37 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-input
+                                    type="date"
+                                    name="startDate"
+                                    variant="label-hidden"
+                                    placeholder="Enter a start date"
+                                    onchange={handleStartDateChanged}
+                                >
+                                </lightning-input>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-input
+                                    type="date"
+                                    name="endDate"
+                                    variant="label-hidden"
+                                    placeholder="Enter a end date"
+                                    onchange={handleEndDateChanged}
+                                >
+                                </lightning-input>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <button class="slds-button slds-button_neutral" onclick={queryArchive}>Query Archive</button>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <button class="slds-button slds-button_neutral" onclick={clearArchive}>
+                                    Clear Archive
+                                </button>
+                            </li>
                             <li class="slds-m-horizontal_xx-small">
                                 <lightning-button-menu
+                                    class="connection-mode"
                                     label={currentConnectionMode.label}
                                     onselect={changeConnectionMode}
                                 >
@@ -66,11 +95,6 @@
                             </li>
                             <li class="slds-m-horizontal_xx-small">
                                 <button class="slds-button slds-button_neutral" onclick={clearLogs}>Clear Logs</button>
-                            </li>
-                            <li class="slds-m-horizontal_xx-small">
-                                <button class="slds-button slds-button_neutral" onclick={clearArchive}>
-                                    Clear Archive
-                                </button>
                             </li>
                         </ul>
                     </div>

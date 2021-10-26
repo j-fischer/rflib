@@ -63,17 +63,23 @@ const logger = createLogger('LogEventMonitor');
 export default class LogEventMonitor extends LightningElement {
     page = 1;
     pageSize = DEFAULT_PAGE_SIZE;
-    numDisplayedRecords;
-    numTotalRecords;
+    numDisplayedRecords = 0;
+    numTotalRecords = 0;
 
     currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
     capturedEvents = [];
     selectedLogEvent = null;
     selectedLogEventCreatedById = null;
+    startDate = null;
+    endDate = null;
 
     subscription = null;
 
     messageCallback = null;
+
+    get isArchiveMode() {
+        return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
+    }
 
     get hasLogEvent() {
         return this.selectedLogEvent != null;
@@ -130,9 +136,14 @@ export default class LogEventMonitor extends LightningElement {
                 });
             }
 
-            getArchivedRecords()
+            const args = {
+                startDate: this.startDate,
+                endDate: this.endDate
+            };
+            getArchivedRecords(args)
                 .then((results) => {
                     _this.capturedEvents = results;
+                    _this.numTotalRecords = results.length;
                     _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
                 })
                 .catch((ex) => {
@@ -195,6 +206,22 @@ export default class LogEventMonitor extends LightningElement {
             });
     }
 
+    queryArchive() {
+        const _this = this;
+        const args = {
+            startDate: this.startDate,
+            endDate: this.endDate
+        };
+        getArchivedRecords(args)
+            .then((results) => {
+                _this.capturedEvents = results;
+                _this.numTotalRecords = results.length;
+            })
+            .catch((ex) => {
+                logger.debug('Failed to retrieve archived records: ' + JSON.stringify(ex));
+            });
+    }
+
     createSubscriptionResponseHandler(component) {
         return function (response) {
             logger.debug('Successfully subscribed to: ' + response.channel);
@@ -253,5 +280,19 @@ export default class LogEventMonitor extends LightningElement {
 
         this.selectedLogEventCreatedById = logEvent.CreatedById || logEvent.CreatedById__c;
         this.selectedLogEvent = logEvent;
+    }
+
+    handleStartDateChanged(event) {
+        if (this.startDate !== event.target.value) {
+            logger.debug('Start date changed={0}', event.target.value);
+            this.startDate = event.target.value;
+        }
+    }
+
+    handleEndDateChanged(event) {
+        if (this.endDate !== event.target.value) {
+            logger.debug('End date changed={0}', event.target.value);
+            this.endDate = event.target.value;
+        }
     }
 }

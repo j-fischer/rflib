@@ -30,19 +30,26 @@
 public class rflib_LogArchiveController {
     
     @AuraEnabled
-    public static List<rflib_Log_Archive__b> getArchivedRecords(){
+    public static List<rflib_Log_Archive__b> getArchivedRecords(Date startDate, Date endDate) {
+        Date startDateOrDefault = startDate != null ? startDate : Date.today();
+        Date endDateOrDefault = endDate != null ? endDate : Date.today().addDays(1);
         try {
-            return [SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c FROM rflib_Log_Archive__b];
+            return [
+                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
+                FROM rflib_Log_Archive__b
+                WHERE CreatedDate__c > :startDateOrDefault
+                AND CreatedDate__c < :endDateOrDefault
+                LIMIT 50000];
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
 
     @AuraEnabled
-    public static void clearArchive(){
+    public static void clearArchive() {
         try {
             List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b>();
-            records.addAll([SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c FROM rflib_Log_Archive__b ORDER BY CreatedDate__c ASC]);
+            records.addAll([SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c FROM rflib_Log_Archive__b ORDER BY CreatedDate__c ASC LIMIT 50000]);
             Database.deleteImmediate(records);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
