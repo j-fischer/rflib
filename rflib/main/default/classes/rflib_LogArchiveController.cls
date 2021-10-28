@@ -30,9 +30,9 @@
 public class rflib_LogArchiveController {
     
     @AuraEnabled
-    public static List<rflib_Log_Archive__b> getArchivedRecords(Date startDate, Date endDate) {
-        Date startDateOrDefault = startDate != null ? startDate : Date.today();
-        Date endDateOrDefault = endDate != null ? endDate : Date.today().addDays(1);
+    public static List<rflib_Log_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
+        Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
+        Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
         try {
             return [
                 SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
