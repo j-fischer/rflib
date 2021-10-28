@@ -308,6 +308,11 @@ module.exports = function(grunt) {
                     'sfdx force:package:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
             },
 
+            'force-install-bigobject-utility': {
+                command:
+                    'sfdx force:package:install --package 04t7F000003irldQAA -u <%= config.alias %> -w 10'
+            },
+
             'force-promote': {
                 command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
@@ -384,6 +389,7 @@ module.exports = function(grunt) {
             'shell:force-test',
             'shell:test-lwc',
             'shell:force-install-streaming-monitor',
+            'shell:force-install-bigobject-utility',
             'shell:force-open'
         ]);
     });
