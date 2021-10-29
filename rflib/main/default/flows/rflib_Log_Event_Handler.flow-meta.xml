@@ -4,9 +4,12 @@
         <name>Archive_Log_Event</name>
         <label>Archive Log Event</label>
         <locationX>176</locationX>
-        <locationY>314</locationY>
+        <locationY>194</locationY>
         <actionName>rflib_ArchiveLogAction</actionName>
         <actionType>apex</actionType>
+        <connector>
+            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+        </connector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
@@ -20,12 +23,9 @@
         <name>rflib_Send_Log_Event_Emails</name>
         <label>Send Log Event Emails</label>
         <locationX>176</locationX>
-        <locationY>194</locationY>
+        <locationY>314</locationY>
         <actionName>rflib_SendLogEventEmailAction</actionName>
         <actionType>apex</actionType>
-        <connector>
-            <targetReference>Archive_Log_Event</targetReference>
-        </connector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
@@ -37,7 +37,7 @@
     <apiVersion>49.0</apiVersion>
     <description>Flow to execute when an RFLIB Log Event has been dispatched. The handler currently invokes the Send Log Event Email action, but can be extended to, for example, persist log information in a Custom Object.</description>
     <interviewLabel>Log Event Handler {!$Flow.CurrentDateTime}: {!$Record.Context__c} - {!$Record.ReplayId} - {!$Record.CreatedById} - {!$Record.Log_Level__c}</interviewLabel>
-    <label>Log Event Handler</label>
+    <label>RFLIB Log Event Handler</label>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -61,7 +61,7 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+            <targetReference>Archive_Log_Event</targetReference>
         </connector>
         <object>rflib_Log_Event__e</object>
         <triggerType>PlatformEvent</triggerType>
