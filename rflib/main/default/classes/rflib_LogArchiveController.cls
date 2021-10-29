@@ -29,17 +29,16 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_LogArchiveController {
     
+    @TestVisible
+    private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();
+
     @AuraEnabled
     public static List<rflib_Log_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
-        Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
-        Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
         try {
-            return [
-                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
-                FROM rflib_Log_Archive__b
-                WHERE CreatedDate__c > :startDateOrDefault
-                AND CreatedDate__c < :endDateOrDefault
-                LIMIT 50000];
+            Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
+            Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
+            
+            return QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -49,10 +48,38 @@ public class rflib_LogArchiveController {
     public static void clearArchive() {
         try {
             List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b>();
-            records.addAll([SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c FROM rflib_Log_Archive__b ORDER BY CreatedDate__c ASC LIMIT 50000]);
+            records.addAll(QUERY_LOCATOR.getOldestRecords());
+            
             Database.deleteImmediate(records);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    public interface ILogArchiveQueryLocator {
+        List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate);
+        List<rflib_Log_Archive__b> getOldestRecords();
+    }
+
+    public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
+
+        public List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
+            return [
+                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
+                FROM rflib_Log_Archive__b
+                WHERE CreatedDate__c > :startDate
+                AND CreatedDate__c < :endDate
+                LIMIT 50000
+            ];
+        }
+
+        public List<rflib_Log_Archive__b> getOldestRecords() {
+            return [
+                SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c 
+                FROM rflib_Log_Archive__b 
+                ORDER BY CreatedDate__c ASC 
+                LIMIT 50000
+            ];
         }
     }
 }

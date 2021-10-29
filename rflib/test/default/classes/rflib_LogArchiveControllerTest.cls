@@ -31,5 +31,66 @@
 private class rflib_LogArchiveControllerTest {
 
 
+    @IsTest
+    private static void testGetArchivedRecords_Success() {
+        
+    }
+
+    @IsTest
+    private static void testGetArchivedRecords_Failure() {
+        
+    }
     
+    @IsTest
+    private static void testClearArchive_Success() {
+        
+    }
+
+    @IsTest
+    private static void testClearArchive_Failure() {
+        
+    }
+
+    @IsTest
+    private static void testDefaultLogArchiveQueryLocator_getRecords() {
+        //This call is for code coverage purposes only
+        List<rflib_Log_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getRecords(Datetime.now(), Datetime.now());
+        System.assertNotEquals(null, result);
+    }    
+    
+    
+    @IsTest
+    private static void testDefaultLogArchiveQueryLocator_getOldestRecords() {
+        //This call is for code coverage purposes only
+        List<rflib_Log_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
+        System.assertNotEquals(null, result);
+    }    
+
+    public class MockLogArchiveQueryLocator implements rflib_LogArchiveController.ILogArchiveQueryLocator {
+
+        private final List<rflib_Log_Archive__b> result;
+
+        private final Exception ex;
+
+        public MockLogArchiveQueryLocator(List<rflib_Log_Archive__b> result, Exception ex) {
+            this.result = result;
+            this.ex = ex;
+        }
+
+        public List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
+            if (ex != null) {
+                throw ex;
+            }
+
+            return result;
+        }
+
+        public List<rflib_Log_Archive__b> getOldestRecords() {
+            if (ex != null) {
+                throw ex;
+            }
+
+            return result;
+        }
+    }
 }
