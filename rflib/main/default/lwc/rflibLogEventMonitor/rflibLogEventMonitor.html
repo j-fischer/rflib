@@ -27,6 +27,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
 -->
 <template>
+    <c-rflib-confirmation-dialog
+        title="Confirmation"
+        message="Are you sure you want to clear the archive? This will delete up to 50000 oldest records from the archive."
+        confirm-label="Clear"
+        cancel-label="Cancel"
+        visible={isClearArchiveDialogVisible}
+        original-message="confirmation"
+        name="confirmModal"
+        onclick={handleClearArchiveConfirmation}
+    >
+    </c-rflib-confirmation-dialog>
+
     <div class="slds-page-header">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">

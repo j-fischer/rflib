@@ -66,6 +66,7 @@ export default class LogEventMonitor extends LightningElement {
     numDisplayedRecords = 0;
     numTotalRecords = 0;
 
+    isClearArchiveDialogVisible = false;
     currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
     capturedEvents = [];
     selectedLogEvent = null;
@@ -192,18 +193,32 @@ export default class LogEventMonitor extends LightningElement {
 
     clearArchive() {
         logger.debug('Clearing archive');
-        this.capturedEvents = [];
-        this.numTotalRecords = 0;
-        this.selectedLogEvent = null;
-        this.selectedLogEventCreatedById = null;
+        this.isClearArchiveDialogVisible = true;
+    }
 
-        clearArchive()
-            .then(() => {
-                logger.debug('Archive cleared');
-            })
-            .catch((ex) => {
-                logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
-            });
+    handleClearArchiveConfirmation(event) {
+        if (event.detail !== 1) {
+            if (event.detail.status === 'confirm') {
+                this.capturedEvents = [];
+                this.numTotalRecords = 0;
+                this.selectedLogEvent = null;
+                this.selectedLogEventCreatedById = null;
+
+                clearArchive()
+                    .then(() => {
+                        logger.debug('Archive cleared');
+                    })
+                    .catch((ex) => {
+                        logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
+                    });
+            } else if (event.detail.status === 'cancel') {
+                logger.debug('Cancelled clearing of archive');
+            }
+        } else {
+            logger.debug('Closed dialog');
+        }
+
+        this.isClearArchiveDialogVisible = false;
     }
 
     queryArchive() {
