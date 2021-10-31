@@ -1,7 +1,7 @@
 {
     "LastName": "Tester",
     "Alias": "tester",
-    "TimeZoneSidKey": "America/Denver",
+    "TimeZoneSidKey": "America/Edmonton",
     "LocaleSidKey": "en_US",
     "EmailEncodingKey": "UTF-8",
     "LanguageLocaleKey": "en_US",
