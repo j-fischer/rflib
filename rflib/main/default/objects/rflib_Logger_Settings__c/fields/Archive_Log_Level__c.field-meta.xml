@@ -5,7 +5,7 @@
     <description>Set the log level for which a record will be created in the Log Archive Big Object in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Log Archive Level, a record will be created. Otherwise, no record will be created.</description>
     <externalId>false</externalId>
     <inlineHelpText>Set the log level for which a record will be created in the Log Archive Big Object in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Log Archive Level, a record will be created. Otherwise, no record will be created.</inlineHelpText>
-    <label>Log Archive Level</label>
+    <label>Archive Log Level</label>
     <length>5</length>
     <required>true</required>
     <trackTrending>false</trackTrending>
