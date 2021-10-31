@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,21 +28,40 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public class rflib_MockDmlExecutor implements rflib_DmlExecutor {
+    public List<SObject> capturedRecords;
+        
+    private final List<List<Database.SaveResult>> expectedSaveResults = new List<List<Database.SaveResult>>();
+    private final List<List<Object>> expectedDeleteResults = new List<List<Object>>();
+    private Integer invocationCount = 0;
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'TRACE';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Archive_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
+    public rflib_MockDmlExecutor(List<Database.SaveResult> saveResults) {
+        this.expectedSaveResults.add(saveResults);
+    }
 
-        upsert settings;
+    public rflib_MockDmlExecutor(List<Database.DeleteResult> deleteResults) {
+        this.expectedDeleteResults.add(deleteResults);
+    }
+    
+    public void onConsecutiveCall(List<Database.SaveResult> saveResults) {
+        this.expectedSaveResults.add(saveResults);
+    }
+
+    public void onConsecutiveCall(List<Database.DeleteResult> deleteResults) {
+        this.expectedDeleteResults.add(deleteResults);
+    }
+
+    public Integer getInvocationCount() {
+        return invocationCount;
+    }
+
+    public List<Database.SaveResult> insertImmediate(List<SObject> sobjects) {
+        this.capturedRecords = sobjects;
+        return expectedSaveResults.get(invocationCount++);
+    }
+
+    public List<Database.DeleteResult> deleteImmediate(List<SObject> sobjects) {
+        this.capturedRecords = sobjects;
+        return (List<Database.DeleteResult>) expectedDeleteResults.get(invocationCount++);
     }
 }

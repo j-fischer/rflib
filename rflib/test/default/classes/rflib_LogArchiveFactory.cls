@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,21 +28,42 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public class rflib_LogArchiveFactory {
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'TRACE';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Archive_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
+    public static rflib_Log_Archive__b create(String context) {
+        return build(context).create();
+    }
 
-        upsert settings;
+    public static rflib_LogArchiveFactory.Builder build(String context) {
+        return new Builder(context);
+    }
+
+
+    private rflib_LogArchiveFactory() { }
+
+    public class Builder {
+
+        private final SObject record;
+        private final Set<String> assignedCustomPermissions = new Set<String>();
+
+        public Builder(String context) {
+            record = new rflib_Log_Archive__b(
+                CreatedDate__c = Datetime.now(),
+                CreatedById__c = UserInfo.getUserId(),
+                Context__c = context,
+                Log_Level__c = 'WARN',
+                Log_Messages__c = 'Some messages',
+                Request_ID__c = 'req123'
+            );
+        }
+
+        public Builder withField(String name, Object value) {
+            record.put(name, value);
+            return this;
+        }
+
+        public rflib_Log_Archive__b create() {
+            return (rflib_Log_Archive__b) record;
+        }
     }
 }

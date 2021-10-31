@@ -60,7 +60,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all profiles', ex);
-            throw createAuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -73,7 +73,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
-            throw createAuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -86,7 +86,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all profiles', ex);
-            throw createAuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
     
@@ -99,7 +99,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
-            throw createAuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
         
@@ -187,12 +187,6 @@ public with sharing class rflib_PermissionsExplorerController {
         }
 
         return new RestException(errors.get(0).message);
-    }
-
-    private static AuraHandledException createAuraHandledException(String message) {
-        AuraHandledException ex = new AuraHandledException(message);
-        ex.setMessage(message);
-        return ex;
     }
 
     public class QueryResult {

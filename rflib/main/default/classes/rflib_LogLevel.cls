@@ -29,7 +29,7 @@
 
 /**
  * @group Logger
- * @description Log Levels used to determine the behavior of the jfflib_Logger implementation. 
+ * @description Log Levels used to determine the behavior of the rflib_Logger implementation. 
  *              Valid levels are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL.
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
@@ -46,11 +46,15 @@ public without sharing class rflib_LogLevel {
   /**
    * Create a instance of the rflib_LogLevel enum from a string.
    * 
-   * @param  level Case incensitive string of the logging level.
+   * @param  level Case insensitive string of the logging level.
    * @return       Instance of the rflib_LogLevel enum.
    */
   @SuppressWarnings('PMD.EmptyStatementBlock')
   public static rflib_LogLevel fromString(String level) {
+    if (level == null) {
+      level = 'N/A';
+    }
+    
     switch on level.toUpperCase() {
       when 'TRACE' {
         return rflib_LogLevel.TRACE;
@@ -93,7 +97,7 @@ public without sharing class rflib_LogLevel {
   }
 
   /**
-   * Retuns the Apex System logging level that this enum instance represents.
+   * Returns the Apex System logging level that this enum instance represents.
    * @return   return description
    */
   public LoggingLevel getLoggingLevel() {
@@ -119,7 +123,7 @@ public without sharing class rflib_LogLevel {
   /**
   * Returns the log level as a String. 
   * 
-  * @return   String represenation in uppercase.
+  * @return   String representation in uppercase.
   */
   public override String toString() {
     return name;

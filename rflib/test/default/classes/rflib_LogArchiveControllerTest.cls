@@ -30,25 +30,49 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LogArchiveControllerTest {
 
+    private static final List<rflib_Log_Archive__b> RESULT = new List<rflib_Log_Archive__b> {
+        createLogArchiveRecord('Log1')
+    };
+
+    private static final Exception EXPECTED_EXCEPTION = new rflib_InvalidStateException('some message');
 
     @IsTest
     private static void testGetArchivedRecords_Success() {
-        
+        rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
+
+        System.assertEquals(RESULT, rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()));
     }
 
     @IsTest
     private static void testGetArchivedRecords_Failure() {
-        
+        rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
+
+        try {
+            rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now());
+            System.assert(false, 'Expected exception has not been thrown');
+        } catch (AuraHandledException actualException) {
+            System.assertEquals(EXPECTED_EXCEPTION.getMessage(), actualException.getMessage());
+        }
     }
     
     @IsTest
     private static void testClearArchive_Success() {
-        
+        rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
+        rflib_LogArchiveController.DML_EXECUTOR = new rflib_MockDmlExecutor(new List<Database.DeleteResult> { createSuccessDeleteResult() });
+
+        rflib_LogArchiveController.clearArchive();
     }
 
     @IsTest
     private static void testClearArchive_Failure() {
-        
+        rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
+
+        try {
+            rflib_LogArchiveController.clearArchive();
+            System.assert(false, 'Expected exception has not been thrown');
+        } catch (AuraHandledException actualException) {
+            System.assertEquals(EXPECTED_EXCEPTION.getMessage(), actualException.getMessage());
+        }
     }
 
     @IsTest
@@ -58,13 +82,20 @@ private class rflib_LogArchiveControllerTest {
         System.assertNotEquals(null, result);
     }    
     
-    
     @IsTest
     private static void testDefaultLogArchiveQueryLocator_getOldestRecords() {
         //This call is for code coverage purposes only
         List<rflib_Log_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
         System.assertNotEquals(null, result);
-    }    
+    }   
+
+    private static Database.DeleteResult createSuccessDeleteResult() {
+        return (Database.DeleteResult) JSON.deserialize('{"success":true,"id":"0013000000abcde"}', Database.DeleteResult.class);
+    }
+    
+    private static rflib_Log_Archive__b createLogArchiveRecord(String context) {
+        return rflib_LogArchiveFactory.create(context);
+    }
 
     public class MockLogArchiveQueryLocator implements rflib_LogArchiveController.ILogArchiveQueryLocator {
 

@@ -27,10 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_LogArchiveController {
+public with sharing class rflib_LogArchiveController {
+    
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveController');
     
     @TestVisible
     private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();
+    
+    @TestVisible
+    private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
 
     @AuraEnabled
     public static List<rflib_Log_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
@@ -39,8 +44,8 @@ public class rflib_LogArchiveController {
             Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
             
             return QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault);
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
+        } catch (Exception ex) {
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 
@@ -50,9 +55,9 @@ public class rflib_LogArchiveController {
             List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b>();
             records.addAll(QUERY_LOCATOR.getOldestRecords());
             
-            Database.deleteImmediate(records);
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
+            DML_EXECUTOR.deleteImmediate(records);
+        } catch (Exception ex) {
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 

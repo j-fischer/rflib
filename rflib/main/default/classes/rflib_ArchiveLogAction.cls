@@ -38,6 +38,9 @@
 public with sharing class rflib_ArchiveLogAction {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ArchiveLogAction');
 
+    @TestVisible
+    private static rflib_BigObjectDatabaseExecutor DATABASE_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
+
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events. 
@@ -46,7 +49,7 @@ public with sharing class rflib_ArchiveLogAction {
     }
 
     @InvocableMethod(label='Archive Log Event' category='RFLIB' description='Archive Log Events in Big Object')
-    public static void sendEmailsIfApplicable(List<rflib_Log_Event__e> events) {
+    public static void archiveLogIfApplicable(List<rflib_Log_Event__e> events) {
         rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
 
         LOGGER.debug('run() invoked, size=' + events.size());
@@ -58,16 +61,13 @@ public with sharing class rflib_ArchiveLogAction {
             }
         }
 
-        Database.SaveResult[] results = Database.insertImmediate(eventsToArchive);
-        for (Database.SaveResult res : results) {
-            if (!res.isSuccess()) {
-                LOGGER.debug('Failed to insert big object: ' + res.getErrors());
-            }
+        if (eventsToArchive.size() > 0) {
+            DATABASE_EXECUTOR.insertImmediate(eventsToArchive);
         }
     }
 
     private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        return rflib_LogLevel.fromString(loggerSettings.Log_Archive_Level__c).
+        return rflib_LogLevel.fromString(loggerSettings.Archive_Log_Level__c).
             encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
