@@ -5,7 +5,7 @@
     "LocaleSidKey": "en_US",
     "EmailEncodingKey": "UTF-8",
     "LanguageLocaleKey": "en_US",
-    "profileName": "Standard Platform User",
+    "profileName": "Standard User",
     "permsets": ["rflib_Ops_Center_Access", "rflib_Enable_Client_Logging", "rflib_Enable_Client_Feature_Switches"],
     "generatePassword": true
 }
