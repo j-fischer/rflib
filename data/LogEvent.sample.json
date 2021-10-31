@@ -2,6 +2,5 @@
     "Log_Messages__c": "WARN|Some message",
     "Log_Level__c": "WARN",
     "Context__c": "Streaming Monitor",
-    "Request_ID__c": "req123",
-    "CreatedById__c": "0051D000008sEVU"
+    "Request_ID__c": "req123"
 }
