@@ -8,6 +8,8 @@ package.xml
 **profiles
 **appMenus
 
+rflib/main/default/apexEmailNotifications
+
 # LWC configuration files
 **/jsconfig.json
 **/.eslintrc.json
