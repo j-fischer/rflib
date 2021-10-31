@@ -10,6 +10,9 @@
         <connector>
             <targetReference>rflib_Send_Log_Event_Emails</targetReference>
         </connector>
+        <faultConnector>
+            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+        </faultConnector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
