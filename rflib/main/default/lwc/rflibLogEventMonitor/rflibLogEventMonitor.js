@@ -120,6 +120,15 @@ export default class LogEventMonitor extends LightningElement {
         );
     }
 
+    disconnectedCallback() {
+        if (this.subscription) {
+            unsubscribe(this.subscription, () => {
+                logger.debug('unsubscribe() successful');
+                this.subscription = null;
+            });
+        }
+    }
+
     changeConnectionMode(event) {
         const _this = this;
         const newConnectionMode = event.detail.value;
@@ -130,12 +139,7 @@ export default class LogEventMonitor extends LightningElement {
         );
 
         if (newConnectionMode > 0) {
-            if (this.subscription) {
-                unsubscribe(this.subscription, (response) => {
-                    logger.debug('unsubscribe() response: ', JSON.stringify(response));
-                    this.subscription = null;
-                });
-            }
+            this.disconnectedCallback();
 
             const args = {
                 startDate: this.startDate,
@@ -172,8 +176,8 @@ export default class LogEventMonitor extends LightningElement {
         };
 
         if (this.subscription) {
-            unsubscribe(this.subscription, (response) => {
-                logger.debug('unsubscribe() response: ', JSON.stringify(response));
+            unsubscribe(this.subscription, () => {
+                logger.debug('unsubscribe() successful');
                 this.subscription = null;
 
                 connectToServer();
