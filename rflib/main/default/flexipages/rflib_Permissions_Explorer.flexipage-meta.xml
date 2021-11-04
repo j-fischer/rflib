@@ -4,6 +4,7 @@
         <itemInstances>
             <componentInstance>
                 <componentName>rflibPermissionsExplorer</componentName>
+                <identifier>rflibPermissionsExplorerId</identifier>
             </componentInstance>
         </itemInstances>
         <name>main</name>
