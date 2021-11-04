@@ -26,9 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { LightningElement, track } from 'lwc';
+import { LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 import { subscribe, unsubscribe, onError } from 'lightning/empApi';
+
+import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
+import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
 
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
@@ -47,24 +50,37 @@ const CONNECTION_MODE = {
         id: '3',
         value: 0,
         label: 'Not Connected'
+    },
+    ARCHIVE: {
+        id: '4',
+        value: 1,
+        label: 'Archive'
     }
 };
 
 const logger = createLogger('LogEventMonitor');
 
 export default class LogEventMonitor extends LightningElement {
-    @track page = 1;
-    @track pageSize = DEFAULT_PAGE_SIZE;
-    @track numDisplayedRecords;
-    @track numTotalRecords;
+    page = 1;
+    pageSize = DEFAULT_PAGE_SIZE;
+    numDisplayedRecords = 0;
+    numTotalRecords = 0;
 
-    @track currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
-    @track capturedEvents = [];
-    @track selectedLogEvent = null;
+    isClearArchiveDialogVisible = false;
+    currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
+    capturedEvents = [];
+    selectedLogEvent = null;
+    selectedLogEventCreatedById = null;
+    startDate = null;
+    endDate = null;
 
-    subscription = {};
+    subscription = null;
 
     messageCallback = null;
+
+    get isArchiveMode() {
+        return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
+    }
 
     get hasLogEvent() {
         return this.selectedLogEvent != null;
@@ -75,7 +91,8 @@ export default class LogEventMonitor extends LightningElement {
             JSON.stringify([
                 CONNECTION_MODE.NEW_MESSAGES_ONLY,
                 CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES,
-                CONNECTION_MODE.DISCONNECTED
+                CONNECTION_MODE.DISCONNECTED,
+                CONNECTION_MODE.ARCHIVE
             ])
         );
 
@@ -104,6 +121,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     changeConnectionMode(event) {
+        const _this = this;
         const newConnectionMode = event.detail.value;
         logger.debug(
             'Connection Mode changed: newConnectionMode={0}, currentConnectionMode={1}',
@@ -111,7 +129,29 @@ export default class LogEventMonitor extends LightningElement {
             this.currentConnectionMode.value
         );
 
-        const _this = this;
+        if (newConnectionMode > 0) {
+            if (this.subscription) {
+                unsubscribe(this.subscription, (response) => {
+                    logger.debug('unsubscribe() response: ', JSON.stringify(response));
+                    this.subscription = null;
+                });
+            }
+
+            const args = {
+                startDate: this.startDate,
+                endDate: this.endDate
+            };
+            getArchivedRecords(args)
+                .then((results) => {
+                    _this.capturedEvents = results;
+                    _this.numTotalRecords = results.length;
+                    _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
+                })
+                .catch((ex) => {
+                    logger.debug('Failed to retrieve archived records: ' + JSON.stringify(ex));
+                });
+        }
+
         const connectToServer = function () {
             logger.debug('connectToServer()');
             if (newConnectionMode) {
@@ -131,10 +171,9 @@ export default class LogEventMonitor extends LightningElement {
             }
         };
 
-        if (this.currentConnectionMode.value !== CONNECTION_MODE.DISCONNECTED.value) {
+        if (this.subscription) {
             unsubscribe(this.subscription, (response) => {
                 logger.debug('unsubscribe() response: ', JSON.stringify(response));
-                this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
                 this.subscription = null;
 
                 connectToServer();
@@ -149,6 +188,53 @@ export default class LogEventMonitor extends LightningElement {
         this.capturedEvents = [];
         this.numTotalRecords = 0;
         this.selectedLogEvent = null;
+        this.selectedLogEventCreatedById = null;
+    }
+
+    clearArchive() {
+        logger.debug('Clearing archive');
+        this.isClearArchiveDialogVisible = true;
+    }
+
+    handleClearArchiveConfirmation(event) {
+        if (event.detail !== 1) {
+            if (event.detail.status === 'confirm') {
+                this.capturedEvents = [];
+                this.numTotalRecords = 0;
+                this.selectedLogEvent = null;
+                this.selectedLogEventCreatedById = null;
+
+                clearArchive()
+                    .then(() => {
+                        logger.debug('Archive cleared');
+                    })
+                    .catch((ex) => {
+                        logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
+                    });
+            } else if (event.detail.status === 'cancel') {
+                logger.debug('Cancelled clearing of archive');
+            }
+        } else {
+            logger.debug('Closed dialog');
+        }
+
+        this.isClearArchiveDialogVisible = false;
+    }
+
+    queryArchive() {
+        const _this = this;
+        const args = {
+            startDate: this.startDate,
+            endDate: this.endDate
+        };
+        getArchivedRecords(args)
+            .then((results) => {
+                _this.capturedEvents = results;
+                _this.numTotalRecords = results.length;
+            })
+            .catch((ex) => {
+                logger.debug('Failed to retrieve archived records: ' + JSON.stringify(ex));
+            });
     }
 
     createSubscriptionResponseHandler(component) {
@@ -207,6 +293,21 @@ export default class LogEventMonitor extends LightningElement {
         const logEvent = JSON.parse(event.detail);
         logger.debug('Log selected with id={0}', logEvent.Id);
 
+        this.selectedLogEventCreatedById = logEvent.CreatedById || logEvent.CreatedById__c;
         this.selectedLogEvent = logEvent;
+    }
+
+    handleStartDateChanged(event) {
+        if (this.startDate !== event.target.value) {
+            logger.debug('Start date changed={0}', event.target.value);
+            this.startDate = event.target.value;
+        }
+    }
+
+    handleEndDateChanged(event) {
+        if (this.endDate !== event.target.value) {
+            logger.debug('End date changed={0}', event.target.value);
+            this.endDate = event.target.value;
+        }
     }
 }

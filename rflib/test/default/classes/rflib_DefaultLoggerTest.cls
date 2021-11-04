@@ -341,6 +341,22 @@ public class rflib_DefaultLoggerTest {
     Test.stopTest();
   }
 
+  @IsTest
+  private static void testTruncatedContext() {
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+    String context = '40+ Character Context > 012345678901234567890';
+    rflib_Logger logger = loggerFactory.createLogger(context);
+
+    logger.fatal('fatal log statement');
+
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage('fatal log statement'), 'event did not contain statement');
+
+    System.assertEquals(context.substring(0, 40), loggerFactory.eventCapture.getEvent().Context__c);
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage(context), 'event did not contain truncated context');
+    System.assert(loggerFactory.eventCapture.containsInAnyMessage(context), 'event did not contain truncated context');
+  }
+
   private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
     return new rflib_Masking_Rule__mdt(
         Target__c = target,

@@ -45,7 +45,6 @@ public class rflib_UserFactory {
     public class Builder {
 
         private final SObject record;
-        private final List<String> fieldNames = new List<String>();
         private final Set<String> assignedCustomPermissions = new Set<String>();
 
         public Builder(String firstName, String lastName, String profileName) {
@@ -65,7 +64,6 @@ public class rflib_UserFactory {
         }
 
         public Builder withField(String name, Object value) {
-            fieldNames.add(name);
             record.put(name, value);
             return this;
         }

@@ -89,7 +89,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    * associated with this user.
    * 
    * @param  context The context identifier for this logger instance.
-   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
+   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will require the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
    * @return         A logger instance for the given context.
    */
   public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsInBatch) {
@@ -164,7 +164,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
    *    - event publishing: immediate
    *
    * @param  context The context for this logger.
-   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will reqire the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
+   * @param  shouldBatchEvents `Boolean` flag to indicate whether to publish events in batch or not. Batched events will require the invocation of `rflib_Logger.publishBatchedLogEvents()` to be dispatched.
    * @return         The new logger instance for the given context.
    */
   public static rflib_Logger create(String context, Boolean shouldBatchEvents) {
@@ -215,7 +215,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     // NOTE: The reporting level can only be INFO or higher to prevent accidental
     //       "floods" of Log Events being created. Following best practices, DEBUG and TRACE statements
     //       should be used within loops and should ideally never cause a Log Event to be sent out.
-    //       It is recommended that most log statements should be INFO level to provide the most transparancy
+    //       It is recommended that most log statements should be INFO level to provide the most transparency
     //       when reducing the reporting log level down to INFO. 
     //       See https://github.com/j-fischer/rflib/issues/6 for more details.
     reportingLogLevel = rflib_LogLevel.INFO.encompasses(newLevel) || rflib_LogLevel.NONE == newLevel ? 
@@ -339,10 +339,11 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     
     Integer messageSize = maskedLogMessagesIfApplicable.length();
     
+    String requestId = Request.getCurrent().getRequestId();
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
-      Request_ID__c = Request.getCurrent().getRequestId(),
+      Request_ID__c = requestId.substring(0, Math.min(requestId.length(), 40)),
       Log_Level__c = logLevel.toString(),
-      Context__c = context,
+      Context__c = context.substring(0, Math.min(context.length(), 40)),
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
         ? maskedLogMessagesIfApplicable 
         : maskedLogMessagesIfApplicable.substring(messageSize - MAX_MESSAGE_SIZE)

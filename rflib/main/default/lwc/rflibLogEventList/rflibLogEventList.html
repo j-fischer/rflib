@@ -86,34 +86,12 @@
                     </thead>
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
-                            <tr class="clickable" key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
-                                <td class="slds-truncate">
-                                    <div>
-                                        <lightning-formatted-date-time
-                                            value={evt.CreatedDate}
-                                            year="numeric"
-                                            day="2-digit"
-                                            month="2-digit"
-                                            hour="2-digit"
-                                            minute="2-digit"
-                                            second="2-digit"
-                                        >
-                                        </lightning-formatted-date-time>
-                                    </div>
-                                </td>
-                                <td class="slds-truncate">
-                                    <div>{evt.CreatedById}</div>
-                                </td>
-                                <td class="slds-truncate">
-                                    <div>{evt.Request_ID__c}</div>
-                                </td>
-                                <td>
-                                    <div class="slds-truncate">{evt.Log_Level__c}</div>
-                                </td>
-                                <td>
-                                    <div class="slds-truncate">{evt.Context__c}</div>
-                                </td>
-                            </tr>
+                            <c-rflib-log-event-list-row
+                                key={evt.Id}
+                                evt={evt}
+                                data-log-id={evt.Id}
+                                onclick={handleLogSelected}
+                            ></c-rflib-log-event-list-row>
                         </template>
                     </tbody>
                 </table>

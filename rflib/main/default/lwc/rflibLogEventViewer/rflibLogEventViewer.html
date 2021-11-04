@@ -37,7 +37,7 @@
                 <div class="slds-form-element__control slds-border_bottom">
                     <div class="slds-form-element__static">
                         <lightning-formatted-date-time
-                            value={logEvent.CreatedDate}
+                            value={createdDate}
                             year="numeric"
                             day="2-digit"
                             month="long"
@@ -54,7 +54,7 @@
                 <span class="slds-form-element__label">Created By</span>
                 <div class="slds-form-element__control slds-border_bottom">
                     <template if:false={user.id}>
-                        <div class="slds-form-element__static">{logEvent.CreatedById}</div>
+                        <div class="slds-form-element__static">{createdBy}</div>
                     </template>
                     <template if:true={user.id}>
                         <div class="slds-form-element__static slds-grid">
