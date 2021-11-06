@@ -21,6 +21,9 @@ The following lists describe some of the key features of rflib.
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
 -   Support Batched Logging for when DML statements are not supported
+-   Log Archive using Big Objects
+-   Dashboard for all Object and Field permissions for Profiles and Permission Sets
+-   Supports logging in Flow and Process Builder
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -32,7 +35,7 @@ The following lists describe some of the key features of rflib.
 
 -   Fully decoupled framework, trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
--   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata
+-   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
 
 ## Deploy
 
