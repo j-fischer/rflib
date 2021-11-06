@@ -19,7 +19,7 @@
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
             "dependencies": [
                 {
-                    "package": "RFLIB@3.0.0-1"
+                    "package": "RFLIB@2.6.0-1"
                 }
             ]
         },
@@ -33,7 +33,7 @@
             "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
             "dependencies": [
                 {
-                    "package": "RFLIB@3.0.0-1"
+                    "package": "RFLIB@2.6.0-1"
                 },
                 {
                     "package": "RFLIB-FS@1.0.2-1"
