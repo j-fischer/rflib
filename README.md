@@ -50,7 +50,7 @@ https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_
 To install package via SFDX CLI Plugin:
 
 ```
-sfdx force:package:install -p <Package ID> -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p <Package ID> -w 10 -s AdminsOnly -u <your org alias>
 ```
 
 To deploy code:
@@ -98,5 +98,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 -   Thanks to René Winkelmeyer for his SFDX CLI Plugin: https://github.com/muenzpraeger/sfdx-plugin
 -   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
 -   Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader
+-   Thanks to Salesforce Labs for the Streaming Monitor package: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FYEEWUA5
+-   Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ 
 -   Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
 -   Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
