@@ -1,3 +1,13 @@
+### RFLIB 3.0.0
+
+Package ID: 04t3h000004bh3oAAA
+Package Alias: RFLIB@3.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bh3oAAA
+
+-   Added support for logging to Log Archive (Big Object), which can be queried through Log Monitor
+-   Log Monitor: Fixed issue when the connection would not re-establish after switching to Permission Explorer
+-   Permission Explorer: Permission Type button now changes the label to the actively selected type. 
+
 ### RFLIB 2.8.0
 
 Package ID: 04t3h000004RdhnAAC
