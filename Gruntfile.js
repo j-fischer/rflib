@@ -60,6 +60,15 @@ module.exports = function(grunt) {
         config: config,
         env: process.env,
 
+        confirm: {
+            deleteOrg: {
+                options: {
+                    question: 'Ready to delete org. Press "y" to continue or any other key to cancel...',
+                    input: '_key:y'
+                }
+            }
+        },
+
         prompt: {
             alias: {
                 options: {
@@ -305,7 +314,8 @@ module.exports = function(grunt) {
 
             'force-install-streaming-monitor': {
                 command:
-                    'sfdx force:package:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
+                    'sfdx force:package:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && ' + 
+                    'sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
             },
 
             'force-install-bigobject-utility': {
@@ -331,7 +341,15 @@ module.exports = function(grunt) {
 
             'lint': {
                 command: 'npm run lint'
-            }
+            }, 
+
+            'force-test-package-install-and-upgrade': {
+                command: 
+                    'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages RFLIB-TF &&' + 
+                    'sfdx force:package:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
+                    'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
+                    'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+            },
         }
     });
 
@@ -409,6 +427,24 @@ module.exports = function(grunt) {
         ]);
     });
 
+    grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
+        var tasks = [
+            'prompt:alias',
+            'prompt:selectPackage',
+            'prompt:confirmVersion',
+            'shell:force-create-org',
+            'shell:force-test-package-install-and-upgrade',
+            'shell:force-install-streaming-monitor',
+            'shell:force-install-bigobject-utility',
+            'shell:force-open',
+            'shell:force-test',
+            'confirm:deleteOrg',
+            'shell:force-delete-org'
+        ];
+
+        grunt.task.run(tasks);
+    });
+
     grunt.registerTask('create-package', 'Create a new package version', function() {
         grunt.task.run(['prompt:alias', 'prompt:selectPackage', 'prompt:bump', 'prompt:updateDependencies', '__bumpVersionAndPackage']);
     });
@@ -446,7 +482,6 @@ module.exports = function(grunt) {
  
         grunt.task.run(tasks);
     });
-
 
     grunt.registerTask('default', ['shell:test-lwc']);
 };
