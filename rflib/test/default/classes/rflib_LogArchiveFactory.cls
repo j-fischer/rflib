@@ -30,7 +30,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_LogArchiveFactory {
 
-    public static rflib_Log_Archive__b create(String context) {
+    public static rflib_Logs_Archive__b create(String context) {
         return build(context).create();
     }
 
@@ -47,7 +47,7 @@ public class rflib_LogArchiveFactory {
         private final Set<String> assignedCustomPermissions = new Set<String>();
 
         public Builder(String context) {
-            record = new rflib_Log_Archive__b(
+            record = new rflib_Logs_Archive__b(
                 CreatedDate__c = Datetime.now(),
                 CreatedById__c = UserInfo.getUserId(),
                 Context__c = context,
@@ -62,8 +62,8 @@ public class rflib_LogArchiveFactory {
             return this;
         }
 
-        public rflib_Log_Archive__b create() {
-            return (rflib_Log_Archive__b) record;
+        public rflib_Logs_Archive__b create() {
+            return (rflib_Logs_Archive__b) record;
         }
     }
 }

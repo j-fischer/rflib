@@ -3,7 +3,7 @@
     <fullName>rflib_Log_Index</fullName>
     <fields>
         <name>CreatedDate__c</name>
-        <sortDirection>DESC</sortDirection>
+        <sortDirection>ASC</sortDirection>
     </fields>
     <fields>
         <name>Context__c</name>

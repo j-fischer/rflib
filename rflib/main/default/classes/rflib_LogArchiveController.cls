@@ -38,7 +38,7 @@ public with sharing class rflib_LogArchiveController {
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
 
     @AuraEnabled
-    public static List<rflib_Log_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
+    public static List<rflib_Logs_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
         try {
             Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
             Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
@@ -52,7 +52,7 @@ public with sharing class rflib_LogArchiveController {
     @AuraEnabled
     public static void clearArchive() {
         try {
-            List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b>();
+            List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b>();
             records.addAll(QUERY_LOCATOR.getOldestRecords());
             
             DML_EXECUTOR.deleteImmediate(records);
@@ -62,26 +62,26 @@ public with sharing class rflib_LogArchiveController {
     }
 
     public interface ILogArchiveQueryLocator {
-        List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate);
-        List<rflib_Log_Archive__b> getOldestRecords();
+        List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate);
+        List<rflib_Logs_Archive__b> getOldestRecords();
     }
 
     public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
 
-        public List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
+        public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
             return [
                 SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
-                FROM rflib_Log_Archive__b
+                FROM rflib_Logs_Archive__b
                 WHERE CreatedDate__c > :startDate
                 AND CreatedDate__c < :endDate
                 LIMIT 50000
             ];
         }
 
-        public List<rflib_Log_Archive__b> getOldestRecords() {
+        public List<rflib_Logs_Archive__b> getOldestRecords() {
             return [
                 SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c 
-                FROM rflib_Log_Archive__b 
+                FROM rflib_Logs_Archive__b 
                 ORDER BY CreatedDate__c ASC 
                 LIMIT 50000
             ];

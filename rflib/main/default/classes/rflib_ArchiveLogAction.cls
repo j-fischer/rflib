@@ -54,7 +54,7 @@ public with sharing class rflib_ArchiveLogAction {
 
         LOGGER.debug('run() invoked, size=' + events.size());
         
-        List<rflib_Log_Archive__b> eventsToArchive = new List<rflib_Log_Archive__b>();
+        List<rflib_Logs_Archive__b> eventsToArchive = new List<rflib_Logs_Archive__b>();
         for (rflib_Log_Event__e evt : events) {
             if (matchesConfiguredLogLevel(loggerSettings, evt)) {
                 eventsToArchive.add(createArchiveLogRecord(evt));
@@ -71,8 +71,8 @@ public with sharing class rflib_ArchiveLogAction {
             encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
-    private static rflib_Log_Archive__b createArchiveLogRecord(rflib_Log_Event__e evt) {
-        rflib_Log_Archive__b log = new rflib_Log_Archive__b();
+    private static rflib_Logs_Archive__b createArchiveLogRecord(rflib_Log_Event__e evt) {
+        rflib_Logs_Archive__b log = new rflib_Logs_Archive__b();
         log.CreatedDate__c = evt.CreatedDate;
         log.CreatedById__c = evt.CreatedById;
         log.Context__c = evt.Context__c;
