@@ -172,6 +172,9 @@ export default class LogEventMonitor extends LightningElement {
                 subscribe(CHANNEL, _this.currentConnectionMode.value, _this.messageCallback).then(
                     _this.createSubscriptionResponseHandler(_this)
                 );
+            } else {
+                logger.debug('Connection deactivated');
+                _this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
             }
         };
 
@@ -201,6 +204,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     handleClearArchiveConfirmation(event) {
+        logger.debug('handleClearArchiveConfirmation: ' + event.detail);
         if (event.detail !== 1) {
             if (event.detail.status === 'confirm') {
                 this.capturedEvents = [];
