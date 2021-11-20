@@ -1,3 +1,14 @@
+### RFLIB 3.0.1
+
+Package ID: 04t3h000004bh4IAAQ
+Package Alias: RFLIB@3.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bh4IAAQ
+
+-   [Issue #41](https://github.com/j-fischer/rflib/issues/41) - Renamed the rflib_Log_Archive__b Big Object to rflib_Logs_Archive__c (better than rflib_Log_Archive2__c) in order to change the index
+-   Fixed issue with "Disconnect" not being displayed in button label 
+
+IMPORTANT: The rflib_Log_Archive__b will be flagged for deletion but not physically deleted. Please remove manually at your earliest convenience. 
+
 ### RFLIB 3.0.0
 
 Package ID: 04t3h000004bh3oAAA
@@ -6,7 +17,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 
 -   Added support for logging to Log Archive (Big Object), which can be queried through Log Monitor
 -   Log Monitor: Fixed issue when the connection would not re-establish after switching to Permission Explorer
--   Permission Explorer: Permission Type button now changes the label to the actively selected type. 
+-   Permission Explorer: Permission Type button now changes the label to the actively selected type
 
 ### RFLIB 2.8.0
 
