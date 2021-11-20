@@ -30,7 +30,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LogArchiveControllerTest {
 
-    private static final List<rflib_Log_Archive__b> RESULT = new List<rflib_Log_Archive__b> {
+    private static final List<rflib_Logs_Archive__b> RESULT = new List<rflib_Logs_Archive__b> {
         createLogArchiveRecord('Log1')
     };
 
@@ -78,14 +78,14 @@ private class rflib_LogArchiveControllerTest {
     @IsTest
     private static void testDefaultLogArchiveQueryLocator_getRecords() {
         //This call is for code coverage purposes only
-        List<rflib_Log_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getRecords(Datetime.now(), Datetime.now());
+        List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getRecords(Datetime.now(), Datetime.now());
         System.assertNotEquals(null, result);
     }    
     
     @IsTest
     private static void testDefaultLogArchiveQueryLocator_getOldestRecords() {
         //This call is for code coverage purposes only
-        List<rflib_Log_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
+        List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
         System.assertNotEquals(null, result);
     }   
 
@@ -93,22 +93,22 @@ private class rflib_LogArchiveControllerTest {
         return (Database.DeleteResult) JSON.deserialize('{"success":true,"id":"0013000000abcde"}', Database.DeleteResult.class);
     }
     
-    private static rflib_Log_Archive__b createLogArchiveRecord(String context) {
+    private static rflib_Logs_Archive__b createLogArchiveRecord(String context) {
         return rflib_LogArchiveFactory.create(context);
     }
 
     public class MockLogArchiveQueryLocator implements rflib_LogArchiveController.ILogArchiveQueryLocator {
 
-        private final List<rflib_Log_Archive__b> result;
+        private final List<rflib_Logs_Archive__b> result;
 
         private final Exception ex;
 
-        public MockLogArchiveQueryLocator(List<rflib_Log_Archive__b> result, Exception ex) {
+        public MockLogArchiveQueryLocator(List<rflib_Logs_Archive__b> result, Exception ex) {
             this.result = result;
             this.ex = ex;
         }
 
-        public List<rflib_Log_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
+        public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
             if (ex != null) {
                 throw ex;
             }
@@ -116,7 +116,7 @@ private class rflib_LogArchiveControllerTest {
             return result;
         }
 
-        public List<rflib_Log_Archive__b> getOldestRecords() {
+        public List<rflib_Logs_Archive__b> getOldestRecords() {
             if (ex != null) {
                 throw ex;
             }

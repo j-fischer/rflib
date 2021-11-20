@@ -15,7 +15,7 @@
     <description>This permission set provides a user with access to the Ops Dashboard application and the Log Event object.</description>
     <fieldPermissions>
         <editable>true</editable>
-        <field>rflib_Log_Archive__b.Log_Messages__c</field>
+        <field>rflib_Logs_Archive__b.Log_Messages__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
@@ -44,7 +44,7 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>rflib_Log_Archive__b</object>
+        <object>rflib_Logs_Archive__b</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>

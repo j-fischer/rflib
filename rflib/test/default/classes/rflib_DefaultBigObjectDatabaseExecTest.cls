@@ -37,8 +37,8 @@ private class rflib_DefaultBigObjectDatabaseExecTest {
 
     @IsTest
     private static void testInsertImmediate_Success() {
-        rflib_Log_Archive__b record = createLogArchiveRecord('contextA');
-        List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b> { record };
+        rflib_Logs_Archive__b record = createLogArchiveRecord('contextA');
+        List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b> { record };
 
         rflib_MockDmlExecutor mockDbExecutor = new rflib_MockDmlExecutor(new List<Database.SaveResult> { createSuccessSaveResult()} );
         new rflib_DefaultBigObjectDatabaseExecutor(mockDbExecutor).insertImmediate(records);
@@ -48,8 +48,8 @@ private class rflib_DefaultBigObjectDatabaseExecTest {
 
     @IsTest
     private static void testInsertImmediate_Failure() {
-        rflib_Log_Archive__b record = createLogArchiveRecord('contextA');
-        List<rflib_Log_Archive__b> records = new List<rflib_Log_Archive__b> { record };
+        rflib_Logs_Archive__b record = createLogArchiveRecord('contextA');
+        List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b> { record };
 
         rflib_MockDmlExecutor mockDbExecutor = new rflib_MockDmlExecutor(new List<Database.SaveResult> { createFailureSaveResult() } );
         mockDbExecutor.onConsecutiveCall(new List<Database.SaveResult> { createSuccessSaveResult() });
@@ -72,7 +72,7 @@ private class rflib_DefaultBigObjectDatabaseExecTest {
         return (Database.SaveResult) JSON.deserialize('{"success":false,"errors":[{"message":"You cannot do this...","statusCode":"FIELD_CUSTOM_VALIDATION_EXCEPTION"}]}', Database.SaveResult.class);
     }
 
-    private static rflib_Log_Archive__b createLogArchiveRecord(String context) {
+    private static rflib_Logs_Archive__b createLogArchiveRecord(String context) {
         return rflib_LogArchiveFactory.create(context);
     }
 }
