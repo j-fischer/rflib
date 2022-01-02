@@ -66,9 +66,9 @@
         ],
         "*.{cls,apex,js,html,md,xml,sql,py,yml,yaml}": [
             "cspell"
-        ],
-        "*": [
-            "git add"
         ]
+    },
+    "volta": {
+        "node": "16.13.1"
     }
 }
