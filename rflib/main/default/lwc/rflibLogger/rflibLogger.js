@@ -60,12 +60,12 @@ const addMessage = (message) => {
         state.messages.shift();
     }
 
-    let fullMessage = new Date().toISOString() + '|' + message;
+    const fullMessage = new Date().toISOString() + '|' + message;
     state.messages.push(fullMessage);
 };
 
 const log = (level, component, message) => {
-    let msgToLog = level.label + '|' + component + '|' + message;
+    const msgToLog = level.label + '|' + component + '|' + message;
     if (level.index >= state.config.consoleLogLevel.index) {
         window.console.log(msgToLog);
     }
@@ -163,13 +163,13 @@ const createLogger = (loggerName) => {
 };
 
 const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
-    let logMethodName = (logLevelStr || 'warn').toLowerCase();
+    const logMethodName = (logLevelStr || 'warn').toLowerCase();
 
-    let startTime = new Date().getTime();
+    const startTime = new Date().getTime();
 
     const done = () => {
-        let endTime = new Date().getTime();
-        let duration = endTime - startTime;
+        const endTime = new Date().getTime();
+        const duration = endTime - startTime;
 
         if (duration > threshold) {
             if (typeof logger[logMethodName] === 'function') {
