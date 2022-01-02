@@ -95,9 +95,16 @@ const toUpperCase = (text) => {
 
 const initializationPromise = getSettings()
     .then((result) => {
-        log(LogLevel.DEBUG, 'rflibLogger', 'Retrieved settings for user: ' + JSON.stringify(result));
+        log(
+            LogLevel.DEBUG,
+            'rflibLogger',
+            'Retrieved settings for user: result=' +
+                JSON.stringify(result) +
+                ', current state.config=' +
+                JSON.stringify(state.config)
+        );
 
-        state.config.stackSize = result.Client_Stack_Size__c || state.config.stackSize;
+        state.config.stackSize = result.Client_Log_Size__c || state.config.stackSize;
         state.config.consoleLogLevel =
             LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || state.config.consoleLogLevel;
         state.config.serverLogLevel =
