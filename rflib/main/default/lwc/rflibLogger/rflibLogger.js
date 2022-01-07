@@ -109,6 +109,10 @@ const initializationPromise = getSettings()
             LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || state.config.consoleLogLevel;
         state.config.serverLogLevel =
             LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || state.config.serverLogLevel;
+
+        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            state.config.serverLogLevel = LogLevel.INFO;
+        }
     })
     .catch((error) => {
         window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
@@ -117,7 +121,7 @@ const initializationPromise = getSettings()
 const createLogger = (loggerName) => {
     const setConfig = (newConfig) => {
         log(
-            LogLevel.INFO,
+            LogLevel.DEBUG,
             loggerName,
             format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig))
         );
@@ -125,6 +129,10 @@ const createLogger = (loggerName) => {
         state.config.stackSize = newConfig.stackSize || state.config.stackSize;
         state.config.consoleLogLevel = LogLevel[toUpperCase(newConfig.consoleLogLevel)] || state.config.consoleLogLevel;
         state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
+
+        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            state.config.serverLogLevel = LogLevel.INFO;
+        }
     };
 
     const trace = (...args) => {

@@ -56,7 +56,7 @@ jest.mock(
 
 const loggerSettings = require('./data/loggerSettings.json');
 
-describe('createLogger()', () => {
+describe('create logger', () => {
     beforeEach(mockConsoleLog.activate);
 
     afterEach(JsMock.assertWatched);
@@ -176,47 +176,33 @@ describe('server logger', () => {
         return executeServerLogLevelTest('FATAL', ['FATAL']);
     });
 
-    it('should not log ERROR when setting is set to ERROR', () => {
+    it('should log ERROR when setting is set to ERROR', () => {
         return executeServerLogLevelTest('ERROR', ['FATAL', 'ERROR']);
     });
 
-    it('should not log WARN when setting is set to WARN', () => {
+    it('should log WARN when setting is set to WARN', () => {
         return executeServerLogLevelTest('WARN', ['FATAL', 'ERROR', 'WARN']);
     });
 
-    it('should not log INFO when setting is set to INFO', () => {
+    it('should log INFO when setting is set to INFO', () => {
         return executeServerLogLevelTest('INFO', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     it('should not log DEBUG when setting is set to DEBUG', () => {
-        return executeServerLogLevelTest('DEBUG', ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']);
+        return executeServerLogLevelTest('DEBUG', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     it('should not log TRACE when setting is set to TRACE', () => {
-        return executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE']);
+        return executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
         let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 
-        const willLogConfigChange = _.includes(['INFO', 'DEBUG', 'TRACE'], serverLogLevel);
-        const expectedServerLogInvocations = willLogConfigChange ? validLogLevels.length + 1 : validLogLevels.length;
+        const expectedServerLogInvocations = validLogLevels.length;
 
         mockLogMessageToServer.exactly(expectedServerLogInvocations);
         let index = 1;
-
-        if (willLogConfigChange) {
-            mockLogMessageToServer
-                .onCall(index++)
-                .with(
-                    Matcher.hasProperties({
-                        level: 'INFO',
-                        context: 'server',
-                        message: Matcher.containsString('Setting new logger configuration for server')
-                    })
-                )
-                .returns(Promise.resolve());
-        }
 
         _.each(validLogLevels, (logLevel) => {
             mockLogMessageToServer
