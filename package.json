@@ -1,19 +1,15 @@
 {
     "name": "rflib",
-    "version": "3.0.1",
+    "version": "0.3.0",
     "description": "Salesforce library for improving the reliability of your org",
-    "scripts": {
-        "lint": "npm run lint:lwc && npm run lint:aura",
-        "lint:lwc": "eslint **/lwc/**",
-        "lint:aura": "eslint **/aura/**/*.js",
-        "test": "npm run lint && npm run test:unit",
-        "test:unit": "sfdx-lwc-jest",
-        "test:unit:watch": "sfdx-lwc-jest --watch",
-        "test:unit:debug": "sfdx-lwc-jest --debug",
-        "test:unit:coverage": "sfdx-lwc-jest --coverage",
-        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
-    },
+    "type": "module",
+    "main": "./dist/rflibLogger.js",
+    "files": [
+        "dist/*.js",
+        "LICENSE",
+        "README.md",
+        "CHANGELOG.md"
+    ],
     "author": {
         "name": "Johannes Fischer",
         "email": "fischer.jh@gmail.com",
@@ -64,13 +60,6 @@
         "semver": "^7.3.5",
         "time-grunt": "^2.0.0"
     },
-    "files": [
-        "dist/*.js",
-        "LICENSE",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "main": "./dist/rflibLogger.js",
     "husky": {
         "hooks": {
             "pre-commit": "lint-staged && npm run lint:aura"
@@ -86,6 +75,18 @@
         "*.{cls,apex,js,html,md,xml,sql,py,yml,yaml}": [
             "cspell"
         ]
+    },
+    "scripts": {
+        "lint": "npm run lint:lwc && npm run lint:aura",
+        "lint:lwc": "eslint **/lwc/**",
+        "lint:aura": "eslint **/aura/**/*.js",
+        "test": "npm run lint && npm run test:unit",
+        "test:unit": "sfdx-lwc-jest",
+        "test:unit:watch": "sfdx-lwc-jest --watch",
+        "test:unit:debug": "sfdx-lwc-jest --debug",
+        "test:unit:coverage": "sfdx-lwc-jest --coverage",
+        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
+        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
     },
     "volta": {
         "node": "16.13.1"

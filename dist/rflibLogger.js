@@ -251,4 +251,5 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
     };
 };
 
-export { createLogger, startLogTimer };
+exports.createLogger = createLogger;
+exports.startLogTimer = startLogTimer;
