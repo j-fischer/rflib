@@ -24,6 +24,7 @@ The following lists describe some of the key features of rflib.
 -   Log Archive using Big Objects
 -   Dashboard for all Object and Field permissions for Profiles and Permission Sets
 -   Supports logging in Flow and Process Builder
+-   Supports Salesforce Functions (NodeJs only)
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -62,6 +63,12 @@ To deploy code:
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
+
+To install the logger in a Salesforce Function using NodeJS:
+
+```
+npm install --save rflib
+```
 
 ## Documentation
 
@@ -102,6 +109,6 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 -   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
 -   Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader
 -   Thanks to Salesforce Labs for the Streaming Monitor package: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FYEEWUA5
--   Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ 
+-   Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
 -   Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
 -   Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
