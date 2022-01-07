@@ -75,7 +75,9 @@ const log = (level, component, message, context, computeLogger) => {
     initializationPromise.then(() => {
         const uow = context.org.dataApi.newUnitOfWork();
 
+        let shouldCommit = false;
         if (level.index >= state.config.serverLogLevel.index) {
+            shouldCommit = true;
             uow.registerCreate({
                 type: 'rflib_Log_Event__e',
                 fields: {
@@ -88,6 +90,7 @@ const log = (level, component, message, context, computeLogger) => {
         }
 
         if (level.index >= state.config.archiveLogLevel.index) {
+            shouldCommit = true;
             uow.registerCreate({
                 type: 'rflib_Logs_Archive__b',
                 fields: {
@@ -101,9 +104,11 @@ const log = (level, component, message, context, computeLogger) => {
             });
         }
 
-        context.org.dataApi.commitUnitOfWork(uow).catch((error) => {
-            computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
-        });
+        if (shouldCommit) {
+            context.org.dataApi.commitUnitOfWork(uow).catch((error) => {
+                computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
+            });
+        }
     });
 };
 
@@ -142,6 +147,10 @@ const createLogger = (context, computeLogger, loggerName, shouldClearLogs) => {
                           LogLevel[toUpperCase(result.Functions_Server_Log_Level__c)] || state.config.serverLogLevel;
                       state.config.archiveLogLevel =
                           LogLevel[toUpperCase(result.Archive_Log_Level__c)] || state.config.archiveLogLevel;
+
+                      if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+                          state.config.serverLogLevel = LogLevel.INFO;
+                      }
                   })
                   .catch((error) => {
                       computeLogger.error('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
@@ -158,7 +167,7 @@ const createLogger = (context, computeLogger, loggerName, shouldClearLogs) => {
 
     const setConfig = (newConfig) => {
         log(
-            LogLevel.INFO,
+            LogLevel.DEBUG,
             loggerName,
             format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig)),
             context,
@@ -169,6 +178,10 @@ const createLogger = (context, computeLogger, loggerName, shouldClearLogs) => {
         state.config.computeLogLevel = LogLevel[toUpperCase(newConfig.computeLogLevel)] || state.config.computeLogLevel;
         state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
         state.config.archiveLogLevel = LogLevel[toUpperCase(newConfig.archiveLogLevel)] || state.config.archiveLogLevel;
+
+        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            state.config.serverLogLevel = LogLevel.INFO;
+        }
     };
 
     const trace = (...args) => {
