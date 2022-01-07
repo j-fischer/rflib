@@ -16,7 +16,7 @@
     },
     "author": {
         "name": "Johannes Fischer",
-        "email": "johannes@jsmock.org",
+        "email": "fischer.jh@gmail.com",
         "url": "https://github.com/j_fischer/rflib"
     },
     "license": "BSD-3-Clause",
@@ -27,7 +27,11 @@
     "keywords": [
         "salesforce",
         "logging",
-        "reliability"
+        "reliability",
+        "functions",
+        "lwc",
+        "aura",
+        "apex"
     ],
     "engines": {
         "node": ">= 14.17.3",
