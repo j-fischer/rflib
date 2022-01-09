@@ -11,6 +11,6 @@ const newConfig = {
         '^lightning/platformShowToastEvent$': '<rootDir>/rflib/test/jest-mocks/lightning/platformShowToastEvent'
     }
 };
-newConfig.collectCoverageFrom.push('dist/**/*.js');
+newConfig.collectCoverageFrom.push('dist/**/*.cjs');
 
 module.exports = newConfig;

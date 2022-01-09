@@ -1,11 +1,12 @@
 {
     "name": "rflib",
-    "version": "0.3.0",
+    "version": "0.6.0",
     "description": "Salesforce library for improving the reliability of your org",
     "type": "module",
-    "main": "./dist/rflibLogger.js",
+    "main": "./dist/rflibLogger.cjs",
+    "types": "./dist/rflibLogger.d.ts",
     "files": [
-        "dist/*.js",
+        "dist/*",
         "LICENSE",
         "README.md",
         "CHANGELOG.md"
@@ -33,6 +34,9 @@
         "node": ">= 14.17.3",
         "npm": ">= 6.14.13"
     },
+    "dependencies": {
+        "sf-fx-sdk-nodejs": "^3.0.0"
+    },
     "devDependencies": {
         "@babel/core": "^7.16.0",
         "@babel/eslint-parser": "^7.16.0",
@@ -58,6 +62,7 @@
         "lodash": "^4.17.21",
         "prettier": "^2.4.1",
         "semver": "^7.3.5",
+        "sf-fx-sdk-nodejs": "^3.0.0",
         "time-grunt": "^2.0.0"
     },
     "husky": {
@@ -72,12 +77,13 @@
         "**/lwc/**": [
             "eslint"
         ],
-        "*.{cls,apex,js,html,md,xml,sql,py,yml,yaml}": [
+        "*.{cls,apex,js,cjs,ts,html,md,xml,sql,py,yml,yaml}": [
             "cspell"
         ]
     },
     "scripts": {
-        "lint": "npm run lint:lwc && npm run lint:aura",
+        "lint": "npm run lint:lwc && npm run lint:aura && npm run lint:node",
+        "lint:node": "eslint dist/*.cjs dist/**/*.js",
         "lint:lwc": "eslint **/lwc/**",
         "lint:aura": "eslint **/aura/**/*.js",
         "test": "npm run lint && npm run test:unit",
@@ -85,8 +91,8 @@
         "test:unit:watch": "sfdx-lwc-jest --watch",
         "test:unit:debug": "sfdx-lwc-jest --debug",
         "test:unit:coverage": "sfdx-lwc-jest --coverage",
-        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
+        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
+        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'"
     },
     "volta": {
         "node": "16.13.1"
