@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Functions_Server_Log_Level__c</fullName>
+    <defaultValue>&quot;WARN&quot;</defaultValue>
+    <description>Set the log level for which the currently captured log messages will be reported to the org. Whenever a statement is logged and the statement&amp;apos;s level is encompassed by the currently set Functions Server Log Level, the current log stack in the runtime will be sent to the server and reported. The server side log level settings will have no effect.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which Salesforce Functions log messages are reported to the server. Valid values are NONE, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be reported on the server side.</inlineHelpText>
+    <label>Functions Server Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

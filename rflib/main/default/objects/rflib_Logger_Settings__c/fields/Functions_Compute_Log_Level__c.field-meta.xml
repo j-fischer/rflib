@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Functions_Compute_Log_Level__c</fullName>
+    <defaultValue>&quot;DEBUG&quot;</defaultValue>
+    <description>Set the log level for which messages printed to the compute logger. Whenever a statement is logged and the statements level is encompassed by the currently set General Log Level, the message will be forwarded to the compute logger instance.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which messages are stored in the log stack for a transaction. Valid values are NONE, TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here will be logged.</inlineHelpText>
+    <label>Functions Compute Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
