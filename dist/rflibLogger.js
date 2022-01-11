@@ -40,8 +40,7 @@ const state = {
     config: {
         stackSize: 100,
         computeLogLevel: LogLevel.DEBUG,
-        serverLogLevel: LogLevel.FATAL,
-        archiveLogLevel: LogLevel.NONE
+        serverLogLevel: LogLevel.WARN
     },
 
     messages: []
@@ -73,41 +72,20 @@ const log = (level, component, message, context, computeLogger) => {
 
     //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
-        const uow = context.org.dataApi.newUnitOfWork();
-
-        let shouldCommit = false;
         if (level.index >= state.config.serverLogLevel.index) {
-            shouldCommit = true;
-            uow.registerCreate({
-                type: 'rflib_Log_Event__e',
-                fields: {
-                    Log_Level__c: level.label,
-                    Context__c: component.slice(-40),
-                    Log_Messages__c: state.messages.join('\n'),
-                    Request_Id__c: context.id.slice(-40)
-                }
-            });
-        }
-
-        if (level.index >= state.config.archiveLogLevel.index) {
-            shouldCommit = true;
-            uow.registerCreate({
-                type: 'rflib_Logs_Archive__b',
-                fields: {
-                    Log_Level__c: level.label,
-                    Context__c: component.slice(-40),
-                    Log_Messages__c: state.messages.join('\n'),
-                    Request_Id__c: context.id.slice(-40),
-                    CreatedById: context.org.user.onBehalfOfUserId || context.org.user.id,
-                    CreatedDate__c: new Date().toISOString()
-                }
-            });
-        }
-
-        if (shouldCommit) {
-            context.org.dataApi.commitUnitOfWork(uow).catch((error) => {
-                computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
-            });
+            context.org.dataApi
+                .create({
+                    type: 'rflib_Log_Event__e',
+                    fields: {
+                        Log_Level__c: level.label,
+                        Context__c: component.slice(-40),
+                        Log_Messages__c: state.messages.join('\n'),
+                        Request_Id__c: context.id.slice(-40)
+                    }
+                })
+                .catch((error) => {
+                    computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
+                });
         }
     });
 };
@@ -177,7 +155,6 @@ const createLogger = (context, computeLogger, loggerName, shouldClearLogs) => {
         state.config.stackSize = newConfig.stackSize || state.config.stackSize;
         state.config.computeLogLevel = LogLevel[toUpperCase(newConfig.computeLogLevel)] || state.config.computeLogLevel;
         state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
-        state.config.archiveLogLevel = LogLevel[toUpperCase(newConfig.archiveLogLevel)] || state.config.archiveLogLevel;
 
         if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
             state.config.serverLogLevel = LogLevel.INFO;
