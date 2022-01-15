@@ -84,7 +84,7 @@
     },
     "scripts": {
         "lint": "npm run lint:lwc && npm run lint:aura && npm run lint:node",
-        "lint:node": "eslint dist/*.cjs dist/**/*.js",
+        "lint:node": "eslint dist/*.js dist/**/*.js",
         "lint:lwc": "eslint **/lwc/**",
         "lint:aura": "eslint **/aura/**/*.js",
         "test": "npm run lint && npm run test:unit",
