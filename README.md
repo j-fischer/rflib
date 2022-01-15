@@ -70,6 +70,8 @@ To install the logger in a Salesforce Function using NodeJS:
 npm install --save rflib
 ```
 
+See the [NPM Package Registry record for more details](https://www.npmjs.com/package/rflib).
+
 ## Documentation
 
 Documentation such as "How To's" and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki).
