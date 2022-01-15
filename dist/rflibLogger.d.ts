@@ -33,7 +33,7 @@ import { Context, Logger } from "sf-fx-sdk-nodejs";
  * when overriding the configuration retrieved from the server instance. 
  * @property stackSize (Optional) The number of log messages to be stored in the log stack.
  * @property computeLogLevel (Optional) The minimum log level for messages to be forwarded to the Salesforce Function logger instance.
- * @property serverLogLevel (Optional) The minimum log level for messages to be submitted as a platform event.
+ * @property serverLogLevel (Optional) The minimum log level for messages to be submitted as a platform event. The lowest possible level is INFO.
  */
 export declare type LoggerConfig = {
     readonly stackSize?: number;
@@ -96,7 +96,7 @@ export interface RflibLogger {
 }
 
 /**
- * Represents a Log Timer instance of RFLIB, which starts counting the time at its instantiation.
+ * Represents a Log Timer instance of RFLIB, which starts counting the time of its instantiation.
  */
 export interface LogTimer {
 

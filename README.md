@@ -24,7 +24,7 @@ The following lists describe some of the key features of rflib.
 -   Log Archive using Big Objects
 -   Dashboard for all Object and Field permissions for Profiles and Permission Sets
 -   Supports logging in Flow and Process Builder
--   Supports Salesforce Functions (NodeJs only)
+-   Supports Salesforce Functions (NodeJS only)
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -72,7 +72,7 @@ npm install --save rflib
 
 ## Documentation
 
-Documentation such as "How To's" and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki/Ops-Center-Logging-Dashboard).
+Documentation such as "How To's" and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki).
 
 ## Log Event Dashboard
 
