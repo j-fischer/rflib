@@ -189,7 +189,6 @@ describe('log reporting', () => {
         return executeServerLogLevelTest('ERROR', ['FATAL', 'ERROR']);
     });
 
-    /*
     it('should log WARN when setting is set to WARN', () => {
         return executeServerLogLevelTest('WARN', ['FATAL', 'ERROR', 'WARN']);
     });
@@ -205,7 +204,7 @@ describe('log reporting', () => {
     it('should not log TRACE when setting is set to TRACE', () => {
         return executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
-*/
+
     function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
         let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 
