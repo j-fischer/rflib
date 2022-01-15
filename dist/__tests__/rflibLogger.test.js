@@ -31,124 +31,133 @@ import _ from 'lodash';
 import JsMock from 'js-mock';
 import Matcher from 'hamjest';
 
-let mockGetSettings, mockLogMessageToServer, mockConsoleLog;
+const functionContext = {
+    id: 'context-id-123',
+    org: {
+        id: 'org-id-123',
+        user: {
+            id: 'user-id-123'
+        },
+
+        dataApi: {
+            query: function () {},
+            create: function () {}
+        }
+    }
+};
+const computeLogger = {
+    trace: function () {},
+    debug: function () {},
+    info: function () {},
+    warn: function () {},
+    error: function () {}
+};
+let mockComputeLogger;
 JsMock.watch(() => {
-    mockGetSettings = JsMock.mock('getSettings');
-    mockLogMessageToServer = JsMock.mock('logMessageToServer');
-    mockConsoleLog = JsMock.mockGlobal('console.log');
+    functionContext.org.dataApi = JsMock.mock('dataApi', functionContext.org.dataApi);
+    mockComputeLogger = JsMock.mock('computeLogger', computeLogger);
 });
-
-jest.mock(
-    '@salesforce/apex/rflib_LoggerController.getSettings',
-    () => {
-        return { default: mockGetSettings };
-    },
-    { virtual: true }
-);
-
-jest.mock(
-    '@salesforce/apex/rflib_LoggerController.log',
-    () => {
-        return { default: mockLogMessageToServer };
-    },
-    { virtual: true }
-);
 
 const loggerSettings = require('./data/loggerSettings.json');
 
 describe('create logger', () => {
-    beforeEach(mockConsoleLog.activate);
-
     afterEach(JsMock.assertWatched);
 
     it('factory should return a logger instance', () => {
-        mockConsoleLog.expect().once().with(Matcher.containsString('Retrieved settings for user'));
+        functionContext.org.dataApi.query
+            .once()
+            .with(
+                "SELECT Archive_Log_Level__c, Functions_Log_Size__c, Functions_Compute_Log_Level__c, Functions_Server_Log_Level__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId = 'org-id-123'"
+            )
+            .returns(Promise.resolve(loggerSettings.default));
 
-        mockGetSettings.once().with().returns(Promise.resolve(loggerSettings.default));
+        mockComputeLogger.debug.expect().twice();
+        mockComputeLogger.debug.expect().onFirstCall().with(Matcher.containsString('Cleared log messages'));
+        mockComputeLogger.debug.expect().onSecondCall().with(Matcher.containsString('Retrieved settings for user'));
 
-        const createLogger = require('c/rflibLogger').createLogger;
+        const createLogger = require('../rflibLogger.js').createLogger;
 
-        let logger = createLogger('factory');
+        let logger = createLogger(functionContext, mockComputeLogger, 'factory', true);
+
         return Promise.resolve().then(() => {
             expect(logger).toBeDefined();
         });
     });
 });
 
-describe('console logger', () => {
+describe('compute logger', () => {
     let logger;
     beforeEach(() => {
-        mockConsoleLog.activate();
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.create.allowing().returns(Promise.resolve());
+        mockComputeLogger.debug.allowing().with(Matcher.containsString('Retrieved settings for user'));
+        mockComputeLogger.info.allowing().with(Matcher.containsString('Setting new logger configuration for'));
 
-        logger = require('c/rflibLogger').createLogger('console');
+        logger = require('../rflibLogger.js').createLogger(functionContext, mockComputeLogger, 'console');
     });
 
-    afterEach(() => {
-        JsMock.assertWatched();
-
-        logger.setConfig({
-            consoleLogLevel: 'NONE'
-        });
-    });
+    afterEach(JsMock.assertWatched);
 
     it('should not log when setting is set to NONE', () => {
-        executeConsoleLogLevelTest([]);
+        executecomputeLogLevelTest([]);
     });
 
     it('should log FATAL when setting is set to FATAL', () => {
         logger.setConfig({
-            consoleLogLevel: 'FATAL'
+            computeLogLevel: 'FATAL'
         });
 
-        executeConsoleLogLevelTest(['FATAL']);
+        executecomputeLogLevelTest(['FATAL']);
     });
 
     it('should log ERROR when setting is set to ERROR', () => {
         logger.setConfig({
-            consoleLogLevel: 'ERROR'
+            computeLogLevel: 'ERROR'
         });
 
-        executeConsoleLogLevelTest(['FATAL', 'ERROR']);
+        executecomputeLogLevelTest(['FATAL', 'ERROR']);
     });
 
     it('should log WARN when setting is set to WARN', () => {
         logger.setConfig({
-            consoleLogLevel: 'WARN'
+            computeLogLevel: 'WARN'
         });
 
-        executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN']);
+        executecomputeLogLevelTest(['FATAL', 'ERROR', 'WARN']);
     });
 
     it('should log INFO when setting is set to INFO', () => {
         logger.setConfig({
-            consoleLogLevel: 'INFO'
+            computeLogLevel: 'INFO'
         });
 
-        executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO']);
+        executecomputeLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     it('should log DEBUG when setting is set to DEBUG', () => {
         logger.setConfig({
-            consoleLogLevel: 'DEBUG'
+            computeLogLevel: 'DEBUG'
         });
 
-        executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']);
+        executecomputeLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']);
     });
 
     it('should log TRACE when setting is set to TRACE', () => {
         logger.setConfig({
-            consoleLogLevel: 'TRACE'
+            computeLogLevel: 'TRACE'
         });
 
-        executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE']);
+        executecomputeLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE']);
     });
 
-    function executeConsoleLogLevelTest(validLogLevels) {
+    function executecomputeLogLevelTest(validLogLevels) {
         let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 
         _.each(validLogLevels, (logLevel) => {
-            mockConsoleLog.expect().once().with(Matcher.containsStrings('console', logLevel, 'SHOULD LOG'));
+            mockComputeLogger[logLevel === 'FATAL' ? 'error' : logLevel.toLowerCase()]
+                .expect()
+                .once()
+                .with(Matcher.containsStrings('console', logLevel, 'SHOULD LOG'));
 
             logger[logLevel.toLowerCase()]('SHOULD LOG to console');
         });
@@ -159,11 +168,11 @@ describe('console logger', () => {
     }
 });
 
-describe('server logger', () => {
+describe('log reporting', () => {
     beforeEach(() => {
-        mockConsoleLog.restore();
-
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
+        mockComputeLogger.debug.allowing();
+        mockComputeLogger.info.allowing();
     });
 
     afterEach(JsMock.assertWatched);
@@ -201,56 +210,58 @@ describe('server logger', () => {
 
         const expectedServerLogInvocations = validLogLevels.length;
 
-        mockLogMessageToServer.exactly(expectedServerLogInvocations);
-        let index = 1;
+        functionContext.org.dataApi.create.exactly(expectedServerLogInvocations);
 
+        let index = 1;
         _.each(validLogLevels, (logLevel) => {
-            mockLogMessageToServer
+            functionContext.org.dataApi.create
                 .onCall(index++)
                 .with(
                     Matcher.hasProperties({
-                        level: logLevel,
-                        context: 'server',
-                        message: Matcher.allOf(
-                            Matcher.endsWith('SHOULD LOG to server'),
-                            Matcher.containsString('should not log to server')
-                        )
+                        type: 'rflib_Log_Event__e',
+                        fields: Matcher.hasProperties({
+                            Log_Level__c: logLevel,
+                            Context__c: 'server',
+                            Log_Messages__c: Matcher.allOf(
+                                Matcher.endsWith('SHOULD LOG to server'),
+                                Matcher.containsString('should not log to server')
+                            )
+                        })
                     })
                 )
                 .returns(Promise.resolve());
         });
 
-        let logger = require('c/rflibLogger').createLogger('server');
+        let logger = require('../rflibLogger.js').createLogger(functionContext, mockComputeLogger, 'server', true);
 
         return Promise.resolve().then(() => {
             logger.setConfig({
-                serverLogLevel: serverLogLevel
+                serverLogLevel: serverLogLevel,
+                computeLogLevel: 'NONE'
             });
 
             _.each(_.pullAll(logLevels, validLogLevels), (logLevel) => {
-                logger[logLevel.toLowerCase()]('should not log to server');
+                logger[logLevel.toLowerCase()](logLevel + ' should not log to server');
             });
 
             _.each(validLogLevels, (logLevel) => {
-                logger[logLevel.toLowerCase()]('SHOULD LOG to server');
+                logger[logLevel.toLowerCase()](logLevel + ' SHOULD LOG to server');
             });
         });
     }
 });
 
-describe('server logger failure', () => {
-    beforeEach(() => {
-        mockConsoleLog.activate();
-    });
-
+describe('log reporting failure', () => {
     afterEach(JsMock.assertWatched);
 
     it('should log to the console that the server log failed', () => {
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+        mockComputeLogger.debug.allowing().with(Matcher.containsString('Retrieved settings for user'));
+        mockComputeLogger.info.allowing().with(Matcher.containsString('Setting new logger configuration for'));
 
-        mockLogMessageToServer.once().returns(Promise.reject(new Error('foo bar error')));
+        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.create.once().returns(Promise.reject(new Error('foo bar error')));
 
-        mockConsoleLog
+        mockComputeLogger.error
             .expect()
             .once()
             .with(
@@ -260,7 +271,8 @@ describe('server logger failure', () => {
                 )
             );
 
-        let logger = require('c/rflibLogger').createLogger('server');
+        mockComputeLogger.debug.allowing();
+        let logger = require('../rflibLogger.js').createLogger(functionContext, mockComputeLogger, 'server');
 
         return Promise.resolve().then(() => {
             logger.setConfig({
@@ -277,32 +289,34 @@ describe('log timer', () => {
     let logger;
 
     beforeEach(() => {
-        mockConsoleLog.activate();
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
+        functionContext.org.dataApi.create.allowing().returns(Promise.resolve());
 
-        logFactory = require('c/rflibLogger');
-        logger = logFactory.createLogger('console');
-    });
+        mockComputeLogger.debug.allowing();
+        mockComputeLogger.info.allowing().with(Matcher.containsString('Setting new logger configuration for'));
 
-    afterEach(() => {
-        JsMock.assertWatched();
+        logFactory = require('../rflibLogger.js');
+        logger = logFactory.createLogger(functionContext, mockComputeLogger, 'log timer', true);
 
         logger.setConfig({
-            consoleLogLevel: 'TRACE'
+            computeLogLevel: 'NONE',
+            serverLogLevel: 'NONE'
         });
     });
 
+    afterEach(JsMock.assertWatched);
+
     it('should log TRACE statement if threshold was not exceeded', () => {
         logger.setConfig({
-            consoleLogLevel: 'TRACE'
+            computeLogLevel: 'TRACE'
         });
 
         let timerName = 'Foo Bar';
 
-        mockConsoleLog
+        mockComputeLogger.trace
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', 'TRACE', timerName, 'took a total of', 'threshold'));
+            .with(Matcher.containsStrings('log timer', 'TRACE', timerName, 'took a total of', 'threshold'));
 
         let logTimer = logFactory.startLogTimer(logger, 10, timerName);
 
@@ -313,15 +327,16 @@ describe('log timer', () => {
         let timerName = 'Foo Bar';
         let logLevel = 'WARN';
 
-        mockConsoleLog
+        logger.setConfig({
+            computeLogLevel: logLevel
+        });
+
+        mockComputeLogger.warn
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
+            .with(Matcher.containsStrings('log timer', logLevel, timerName, 'took a total of', 'threshold'));
 
-        let logTimer = logFactory.startLogTimer(logger, 10, timerName);
-
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((resolve) => setTimeout(resolve, 11));
+        let logTimer = logFactory.startLogTimer(logger, -1, timerName);
 
         logTimer.done();
     });
@@ -330,15 +345,16 @@ describe('log timer', () => {
         let timerName = 'Foo Bar';
         let logLevel = 'ERROR';
 
-        mockConsoleLog
+        logger.setConfig({
+            computeLogLevel: logLevel
+        });
+
+        mockComputeLogger.error
             .expect()
             .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
+            .with(Matcher.containsStrings('log timer', logLevel, timerName, 'took a total of', 'threshold'));
 
-        let logTimer = logFactory.startLogTimer(logger, 10, timerName, logLevel);
-
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((resolve) => setTimeout(resolve, 11));
+        let logTimer = logFactory.startLogTimer(logger, -1, timerName, logLevel);
 
         logTimer.done();
     });
