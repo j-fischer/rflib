@@ -1,3 +1,12 @@
+### RFLIB 3.1.0
+
+Package ID: 04t3h0000045uADAAY
+Package Alias: RFLIB@3.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h0000045uADAAY
+
+-   [PR #45](https://github.com/j-fischer/rflib/pull/45) Added support for logging from Salesforce functions supporting NodeJS with Javascript and Typescript
+-   [Issue #43](https://github.com/j-fischer/rflib/issues/43) Fixed issue Client Log Size setting not taking effect
+
 ### RFLIB 3.0.1
 
 Package ID: 04t3h000004bh4IAAQ
