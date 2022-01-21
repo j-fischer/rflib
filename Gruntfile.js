@@ -169,8 +169,8 @@ module.exports = function(grunt) {
                             message:
                                 'Should the dependencies for the package <%= config.package.package %> be updated to version <%= config.version.nextVersion %> as well?',
                             choices: [
-                                { name: 'Yes', value: true },
-                                { name: 'No', value: false }
+                                { name: 'No', value: false },
+                                { name: 'Yes', value: true }
                             ]
                         }
                     ]
