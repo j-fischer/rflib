@@ -1,3 +1,11 @@
+### RFLIB 3.1.1
+
+Package ID: 04t3h0000045uAmAAI
+Package Alias: RFLIB@3.1.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h0000045uAmAAI
+
+-   [Issue #46](https://github.com/j-fischer/rflib/issues/46) Fixed broken Download button in Log Monitor Dashboard
+
 ### RFLIB 3.1.0
 
 Package ID: 04t3h0000045uADAAY
