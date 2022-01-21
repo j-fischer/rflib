@@ -103,9 +103,9 @@ export default class LogEventViewer extends LightningElement {
         );
         element.setAttribute(
             'download',
-            this.createdBy() +
+            this.createdBy +
                 '_' +
-                this.createdDate() +
+                this.createdDate +
                 '_' +
                 this.logEvent.Request_ID__c +
                 '_' +
