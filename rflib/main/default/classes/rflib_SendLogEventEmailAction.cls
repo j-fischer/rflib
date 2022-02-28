@@ -80,6 +80,10 @@ public with sharing class rflib_SendLogEventEmailAction {
 
         LOGGER.debug('Recipients of log event: ' + String.join(emailAddresses, ','));
 
+        if (emailAddresses.isEmpty()) {
+            return;
+        }
+
         Integer numEmailToSend = Math.min(events.size(), 10);
 
         LOGGER.debug('Emails to be sent = ' + numEmailToSend);
@@ -98,8 +102,10 @@ public with sharing class rflib_SendLogEventEmailAction {
 
     private static List<String> getEmailAddressesForUsers(List<Id> userIds) {
         List<String> result = new List<String>();
-        for (User u : [SELECT Email FROM USER WHERE Id IN :userIds]) {
-            result.add(u.Email);
+        for (User u : [SELECT Email FROM User WHERE Id IN :userIds]) {
+            if (String.isNotEmpty(u.Email)) {
+                result.add(u.Email);
+            }
         }
         
         return result;
