@@ -98,7 +98,7 @@ public inherited sharing class rflib_TriggerManager {
                     handler.run(args);
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
-                        LOGGER.warn('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
+                        LOGGER.error('run: Caught exception thrown by handler "{0}" with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         args.addException(ex, handlerInfo.handlerType);
                     } else {
                         LOGGER.error('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
