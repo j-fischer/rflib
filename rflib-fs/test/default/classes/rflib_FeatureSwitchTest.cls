@@ -31,8 +31,6 @@
 @TestVisible
 private class rflib_FeatureSwitchTest {
     
-    private static final String TRIGGER_SWITCH = 'All_Triggers';
-
     @TestVisible private static final String USER_SWITCH = 'FeatureSwitch1';
     @TestVisible private static final String GROUP_SWITCH = 'FeatureSwitchGroup';
     @TestVisible private static final String PROFILE_SWITCH = 'FeatureSwitch2';
@@ -40,10 +38,9 @@ private class rflib_FeatureSwitchTest {
     @TestVisible private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
     @TestVisible private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
 
-    @TestVisible private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
+    @TestVisible private static final User USER;
 
-    @TestVisible
-    private static void setup() {
+    static {
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
             USER_SWITCH => new Map<String,Boolean> {
                 'john.smith@rflib.com' => true,
@@ -73,7 +70,12 @@ private class rflib_FeatureSwitchTest {
         };
 
         rflib_FeatureSwitch.DEFAULT_VALUE = false;
+        
+        USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
+    }
 
+    @TestVisible
+    private static void setup() {
         Group someGroup = new Group(
             DeveloperName = 'Some_Group',
             Name = 'Some Group'
