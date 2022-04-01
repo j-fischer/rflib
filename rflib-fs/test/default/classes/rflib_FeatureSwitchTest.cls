@@ -85,6 +85,8 @@ private class rflib_FeatureSwitchTest {
             GroupId = someGroup.Id,
             UserOrGroupId = USER.Id
         );
+
+        rflib_FeatureSwitch.directPublicGroupAssociations = null;
     }
 
     @IsTest

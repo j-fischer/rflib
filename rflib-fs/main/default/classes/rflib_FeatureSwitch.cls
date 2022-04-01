@@ -55,6 +55,7 @@ public without sharing class rflib_FeatureSwitch {
         private set;
     }
 
+    @TestVisible
     private static List<String> directPublicGroupAssociations {
         get {
             if (directPublicGroupAssociations == null) {
