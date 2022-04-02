@@ -1,3 +1,19 @@
+### RFLIB-TF 1.4.0
+
+Package ID: 04t3h000004jtc2AAA
+Package Alias: RFLIB-FS@1.2.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jtc2AAA
+
+-   [Issue #48](https://github.com/j-fischer/rflib/issues/48) Changed log message for caught trigger handler exception to log at ERROR level instead of warning. The message does also indicate that the error was caught. 
+
+### RFLIB-FS 1.2.1
+
+Package ID: 04t3h000004jtbxAAA
+Package Alias: RFLIB-FS@1.2.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jtbxAAA
+
+-   [Issue #50](https://github.com/j-fischer/rflib/issues/50) Bug fix for unit test failure as suggested by @mikbranchaud to handle triggers on the User object.
+
 ### RFLIB 3.1.1
 
 Package ID: 04t3h0000045uAmAAI
