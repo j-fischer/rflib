@@ -5,8 +5,8 @@
 package.xml
 
 #profiles
-**profiles
-**appMenus
+**/profiles/**
+**/appMenus/**
 
 rflib/main/default/apexEmailNotifications
 
