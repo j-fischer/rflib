@@ -40,8 +40,10 @@ private class rflib_DefaultBigObjectDatabaseExecTest {
         rflib_Logs_Archive__b record = createLogArchiveRecord('contextA');
         List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b> { record };
 
+        Test.startTest();
         rflib_MockDmlExecutor mockDbExecutor = new rflib_MockDmlExecutor(new List<Database.SaveResult> { createSuccessSaveResult()} );
         new rflib_DefaultBigObjectDatabaseExecutor(mockDbExecutor).insertImmediate(records);
+        Test.stopTest();
         
         System.assertEquals(1, mockDbExecutor.getInvocationCount());
     }

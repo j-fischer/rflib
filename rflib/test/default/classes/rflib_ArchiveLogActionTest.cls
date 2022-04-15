@@ -37,9 +37,11 @@ private class rflib_ArchiveLogActionTest {
         MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
         rflib_ArchiveLogAction.DATABASE_EXECUTOR = dbExecutor;
         
+        Test.startTest();
         System.assertEquals(null, dbExecutor.records);
         rflib_ArchiveLogAction.archiveLogIfApplicable(createLogEventList());
         System.assertEquals(null, dbExecutor.records);
+        Test.stopTest();
     }
 
     @isTest
@@ -49,9 +51,11 @@ private class rflib_ArchiveLogActionTest {
         MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
         rflib_ArchiveLogAction.DATABASE_EXECUTOR = dbExecutor;
 
+        Test.startTest();
         System.assertEquals(null, dbExecutor.records);
         rflib_ArchiveLogAction.archiveLogIfApplicable(createLogEventList());
         System.assertNotEquals(null, dbExecutor.records);
+        Test.stopTest();
     }
 
     private static List<rflib_Log_Event__e> createLogEventList() {

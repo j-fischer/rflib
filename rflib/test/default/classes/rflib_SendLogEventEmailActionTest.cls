@@ -35,9 +35,11 @@ private class rflib_SendLogEventEmailActionTest {
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = true;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = new List<ApexEmailNotification>();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     @isTest
@@ -47,9 +49,11 @@ private class rflib_SendLogEventEmailActionTest {
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     @isTest
@@ -59,9 +63,11 @@ private class rflib_SendLogEventEmailActionTest {
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(1, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     private static List<ApexEmailNotification> createApexEmailNotification() {

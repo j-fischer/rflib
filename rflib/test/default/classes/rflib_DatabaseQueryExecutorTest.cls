@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,15 +26,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public inherited sharing class rflib_DatabaseDmlExecutor implements rflib_DmlExecutor {
+private class rflib_DatabaseQueryExecutorTest {
+   @IsTest
+   private static void testCountQuery() {
+       String query = 'SELECT COUNT() FROM Account';
+       
+       Test.startTest();
+       System.assertEquals(Database.countQuery(query), new rflib_DatabaseQueryExecutor().countQuery(query));
+       Test.stopTest();
+   }
 
-    public List<Database.SaveResult> insertImmediate(List<SObject> sobjects) {
-        return Database.insertImmediate(sobjects);
-    }
-
-    public List<Database.DeleteResult> deleteImmediate(List<SObject> sobjects) {
-        return Database.deleteImmediate(sobjects);
-    }
-    
+   @IsTest
+   private static void testQuery() {
+       Test.startTest();
+       System.assertEquals([SELECT Id FROM Account ORDER BY CreatedDate DESC LIMIT 200], new rflib_DatabaseQueryExecutor().query('SELECT Id FROM Account ORDER BY CreatedDate DESC LIMIT 200'));
+       Test.stopTest();
+   }
 }

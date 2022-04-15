@@ -32,6 +32,8 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testTraceIdHeaderName(){
+        Test.startTest();
         System.assertEquals('X-Trace-ID', rflib_GlobalSettings.traceIdHeaderName);
+        Test.stopTest();
     }
 }

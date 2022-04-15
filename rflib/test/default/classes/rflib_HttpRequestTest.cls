@@ -9,9 +9,12 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testCommonRequestProperties() {
+        Test.startTest();
         rflib_HttpRequest req = createRequest();
 
         HttpRequest actualRequest = req.getPlatformRequest();
+        Test.stopTest();
+
         System.assertEquals(ENDPOINT, actualRequest.getEndpoint());
         System.assertEquals(METHOD, actualRequest.getMethod());
         System.assertEquals(COMPRESSED, actualRequest.getCompressed());
@@ -22,8 +25,10 @@ private class rflib_HttpRequestTest {
     private static void testSetBodyAsBlob() {
         Blob bodyAsBlob = Blob.valueOf(BODY);
 
+        Test.startTest();
         rflib_HttpRequest req = new rflib_HttpRequest();
         req.setBodyAsBlob(bodyAsBlob);
+        Test.stopTest();
 
         HttpRequest actualRequest = req.getPlatformRequest();
         System.assertEquals(BODY, actualRequest.getBody());
@@ -35,8 +40,10 @@ private class rflib_HttpRequestTest {
         Dom.Document bodyAsDoc = new Dom.Document();
         bodyAsDoc.load('<test>' + BODY + '</test>');
 
+        Test.startTest();
         rflib_HttpRequest req = new rflib_HttpRequest();
         req.setBodyDocument(bodyAsDoc);
+        Test.stopTest();
 
         HttpRequest actualRequest = req.getPlatformRequest();
         System.assertEquals(bodyAsDoc.toXmlString(), actualRequest.getBodyDocument().toXmlString());
@@ -44,12 +51,14 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSend() {
+        Test.startTest();
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testCommonRequestProperties');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderName }));
 
         HttpResponse actualResponse = req.send();
+        Test.stopTest();
 
         System.assertNotEquals(null, actualResponse);
         System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderName));
@@ -62,6 +71,7 @@ private class rflib_HttpRequestTest {
         rflib_MockLogger logger = new rflib_MockLogger();
         rflib_MockLogTimer logTimer = new rflib_MockLogTimer();
         
+        Test.startTest();
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testSend_withLogTimer');
 
@@ -69,6 +79,7 @@ private class rflib_HttpRequestTest {
 
         logTimer.start(logger, rflib_LogLevel.WARN, -1, 'HttpRequest timer');
         HttpResponse actualResponse = req.send(logTimer);
+        Test.stopTest();
 
         System.assert(logTimer.doneInvoked , 'The rflib_HttpRequest should have invoked the logTimer.done() methods');
     }
@@ -78,6 +89,7 @@ private class rflib_HttpRequestTest {
         String headerKey = 'X-UnitTest';
         String headerValue = 'FooBar';
 
+        Test.startTest();
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testSend_WithHeaders');
         
@@ -86,6 +98,7 @@ private class rflib_HttpRequestTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { headerKey }));
 
         HttpResponse actualResponse = req.send();
+        Test.stopTest();
 
         System.assertNotEquals(null, actualResponse);
         System.assertEquals(headerValue, req.getPlatformRequest().getHeader(headerKey));
@@ -94,25 +107,30 @@ private class rflib_HttpRequestTest {
     }
 
     @IsTest
-    private static void testSend_ThrowsCalloutExcpetion() {
+    private static void testSend_ThrowsCalloutException() {
         rflib_HttpRequest req = createRequest();
         CalloutException ex = new CalloutException('Foo bar');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), ex));
 
+        Test.startTest();
         try {
             req.send();
             System.assert(false, 'Excepted CalloutException to be thrown');
         } catch (CalloutException actualEx) {
             System.assertEquals(ex, actualEx);
         }
+        Test.stopTest();
     }
 
     @IsTest
     private static void testToString() {
+        Test.startTest();
         rflib_HttpRequest req = createRequest();
 
         HttpRequest actualRequest = req.getPlatformRequest();
+        Test.stopTest();
+        
         System.assertEquals(req.toString(), actualRequest.toString());
     }
 

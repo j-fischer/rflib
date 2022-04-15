@@ -33,24 +33,30 @@ private class rflib_LoggerUtilTest {
     private static final rflib_MockLogger LOGGER = new rflib_MockLogger();
 
     @IsTest
-    private static void testGetFacotry_DefaultValue() {
+    private static void testGetFactory_DefaultValue() {
+        Test.startTest();
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
+        Test.stopTest();
 
         System.assert(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
     }
 
     @IsTest
-    private static void testGetFacotry_ConfiguredValue() {
+    private static void testGetFactory_ConfiguredValue() {
         rflib_TestUtil.prepareLoggerForUnitTests();
 
+        Test.startTest();
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
+        Test.stopTest();
 
         System.assert(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
     }
 
     @IsTest
     private static void testCreateLogTimer_DefaultValue() {
+        Test.startTest();
         rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
+        Test.stopTest();
 
         System.assert(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
     }
@@ -59,14 +65,18 @@ private class rflib_LoggerUtilTest {
     private static void testCreateLogTimer_ConfiguredValue() {
         rflib_TestUtil.prepareLoggerForUnitTests();
 
+        Test.startTest();
         rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
+        Test.stopTest();
 
         System.assert(logTimer instanceof rflib_MockLogTimer, 'Configured LogTimer instance should be of type rflib_MockLogTimer');
     }
 
     @IsTest
     private static void testCreateLogFinalizer_DefaultValue() {
+        Test.startTest();
         rflib_LogFinalizer logFinalizer = rflib_LoggerUtil.createLogFinalizer(LOGGER);
+        Test.stopTest();
 
         System.assert(logFinalizer instanceof rflib_DefaultLogFinalizer, 'Default LogFinalizer instance should be of type rflib_DefaultLogFinalizer');
     }
@@ -75,7 +85,9 @@ private class rflib_LoggerUtilTest {
     private static void testCreateLogFinalizer_ConfiguredValue() {
         rflib_TestUtil.prepareLoggerForUnitTests();
 
+        Test.startTest();
         rflib_LogFinalizer logFinalizer = rflib_LoggerUtil.createLogFinalizer(LOGGER);
+        Test.stopTest();
 
         System.assert(logFinalizer instanceof rflib_MockLogFinalizer, 'Configured LogFinalizer instance should be of type rflib_MockLogFinalizer');
     }

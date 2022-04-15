@@ -69,8 +69,10 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetFieldLevelSecurityForAllProfiles_RestApiDisabled() {
         setup(false);
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
         
         assertFieldPermissionsResult(records, 'Profile');
     }
@@ -85,8 +87,10 @@ private class rflib_PermissionsExplorerControllerTest {
             Database.query(FLS_PROFILE_QUERY)
         );
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
         
         assertFieldPermissionsResult(records, 'Profile');
     }
@@ -106,9 +110,11 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
-        
+        Test.stopTest();
+
         assertFieldPermissionsResult(records, 'Profile');
 
         System.assert(records.get(0).Field.containsNone('.'));
@@ -129,12 +135,14 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
+        Test.startTest();
         try {
             rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals('Session expired or invalid', actualEx.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
@@ -152,12 +160,14 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
 
+        Test.startTest();
         try {
             rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
@@ -165,8 +175,10 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetFieldLevelSecurityForAllPermissionSets_RestApiDisabled() {
         setup(false);
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
 
         System.assertEquals([SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
         FROM FieldPermissions 
@@ -190,12 +202,14 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
 
+        Test.startTest();
         try {
             rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
@@ -203,8 +217,10 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetObjectLevelSecurityForAllProfiles_RestApiDisabled() {
         setup(false);
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
 
         assertObjectPermissionsResult(records, 'Profile');
     }
@@ -219,9 +235,11 @@ private class rflib_PermissionsExplorerControllerTest {
             Database.query(OBJ_PROFILE_QUERY)
         );
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
-        
+        Test.stopTest();
+
         assertObjectPermissionsResult(records, 'Profile');
     }
 
@@ -240,9 +258,11 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
-        
+        Test.stopTest();
+
         assertObjectPermissionsResult(records, 'Profile');
     }
 
@@ -265,12 +285,14 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
 
+        Test.startTest();
         try {
             rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
@@ -278,8 +300,10 @@ private class rflib_PermissionsExplorerControllerTest {
     private static void testGetObjectLevelSecurityForAllPermissionSets_RestApiDisabled() {
         setup(false);
         
+        Test.startTest();
         rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
 
         assertObjectPermissionsResult(records, 'PermissionSet');
     }
@@ -303,12 +327,14 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
 
+        Test.startTest();
         try {
             rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
         }
+        Test.stopTest();
     }
 
     private static void assertObjectPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {

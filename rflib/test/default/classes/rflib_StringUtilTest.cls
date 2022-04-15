@@ -36,7 +36,9 @@ private class rflib_StringUtilTest {
     private static void testReplaceWithAllMaskingRules_WithoutRules() {
         rflib_StringUtil.allActiveMaskingRules = new List<rflib_Masking_Rule__mdt>();
 
+        Test.startTest();
         System.assertEquals(SOURCE, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
+        Test.stopTest();
     }
 
     @IsTest
@@ -49,7 +51,9 @@ private class rflib_StringUtilTest {
 
         rflib_StringUtil.allActiveMaskingRules = rules;
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithAllMaskingRules(SOURCE);
+        Test.stopTest();
 
         System.assertEquals('a#c*def*-#-', result);
     }
@@ -61,7 +65,9 @@ private class rflib_StringUtilTest {
             createRule('[A-Z]+', '#')
         };
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRules(SOURCE, rules);
+        Test.stopTest();
 
         System.assertEquals('a#c*def*!@_#(_', result);
     }
@@ -70,7 +76,9 @@ private class rflib_StringUtilTest {
     public static void testReplaceWithRule_Regex() {
         rflib_Masking_Rule__mdt rule = createRule('[0-9]+', '*****');
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRule(SOURCE, rule);
+        Test.stopTest();
 
         System.assertEquals('aBc*****def*****!@_#(_', result);
     }
@@ -85,7 +93,9 @@ private class rflib_StringUtilTest {
             Order__c = 1
         );
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRule(SOURCE, rule);
+        Test.stopTest();
 
         System.assertEquals(source, result);
     }
@@ -109,6 +119,14 @@ private class rflib_StringUtilTest {
         System.assertEquals(1, rule3.compareTo(rule2));
         System.assertEquals(1, rule3.compareTo(rule1));
     }
+
+   @IsTest
+   private static void testMaskingRules() {
+        // This test is for code coverage purposes only
+        Test.startTest();
+        System.assertNotEquals(null, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
+        Test.stopTest();
+   }
 
     private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
         return createRule(target, replacement, 1);

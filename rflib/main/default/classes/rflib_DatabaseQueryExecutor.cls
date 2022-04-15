@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_DatabaseQueryExecutor implements rflib_QueryExecutor {
+public inherited sharing class rflib_DatabaseQueryExecutor implements rflib_QueryExecutor {
     
     public Integer countQuery(String query) {
         return Database.countQuery(query);
