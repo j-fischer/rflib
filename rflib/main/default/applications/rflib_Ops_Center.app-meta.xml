@@ -12,6 +12,7 @@
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
     <label>Ops Center</label>
     <navType>Standard</navType>
+    <tabs>Management_Console</tabs>
     <tabs>rflib_Log_Monitor</tabs>
     <tabs>rflib_Permissions_Explorer</tabs>
     <uiType>Lightning</uiType>
