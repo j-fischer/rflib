@@ -31,9 +31,11 @@
 private class rflib_GlobalSettingsTest {
 
     @IsTest
-    static void testTraceIdHeaderName(){
+    static void testTraceIdHeaderName() {
+        String expectedValue = rflib_Global_Setting__mdt.getInstance('Trace_ID_Header_Name').Value__c;
+
         Test.startTest();
-        System.assertEquals('X-Trace-ID', rflib_GlobalSettings.traceIdHeaderName);
+        System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdHeaderName);
         Test.stopTest();
     }
 }

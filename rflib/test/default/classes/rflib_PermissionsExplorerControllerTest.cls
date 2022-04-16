@@ -184,7 +184,7 @@ private class rflib_PermissionsExplorerControllerTest {
         FROM FieldPermissions 
         WHERE Parent.IsOwnedByProfile = false 
         ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-        LIMIT 50000].size(), records.size());
+        LIMIT 49999].size(), records.size());
     }
 
     @IsTest
