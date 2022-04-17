@@ -150,6 +150,4 @@ workflows:
                           only: master
             - cleanup_scratch_org:
                   requires:
-                      - setup_dx
-                      - deploy_source
                       - run_apex_tests
