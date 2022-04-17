@@ -36,3 +36,4 @@ $RECYCLE.BIN/
 #Travis CI Configration
 assets/server.key
 assets/server.crt
+assets/key_iv.txt

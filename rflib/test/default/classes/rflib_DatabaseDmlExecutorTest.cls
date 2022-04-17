@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,15 +26,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public inherited sharing class rflib_DatabaseDmlExecutor implements rflib_DmlExecutor {
-
-    public List<Database.SaveResult> insertImmediate(List<SObject> sobjects) {
-        return Database.insertImmediate(sobjects);
-    }
-
-    public List<Database.DeleteResult> deleteImmediate(List<SObject> sobjects) {
-        return Database.deleteImmediate(sobjects);
-    }
+private class rflib_DatabaseDmlExecutorTest {
     
+    @IsTest 
+    private static void testDatabaseDmlExecutor() {
+        // This test is for code coverage purposes only
+        List<Group> records = new List<Group> {
+            new Group(
+                DeveloperName = 'Unit_Test_Group',
+                Name = 'Apex Unit Test Group'
+            )
+        };
+
+        Test.startTest();
+        rflib_DatabaseDmlExecutor executor = new rflib_DatabaseDmlExecutor();
+        executor.insertImmediate(records);
+        executor.deleteImmediate(records);
+        Test.stopTest();
+    }
 }

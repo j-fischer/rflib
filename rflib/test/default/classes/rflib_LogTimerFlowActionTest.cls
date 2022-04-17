@@ -42,11 +42,13 @@ private class rflib_LogTimerFlowActionTest {
     private static void testStopNonExistingTimer() {
         setup();
 
+        Test.startTest();
         rflib_StopLogTimerFlowAction.StopLogTimerInfo logTimerInfo = new rflib_StopLogTimerFlowAction.StopLogTimerInfo();
         logTimerInfo.logTimerName = 'unknownTimer';
     
         rflib_StopLogTimerFlowAction.stopLogTimer(new List<rflib_StopLogTimerFlowAction.StopLogTimerInfo> { logTimerInfo });
-    
+        Test.stopTest();
+
         System.assertEquals(1, MOCK_STOP_TIMER_LOGGER.logDetails.size());
         System.assertEquals(rflib_LogLevel.ERROR, MOCK_STOP_TIMER_LOGGER.logDetails.get(0).logLevel);
         System.assert(MOCK_STOP_TIMER_LOGGER.logDetails.get(0).message.contains('LogTimer with name "{0}" could not be found'), MOCK_STOP_TIMER_LOGGER.logDetails.get(0).message);
@@ -66,9 +68,11 @@ private class rflib_LogTimerFlowActionTest {
         rflib_StopLogTimerFlowAction.StopLogTimerInfo stopLogTimerInfo = new rflib_StopLogTimerFlowAction.StopLogTimerInfo();
         stopLogTimerInfo.logTimerName = 'timer1';
     
+        Test.startTest();
         rflib_StartLogTimerFlowAction.startLogTimer(new List<rflib_StartLogTimerFlowAction.StartLogTimerInfo> { startLogTimerInfo });
         rflib_StopLogTimerFlowAction.stopLogTimer(new List<rflib_StopLogTimerFlowAction.StopLogTimerInfo> { stopLogTimerInfo });
-    
+        Test.stopTest();
+
         System.assertEquals(0, MOCK_LOGGER_FACTORY.debugLogCapture.capturedLogMessages.size());
     }
 
@@ -86,8 +90,10 @@ private class rflib_LogTimerFlowActionTest {
         rflib_StopLogTimerFlowAction.StopLogTimerInfo stopLogTimerInfo = new rflib_StopLogTimerFlowAction.StopLogTimerInfo();
         stopLogTimerInfo.logTimerName = 'timer1';
     
+        Test.startTest();
         rflib_StartLogTimerFlowAction.startLogTimer(new List<rflib_StartLogTimerFlowAction.StartLogTimerInfo> { startLogTimerInfo });
         rflib_StopLogTimerFlowAction.stopLogTimer(new List<rflib_StopLogTimerFlowAction.StopLogTimerInfo> { stopLogTimerInfo });
+        Test.stopTest();
     
         System.assertEquals(1, MOCK_LOGGER_FACTORY.debugLogCapture.capturedLogMessages.size());
         System.assert(MOCK_LOGGER_FACTORY.debugLogCapture.containsInAnyMessage('INFO'));

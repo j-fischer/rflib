@@ -34,12 +34,14 @@ private class rflib_DefaultLogFinalizerTest {
 
     @IsTest
     private static void testSuccess() {
+        Test.startTest();
         rflib_DefaultLogFinalizer logFinalizer = new rflib_DefaultLogFinalizer();
 
         logFinalizer.setLogger(LOGGER_MOCK);
         
         FinalizerContext ctx = new TestFinalizerContext(ParentJobResult.SUCCESS);
         logFinalizer.execute(ctx);
+        Test.stopTest();
 
         System.assertEquals(1, LOGGER_MOCK.logDetails.size());
         System.assertEquals(rflib_LogLevel.INFO, LOGGER_MOCK.logDetails.get(0).logLevel);
@@ -49,12 +51,14 @@ private class rflib_DefaultLogFinalizerTest {
 
     @IsTest
     private static void testFailure() {
+        Test.startTest();
         rflib_DefaultLogFinalizer logFinalizer = new rflib_DefaultLogFinalizer();
 
         logFinalizer.setLogger(LOGGER_MOCK);
 
         FinalizerContext ctx = new TestFinalizerContext(ParentJobResult.UNHANDLED_EXCEPTION); 
         logFinalizer.execute(ctx);
+        Test.stopTest();
 
         System.assertEquals(1, LOGGER_MOCK.logDetails.size());
         System.assertEquals(rflib_LogLevel.FATAL, LOGGER_MOCK.logDetails.get(0).logLevel);

@@ -206,11 +206,13 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testMessageWithException');
 
+    Test.startTest();
     try {
       String.format(null, null);
     } catch (Exception ex) {
       logger.error('Caught an error', ex);
     } 
+    Test.stopTest();
     
     System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('Argument cannot be null'), 'debugLogger did not contain exception message');
     System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('rflib_DefaultLoggerTest'), 'debugLogger did not contain rflib_DefaultLoggerTest in stacktrace');
@@ -227,11 +229,13 @@ public class rflib_DefaultLoggerTest {
       Batched_Log_Event_Reporting_Level__c = 'NONE'
     );
 
+    Test.startTest();
     System.assert(rflib_DefaultLogger.createFromCustomSettings('logger') != null);
   }
 
   @isTest
   public static void testCreate() {
+    Test.startTest();
     System.assert(rflib_DefaultLogger.create('logger') != null);
   }
 
@@ -344,11 +348,14 @@ public class rflib_DefaultLoggerTest {
   @IsTest
   private static void testTruncatedContext() {
     rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+    
+    Test.startTest();
 
     String context = '40+ Character Context > 012345678901234567890';
     rflib_Logger logger = loggerFactory.createLogger(context);
 
     logger.fatal('fatal log statement');
+    Test.stopTest();
 
     System.assert(loggerFactory.eventCapture.containsInAnyMessage('fatal log statement'), 'event did not contain statement');
 

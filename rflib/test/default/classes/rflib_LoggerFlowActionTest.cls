@@ -36,7 +36,9 @@ private class rflib_LoggerFlowActionTest {
     private static void testLogMessage_Fatal() {
         rflib_LoggerFlowAction.loggerFactory = loggerFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('fatal'));
+        test.stopTest();
 
         System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('FATAL'), 'debugLogger did not contain FATAL message'); 
     }
@@ -45,7 +47,9 @@ private class rflib_LoggerFlowActionTest {
     private static void testLogMessage_Error() {
         rflib_LoggerFlowAction.loggerFactory = loggerFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('error'));
+        Test.stopTest();
 
         System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain FATAL message');
     }
@@ -54,7 +58,9 @@ private class rflib_LoggerFlowActionTest {
     private static void testLogMessage_Warn() {
         rflib_LoggerFlowAction.loggerFactory = loggerFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('warn'));
+        Test.stopTest();
 
         System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('WARN'), 'debugLogger did not contain FATAL message');
     }
@@ -63,7 +69,9 @@ private class rflib_LoggerFlowActionTest {
     private static void testLogMessage_Info() {
         rflib_LoggerFlowAction.loggerFactory = loggerFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('info'));
+        Test.stopTest();
 
         System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('INFO'), 'debugLogger did not contain FATAL message');
     }
@@ -73,7 +81,9 @@ private class rflib_LoggerFlowActionTest {
         rflib_MockLoggerFactory debugLogFactory = new rflib_MockLoggerFactory(rflib_LogLevel.DEBUG);
         rflib_LoggerFlowAction.loggerFactory = debugLogFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('debug'));
+        Test.stopTest();
 
         System.assert(debugLogFactory.debugLogCapture.containsInAnyMessage('DEBUG'), 'debugLogger did not contain FATAL message');
     }
@@ -83,7 +93,9 @@ private class rflib_LoggerFlowActionTest {
         rflib_MockLoggerFactory debugLogFactory = new rflib_MockLoggerFactory(rflib_LogLevel.DEBUG);
         rflib_LoggerFlowAction.loggerFactory = debugLogFactory;
 
+        Test.startTest();
         rflib_LoggerFlowAction.logMessage(createMessageInfo('foobar'));
+        Test.stopTest();
 
         System.assert(debugLogFactory.debugLogCapture.containsInAnyMessage('DEBUG'), 'debugLogger did not contain FATAL message');
     }

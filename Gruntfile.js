@@ -404,11 +404,11 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
-            'shell:force-test',
-            'shell:test-lwc',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-utility',
-            'shell:force-open'
+            'shell:force-open',
+            'shell:force-test',
+            'shell:test-lwc'
         ]);
     });
 

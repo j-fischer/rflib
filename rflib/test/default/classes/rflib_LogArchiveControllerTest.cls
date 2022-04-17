@@ -40,19 +40,23 @@ private class rflib_LogArchiveControllerTest {
     private static void testGetArchivedRecords_Success() {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
 
+        Test.startTest();
         System.assertEquals(RESULT, rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()));
+        Test.stopTest();
     }
 
     @IsTest
     private static void testGetArchivedRecords_Failure() {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
 
+        Test.startTest();
         try {
             rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now());
             System.assert(false, 'Expected exception has not been thrown');
         } catch (AuraHandledException actualException) {
             System.assertEquals(EXPECTED_EXCEPTION.getMessage(), actualException.getMessage());
         }
+        Test.stopTest();
     }
     
     @IsTest
@@ -60,33 +64,41 @@ private class rflib_LogArchiveControllerTest {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
         rflib_LogArchiveController.DML_EXECUTOR = new rflib_MockDmlExecutor(new List<Database.DeleteResult> { createSuccessDeleteResult() });
 
+        Test.startTest();
         rflib_LogArchiveController.clearArchive();
+        Test.stopTest();
     }
 
     @IsTest
     private static void testClearArchive_Failure() {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
 
+        Test.startTest();
         try {
             rflib_LogArchiveController.clearArchive();
             System.assert(false, 'Expected exception has not been thrown');
         } catch (AuraHandledException actualException) {
             System.assertEquals(EXPECTED_EXCEPTION.getMessage(), actualException.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
     private static void testDefaultLogArchiveQueryLocator_getRecords() {
-        //This call is for code coverage purposes only
+        // This test is for code coverage purposes only
+        Test.startTest();
         List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getRecords(Datetime.now(), Datetime.now());
         System.assertNotEquals(null, result);
+        Test.stopTest();
     }    
     
     @IsTest
     private static void testDefaultLogArchiveQueryLocator_getOldestRecords() {
-        //This call is for code coverage purposes only
+        // This test is for code coverage purposes only
+        Test.startTest();
         List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
         System.assertNotEquals(null, result);
+        Test.stopTest();
     }   
 
     private static Database.DeleteResult createSuccessDeleteResult() {

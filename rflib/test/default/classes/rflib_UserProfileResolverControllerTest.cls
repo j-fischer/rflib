@@ -32,6 +32,8 @@ private class rflib_UserProfileResolverControllerTest {
     
     @IsTest
     private static void testGetUserByUserId() {
+        Test.startTest();
         System.assertEquals(UserInfo.getUserId(), rflib_UserProfileResolverController.getUserByUserId(UserInfo.getUserId()).Id);
+        Test.stopTest();
     }
 }

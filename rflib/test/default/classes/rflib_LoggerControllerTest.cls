@@ -46,7 +46,9 @@ private class rflib_LoggerControllerTest {
 
     @IsTest
     public static void testGetSettings() {
+        Test.startTest();
         rflib_Logger_Settings__c actualSettings = rflib_LoggerController.getSettings();
+        Test.stopTest();
 
         System.assertEquals(50, actualSettings.Client_Log_Size__c);
         System.assertEquals('INFO', actualSettings.Client_Console_Log_Level__c);
@@ -55,37 +57,51 @@ private class rflib_LoggerControllerTest {
 
     @isTest
     public static void testLog_Trace() {
+        Test.startTest();
         executeTestLogMessage_UnsupportedLevels('Trace');
+        Test.stopTest();
     }
 
     @isTest
     public static void testLog_Debug() {
+        Test.startTest();
         executeTestLogMessage_UnsupportedLevels('Debug');
+        Test.stopTest();
     } 
 
     @isTest
     public static void testLog_Info() {
+        Test.startTest();
         executeTestLogMessage('Info');
+        Test.stopTest();
     } 
 
     @isTest
     public static void testLog_Warn() {
+        Test.startTest();
         executeTestLogMessage('Warn');
+        Test.stopTest();
     } 
 
     @isTest
     public static void testLog_Error() {
+        Test.startTest();
         executeTestLogMessage('Error');
+        Test.stopTest();
     }   
 
     @isTest
     public static void testLog_Fatal() {
+        Test.startTest();
         executeTestLogMessage('Fatal');
+        Test.stopTest();
     } 
 
     @isTest
     public static void testLog_UnknownLevel() {
+        Test.startTest();
         executeTestLogMessage('Foo');
+        Test.stopTest();
     } 
 
     private static void executeTestLogMessage_UnsupportedLevels(String level) {
