@@ -9,6 +9,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>rflib_OrgLimitsController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_PermissionsExplorerController</apexClass>
         <enabled>true</enabled>
     </classAccesses>

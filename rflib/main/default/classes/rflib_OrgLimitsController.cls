@@ -31,6 +31,7 @@ public with sharing class rflib_OrgLimitsController {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_OrgLimitsController');
 
+    @AuraEnabled
     public static Map<String, SerializableOrgLimit> getOrgLimits() {
         LOGGER.info('getOrgLimits invoked');
         try {

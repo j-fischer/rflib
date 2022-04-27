@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>54.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>User Permission Assignments</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="permissionSetName" type="String" label="API Name of Permission Set" placeholder="Permission Set Developer Name" description="The API Name of the Permission Set" />
+            <property name="isAssigned" type="Boolean" label="Should users have the Perm Set assigned?" description="Check if the component should display users with the permission set assigned, otherwise it will display the users who do not have the Permission Set assigned." />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
