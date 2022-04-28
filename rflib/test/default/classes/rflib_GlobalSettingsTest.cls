@@ -38,4 +38,13 @@ private class rflib_GlobalSettingsTest {
         System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdHeaderName);
         Test.stopTest();
     }
+
+    @IsTest
+    static void testPublishingLimit() {
+        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimit);
+        Test.stopTest();
+    }
 }

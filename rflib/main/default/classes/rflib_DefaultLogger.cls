@@ -35,8 +35,6 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
-  public static Integer PUBLISHING_LIMIT = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
-
   @TestVisible private static final Integer MAX_MESSAGE_SIZE = 131072;
   @TestVisible private static final List<String> LOG_STATEMENTS = new List<String>(); 
 
@@ -409,8 +407,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   public class PlatformEventPublisher implements EventPublisher {
     public void publish(rflib_Log_Event__e event) {
-      if (Limits.getPublishImmediateDML() >= PUBLISHING_LIMIT) {
-        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + PUBLISHING_LIMIT +') reached; failed to publish ' + JSON.serialize(event));
+      Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
+        ? rflib_GlobalSettings.publishingLimit
+        : Limits.getLimitPublishImmediateDML();
+        
+      if (Limits.getPublishImmediateDML() >= publishingLimit) {
+        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
       }
       
       Database.SaveResult result = EventBus.publish(event);     

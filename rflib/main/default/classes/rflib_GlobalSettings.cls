@@ -40,6 +40,13 @@ public with sharing class rflib_GlobalSettings {
         }
     }
 
+    public static Integer publishingLimit {
+        get {
+            String val = getSetting('Publish_Platform_Event_Transaction_Limit');
+            return val == null ? null : Integer.valueOf(val);
+        }
+    }
+
     private static final Map<String, String> SETTINGS = new Map<String, String>();
 
     @SuppressWarnings('PMD.EmptyStatementBlock')
