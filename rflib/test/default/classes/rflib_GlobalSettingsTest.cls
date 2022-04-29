@@ -53,8 +53,8 @@ private class rflib_GlobalSettingsTest {
         Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
 
         Test.startTest();
-        rflib_GlobalSettings.overridePublishingLimit(0);
-        System.assertEquals(0, rflib_GlobalSettings.publishingLimit);
+        rflib_GlobalSettings.overridePublishingLimit(5);
+        System.assertEquals(5, rflib_GlobalSettings.publishingLimit);
         Test.stopTest();
     }
 
@@ -80,7 +80,7 @@ private class rflib_GlobalSettingsTest {
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimit);
         
         try {
-            rflib_GlobalSettings.overridePublishingLimit(Limits.getPublishImmediateDML() + 1);
+            rflib_GlobalSettings.overridePublishingLimit(Limits.getLimitPublishImmediateDML() + 1);
             System.assert(false, 'Expected rflib_InvalidArgumentException has not been thrown');
         } catch (rflib_InvalidArgumentException ex) {
             System.assert(ex.getMessage().contains('is less than 0 or higher than allowed limit'));

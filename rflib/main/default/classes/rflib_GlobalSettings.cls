@@ -63,7 +63,7 @@ public with sharing class rflib_GlobalSettings {
     }
 
     public static void overridePublishingLimit(Integer newLimit) {
-        if (newLimit < 0 || newLimit > Limits.getPublishImmediateDML()) {
+        if (newLimit < 0 || newLimit > Limits.getLimitPublishImmediateDML()) {
             throw new rflib_InvalidArgumentException('newLimit', 'value provided (' + newLimit + ') is less than 0 or higher than allowed limit: ' + Limits.getPublishImmediateDML());
         }
 
