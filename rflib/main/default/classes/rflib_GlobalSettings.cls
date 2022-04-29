@@ -61,4 +61,13 @@ public with sharing class rflib_GlobalSettings {
 
         return SETTINGS.get(name);
     }
+
+    public static void overridePublishingLimit(Integer newLimit) {
+        if (newLimit < 0 || newLimit > Limits.getPublishImmediateDML()) {
+            throw new rflib_InvalidArgumentException('newLimit', 'value provided (' + newLimit + ') is less than 0 or higher than allowed limit: ' + Limits.getPublishImmediateDML());
+        }
+
+        String newLimitStr = newLimit != null ? String.valueOf(newLimit) : rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c;
+        SETTINGS.put('Publish_Platform_Event_Transaction_Limit', newLimitStr);
+    }
 }
