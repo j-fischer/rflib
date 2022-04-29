@@ -413,6 +413,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         
       if (Limits.getPublishImmediateDML() >= publishingLimit) {
         System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
+        return;
       }
       
       Database.SaveResult result = EventBus.publish(event);     

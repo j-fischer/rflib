@@ -250,6 +250,29 @@ public class rflib_DefaultLoggerTest {
     logger.info('This is a test message');
 
     Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
+    logger.reportLogs();
+    System.assertEquals(1, Limits.getPublishImmediateDML());
+    Test.stopTest();
+  }
+
+  @IsTest
+  private static void testSyncPlatformEventPublisher_publishingLimits() {
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testSyncPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
+    logger.reportLogs();
+    System.assertEquals(1, Limits.getPublishImmediateDML());
+    
+    rflib_GlobalSettings.overridePublishingLimit(1);
+
     logger.reportLogs();
     System.assertEquals(1, Limits.getPublishImmediateDML());
     Test.stopTest();
