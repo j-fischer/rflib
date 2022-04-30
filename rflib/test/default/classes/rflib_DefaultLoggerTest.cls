@@ -279,6 +279,29 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
+  private static void testSyncPlatformEventPublisher_governorLimitReached() {
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testSyncPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    rflib_GlobalSettings.overridePublishingLimit(null);
+
+    Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
+    Integer i, count = Limits.getLimitPublishImmediateDML() + 1;
+    for (i = 0; i < count; i++) {
+      logger.reportLogs();
+    }
+
+    System.assertEquals(Limits.getLimitPublishImmediateDML(), Limits.getPublishImmediateDML());
+    Test.stopTest();
+  }
+
+  @IsTest
   private static void testBatchPlatformEventPublisher() {
     rflib_Logger logger = new rflib_DefaultLogger(
       new rflib_DefaultLogger.BatchPlatformEventPublisher(), 

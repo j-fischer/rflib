@@ -37,6 +37,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   @TestVisible private static final Integer MAX_MESSAGE_SIZE = 131072;
   @TestVisible private static final List<String> LOG_STATEMENTS = new List<String>(); 
+  
+  private static Integer PUBLISHING_COUNTER = 0;
 
   private static rflib_DefaultLogger.BatchPlatformEventExecutor BATCH_EXECUTOR = new rflib_DefaultLogger.BatchPlatformEventExecutor();
 
@@ -411,12 +413,18 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         ? rflib_GlobalSettings.publishingLimit
         : Limits.getLimitPublishImmediateDML();
         
-      if (Limits.getPublishImmediateDML() >= publishingLimit) {
+      if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
+        System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' + JSON.serialize(event));
+        return;
+      }
+
+      if (PUBLISHING_COUNTER == publishingLimit) {
         System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
         return;
       }
       
-      Database.SaveResult result = EventBus.publish(event);     
+      Database.SaveResult result = EventBus.publish(event);
+      PUBLISHING_COUNTER++;     
       
       if(!result.isSuccess()) {
         System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
