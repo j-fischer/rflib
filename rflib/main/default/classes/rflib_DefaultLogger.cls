@@ -423,12 +423,27 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         return;
       }
       
-      Database.SaveResult result = EventBus.publish(event);
+      Database.SaveResult result = EventBus.publish(getUpdatedLogEventIfLimitIsReached(event, publishingLimit));
       PUBLISHING_COUNTER++;     
       
       if(!result.isSuccess()) {
         System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
+    }
+
+    private rflib_Log_Event__e getUpdatedLogEventIfLimitIsReached(rflib_Log_Event__e logEvent, Integer publishingLimit) {
+      if (PUBLISHING_COUNTER < (publishingLimit - 1)) {
+        return logEvent;
+      }
+
+      String logMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n' + logEvent.Log_Messages__c;
+      Integer messageSize = logMessage.length();
+
+      logEvent.Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
+        ? logMessage 
+        : logMessage.substring(messageSize - MAX_MESSAGE_SIZE);
+
+      return logEvent;
     }
   }
 
