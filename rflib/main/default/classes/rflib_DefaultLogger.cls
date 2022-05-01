@@ -436,12 +436,16 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         return logEvent;
       }
 
-      String logMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n' + logEvent.Log_Messages__c;
-      Integer messageSize = logMessage.length();
+      String rflibInfoMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n';
+      Integer rflibInfoMessageSize = rflibInfoMessage.length();
 
-      logEvent.Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
-        ? logMessage 
-        : logMessage.substring(messageSize - MAX_MESSAGE_SIZE);
+      Integer expectedMessageSize = logEvent.Log_Messages__c.length() + rflibInfoMessageSize;
+
+      String logMessage = expectedMessageSize < MAX_MESSAGE_SIZE
+        ? rflibInfoMessage + logEvent.Log_Messages__c 
+        : rflibInfoMessage + logEvent.Log_Messages__c.substring(expectedMessageSize - MAX_MESSAGE_SIZE);
+
+      logEvent.Log_Messages__c = logMessage;
 
       return logEvent;
     }
