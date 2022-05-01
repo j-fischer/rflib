@@ -37,6 +37,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   @TestVisible private static final Integer MAX_MESSAGE_SIZE = 131072;
   @TestVisible private static final List<String> LOG_STATEMENTS = new List<String>(); 
+  
+  private static Integer PUBLISHING_COUNTER = 0;
 
   private static rflib_DefaultLogger.BatchPlatformEventExecutor BATCH_EXECUTOR = new rflib_DefaultLogger.BatchPlatformEventExecutor();
 
@@ -407,10 +409,45 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   public class PlatformEventPublisher implements EventPublisher {
     public void publish(rflib_Log_Event__e event) {
-      Database.SaveResult result = EventBus.publish(event);     
+      Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
+        ? rflib_GlobalSettings.publishingLimit
+        : Limits.getLimitPublishImmediateDML();
+        
+      if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
+        System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' + JSON.serialize(event));
+        return;
+      }
+
+      if (PUBLISHING_COUNTER == publishingLimit) {
+        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
+        return;
+      }
+      
+      Database.SaveResult result = EventBus.publish(getUpdatedLogEventIfLimitIsReached(event, publishingLimit));
+      PUBLISHING_COUNTER++;     
+      
       if(!result.isSuccess()) {
         System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
+    }
+
+    private rflib_Log_Event__e getUpdatedLogEventIfLimitIsReached(rflib_Log_Event__e logEvent, Integer publishingLimit) {
+      if (PUBLISHING_COUNTER < (publishingLimit - 1)) {
+        return logEvent;
+      }
+
+      String rflibInfoMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n';
+      Integer rflibInfoMessageSize = rflibInfoMessage.length();
+
+      Integer expectedMessageSize = logEvent.Log_Messages__c.length() + rflibInfoMessageSize;
+
+      String logMessage = expectedMessageSize < MAX_MESSAGE_SIZE
+        ? rflibInfoMessage + logEvent.Log_Messages__c 
+        : rflibInfoMessage + logEvent.Log_Messages__c.substring(expectedMessageSize - MAX_MESSAGE_SIZE);
+
+      logEvent.Log_Messages__c = logMessage;
+
+      return logEvent;
     }
   }
 

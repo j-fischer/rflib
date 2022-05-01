@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Publish_Limit_Must_Be_Number</fullName>
+    <active>true</active>
+    <description>Publish_Platform_Event_Transaction_Limit value must be a number.</description>
+    <errorConditionFormula>DeveloperName = &apos;Publish_Platform_Event_Transaction_Limit&apos; &amp;&amp; 
+OR(
+  NOT(ISNUMBER( Value__c )),
+  VALUE( Value__c ) &lt;= 0
+)</errorConditionFormula>
+    <errorDisplayField>Value__c</errorDisplayField>
+    <errorMessage>The value for the Publish Platform Event Transaction Limit setting must be a number larger than 0.</errorMessage>
+</ValidationRule>
