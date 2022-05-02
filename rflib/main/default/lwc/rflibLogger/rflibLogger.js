@@ -75,7 +75,7 @@ const log = (level, component, message) => {
     //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
-            let platformInfo = performance.toJSON();
+            const platformInfo = performance.toJSON();
             platformInfo.userAgent = window.navigator.userAgent;
             logMessageToServer({
                 platformInfo: JSON.stringify(platformInfo),
