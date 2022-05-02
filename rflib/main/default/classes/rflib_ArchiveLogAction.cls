@@ -79,6 +79,7 @@ public with sharing class rflib_ArchiveLogAction {
         log.Log_Level__c = evt.Log_Level__c;
         log.Request_ID__c = evt.Request_ID__c;
         log.Log_Messages__c = evt.Log_Messages__c;
+        log.Platform_Info__c = evt.Platform_Info__c;
 
         return log;
     }

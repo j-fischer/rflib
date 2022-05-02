@@ -37,6 +37,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   @TestVisible private static final Integer MAX_MESSAGE_SIZE = 131072;
   @TestVisible private static final List<String> LOG_STATEMENTS = new List<String>(); 
+
+  @TestVisible private static String PLATFORM_INFO = null; 
   
   private static Integer PUBLISHING_COUNTER = 0;
 
@@ -55,7 +57,6 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
   private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
   private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
-
 
   /**
    * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
@@ -249,6 +250,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     isLogMaskingEnabled = isEnabled;
   }
 
+  public void setPlatformInfo(String platformInfo) {
+    PLATFORM_INFO = platformInfo;
+  }
+
   public void trace(String message) {
     trace(message, null);
   }
@@ -346,6 +351,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       Request_ID__c = requestId.substring(0, Math.min(requestId.length(), 40)),
       Log_Level__c = logLevel.toString(),
       Context__c = context.substring(0, Math.min(context.length(), 40)),
+      Platform_Info__c = getPlatformInformation(),
       Log_Messages__c = messageSize < MAX_MESSAGE_SIZE
         ? maskedLogMessagesIfApplicable 
         : maskedLogMessagesIfApplicable.substring(messageSize - MAX_MESSAGE_SIZE)
@@ -391,6 +397,30 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     if (reportingLogLevel.encompasses(logLevel)) {
       reportLogs(logLevel);
     }
+  }
+
+  private String getPlatformInformation() {
+    if (String.isNotBlank(PLATFORM_INFO)) {
+      return PLATFORM_INFO;
+    }
+
+    Map<String, Object> platformInfo = new Map<String, Object>();
+    platformInfo.put('SOQL queries', Limits.getSoslQueries());
+    platformInfo.put('Query Rows', Limits.getQueryRows());
+    platformInfo.put('SOSL Queries', Limits.getSoslQueries());
+    platformInfo.put('DML Statements', Limits.getDmlStatements());
+    platformInfo.put('DML Rows', Limits.getDmlRows());
+    platformInfo.put('CPU Time', Limits.getCpuTime());
+    platformInfo.put('Heap Size', Limits.getHeapSize());
+    platformInfo.put('Callouts', Limits.getCallouts());
+    platformInfo.put('Email Invocations', Limits.getEmailInvocations());
+    platformInfo.put('Future Calls', Limits.getFutureCalls());
+    platformInfo.put('Queueable Jobs', Limits.getQueueableJobs());
+    platformInfo.put('Mobile Apex Push Calls', Limits.getMobilePushApexCalls());
+    platformInfo.put('Publish Immediate DML', Limits.getPublishImmediateDML());
+    platformInfo.put('Database Time', Limits.getDatabaseTime());
+
+    return JSON.serialize(platformInfo);
   }
 
   public interface DebugLogger {
