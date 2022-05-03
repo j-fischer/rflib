@@ -1,3 +1,12 @@
+### RFLIB 3.2.0
+
+Package ID: 04t3h000004mAiBAAU
+Package Alias: RFLIB@3.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004mAiBAAU
+
+-   [Issue #54](https://github.com/j-fischer/rflib/issues/54) Added Global Config record to limit the amount of Platform Events that RFLIB will publish during a transaction
+-   Improved unit tests for code coverage and reliability
+
 ### RFLIB 3.1.2
 
 Package ID: 04t3h000004mAhcAAE
