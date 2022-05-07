@@ -3,6 +3,9 @@
 #
 
 **/staticresources/**
+
+.sf
 .sfdx
+
 sfdx-project.json
 Gruntfile.js
