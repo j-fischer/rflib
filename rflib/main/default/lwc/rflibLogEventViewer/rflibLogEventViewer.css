@@ -1,3 +1,7 @@
 .logMessages { 
-    max-height: 350px;
+    max-height: 325px;
+}
+
+.platformDetails {
+    max-height: 500px;
 }
