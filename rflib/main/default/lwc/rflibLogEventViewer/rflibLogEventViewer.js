@@ -113,7 +113,12 @@ export default class LogEventViewer extends LightningElement {
         var element = document.createElement('a');
         element.setAttribute(
             'href',
-            'data:text/plain;charset=utf-8,' + encodeURIComponent(this.logEvent.Log_Messages__c)
+            'data:text/plain;charset=utf-8,' +
+                encodeURIComponent(
+                    this.logEvent.Log_Messages__c +
+                        '\n\n>>> Platform Info:\n' +
+                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
+                )
         );
         element.setAttribute(
             'download',
