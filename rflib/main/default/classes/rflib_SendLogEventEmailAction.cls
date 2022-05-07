@@ -126,9 +126,17 @@ public with sharing class rflib_SendLogEventEmailAction {
         }
 
         mail.setSubject('A Log Event Occurred');
-        mail.setPlainTextBody(String.format(PLAIN_TEXT_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c, JSON.serializePretty(JSON.deserializeUntyped(event.Platform_Info__c))  }));
-        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c.replaceAll('(\\r|\\n)+', '<br />'), JSON.serializePretty(JSON.deserializeUntyped(event.Platform_Info__c)).replaceAll('(\\r|\\n)+', '<br />')  }));
+        mail.setPlainTextBody(String.format(PLAIN_TEXT_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c, getFormattedPlatformInfo(event)  }));
+        mail.setHtmlBody(String.format(HTML_MESSAGE, new String[] { event.CreatedById, event.Request_ID__c, event.Context__c, event.Log_Messages__c.replaceAll('(\\r|\\n)+', '<br />'), getFormattedPlatformInfo(event).replaceAll('(\\r|\\n)+', '<br />')  }));
 
         Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+    }
+
+    private static String getFormattedPlatformInfo(rflib_Log_Event__e event) {
+        if (String.isBlank(event.Platform_Info__c)) {
+            return 'N/A';
+        }
+
+        return JSON.serializePretty(JSON.deserializeUntyped(event.Platform_Info__c));
     }
 }

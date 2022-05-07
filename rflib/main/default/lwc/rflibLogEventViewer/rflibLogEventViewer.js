@@ -96,7 +96,7 @@ export default class LogEventViewer extends LightningElement {
     }
 
     get platformInfo() {
-        const platformInfo = JSON.parse(this.logEvent.Platform_Info__c);
+        const platformInfo = JSON.parse(this.logEvent.Platform_Info__c) || {};
         const result = Object.keys(platformInfo).map((key, index) => {
             let value = platformInfo[key];
             if (typeof value === 'object') {
