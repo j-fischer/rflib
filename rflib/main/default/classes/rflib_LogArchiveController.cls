@@ -40,23 +40,27 @@ public with sharing class rflib_LogArchiveController {
     @AuraEnabled
     public static List<rflib_Logs_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
         try {
+            LOGGER.debug('getArchivedRecords({0}, {1})', new Object[] { startDate, endDate } );
             Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
             Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
             
             return QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault);
         } catch (Exception ex) {
+            LOGGER.error('Failed to query rflib_Logs_Archive__b', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static void clearArchive() {
         try {
+            LOGGER.debug('clearArchive()');
             List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b>();
             records.addAll(QUERY_LOCATOR.getOldestRecords());
             
             DML_EXECUTOR.deleteImmediate(records);
         } catch (Exception ex) {
+            LOGGER.error('Failed to clear rflib_Logs_Archive__b', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
