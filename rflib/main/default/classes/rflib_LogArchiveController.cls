@@ -70,7 +70,7 @@ public with sharing class rflib_LogArchiveController {
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
             return [
-                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c 
+                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c, Platform_Info__c 
                 FROM rflib_Logs_Archive__b
                 WHERE CreatedDate__c > :startDate
                 AND CreatedDate__c < :endDate

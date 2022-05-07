@@ -53,7 +53,8 @@ public class rflib_LogArchiveFactory {
                 Context__c = context,
                 Log_Level__c = 'WARN',
                 Log_Messages__c = 'Some messages',
-                Request_ID__c = 'req123'
+                Request_ID__c = 'req123',
+                Platform_Info__c = '{ someKey: "some value"}'
             );
         }
 
