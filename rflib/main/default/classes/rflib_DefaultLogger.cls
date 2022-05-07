@@ -405,7 +405,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
 
     Map<String, Object> platformInfo = new Map<String, Object>();
-    platformInfo.put('SOQL queries', Limits.getSoslQueries());
+    platformInfo.put('SOQL queries', Limits.getQueries());
     platformInfo.put('Query Rows', Limits.getQueryRows());
     platformInfo.put('SOSL Queries', Limits.getSoslQueries());
     platformInfo.put('DML Statements', Limits.getDmlStatements());
