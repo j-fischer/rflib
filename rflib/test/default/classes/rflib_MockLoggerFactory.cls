@@ -138,5 +138,21 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
           }
           return result;
         }
+
+        public Boolean doesNotContainInPlatformInfo(String substring) {
+          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          if (result) {
+            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
+          }
+          return result == false;
+        }
+
+        public Boolean containsInPlatformInfo(String substring) {
+          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          if (!result) {
+            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
+          }
+          return result;
+        }
     }
 }

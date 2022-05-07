@@ -107,7 +107,7 @@ private class rflib_LoggerControllerTest {
     private static void executeTestLogMessage_UnsupportedLevels(String level) {
         String context = 'someContext';
         String message = 'some message';
-        String platformInfo = 'some platform info';
+        String platformInfo = '{"key": "some random platform info 123"}';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
@@ -119,7 +119,7 @@ private class rflib_LoggerControllerTest {
     private static void executeTestLogMessage(String level) {
         String context = 'someContext';
         String message = 'some message';
-        String platformInfo = 'some platform info';
+        String platformInfo = '{"key": "some random platform info 123"}';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
