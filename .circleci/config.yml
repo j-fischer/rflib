@@ -93,7 +93,7 @@ jobs:
             - run:
                   name: Run Apex Tests
                   command: |
-                      node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+                      node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg -l RunAllTestsInOrg -c -r human -d ~/apex_tests --wait 10
             - run:
                   name: Clean Up
                   command: |
