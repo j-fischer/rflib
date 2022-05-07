@@ -26,6 +26,6 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
             phone: '4037143138',
             profile: 'System Administrator'
         };
-        this.data = data;
+        this.data.push(data);
     }
 }

@@ -5,6 +5,20 @@
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>isAssigned</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>permissionSetName</name>
+                    <value>rflib_Enable_Client_Logging</value>
+                </componentInstanceProperties>
+                <componentName>rflibUserPermissionAssignmentList</componentName>
+                <identifier>c_rflibUserPermissionAssignmentList</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
