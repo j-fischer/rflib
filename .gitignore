@@ -1,4 +1,5 @@
 # Salesforce cache
+.sf/
 .sfdx/
 
 # LWC VSCode autocomplete
