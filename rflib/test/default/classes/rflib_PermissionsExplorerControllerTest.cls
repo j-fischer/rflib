@@ -84,7 +84,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             49999, 
-            Database.query(FLS_PROFILE_QUERY)
+            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT 49999')
         );
 
         Test.startTest();
@@ -232,7 +232,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
             49999, 
-            Database.query(OBJ_PROFILE_QUERY)
+            Database.query(OBJ_PROFILE_QUERY + ' LIMIT 49999')
         );
 
         Test.startTest();

@@ -250,8 +250,54 @@ public class rflib_DefaultLoggerTest {
     logger.info('This is a test message');
 
     Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
     logger.reportLogs();
     System.assertEquals(1, Limits.getPublishImmediateDML());
+    Test.stopTest();
+  }
+
+  @IsTest
+  private static void testSyncPlatformEventPublisher_publishingLimits() {
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testSyncPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
+    logger.reportLogs();
+    System.assertEquals(1, Limits.getPublishImmediateDML());
+    
+    rflib_GlobalSettings.overridePublishingLimit(1);
+
+    logger.reportLogs();
+    System.assertEquals(1, Limits.getPublishImmediateDML());
+    Test.stopTest();
+  }
+
+  @IsTest
+  private static void testSyncPlatformEventPublisher_governorLimitReached() {
+    rflib_Logger logger = new rflib_DefaultLogger(
+      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.SystemDebugLogger(), 
+      'testSyncPlatformEventPublisher'
+    );
+
+    logger.info('This is a test message');
+
+    rflib_GlobalSettings.overridePublishingLimit(null);
+
+    Test.startTest();
+    System.assertEquals(0, Limits.getPublishImmediateDML());
+    Integer i, count = Limits.getLimitPublishImmediateDML() + 1;
+    for (i = 0; i < count; i++) {
+      logger.reportLogs();
+    }
+
+    System.assertEquals(Limits.getLimitPublishImmediateDML(), Limits.getPublishImmediateDML());
     Test.stopTest();
   }
 
@@ -364,6 +410,42 @@ public class rflib_DefaultLoggerTest {
     System.assert(loggerFactory.eventCapture.containsInAnyMessage(context), 'event did not contain truncated context');
   }
 
+  @IsTest
+  private static void testApexPlatformInfo() {
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+    
+    Test.startTest();
+
+    User u = [SELECT Id FROM User LIMIT 1];
+    rflib_Logger logger = loggerFactory.createLogger('testApexPlatformInfo');
+
+    logger.fatal('fatal log statement');
+    Test.stopTest();
+
+    System.assert(loggerFactory.eventCapture.containsInPlatformInfo('"SOQL queries":1'), 'Platform info missed information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
+    System.assert(loggerFactory.eventCapture.containsInPlatformInfo('"Query Rows":1'), 'Platform info missed information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
+  }
+  
+  @IsTest
+  private static void testSetPlatformInfo() {
+    String platformInfo = '{"key": "some random platform info 123"}';
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+    
+    Test.startTest();
+
+    User u = [SELECT Id FROM User LIMIT 1];
+    rflib_Logger logger = loggerFactory.createLogger('testOverridePlatformInfo');
+
+    logger.setPlatformInfo(platformInfo);
+    logger.fatal('fatal log statement');
+    Test.stopTest();
+    
+    System.assertEquals(platformInfo, loggerFactory.eventCapture.getEvent().Platform_Info__c);
+    
+    System.assert(loggerFactory.eventCapture.doesNotContainInPlatformInfo('"SOQL queries":1'), 'Platform should not contain information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
+    System.assert(loggerFactory.eventCapture.doesNotContainInPlatformInfo('"Query Rows":1'), 'Platform should not contain information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
+  }
+
   private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
     return new rflib_Masking_Rule__mdt(
         Target__c = target,
@@ -372,71 +454,5 @@ public class rflib_DefaultLoggerTest {
         Is_Active__c = true,
         Order__c = 1
     );
-  }
-
-  public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
-    private final List<String> capturedLogMessages = new List<String>();
-    
-    public void debug(LoggingLevel level, String message) {
-      capturedLogMessages.add(message);
-    }
-
-    public void clearCapturedLogs() {
-      capturedLogMessages.clear();
-    }
-
-    public Boolean doesNotContainInAnyMessage(String substring) {
-      for (String message : capturedLogMessages) {
-        if (message.contains(substring)) {
-          System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    public Boolean containsInAnyMessage(String substring) {
-      for (String message : capturedLogMessages) {
-        if (message.contains(substring)) {
-          return true;
-        }
-      }
-
-      System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
-      return false;
-    }
-  }
-
-  public class EventCapture implements rflib_DefaultLogger.EventPublisher {
-    private rflib_Log_Event__e capturedEvent;
-
-    public void publish(SObject event) {
-      capturedEvent = (rflib_Log_Event__e) event;
-    } 
-
-    public Boolean eventHasNotBeenPublished() {
-      return capturedEvent == null;
-    }
-
-    public Boolean eventHasBeenPublished() {
-      return capturedEvent != null;
-    }
-
-    public Boolean doesNotContainInAnyMessage(String substring) {
-      Boolean result = capturedEvent.Log_Messages__c.contains(substring);
-      if (result) {
-        System.debug('Actual event message:\n' + capturedEvent.Log_Messages__c);
-      }
-      return result == false;
-    }
-
-    public Boolean containsInAnyMessage(String substring) {
-      Boolean result = capturedEvent.Log_Messages__c.contains(substring);
-      if (!result) {
-        System.debug('Actual event message:\n' + capturedEvent.Log_Messages__c);
-      }
-      return result;
-    }
   }
 }

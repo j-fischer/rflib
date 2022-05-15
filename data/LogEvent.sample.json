@@ -2,5 +2,6 @@
     "Log_Messages__c": "WARN|Some message",
     "Log_Level__c": "WARN",
     "Context__c": "Streaming Monitor",
-    "Request_ID__c": "req123"
+    "Request_ID__c": "req123",
+    "Platform_Info__c": "{\"timeOrigin\":1651467627856.1,\"timing\":{\"connectStart\":1651467627926,\"navigationStart\":1651467627856,\"loadEventEnd\":1651467629907,\"domLoading\":1651467628637,\"secureConnectionStart\":1651467628012,\"fetchStart\":1651467627866,\"domContentLoadedEventStart\":1651467629558,\"responseStart\":1651467628619,\"responseEnd\":1651467628811,\"domInteractive\":1651467628921,\"domainLookupEnd\":1651467627926,\"redirectStart\":0,\"requestStart\":1651467628120,\"unloadEventEnd\":0,\"unloadEventStart\":0,\"domComplete\":1651467629895,\"domainLookupStart\":1651467627926,\"loadEventStart\":1651467629896,\"domContentLoadedEventEnd\":1651467629560,\"redirectEnd\":0,\"connectEnd\":1651467628120},\"navigation\":{\"type\":0,\"redirectCount\":0},\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36\"}"
 }

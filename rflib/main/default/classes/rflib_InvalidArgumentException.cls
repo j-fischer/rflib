@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_LogArchiveFactory {
-
-    public static rflib_Logs_Archive__b create(String context) {
-        return build(context).create();
-    }
-
-    public static rflib_LogArchiveFactory.Builder build(String context) {
-        return new Builder(context);
-    }
-
-
-    private rflib_LogArchiveFactory() { }
-
-    public class Builder {
-
-        private final SObject record;
-        private final Set<String> assignedCustomPermissions = new Set<String>();
-
-        public Builder(String context) {
-            record = new rflib_Logs_Archive__b(
-                CreatedDate__c = Datetime.now(),
-                CreatedById__c = UserInfo.getUserId(),
-                Context__c = context,
-                Log_Level__c = 'WARN',
-                Log_Messages__c = 'Some messages',
-                Request_ID__c = 'req123',
-                Platform_Info__c = '{ someKey: "some value"}'
-            );
-        }
-
-        public Builder withField(String name, Object value) {
-            record.put(name, value);
-            return this;
-        }
-
-        public rflib_Logs_Archive__b create() {
-            return (rflib_Logs_Archive__b) record;
-        }
+public class rflib_InvalidArgumentException extends Exception {
+    
+    public rflib_InvalidArgumentException(String argumentName, String errorMessage) {
+        this('Argument "' + argumentName + '" is invalid. Details: ' + errorMessage);
     }
 }

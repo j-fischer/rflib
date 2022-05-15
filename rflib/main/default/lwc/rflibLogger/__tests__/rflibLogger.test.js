@@ -321,7 +321,7 @@ describe('log timer', () => {
         let logTimer = logFactory.startLogTimer(logger, 10, timerName);
 
         // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((resolve) => setTimeout(resolve, 11));
+        await new Promise((resolve) => setTimeout(resolve, 20));
 
         logTimer.done();
     });

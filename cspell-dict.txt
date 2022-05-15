@@ -59,6 +59,11 @@ executecompute
 Numaan
 Mahammad
 apos
+ISNUMBER
+Callouts
+Sosl
+SOSL
+tabset
 ffad
 datasource
 datatable

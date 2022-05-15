@@ -26,6 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+import { resourceUsage, memoryUsage } from 'process';
+
 const LogLevel = Object.freeze({
     TRACE: { index: 0, label: 'TRACE' },
     DEBUG: { index: 1, label: 'DEBUG' },
@@ -73,6 +75,8 @@ const log = (level, component, message, context, computeLogger) => {
     //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
+            const platformInfo = Object.assign({}, resourceUsage(), memoryUsage());
+
             context.org.dataApi
                 .create({
                     type: 'rflib_Log_Event__e',
@@ -80,7 +84,8 @@ const log = (level, component, message, context, computeLogger) => {
                         Log_Level__c: level.label,
                         Context__c: component.slice(-40),
                         Log_Messages__c: state.messages.join('\n'),
-                        Request_Id__c: context.id.slice(-40)
+                        Request_Id__c: context.id.slice(-40),
+                        Platform_Info__c: JSON.stringify(platformInfo)
                     }
                 })
                 .catch((error) => {

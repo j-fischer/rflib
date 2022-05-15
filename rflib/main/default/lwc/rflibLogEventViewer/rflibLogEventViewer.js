@@ -95,11 +95,30 @@ export default class LogEventViewer extends LightningElement {
         return !!this.logEvent;
     }
 
+    get platformInfo() {
+        const platformInfo = JSON.parse(this.logEvent.Platform_Info__c) || {};
+        const result = Object.keys(platformInfo).map((key, index) => {
+            let value = platformInfo[key];
+            if (typeof value === 'object') {
+                value = JSON.stringify(value, null, 2);
+            }
+
+            return { key: key, value: value, index: index };
+        });
+        LOGGER.debug('platformInfo: ' + JSON.stringify(result));
+        return result;
+    }
+
     downloadLog() {
         var element = document.createElement('a');
         element.setAttribute(
             'href',
-            'data:text/plain;charset=utf-8,' + encodeURIComponent(this.logEvent.Log_Messages__c)
+            'data:text/plain;charset=utf-8,' +
+                encodeURIComponent(
+                    this.logEvent.Log_Messages__c +
+                        '\n\n>>> Platform Info:\n' +
+                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
+                )
         );
         element.setAttribute(
             'download',

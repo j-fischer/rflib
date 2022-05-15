@@ -225,6 +225,10 @@ describe('log reporting', () => {
                             Log_Messages__c: Matcher.allOf(
                                 Matcher.endsWith('SHOULD LOG to server'),
                                 Matcher.containsString('should not log to server')
+                            ),
+                            Platform_Info__c: Matcher.allOf(
+                                Matcher.containsString('userCPUTime'),
+                                Matcher.containsString('heapUsed')
                             )
                         })
                     })

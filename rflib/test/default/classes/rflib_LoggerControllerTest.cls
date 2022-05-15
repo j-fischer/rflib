@@ -107,10 +107,11 @@ private class rflib_LoggerControllerTest {
     private static void executeTestLogMessage_UnsupportedLevels(String level) {
         String context = 'someContext';
         String message = 'some message';
+        String platformInfo = '{"key": "some random platform info 123"}';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message);
+        rflib_LoggerController.log(level, context, message, platformInfo);
         
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
     }
@@ -118,16 +119,19 @@ private class rflib_LoggerControllerTest {
     private static void executeTestLogMessage(String level) {
         String context = 'someContext';
         String message = 'some message';
+        String platformInfo = '{"key": "some random platform info 123"}';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message);
-        
+        rflib_LoggerController.log(level, context, message, platformInfo);
+
         System.assertEquals(1, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
         String expectedLogLevel = level == 'Foo' ? 'FATAL' : level.toUpperCase();
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(expectedLogLevel), 'LogLevel should be part of the log statement');
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(context), 'Context should be part of the log statement');
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(message), 'Message should be part of the log statement');
+        
+        System.assertEquals(platformInfo, rflib_DefaultLogger.PLATFORM_INFO);
     }
 }
