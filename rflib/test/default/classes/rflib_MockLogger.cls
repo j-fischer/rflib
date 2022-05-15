@@ -31,12 +31,13 @@
 public class rflib_MockLogger implements rflib_Logger {
     
     public Integer logCacheSize;
-    public Boolean isLogMaksingEnabled;
+    public Boolean isLogMaskingEnabled;
     public rflib_LogLevel reportingLogLevel;
     public rflib_LogLevel flushLogCacheLevel;
     public rflib_LogLevel batchReportingLogLevel;
     public rflib_LogLevel systemDebugLevel;
     public rflib_LogLevel generalLogLevel;
+    public String platformInfo;
 
     public Boolean logsPrinted = false;
     public Boolean logEventsPublished = false;
@@ -69,7 +70,11 @@ public class rflib_MockLogger implements rflib_Logger {
     }
 
     public void setLogMaskingState(Boolean isEnabled) {
-        this.isLogMaksingEnabled = isEnabled;
+        this.isLogMaskingEnabled = isEnabled;
+    }
+
+    public void setPlatformInfo(String platformInfo) {
+        this.platformInfo = platformInfo;
     }
 
     public void trace(String message) {

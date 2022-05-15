@@ -74,7 +74,7 @@ public interface rflib_Logger {
 
   /**
    * Set the log level for which a rflib_Log_Event__c Platform Event should be published asynchronously. 
-   * Any log statement that reported and encompassed by set aync reporting level, i.e. async reporting log level of 
+   * Any log statement that reported and encompassed by set async reporting level, i.e. async reporting log level of 
    * WARN will match for WARN and ERROR messages, will publish the log event using a `Queueable`.
    * 
    * rflib_DefaultLogger's default level is NONE.
@@ -108,11 +108,20 @@ public interface rflib_Logger {
    * Enable or disable log masking. If enabled, it will use the active Masking Rule Custom Metadata Type rules
    * to replace sensitive data in the log messages. 
    *
-   * rflib_DefaultLogger's Log Masking is desabled by default.
+   * rflib_DefaultLogger's Log Masking is disabled by default.
    *
    * @param  isEnabled The new state whether log masking is enabled or not.
    */
   void setLogMaskingState(Boolean isEnabled);
+  
+  /**
+   * Override the platform information to be sent with any log event for this transaction. 
+   *
+   * By default, rflib_DefaultLogger will provide some Governor Limits as the platform information.
+   *
+   * @param  platformInfo The string representation of the platform information.
+   */
+  void setPlatformInfo(String platformInfo);
 
   /**
    * Write a TRACE log statement. 

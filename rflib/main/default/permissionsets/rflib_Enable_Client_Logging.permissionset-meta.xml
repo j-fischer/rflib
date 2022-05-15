@@ -10,6 +10,11 @@
         <field>rflib_Logs_Archive__b.Log_Messages__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>rflib_Logs_Archive__b.Platform_Info__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Enable RFLIB Client Logging</label>
     <objectPermissions>
@@ -18,7 +23,7 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>rflib_Logs_Archive__b</object>
+        <object>rflib_Log_Event__e</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -27,7 +32,7 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>rflib_Log_Event__e</object>
+        <object>rflib_Logs_Archive__b</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
 </PermissionSet>

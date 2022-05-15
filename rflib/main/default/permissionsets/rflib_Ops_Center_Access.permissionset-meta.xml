@@ -14,8 +14,13 @@
     </classAccesses>
     <description>This permission set provides a user with access to the Ops Dashboard application and the Log Event object.</description>
     <fieldPermissions>
-        <editable>true</editable>
+        <editable>false</editable>
         <field>rflib_Logs_Archive__b.Log_Messages__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>rflib_Logs_Archive__b.Platform_Info__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
@@ -40,20 +45,20 @@
     </objectPermissions>
     <objectPermissions>
         <allowCreate>false</allowCreate>
-        <allowDelete>true</allowDelete>
-        <allowEdit>false</allowEdit>
-        <allowRead>true</allowRead>
-        <modifyAllRecords>false</modifyAllRecords>
-        <object>rflib_Logs_Archive__b</object>
-        <viewAllRecords>false</viewAllRecords>
-    </objectPermissions>
-    <objectPermissions>
-        <allowCreate>false</allowCreate>
         <allowDelete>false</allowDelete>
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>rflib_Log_Event__e</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>rflib_Logs_Archive__b</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <tabSettings>

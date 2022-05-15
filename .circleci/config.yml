@@ -79,7 +79,7 @@ jobs:
             - run:
                   name: Push Source
                   command: |
-                      node_modules/sfdx-cli/bin/run force:source:push -u ciorg --ignorewarnings
+                      node_modules/sfdx-cli/bin/run force:source:push -u ciorg
             - run:
                   name: Clean Up
                   command: |
