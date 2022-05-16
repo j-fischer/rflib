@@ -15,8 +15,30 @@
                     <name>permissionSetName</name>
                     <value>rflib_Enable_Client_Logging</value>
                 </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Users Who Do Not Have Client Logging Enabled</value>
+                </componentInstanceProperties>
                 <componentName>rflibUserPermissionAssignmentList</componentName>
                 <identifier>c_rflibUserPermissionAssignmentList</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>isAssigned</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>permissionSetName</name>
+                    <value>rflib_Ops_Center_Access</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>User Who Do Have DevOps Access</value>
+                </componentInstanceProperties>
+                <componentName>rflibUserPermissionAssignmentList</componentName>
+                <identifier>c_rflibUserPermissionAssignmentList1</identifier>
             </componentInstance>
         </itemInstances>
         <name>region2</name>
