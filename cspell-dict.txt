@@ -64,3 +64,6 @@ Callouts
 Sosl
 SOSL
 tabset
+ffad
+datasource
+datatable

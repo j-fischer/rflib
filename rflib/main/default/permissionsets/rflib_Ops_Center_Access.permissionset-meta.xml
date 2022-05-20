@@ -9,6 +9,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>rflib_OrgLimitsController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_PermissionsExplorerController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -63,6 +67,10 @@
     </objectPermissions>
     <tabSettings>
         <tab>rflib_Log_Monitor</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>rflib_Management_Dashboard</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>

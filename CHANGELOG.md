@@ -54,10 +54,10 @@ Package ID: 04t3h000004bh4IAAQ
 Package Alias: RFLIB@3.0.1-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bh4IAAQ
 
--   [Issue #41](https://github.com/j-fischer/rflib/issues/41) - Renamed the rflib_Log_Archive__b Big Object to rflib_Logs_Archive__c (better than rflib_Log_Archive2__c) in order to change the index
--   Fixed issue with "Disconnect" not being displayed in button label 
+-   [Issue #41](https://github.com/j-fischer/rflib/issues/41) - Renamed the rflib_Log_Archive**b Big Object to rflib_Logs_Archive**c (better than rflib_Log_Archive2\_\_c) in order to change the index
+-   Fixed issue with "Disconnect" not being displayed in button label
 
-IMPORTANT: The rflib_Log_Archive__b will be flagged for deletion but not physically deleted. Please remove manually at your earliest convenience. 
+IMPORTANT: The rflib_Log_Archive\_\_b will be flagged for deletion but not physically deleted. Please remove manually at your earliest convenience.
 
 ### RFLIB 3.0.0
 
