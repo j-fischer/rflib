@@ -345,7 +345,8 @@ module.exports = function(grunt) {
 
             'force-test-package-install-and-upgrade': {
                 command: 
-                    'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages RFLIB-TF &&' + 
+                    'sfdx force:package:install --package 04t3h000004RdLTAA0 -u <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
+                    'sfdx force:package:install --package 04t3h000004jpyMAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
                     'sfdx force:package:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
                     'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
                     'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
