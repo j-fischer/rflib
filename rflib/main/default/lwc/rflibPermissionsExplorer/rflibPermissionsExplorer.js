@@ -75,6 +75,8 @@ export default class PermissionsExplorer extends LightningElement {
     isLoadingRecords = false;
     progressText = 'Loading Permissions';
 
+    cache = {};
+
     connectedCallback() {
         this.loadPermissions();
     }
@@ -191,6 +193,9 @@ export default class PermissionsExplorer extends LightningElement {
                 });
                 this.dispatchEvent(evt);
             }
+
+            this.page = 1;
+
             return Promise.resolve();
         };
 
@@ -200,8 +205,23 @@ export default class PermissionsExplorer extends LightningElement {
         setTimeout(() => {
             // The cached responses for a permission type instead of making the HTTP requests.
             // Using timeout to guarantee rendering of spinner widget, which may not happen if the browser accesses
+
+            const cachedRecords = this.cache[this.currentPermissionType.value];
+            if (cachedRecords) {
+                logger.debug('Using cached value');
+                this.permissionRecords = cachedRecords;
+                this.numTotalRecords = cachedRecords.length;
+                this.isLoadingRecords = false;
+                this.page = 1;
+                return;
+            }
+
             remoteAction()
                 .then(retrievePermissionsCallback)
+                .then(() => {
+                    logger.debug('Caching result');
+                    this.cache[this.currentPermissionType.value] = this.permissionRecords;
+                })
                 .catch((error) => {
                     logger.error(
                         'Failed to retrieve all field permissions for all profiles. Error={0}',

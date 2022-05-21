@@ -32,9 +32,9 @@
 import { LightningElement, api } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 
-const logger = createLogger('FieldPermissionsList');
+const logger = createLogger('FieldPermissionsTable');
 
-export default class RflibFieldPermissionsList extends LightningElement {
+export default class RflibFieldPermissionsTable extends LightningElement {
     @api pageSize;
     @api isFieldPermissions;
     @api isProfilePermissions;
@@ -46,7 +46,7 @@ export default class RflibFieldPermissionsList extends LightningElement {
     set currentPage(value) {
         const newPageIndex = value - 1;
         if (this.currentPageIndex !== newPageIndex) {
-            logger.debug('Changing current page {0}', this.value);
+            logger.debug('Changing current page {0}', newPageIndex);
             this.currentPageIndex = newPageIndex;
             this.refreshEventList();
         }
