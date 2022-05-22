@@ -25,6 +25,7 @@ The following lists describe some of the key features of rflib.
 -   Dashboard for all Object and Field permissions for Profiles and Permission Sets
 -   Supports logging in Flow and Process Builder
 -   Supports Salesforce Functions (NodeJS only)
+-   Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -94,6 +95,17 @@ and allows for quick filtering of the results.
 To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permission_Explorer.gif 'Permissions Explorer')
+
+## Management Console
+
+A critical aspect of operating a Salesforce Org is managing Governor Limits. There are transactional and org-wide limits, some of which RFLIB is consuming
+in order to report and display Log Events. While there are several different tools available to monitor org-wide Governor Limits, RFLIB provides a simple
+way to stay on top of those as well through the `Management Console` tab.
+
+There, users with access to the Ops Center can view the current consumption of the org-wide Governor Limits relevant to RFLIB. In addition, RFLIB will
+display what users have not been provided with Permission Set to enable client logging and what users are assigned access to the Ops Center.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Management_Console.png 'Management Console')
 
 ## Updates
 
