@@ -32,7 +32,7 @@
         "**/tsconfig.json",
         "cspell.json",
         "lcov.info",
-        "Gruntfile.json",
+        "Gruntfile.js",
         "package*.json",
         "CHANGELOG.md"
     ],

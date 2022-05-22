@@ -79,7 +79,7 @@
             "eslint"
         ],
         "*.{cls,apex,js,cjs,ts,html,md,xml,sql,py,yml,yaml}": [
-            "cspell"
+            "cspell --no-must-find-files"
         ]
     },
     "scripts": {
