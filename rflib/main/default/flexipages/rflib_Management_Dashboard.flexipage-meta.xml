@@ -35,7 +35,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>title</name>
-                    <value>User Who Do Have DevOps Access</value>
+                    <value>User Who Do Have Ops Center Access</value>
                 </componentInstanceProperties>
                 <componentName>rflibUserPermissionAssignmentList</componentName>
                 <identifier>c_rflibUserPermissionAssignmentList1</identifier>
