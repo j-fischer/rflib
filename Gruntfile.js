@@ -335,6 +335,10 @@ module.exports = function(grunt) {
                 command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa_user --definitionfile config/qa-user-def.json'
             },
 
+            'force-configure-settings': {
+                command: 'sfdx force:apex:execute -u <%= config.alias %> -f script/apex/ConfigureCustomSettings.apex'
+            },
+
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
             },
@@ -403,6 +407,7 @@ module.exports = function(grunt) {
             'prompt:alias',
             'shell:force-create-org-default',
             'shell:force-push',
+            'shell:force-configure-settings',
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
@@ -424,6 +429,9 @@ module.exports = function(grunt) {
             'shell:force-create-org',
             'shell:force-install-dependencies',
             'shell:force-install-latest',
+            'shell:force-install-streaming-monitor',
+            'shell:force-configure-settings',
+            'shell:force-assign-permset',
             'shell:force-open'
         ]);
     });
