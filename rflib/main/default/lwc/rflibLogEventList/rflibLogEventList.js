@@ -92,7 +92,8 @@ export default class LogEventList extends LightningElement {
             this.contextSearch || this.createdBySearch || this.logMessageSearch
                 ? this.allEvents.filter(
                       (evt) =>
-                          (!this.createdBySearch || evt.CreatedById.indexOf(this.createdBySearch) > -1) &&
+                          (!this.createdBySearch ||
+                              (evt.CreatedById || evt.CreatedById__c).indexOf(this.createdBySearch) > -1) &&
                           (!this.contextSearch || evt.Context__c.indexOf(this.contextSearch) > -1) &&
                           (!this.logMessageSearch || evt.Log_Messages__c.indexOf(this.logMessageSearch) > -1)
                   )
