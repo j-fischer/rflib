@@ -33,7 +33,7 @@
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
             <div class="slds-grid">
-                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
+                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
                     <lightning-input
                         type="search"
                         onchange={handleCreatedByChanged}
@@ -42,7 +42,16 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
+                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
+                    <lightning-input
+                        type="search"
+                        onchange={handleLevelKeyChange}
+                        class="slds-m-bottom_small"
+                        placeholder="Search Level..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="sdls-col slds-size_3-of-12 slds-m-right_x-small">
                     <lightning-input
                         type="search"
                         onchange={handleContextKeyChange}
@@ -51,7 +60,7 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="slds-col slds-size_2-of-4">
+                <div class="slds-col slds-size_5-of-12">
                     <lightning-input
                         type="search"
                         onchange={handleLogMessageKeyChange}
@@ -63,7 +72,9 @@
             </div>
             <template if:true={eventsToDisplay}>
                 <table
-                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                    class="
+                        slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout
+                    "
                 >
                     <thead>
                         <tr class="slds-text-heading_label">
