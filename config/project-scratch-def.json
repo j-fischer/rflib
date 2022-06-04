@@ -2,7 +2,6 @@
     "orgName": "RFLIB DEV",
     "edition": "Developer",
     "features": [],
-    "release": "preview",
     "settings": {
         "lightningExperienceSettings": {
             "enableS1DesktopEnabled": true
