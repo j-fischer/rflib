@@ -39,8 +39,8 @@ private class rflib_TriggerManagerTest {
 
     private static final Exception EX = new MockTriggerHandlerException('This is a MockTriggerHandlerException');
 
-    private static final User STANDARD_USER = rflib_UserFactory.insertAndRetrieve('Jane', 'Smith', 'Standard User');
-    private static final User BYPASS_TRIGGERS_USER = rflib_UserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
+    private static final User STANDARD_USER = rflib_TestUserFactory.insertAndRetrieve('Jane', 'Smith', 'Standard User');
+    private static final User BYPASS_TRIGGERS_USER = rflib_TestUserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
 
     private static Boolean SIMPLE_HANDLER_MOCK_RUN_INVOKED = false;
     private static Boolean SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = false;

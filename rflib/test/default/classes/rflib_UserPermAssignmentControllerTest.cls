@@ -33,8 +33,8 @@ private class rflib_UserPermAssignmentControllerTest {
     private static final PermissionSet CLIENT_LOGGING_PERM_SET = [SELECT Id, Name FROM PermissionSet WHERE Name = 'rflib_Enable_Client_Logging'];
     private static final PermissionSet OPS_CENTER_ACCESS_PERM_SET = [SELECT Id, Name FROM PermissionSet WHERE Name = 'rflib_Ops_Center_Access'];
 
-    private static final User END_USER = rflib_UserFactory.insertAndRetrieve('John', 'Doe', 'Standard User');
-    private static final User OPS_USER = rflib_UserFactory.insertAndRetrieve('Jane', 'Smith', 'System Administrator');
+    private static final User END_USER = rflib_TestUserFactory.insertAndRetrieve('John', 'Doe', 'Standard User');
+    private static final User OPS_USER = rflib_TestUserFactory.insertAndRetrieve('Jane', 'Smith', 'System Administrator');
 
     private static void setup() {
         List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();

@@ -28,7 +28,7 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_UserFactory {
+public class rflib_TestUserFactory {
     
     public static User insertAndRetrieve(String firstName, String lastName, String profileName) {
         User u = new Builder(firstName, lastName, profileName).persist();
@@ -40,7 +40,7 @@ public class rflib_UserFactory {
         return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
     }
 
-    private rflib_UserFactory() { }
+    private rflib_TestUserFactory() { }
 
     public class Builder {
 

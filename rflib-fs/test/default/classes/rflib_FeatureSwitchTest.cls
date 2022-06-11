@@ -40,7 +40,7 @@ private class rflib_FeatureSwitchTest {
     @TestVisible private static final String ANOTHER_USER_SWITCH = 'FeatureSwitch4';
     @TestVisible private static final String NON_EXISTING_FEATURE_SWITCH = 'DoesNotExist';
 
-    @TestVisible private static final User USER = rflib_UserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
+    @TestVisible private static final User USER = rflib_TestUserFactory.insertAndRetrieve('John', 'Smith', 'Standard User');
 
     @TestVisible
     private static void setup() {
