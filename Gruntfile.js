@@ -336,7 +336,7 @@ module.exports = function(grunt) {
             },
 
             'force-configure-settings': {
-                command: 'sfdx force:apex:execute -u <%= config.alias %> -f script/apex/ConfigureCustomSettings.apex'
+                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
             },
 
             'test-lwc': {
