@@ -1,8 +1,9 @@
 {
     "name": "rflib",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "description": "Salesforce library for improving the reliability of your org",
-    "type": "commonjs",
+    "type": "module",
+    "module": "commonjs",
     "main": "./dist/rflibLogger.js",
     "types": "./dist/rflibLogger.d.ts",
     "files": [
