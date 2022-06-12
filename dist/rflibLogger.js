@@ -26,8 +26,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { resourceUsage, memoryUsage } from 'process';
-
 const LogLevel = Object.freeze({
     TRACE: { index: 0, label: 'TRACE' },
     DEBUG: { index: 1, label: 'DEBUG' },
@@ -75,7 +73,7 @@ const log = (level, component, message, context, computeLogger) => {
     //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
-            const platformInfo = Object.assign({}, resourceUsage(), memoryUsage());
+            const platformInfo = Object.assign({}, process.resourceUsage(), process.memoryUsage());
 
             context.org.dataApi
                 .create({
