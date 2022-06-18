@@ -339,6 +339,10 @@ module.exports = function(grunt) {
                 command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
             },
 
+            'force-create-log-event': {
+                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
+            },
+
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
             },
@@ -408,6 +412,7 @@ module.exports = function(grunt) {
             'shell:force-create-org-default',
             'shell:force-push',
             'shell:force-configure-settings',
+            'shell:force-create-log-event',
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
@@ -418,9 +423,6 @@ module.exports = function(grunt) {
         ]);
     });
 
-    /*
-     * Public BUILD TARGETS
-     */
     grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
         grunt.task.run([
             'prompt:alias',
@@ -431,6 +433,7 @@ module.exports = function(grunt) {
             'shell:force-install-latest',
             'shell:force-install-streaming-monitor',
             'shell:force-configure-settings',
+            'shell:force-create-log-event',
             'shell:force-assign-permset',
             'shell:force-open'
         ]);
@@ -443,8 +446,10 @@ module.exports = function(grunt) {
             'prompt:confirmVersion',
             'shell:force-create-org',
             'shell:force-configure-settings',
+            'shell:force-create-log-event',
             'shell:force-test-package-install-and-upgrade',
             'shell:force-open',
+            'shell:force-create-log-event',
             'shell:force-test',
             'confirm:deleteOrg',
             'shell:force-delete-org'
@@ -489,6 +494,10 @@ module.exports = function(grunt) {
         }
  
         grunt.task.run(tasks);
+    });
+
+    grunt.registerTask('create-event', 'Create Log Event in org', function() {
+        grunt.task.run(['prompt:alias', 'shell:force-create-log-event']);
     });
 
     grunt.registerTask('default', ['shell:test-lwc']);
