@@ -1,3 +1,33 @@
+### RFLIB-TF 2.0.0
+
+Package ID: 04t3h000004sq62AAA
+Package Alias: RFLIB-TF@2.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sq62AAA
+
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Changed package dependency on RFLIB to version 4.0.0 and RFLIB-FS to 2.0.0
+
+### RFLIB-FS 2.0.0
+
+Package ID: 04t3h000004sq5xAAA
+Package Alias: RFLIB-FS@2.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sq5xAAA
+
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Changed package dependency on RFLIB to version 4.0.0
+
+### RFLIB 4.0.0
+
+Package ID: 04t3h000004RewHAAS
+Package Alias: RFLIB@4.0.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RewHAAS
+
+-   [Issue #56](https://github.com/j-fischer/rflib/issues/56) Added new property to the log event to capture platform information such as Governor Limits (Apex), Browser Details (LWC), or Node process details (SF Functions)
+-   [PR #58](https://github.com/j-fischer/rflib/pull/58) Added Management Console to display org limits and users who are not assigned the Enable Client Logging permission set as well as users who are assigned to have Ops Center Access
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Added caching to Permission Explorer to avoid the loading of permissions after the first retrieval while switching between different permission types
+-   [Issue #60](https://github.com/j-fischer/rflib/isssues/60) Fixed bug throwing a JS exception in Log Monitor when filtering archived log messages through the Created By input.
+
 ### RFLIB 3.2.0
 
 Package ID: 04t3h000004mAiBAAU
