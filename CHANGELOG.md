@@ -27,6 +27,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 -   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
 -   Added caching to Permission Explorer to avoid the loading of permissions after the first retrieval while switching between different permission types
 -   [Issue #60](https://github.com/j-fischer/rflib/isssues/60) Fixed bug throwing a JS exception in Log Monitor when filtering archived log messages through the Created By input.
+-   [Issue #54](https://github.com/j-fischer/rflib/isssues/54) Added option to cap the creation of log events based on Governor Limits
 
 ### RFLIB 3.2.0
 
