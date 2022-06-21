@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Platform Event to trigger an action implementation that can be run multiple times before failing. See https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/platform_events_subscribe_apex_refire.htm for details.</description>
+    <eventType>HighVolume</eventType>
+    <label>Retryable Action</label>
+    <pluralLabel>Retryable Actions</pluralLabel>
+    <publishBehavior>PublishImmediately</publishBehavior>
+</CustomObject>
