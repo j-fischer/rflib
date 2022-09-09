@@ -278,10 +278,18 @@ module.exports = function(grunt) {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
             },
 
+            'force-create-org-default-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -s '
+            },
+
             'force-create-org': {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
             },
-            
+
+            'force-create-org-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %>'
+            },
+
             'force-delete-org': {
                 command: 'sfdx force:org:delete -u <%= config.alias %> -p'
             },
@@ -407,10 +415,18 @@ module.exports = function(grunt) {
     /*
      * Public BUILD TARGETS
      */
-    grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
-        grunt.task.run([
-            'prompt:alias',
-            'shell:force-create-org-default',
+    grunt.registerTask('create-scratch', 'Setup default scratch org with either the current or a preview version', function() {
+        let tasks = [
+            'prompt:alias'
+        ];
+
+        if (grunt.option('preview')) {
+            tasks.push('shell:force-create-org-default-preview');
+        } else {
+            tasks.push('shell:force-create-org-default');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
@@ -421,15 +437,23 @@ module.exports = function(grunt) {
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'
-        ]);
+        ]));
     });
 
     grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
-        grunt.task.run([
+        let tasks = [
             'prompt:alias',
             'prompt:selectPackage',
-            'prompt:confirmVersion',
-            'shell:force-create-org',
+            'prompt:confirmVersion'
+        ];
+
+        if (grunt.option('preview')) {
+            tasks.push('shell:force-create-org-preview');
+        } else {
+            tasks.push('shell:force-create-org');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-install-dependencies',
             'shell:force-install-latest',
             'shell:force-install-streaming-monitor',
@@ -437,7 +461,7 @@ module.exports = function(grunt) {
             'shell:force-create-log-event',
             'shell:force-assign-permset',
             'shell:force-open'
-        ]);
+        ]));
     });
 
     grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
