@@ -420,7 +420,7 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        if (grunt.option('preview')) {
+        if (grunt.option('preview') || grunt.env.PREVIEW) {
             tasks.push('shell:force-create-org-default-preview');
         } else {
             tasks.push('shell:force-create-org-default');
