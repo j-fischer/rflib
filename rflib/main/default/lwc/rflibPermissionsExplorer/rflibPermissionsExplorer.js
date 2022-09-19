@@ -294,11 +294,13 @@ export default class PermissionsExplorer extends LightningElement {
         element.setAttribute('download', this.currentPermissionType.value + '_' + new Date().toISOString() + '.csv');
 
         element.style.display = 'none';
-        document.body.appendChild(element);
+        
+        let downloadContainer = this.template.querySelector('.download-container');
+        downloadContainer.appendChild(element);
 
         element.click();
 
-        document.body.removeChild(element);
+        downloadContainer.removeChild(element);
     }
 
     handlePrevious() {

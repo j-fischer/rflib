@@ -28,6 +28,8 @@
 -->
 <template>
     <div class="slds-page-header">
+        <div class="download-container" lwc:dom="manual"></div>
+        
         <div if:true={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"

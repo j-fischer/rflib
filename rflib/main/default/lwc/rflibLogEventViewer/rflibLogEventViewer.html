@@ -28,6 +28,8 @@
     -->
 <template>
     <lightning-card title={title} icon-name="utility:summarydetail" if:true={hasEvent}>
+        <div class="download-container" lwc:dom="manual"></div>
+
         <div slot="actions">
             <button class="slds-button slds-button_neutral" onclick={downloadLog}>Download</button>
         </div>

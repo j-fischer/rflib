@@ -5,3 +5,7 @@
 .platformDetails {
     max-height: 500px;
 }
+
+.download-container {
+    display:none;
+}
