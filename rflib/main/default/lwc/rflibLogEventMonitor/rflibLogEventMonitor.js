@@ -26,9 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { LightningElement } from 'lwc';
+import { LightningElement, wire } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
-import { subscribe, unsubscribe, onError } from 'lightning/empApi';
+import { subscribe, unsubscribe, onError, setDebugFlag } from 'lightning/empApi';
+import { CurrentPageReference } from 'lightning/navigation';
 
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
@@ -66,6 +67,7 @@ export default class LogEventMonitor extends LightningElement {
     numDisplayedRecords = 0;
     numTotalRecords = 0;
 
+    debugEnabled = false;
     isClearArchiveDialogVisible = false;
     currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
     capturedEvents = [];
@@ -84,6 +86,14 @@ export default class LogEventMonitor extends LightningElement {
 
     get hasLogEvent() {
         return this.selectedLogEvent != null;
+    }
+
+    @wire(CurrentPageReference)
+    getStateParameters(currentPageReference) {
+        if (currentPageReference?.state?.c__debug) {
+            logger.debug('Enabling EMP API debug mode');
+            this.debugEnabled = true;
+        }
     }
 
     get connectionModes() {
@@ -115,8 +125,14 @@ export default class LogEventMonitor extends LightningElement {
             _this.numTotalRecords = _this.capturedEvents.length;
         };
 
+        if (_this.debugEnabled) {
+            setDebugFlag(true).then(result => {
+                logger.debug('setDebugFlag() successful: ' + result);
+            });
+        }
+
         subscribe(CHANNEL, this.currentConnectionMode.value, this.messageCallback).then(
-            this.createSubscriptionResponseHandler(this)
+            _this.createSubscriptionResponseHandler(this)
         );
     }
 
