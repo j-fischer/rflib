@@ -2,7 +2,7 @@ const _ = require('lodash');
 const semver = require('semver');
 
 const bumpVersion = function(grunt, config) {
-    if (config.package.package === "RFLIB") {
+    if (config.package.package === "RFLIB" && _.includes(['major'], config.version.nextVersionType)) {
         config.packageFile.version = config.version.nextVersion;
         grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 4));
     }
@@ -229,6 +229,7 @@ module.exports = function(grunt) {
                     ],
                     then: function(results) {
                         if (_.includes(['patch', 'minor', 'major'], results['config.version.nextVersion'])) {
+                            config.version.nextVersionType = results['config.version.nextVersion'];
                             config.version.nextVersion = config.package[results['config.version.nextVersion']];
                         }
                     }
