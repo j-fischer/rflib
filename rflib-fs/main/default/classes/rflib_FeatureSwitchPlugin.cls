@@ -31,6 +31,7 @@
  * @group Feature Switch
  * @description Plugin for Flow Builder to retrieve the hierarchical value of a feature switch. 
  */ 
+@SuppressWarnings('PMD.ClassNamingConventions,PMD.AvoidGlobalModifier')
 global class rflib_FeatureSwitchPlugin implements Process.Plugin {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_FeatureSwitchPlugin');
