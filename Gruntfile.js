@@ -60,6 +60,19 @@ module.exports = function(grunt) {
         config: config,
         env: process.env,
 
+        rename: {
+            bigObjectIndexForPackaging: {
+              files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'},
+                ]
+            },
+            bigObjectIndexForDeployment: {
+                files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'},
+                ]
+            }
+        },
+
         confirm: {
             deleteOrg: {
                 options: {
@@ -404,11 +417,17 @@ module.exports = function(grunt) {
         if (grunt.config('config.version.nextVersion') !== 'build') {
             bumpVersion(grunt, config);
         }
-
+        
+        // Workaround for https://github.com/forcedotcom/cli/issues/1515
+        tasks.push('rename:bigObjectIndexForPackaging');
+        
         tasks.push('shell:force-create-release-candidate');
         tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
         tasks.push('gitcommit:version');
+
+        // Workaround for https://github.com/forcedotcom/cli/issues/1515
+        tasks.push('rename:bigObjectIndexForDeployment');
 
         grunt.task.run(tasks);
     });
