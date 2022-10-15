@@ -39,7 +39,7 @@ public with sharing class rflib_LoggerFlowAction {
     @TestVisible
     private static rflib_LoggerFactory loggerFactory = rflib_LoggerUtil.getFactory();
 
-    @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log')
+    @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
 
         for (LogMessageInfo messageInfo : logMessages) {

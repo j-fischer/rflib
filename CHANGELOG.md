@@ -1,3 +1,15 @@
+
+### RFLIB 4.0.1
+
+Package ID: 04t3h000004sqEgAAI
+Package Alias: RFLIB@4.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqEgAAI
+
+-   Improved CSS for the Management Dashboard's UserPermissionAssignmentList component
+-   Added icon for Logger Flow Action
+-   Introdcued query paramenter "c__debug" that allows to trigger debugging mode for the EMP API
+-   Changed labels for all permission sets to have the "RFLIB - " prefix to make them eassier to find
+
 ### RFLIB-TF 2.0.0
 
 Package ID: 04t3h000004sq62AAA

@@ -110,7 +110,7 @@ export default class LogEventViewer extends LightningElement {
     }
 
     downloadLog() {
-        var element = document.createElement('a');
+        let element = document.createElement('a');
         element.setAttribute(
             'href',
             'data:text/plain;charset=utf-8,' +
@@ -133,10 +133,12 @@ export default class LogEventViewer extends LightningElement {
         );
 
         element.style.display = 'none';
-        document.body.appendChild(element);
+        
+        let downloadContainer = this.template.querySelector('.download-container');
+        downloadContainer.appendChild(element);
 
         element.click();
 
-        document.body.removeChild(element);
+        downloadContainer.removeChild(element);
     }
 }

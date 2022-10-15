@@ -16,7 +16,7 @@
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
-    <label>Enable RFLIB Client Logging</label>
+    <label>RFLIB - Enable Client Logging</label>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>false</allowDelete>

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const semver = require('semver');
 
 const bumpVersion = function(grunt, config) {
-    if (config.package.package === "RFLIB") {
+    if (config.package.package === "RFLIB" && _.includes(['major'], config.version.nextVersionType)) {
         config.packageFile.version = config.version.nextVersion;
         grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 4));
     }
@@ -59,6 +59,19 @@ module.exports = function(grunt) {
     grunt.initConfig({
         config: config,
         env: process.env,
+
+        rename: {
+            bigObjectIndexForPackaging: {
+              files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'},
+                ]
+            },
+            bigObjectIndexForDeployment: {
+                files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'},
+                ]
+            }
+        },
 
         confirm: {
             deleteOrg: {
@@ -229,6 +242,7 @@ module.exports = function(grunt) {
                     ],
                     then: function(results) {
                         if (_.includes(['patch', 'minor', 'major'], results['config.version.nextVersion'])) {
+                            config.version.nextVersionType = results['config.version.nextVersion'];
                             config.version.nextVersion = config.package[results['config.version.nextVersion']];
                         }
                     }
@@ -278,10 +292,18 @@ module.exports = function(grunt) {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
             },
 
+            'force-create-org-default-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -s '
+            },
+
             'force-create-org': {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
             },
-            
+
+            'force-create-org-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %>'
+            },
+
             'force-delete-org': {
                 command: 'sfdx force:org:delete -u <%= config.alias %> -p'
             },
@@ -395,11 +417,17 @@ module.exports = function(grunt) {
         if (grunt.config('config.version.nextVersion') !== 'build') {
             bumpVersion(grunt, config);
         }
-
+        
+        // Workaround for https://github.com/forcedotcom/cli/issues/1515
+        tasks.push('rename:bigObjectIndexForPackaging');
+        
         tasks.push('shell:force-create-release-candidate');
         tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
         tasks.push('gitcommit:version');
+
+        // Workaround for https://github.com/forcedotcom/cli/issues/1515
+        tasks.push('rename:bigObjectIndexForDeployment');
 
         grunt.task.run(tasks);
     });
@@ -407,10 +435,18 @@ module.exports = function(grunt) {
     /*
      * Public BUILD TARGETS
      */
-    grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
-        grunt.task.run([
-            'prompt:alias',
-            'shell:force-create-org-default',
+    grunt.registerTask('create-scratch', 'Setup default scratch org with either the current or a preview version', function() {
+        let tasks = [
+            'prompt:alias'
+        ];
+
+        if (grunt.option('preview') || grunt.env.PREVIEW) {
+            tasks.push('shell:force-create-org-default-preview');
+        } else {
+            tasks.push('shell:force-create-org-default');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
@@ -421,15 +457,23 @@ module.exports = function(grunt) {
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'
-        ]);
+        ]));
     });
 
     grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
-        grunt.task.run([
+        let tasks = [
             'prompt:alias',
             'prompt:selectPackage',
-            'prompt:confirmVersion',
-            'shell:force-create-org',
+            'prompt:confirmVersion'
+        ];
+
+        if (grunt.option('preview')) {
+            tasks.push('shell:force-create-org-preview');
+        } else {
+            tasks.push('shell:force-create-org');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-install-dependencies',
             'shell:force-install-latest',
             'shell:force-install-streaming-monitor',
@@ -437,7 +481,7 @@ module.exports = function(grunt) {
             'shell:force-create-log-event',
             'shell:force-assign-permset',
             'shell:force-open'
-        ]);
+        ]));
     });
 
     grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {

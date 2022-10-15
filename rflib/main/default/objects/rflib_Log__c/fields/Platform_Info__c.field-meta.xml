@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Platform_Info__c</fullName>
+    <description>Contains technical information about the platform where the Log Event originated from. For example, Governor Limits from Apex, browser information from Lightning Components, or Node process details from Salesforce Functions.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Contains technical information about the platform where the Log Event originated from. For example, Governor Limits from Apex, browser information from Lightning Components, or Node process details from Salesforce Functions.</inlineHelpText>
+    <label>Platform Information</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

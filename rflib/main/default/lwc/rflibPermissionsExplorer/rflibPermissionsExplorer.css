@@ -40,3 +40,7 @@
     font-size: large;
     top: calc(50% + 3em);
 }
+
+.download-container {
+    display:none;
+}
