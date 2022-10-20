@@ -1,6 +1,6 @@
 # Reliability Force
 
-![Build Status](https://img.shields.io/circleci/build/github/j-fischer/rflib/master) ![GitHub](https://img.shields.io/github/license/j-fischer/rflib) ![GitHub package.json version](https://img.shields.io/github/package-json/v/j-fischer/rflib) [![codecov](https://codecov.io/gh/j-fischer/rflib/branch/master/graph/badge.svg)](https://codecov.io/gh/j-fischer/rflib)
+![Build Status](https://img.shields.io/circleci/build/github/j-fischer/rflib/master) ![GitHub](https://img.shields.io/github/license/j-fischer/rflib) ![NPM package version](https://shields.io/npm/v/rflib) [![codecov](https://codecov.io/gh/j-fischer/rflib/branch/master/graph/badge.svg)](https://codecov.io/gh/j-fischer/rflib)
 
 The goal of this library is to help developers to create clean, production-ready code with a high level of operational supportability.
 
