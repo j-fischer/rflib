@@ -96,7 +96,8 @@
         "test:unit:debug": "sfdx-lwc-jest --debug",
         "test:unit:coverage": "sfdx-lwc-jest --coverage",
         "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'"
+        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'",
+        "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\""
     },
     "volta": {
         "node": "16.13.1"
