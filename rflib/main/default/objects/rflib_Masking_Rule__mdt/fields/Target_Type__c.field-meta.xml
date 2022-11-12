@@ -4,7 +4,7 @@
     <defaultValue>&quot;RegEx&quot;</defaultValue>
     <description>Identify the target type of the string that that should be identified in a log message.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Select the type of the target to be replaced.</inlineHelpText>
     <label>Target Type</label>
     <required>true</required>

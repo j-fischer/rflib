@@ -82,7 +82,7 @@ public inherited sharing class rflib_RetryableActionManager {
                         } else {
                             LOGGER.warn('Executing the actions caused an error, retrying; number of retries=' + currentRetry);
                         }
-                        throw new EventBus.RetryableException('Failed to execute action, retyring action event batch.');
+                        throw new EventBus.RetryableException('Failed to execute action, retrying action event batch.');
                     } else {
                         LOGGER.fatal('Failed to execute Action Event Batch, cancelling execution of following actions: ' + actionsByName);
                     }

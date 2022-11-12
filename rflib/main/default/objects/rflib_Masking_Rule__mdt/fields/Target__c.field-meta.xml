@@ -3,7 +3,7 @@
     <fullName>Target__c</fullName>
     <description>This field represents the target that needs to be replaced in the log message.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Identify the target based on the target type that should be replaced in the Log Message.</inlineHelpText>
     <label>Target</label>
     <length>255</length>

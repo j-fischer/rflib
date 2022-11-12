@@ -3,7 +3,7 @@
     <fullName>Order__c</fullName>
     <description>Order in which handlers should be executed in.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <label>Order</label>
     <precision>18</precision>
     <required>true</required>

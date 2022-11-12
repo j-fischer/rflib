@@ -4,7 +4,7 @@
     <defaultValue>true</defaultValue>
     <description>Determines whether a marking rule is active or not.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Activate or deactivate a masking rule. If deactivated, it will not be applied to Log Event messages.</inlineHelpText>
     <label>Active</label>
     <type>Checkbox</type>

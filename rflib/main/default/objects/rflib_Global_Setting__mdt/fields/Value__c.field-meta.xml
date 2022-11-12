@@ -3,7 +3,7 @@
     <fullName>Value__c</fullName>
     <description>String value representation for the given configuration setting.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Please provide a value for this rflib configuration setting.</inlineHelpText>
     <label>Value</label>
     <length>255</length>

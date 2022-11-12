@@ -3,7 +3,7 @@
     <fullName>Object_Name__c</fullName>
     <description>Name of the object the trigger handler will be associated with.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Name of the object the trigger handler will be associated with.</inlineHelpText>
     <label>Object Name</label>
     <length>255</length>
