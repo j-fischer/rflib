@@ -326,27 +326,27 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass -c --wait 30'
+                    'sfdx force:package:beta:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass -c --wait 30'
             },
 
             'force-install-latest': {
                 command:
-                    'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
             },
 
             'force-install-streaming-monitor': {
                 command:
-                    'sfdx force:package:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && ' + 
+                    'sfdx force:package:beta:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && ' + 
                     'sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
             },
 
             'force-install-bigobject-utility': {
                 command:
-                    'sfdx force:package:install --package 04t7F000003irldQAA -u <%= config.alias %> -w 10'
+                    'sfdx force:package:beta:install --package 04t7F000003irldQAA -u <%= config.alias %> -w 10'
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sfdx force:package:beta:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
@@ -375,12 +375,12 @@ module.exports = function(grunt) {
 
             'force-test-package-install-and-upgrade': {
                 command: 
-                    'sfdx force:package:install --package 04t3h000004RdLTAA0 -u <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
-                    'sfdx force:package:install --package 04t3h000004jpyMAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
-                    'sfdx force:package:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
+                    'sfdx force:package:beta:install --package 04t3h000004RdLTAA0 -u <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
+                    'sfdx force:package:beta:install --package 04t3h000004jpyMAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
+                    'sfdx force:package:beta:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
                     'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex' +
                     'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
-                    'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
             },
         }
     });
@@ -440,7 +440,7 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        if (grunt.option('preview') || grunt.env.PREVIEW) {
+        if (grunt.option('preview')) {
             tasks.push('shell:force-create-org-default-preview');
         } else {
             tasks.push('shell:force-create-org-default');
