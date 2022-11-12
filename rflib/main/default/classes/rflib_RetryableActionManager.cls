@@ -61,67 +61,79 @@ public inherited sharing class rflib_RetryableActionManager {
             return;
         }
 
-        Map<String, List<rflib_RetryableActionHandler>> handlersByName = getHandlers(actionsByName.keySet());
+        Map<String, List<RetryableActionHandlerInfo>> handlersByName = getHandlers(actionsByName.keySet());
 
         runHandlers(actionsByName, handlersByName);
     }
 
-    private static void runHandlers(Map<String, List<rflib_Retryable_Action__e>> actionsByName, Map<String, List<rflib_RetryableActionHandler>> handlersByName) {
+    private static void runHandlers(Map<String, List<rflib_Retryable_Action__e>> actionsByName, Map<String, List<RetryableActionHandlerInfo>> handlersByName) {
         for (String actionName : handlersByName.keySet()) {
 
-            for (rflib_RetryableActionHandler handler : handlersByName.get(actionName)) {
+            for (RetryableActionHandlerInfo handlerInfo : handlersByName.get(actionName)) {
+                rflib_RetryableActionHandler handler = handlerInfo.handler;
+
                 try {
                     handler.execute(actionsByName.get(actionName));
                 } catch (Exception ex) {
-                    if (EventBus.TriggerContext.currentContext().retries < 8) {
-                        throw new EventBus.RetryableException('Condition is not met, so retrying the trigger again.');
+                    Integer currentRetry = EventBus.TriggerContext.currentContext().retries;
+                    if (currentRetry < 8) {
+                        if (currentRetry < 6) {
+                            LOGGER.info('Executing the actions caused an error, retrying; number of retries=' + currentRetry);
+                        } else {
+                            LOGGER.warn('Executing the actions caused an error, retrying; number of retries=' + currentRetry);
+                        }
+                        throw new EventBus.RetryableException('Failed to execute action, retyring action event batch.');
                     } else {
-    
+                        LOGGER.fatal('Failed to execute Action Event Batch, cancelling execution of following actions: ' + actionsByName);
                     }
                 } 
             }
         }
     }
 
-    private static Map<String, List<rflib_RetryableActionHandler>> getHandlers(Set<String> eventNames) {
-        Map<String, List<rflib_RetryableActionHandler>> result = new Map<String, List<rflib_RetryableActionHandler>>();
+    private static Map<String, List<RetryableActionHandlerInfo>> getHandlers(Set<String> eventNames) {
+        Map<String, List<RetryableActionHandlerInfo>> result = new Map<String, List<RetryableActionHandlerInfo>>();
 
-        List<rflib_Retryable_Action_Config__mdt> actionHandlers = QUERY_LOCATOR.getRecords(eventNames);
+        Map<String, List<rflib_Retryable_Action_Config__mdt>> actionHandlers = QUERY_LOCATOR.getRecords(eventNames);
 
-        List<String> activeTriggers = new List<String>();
-        for (rflib_Retryable_Action_Config__mdt handlerInfo : actionHandlers) {
-            // activeTriggers.add(handlerInfo.Class_Name__c);
-            // Type handlerType = Type.forName(handlerInfo.Class_Name__c);
-            // if (handlerType == null) {
-            //     LOGGER.error('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
-            //     continue;
-            // }
-            // rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
+        List<String> activeHandlers = new List<String>();
+        for (String actionName : actionHandlers.keySet()) {
+            if (result.get(actionName) == null) {
+                result.put(actionName, new List<RetryableActionHandlerInfo>());
+            }
 
-            // Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';
-            // result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
+            for (rflib_Retryable_Action_Config__mdt handlerInfo : actionHandlers.get(actionName)) {
+
+                activeHandlers.add(handlerInfo.Class_Name__c);
+                Type handlerType = Type.forName(handlerInfo.Class_Name__c);
+                if (handlerType == null) {
+                    LOGGER.error('Could not find Class with name {0} for Action {1}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, actionName });
+                    continue;
+                }
+                rflib_RetryableActionHandler handler = (rflib_RetryableActionHandler) handlerType.newInstance();
+
+                result.get(actionName).add(new RetryableActionHandlerInfo(handler, handlerType));
+            }
         }
 
-        LOGGER.debug('{0} active trigger(s) found for operation {1} on object type {2}: {3}', new List<Object> { activeTriggers.size(), String.join(activeTriggers, ',') });
+        LOGGER.debug('{0} active handlers(s) found for action {1}: {2}', new List<Object> { activeHandlers.size(), String.join(activeHandlers, ',') });
 
         return result;
     }
 
-    public class TriggerHandlerInfo {
-        public final rflib_TriggerHandler handler;
+    public class RetryableActionHandlerInfo {
+        public final rflib_RetryableActionHandler handler;
         public final Type handlerType;
-        public final Boolean catchException;
 
-        public TriggerHandlerInfo(rflib_TriggerHandler handler, Type handlerType, Boolean catchException) {
+        public RetryableActionHandlerInfo(rflib_RetryableActionHandler handler, Type handlerType) {
             this.handler = handler;
             this.handlerType = handlerType;
-            this.catchException = catchException;
         }
     }    
 
 
     public interface RetryableActionConfigurationQueryLocator {
-        List<rflib_Retryable_Action_Config__mdt> getRecords(String actionName);
+        Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames);
     }
 
     public class DefaultRetryableActionConfigurationQueryLocator implements RetryableActionConfigurationQueryLocator {
@@ -129,42 +141,55 @@ public inherited sharing class rflib_RetryableActionManager {
         @TestVisible
         private List<rflib_Retryable_Action_Config__mdt> allConfigValues = rflib_Retryable_Action_Config__mdt.getAll().values();
 
-        public List<rflib_Retryable_Action_Config__mdt> getRecords(String actionName) {
-            List<TriggerConfigurationWrapper> sortable = new List<TriggerConfigurationWrapper>();
+        public Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames) {
+            Map<String, List<RetryableActionConfigurationWrapper>> mapOfSortableLists = new Map<String, List<RetryableActionConfigurationWrapper>>();
             for (rflib_Retryable_Action_Config__mdt config : allConfigValues) {
-                if (config.Active__c && config.Action_Name__c == actionName) {
-                    sortable.add(new TriggerConfigurationWrapper(config));
+                if (mapOfSortableLists.get(config.Action_Name__c) == null) {
+                    mapOfSortableLists.put(config.Action_Name__c, new List<RetryableActionConfigurationWrapper>());
+                }
+
+                if (config.Active__c && actionNames.contains(config.Action_Name__c)) {
+                    List<RetryableActionConfigurationWrapper> sortable = mapOfSortableLists.get(config.Action_Name__c);
+                    sortable.add(new RetryableActionConfigurationWrapper(config));
                 }
             }
 
-            sortable.sort();
+            for (String actionName : mapOfSortableLists.keySet()) {
+                mapOfSortableLists.get(actionName).sort();
+            }
 
-            List<rflib_Trigger_Configuration__mdt> result = new List<rflib_Trigger_Configuration__mdt>();
-            for (TriggerConfigurationWrapper configWrapper : sortable) {
-                result.add(configWrapper.triggerConfig);
+            Map<String, List<rflib_Retryable_Action_Config__mdt>> result = new Map<String, List<rflib_Retryable_Action_Config__mdt>>();
+            for (String actionName : mapOfSortableLists.keySet()) {
+                if (result.get(actionName) == null) {
+                    result.put(actionName, new List<rflib_Retryable_Action_Config__mdt>());
+                }
+
+                for (RetryableActionConfigurationWrapper configWrapper : mapOfSortableLists.get(actionName)) {
+                    result.get(actionName).add(configWrapper.actionConfig);
+                }
             }
             return result;
         }
     }
 
-    public class TriggerConfigurationWrapper implements Comparable {
+    public class RetryableActionConfigurationWrapper implements Comparable {
  
-        public rflib_Trigger_Configuration__mdt triggerConfig;
+        public rflib_Retryable_Action_Config__mdt actionConfig;
         
-        public TriggerConfigurationWrapper(rflib_Trigger_Configuration__mdt triggerConfig) {
-           this.triggerConfig = triggerConfig;
+        public RetryableActionConfigurationWrapper(rflib_Retryable_Action_Config__mdt actionConfig) {
+           this.actionConfig = actionConfig;
         }
         
         public Integer compareTo(Object compareTo) {
-            TriggerConfigurationWrapper compareToConfig = (TriggerConfigurationWrapper) compareTo;
+            RetryableActionConfigurationWrapper compareToConfig = (RetryableActionConfigurationWrapper) compareTo;
 
             if (compareToConfig == null) {
                 return 1;
-            } else if (triggerConfig == null && compareToConfig.triggerConfig == null) {
+            } else if (actionConfig == null && compareToConfig.actionConfig == null) {
                 return 0;
-            } else if (triggerConfig == null && compareToConfig.triggerConfig != null) {
+            } else if (actionConfig == null && compareToConfig.actionConfig != null) {
                 return -1;
-            } else if (triggerConfig != null && compareToConfig.triggerConfig == null) {
+            } else if (actionConfig != null && compareToConfig.actionConfig == null) {
                 return 1;
             }
 
@@ -175,15 +200,15 @@ public inherited sharing class rflib_RetryableActionManager {
                 : compareFieldValue(compareToConfig, 'Class_Name__c');
         }
 
-        private Integer compareFieldValue(TriggerConfigurationWrapper compareTo, String fieldName) {
+        private Integer compareFieldValue(RetryableActionConfigurationWrapper compareTo, String fieldName) {
             Integer returnValue = 0;
-            if ((triggerConfig.get(fieldName) == null) && (compareTo.triggerConfig.get(fieldName) != null)){
+            if ((actionConfig.get(fieldName) == null) && (compareTo.actionConfig.get(fieldName) != null)){
                 returnValue = -1;
-            } else if ((triggerConfig.get(fieldName) != null) && (compareTo.triggerConfig.get(fieldName) == null)){
+            } else if ((actionConfig.get(fieldName) != null) && (compareTo.actionConfig.get(fieldName) == null)){
                 returnValue = 1;
-            } else if (String.valueOf(triggerConfig.get(fieldName)) > String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+            } else if (String.valueOf(actionConfig.get(fieldName)) > String.valueOf(compareTo.actionConfig.get(fieldName))) {
                 returnValue = 1;
-            } else if (String.valueOf(triggerConfig.get(fieldName)) < String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+            } else if (String.valueOf(actionConfig.get(fieldName)) < String.valueOf(compareTo.actionConfig.get(fieldName))) {
                 returnValue = -1;
             }        
             return returnValue;                  

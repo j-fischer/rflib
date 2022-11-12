@@ -4,7 +4,7 @@
     <defaultValue>true</defaultValue>
     <description>Enable or disable a trigger handler.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Enable or disable a trigger handler.</inlineHelpText>
     <label>Active</label>
     <type>Checkbox</type>

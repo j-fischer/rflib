@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Class_Name__c</fullName>
-    <description>Name of the class implementing the rflib_TriggerHandler interface.</description>
+    <fullName>Action_Name__c</fullName>
+    <description>Name of the action for which the handler should be executed for.</description>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
-    <inlineHelpText>Name of the class implementing the rflib_TriggerHandler interface.</inlineHelpText>
-    <label>Class Name</label>
+    <inlineHelpText>Name of the action for which the handler should be executed for.</inlineHelpText>
+    <label>Action_Name</label>
     <length>255</length>
     <required>true</required>
     <type>Text</type>
