@@ -33,6 +33,7 @@
  *              based on the configuration in the Custom Metadata. 
  */ 
 public inherited sharing class rflib_RetryableActionManager {
+
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_RetryableActionManager');
 
     private static Map<String, rflib_RetryableActionHandler> ACTIVE_HANDLERS = new Map<String, rflib_RetryableActionHandler>();
@@ -45,6 +46,8 @@ public inherited sharing class rflib_RetryableActionManager {
      * @param  List<rflib_Retryable_Action__e> List of events to be processed.
      */
     public static void dispatch(List<rflib_Retryable_Action__e> events) {
+        LOGGER.info('Dispatching actions: ' + events);
+
         Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
         for (rflib_Retryable_Action__e evt : events) {
             if (!actionsByName.containsKey(evt.Action__c)) {
@@ -53,6 +56,8 @@ public inherited sharing class rflib_RetryableActionManager {
 
             actionsByName.get(evt.Action__c).add(evt);
         }
+
+        dispatch(actionsByName);
     }
     
     public static void dispatch(Map<String, List<rflib_Retryable_Action__e>> actionsByName) {
@@ -60,6 +65,8 @@ public inherited sharing class rflib_RetryableActionManager {
             LOGGER.warn('"Bypass All Actions" permission detected, exiting trigger execution.');
             return;
         }
+
+        LOGGER.info('Dispatching actions by name: ' + actionsByName);
 
         Map<String, List<RetryableActionHandlerInfo>> handlersByName = getHandlers(actionsByName.keySet());
 
@@ -71,9 +78,11 @@ public inherited sharing class rflib_RetryableActionManager {
 
             for (RetryableActionHandlerInfo handlerInfo : handlersByName.get(actionName)) {
                 rflib_RetryableActionHandler handler = handlerInfo.handler;
+                List<rflib_Retryable_Action__e> actions = actionsByName.get(actionName);
 
                 try {
-                    handler.execute(actionsByName.get(actionName));
+                    LOGGER.debug('Executing handler {0} with events: {1}', new Object[] { handlerInfo.handlerType.getName(), actions } );
+                    handler.execute(actions);
                 } catch (Exception ex) {
                     Integer currentRetry = EventBus.TriggerContext.currentContext().retries;
                     if (currentRetry < 8) {

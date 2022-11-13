@@ -27,5 +27,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 trigger rflib_RetryableActionTrigger on rflib_Retryable_Action__e (after insert) {
-
+    rflib_RetryableActionManager.dispatch(Trigger.new);
 }
