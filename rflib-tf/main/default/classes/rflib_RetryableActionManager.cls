@@ -32,11 +32,10 @@
  * @description This is the core class to manage the invocation of rflib_RetryableAction implementations
  *              based on the configuration in the Custom Metadata. 
  */ 
+@SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_RetryableActionManager {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_RetryableActionManager');
-
-    private static Map<String, rflib_RetryableActionHandler> ACTIVE_HANDLERS = new Map<String, rflib_RetryableActionHandler>();
 
     @TestVisible
     private static RetryableActionConfigurationQueryLocator QUERY_LOCATOR = new DefaultRetryableActionConfigurationQueryLocator();
@@ -46,26 +45,25 @@ public inherited sharing class rflib_RetryableActionManager {
      * @param  List<rflib_Retryable_Action__e> List of events to be processed.
      */
     public static void dispatch(List<rflib_Retryable_Action__e> events) {
-        LOGGER.info('Dispatching actions: ' + events);
-
-        Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
-        for (rflib_Retryable_Action__e evt : events) {
-            if (!actionsByName.containsKey(evt.Action__c)) {
-                actionsByName.put(evt.Action__c, new List<rflib_Retryable_Action__e>());
+        try {
+            LOGGER.info('Dispatching actions: ' + events);
+    
+            Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
+            for (rflib_Retryable_Action__e evt : events) {
+                if (!actionsByName.containsKey(evt.Action__c)) {
+                    actionsByName.put(evt.Action__c, new List<rflib_Retryable_Action__e>());
+                }
+    
+                actionsByName.get(evt.Action__c).add(evt);
             }
-
-            actionsByName.get(evt.Action__c).add(evt);
+    
+            dispatch(actionsByName);
+        } finally {
+            LOGGER.publishBatchedLogEvents();
         }
-
-        dispatch(actionsByName);
     }
     
     public static void dispatch(Map<String, List<rflib_Retryable_Action__e>> actionsByName) {
-        if (FeatureManagement.checkPermission('rflib_Bypass_All_Actions')) {
-            LOGGER.warn('"Bypass All Actions" permission detected, exiting trigger execution.');
-            return;
-        }
-
         LOGGER.info('Dispatching actions by name: ' + actionsByName);
 
         Map<String, List<RetryableActionHandlerInfo>> handlersByName = getHandlers(actionsByName.keySet());
@@ -91,6 +89,7 @@ public inherited sharing class rflib_RetryableActionManager {
                         } else {
                             LOGGER.warn('Executing the actions caused an error, retrying; number of retries=' + currentRetry);
                         }
+                        LOGGER.publishBatchedLogEvents();
                         throw new EventBus.RetryableException('Failed to execute action, retrying action event batch.');
                     } else {
                         LOGGER.fatal('Failed to execute Action Event Batch, cancelling execution of following actions: ' + actionsByName);
