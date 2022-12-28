@@ -34,7 +34,7 @@
  */ 
 public inherited sharing class rflib_RetryableActionManager {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_RetryableActionManager');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_RetryableActionManager');
 
     private static Map<String, rflib_RetryableActionHandler> ACTIVE_HANDLERS = new Map<String, rflib_RetryableActionHandler>();
 

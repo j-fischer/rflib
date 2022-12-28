@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_DefaultBigObjectDatabaseExecutor implements rflib_BigObjectDatabaseExecutor {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultBigObjectDatabaseExecutor');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_DefaultBigObjectDatabaseExecutor');
     
     public static Integer NUM_RETRIES = 3;
 
@@ -46,7 +46,7 @@ public class rflib_DefaultBigObjectDatabaseExecutor implements rflib_BigObjectDa
 
     public void insertImmediate(List<SObject> records) {
         // See https://developer.salesforce.com/docs/atlas.en-us.bigobjects.meta/bigobjects/big_object_considerations.htm
-        new BigObjectDatabaseInsertQueueable(db, records, NUM_RETRIES).execute(null);
+        System.enqueueJob(new BigObjectDatabaseInsertQueueable(db, records, NUM_RETRIES));
     }
 
     private class BigObjectDatabaseInsertQueueable implements Queueable {
@@ -66,7 +66,7 @@ public class rflib_DefaultBigObjectDatabaseExecutor implements rflib_BigObjectDa
             Boolean shouldRetry = false;
             for (Database.SaveResult res : results) {
                 if (!res.isSuccess()) {
-                    LOGGER.trace('Failed to insert big object: ' + res.getErrors());
+                    LOGGER.debug('Failed to insert big object: ' + res.getErrors());
                     shouldRetry = true;
                 }
             }
