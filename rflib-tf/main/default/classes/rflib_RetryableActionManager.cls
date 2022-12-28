@@ -29,7 +29,7 @@
 
 /**
  * @group RetryableAction
- * @description This is the core class to manage the invocation of rflib_RetryableAction implementations
+ * @description This is the core class to manage the invocation of rflib_RetryableActionHandler implementations
  *              based on the configuration in the Custom Metadata. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
@@ -41,7 +41,7 @@ public inherited sharing class rflib_RetryableActionManager {
     private static RetryableActionConfigurationQueryLocator QUERY_LOCATOR = new DefaultRetryableActionConfigurationQueryLocator();
 
     /**
-     * This is the handler that is invoked from the Retryable Action trigger.
+     * This is the dispatch function that is invoked from the Retryable Action trigger.
      * @param  List<rflib_Retryable_Action__e> List of events to be processed.
      */
     public static void dispatch(List<rflib_Retryable_Action__e> events) {
@@ -138,7 +138,6 @@ public inherited sharing class rflib_RetryableActionManager {
             this.handlerType = handlerType;
         }
     }    
-
 
     public interface RetryableActionConfigurationQueryLocator {
         Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames);

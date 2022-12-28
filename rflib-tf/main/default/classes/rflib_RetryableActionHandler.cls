@@ -26,8 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+/**
+ * @group RetryableAction
+ * @description This is the interface that handler classes defined in the Custom Metadata configuration need to implement. 
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public interface rflib_RetryableActionHandler {
 
+    /**
+     * Method to be invoked by the Retryable Action Framework when an Action Platform Event is executed in the main event context. 
+     * @param  actions The rflib_Retryable_Action__e object containing all action details.
+     */
     void execute(List<rflib_Retryable_Action__e> actions);
 }
