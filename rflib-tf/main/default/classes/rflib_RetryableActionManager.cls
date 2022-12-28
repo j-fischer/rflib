@@ -47,6 +47,11 @@ public inherited sharing class rflib_RetryableActionManager {
     public static void dispatch(List<rflib_Retryable_Action__e> events) {
         try {
             LOGGER.info('Dispatching actions: ' + events);
+
+            if (rflib_FeatureSwitch.isTurnedOff('All_Retryable_Actions')) {
+                LOGGER.warn('The All Retryable Actions Feature switch is turned off, exiting execution.');
+                return;
+            }
     
             Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
             for (rflib_Retryable_Action__e evt : events) {

@@ -65,7 +65,7 @@ public inherited sharing class rflib_TriggerManager {
         List<TriggerHandlerInfo> handlers = getHandlers(args);
 
         if (rflib_FeatureSwitch.isTurnedOff('All_Triggers')) {
-            LOGGER.warn('All Trigger Feature switch turned off, exiting trigger execution.');
+            LOGGER.warn('The All Trigger Feature switch is turned off, exiting trigger execution.');
             return;
         }
 
