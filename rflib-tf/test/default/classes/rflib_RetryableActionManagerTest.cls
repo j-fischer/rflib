@@ -58,6 +58,21 @@ private class rflib_RetryableActionManagerTest {
     }
 
     @IsTest
+    public static void testRun_InvalidHandlerType() {
+        setup();
+
+        rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
+            createConfiguration('Action_One', 1, true, 'rflib_InvalidHandlerName')
+        };
+
+        Test.startTest();
+        rflib_RetryableActionManager.dispatch(createEvents());
+        Test.stopTest();
+
+        Assert.areEqual(0, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+    }
+
+    @IsTest
     public static void testExecute_OneHandler() {
         setup();
 
@@ -73,7 +88,7 @@ private class rflib_RetryableActionManagerTest {
     }
 
     @IsTest
-    public static void testExecute_MultipleHandler() {
+    public static void testExecute_MultipleHandlers() {
         setup();
 
         rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
@@ -162,9 +177,18 @@ private class rflib_RetryableActionManagerTest {
     }
     
     private static rflib_Retryable_Action_Config__mdt createConfiguration(String actionName, Integer order, Boolean active) {
+        return createConfiguration(
+          actionName,
+          order,
+          active,
+          'rflib_MockRetryableActionHandler'  
+        );
+    }
+
+    private static rflib_Retryable_Action_Config__mdt createConfiguration(String actionName, Integer order, Boolean active, String className) {
         return new rflib_Retryable_Action_Config__mdt(
             Active__c = active,
-            Class_Name__c = 'rflib_MockRetryableActionHandler',
+            Class_Name__c = className,
             Action_Name__c = actionName,
             Order__c = order
         );
