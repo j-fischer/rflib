@@ -38,34 +38,30 @@ public inherited sharing class rflib_RetryableActionManager {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_RetryableActionManager');
 
     @TestVisible
-    private static RetryableActionConfigurationQueryLocator QUERY_LOCATOR = new DefaultRetryableActionConfigurationQueryLocator();
+    private static List<rflib_Retryable_Action_Config__mdt> ALL_CONFIG_VALUES = rflib_Retryable_Action_Config__mdt.getAll().values();
 
     /**
      * This is the dispatch function that is invoked from the Retryable Action trigger.
      * @param  List<rflib_Retryable_Action__e> List of events to be processed.
      */
     public static void dispatch(List<rflib_Retryable_Action__e> events) {
-        try {
-            LOGGER.info('Dispatching actions: ' + events);
+        LOGGER.info('Dispatching actions: ' + events);
 
-            if (rflib_FeatureSwitch.isTurnedOff('All_Retryable_Actions')) {
-                LOGGER.warn('The All Retryable Actions Feature switch is turned off, exiting execution.');
-                return;
-            }
-    
-            Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
-            for (rflib_Retryable_Action__e evt : events) {
-                if (!actionsByName.containsKey(evt.Action__c)) {
-                    actionsByName.put(evt.Action__c, new List<rflib_Retryable_Action__e>());
-                }
-    
-                actionsByName.get(evt.Action__c).add(evt);
-            }
-    
-            dispatch(actionsByName);
-        } finally {
-            LOGGER.publishBatchedLogEvents();
+        if (rflib_FeatureSwitch.isTurnedOff('All_Retryable_Actions')) {
+            LOGGER.warn('The All Retryable Actions Feature switch is turned off, exiting execution.');
+            return;
         }
+
+        Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
+        for (rflib_Retryable_Action__e evt : events) {
+            if (!actionsByName.containsKey(evt.Action__c)) {
+                actionsByName.put(evt.Action__c, new List<rflib_Retryable_Action__e>());
+            }
+
+            actionsByName.get(evt.Action__c).add(evt);
+        }
+
+        dispatch(actionsByName);
     }
     
     public static void dispatch(Map<String, List<rflib_Retryable_Action__e>> actionsByName) {
@@ -94,7 +90,6 @@ public inherited sharing class rflib_RetryableActionManager {
                         } else {
                             LOGGER.warn('Executing the actions caused an error, retrying; number of retries=' + currentRetry);
                         }
-                        LOGGER.publishBatchedLogEvents();
                         throw new EventBus.RetryableException('Failed to execute action, retrying action event batch.');
                     } else {
                         LOGGER.fatal('Failed to execute Action Event Batch, cancelling execution of following actions: ' + actionsByName);
@@ -107,7 +102,7 @@ public inherited sharing class rflib_RetryableActionManager {
     private static Map<String, List<RetryableActionHandlerInfo>> getHandlers(Set<String> eventNames) {
         Map<String, List<RetryableActionHandlerInfo>> result = new Map<String, List<RetryableActionHandlerInfo>>();
 
-        Map<String, List<rflib_Retryable_Action_Config__mdt>> actionHandlers = QUERY_LOCATOR.getRecords(eventNames);
+        Map<String, List<rflib_Retryable_Action_Config__mdt>> actionHandlers = getFilteredAndSortedConfigurationRecords(eventNames);
 
         List<String> activeHandlers = new List<String>();
         for (String actionName : actionHandlers.keySet()) {
@@ -134,6 +129,36 @@ public inherited sharing class rflib_RetryableActionManager {
         return result;
     }
 
+    private static Map<String, List<rflib_Retryable_Action_Config__mdt>> getFilteredAndSortedConfigurationRecords(Set<String> actionNames) {
+        Map<String, List<RetryableActionConfigurationWrapper>> mapOfSortableLists = new Map<String, List<RetryableActionConfigurationWrapper>>();
+        for (rflib_Retryable_Action_Config__mdt config : ALL_CONFIG_VALUES) {
+            if (mapOfSortableLists.get(config.Action_Name__c) == null) {
+                mapOfSortableLists.put(config.Action_Name__c, new List<RetryableActionConfigurationWrapper>());
+            }
+
+            if (config.Active__c && actionNames.contains(config.Action_Name__c)) {
+                List<RetryableActionConfigurationWrapper> sortable = mapOfSortableLists.get(config.Action_Name__c);
+                sortable.add(new RetryableActionConfigurationWrapper(config));
+            }
+        }
+
+        for (String actionName : mapOfSortableLists.keySet()) {
+            mapOfSortableLists.get(actionName).sort();
+        }
+
+        Map<String, List<rflib_Retryable_Action_Config__mdt>> result = new Map<String, List<rflib_Retryable_Action_Config__mdt>>();
+        for (String actionName : mapOfSortableLists.keySet()) {
+            if (result.get(actionName) == null) {
+                result.put(actionName, new List<rflib_Retryable_Action_Config__mdt>());
+            }
+
+            for (RetryableActionConfigurationWrapper configWrapper : mapOfSortableLists.get(actionName)) {
+                result.get(actionName).add(configWrapper.actionConfig);
+            }
+        }
+        return result;
+    }
+
     public class RetryableActionHandlerInfo {
         public final rflib_RetryableActionHandler handler;
         public final Type handlerType;
@@ -146,42 +171,6 @@ public inherited sharing class rflib_RetryableActionManager {
 
     public interface RetryableActionConfigurationQueryLocator {
         Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames);
-    }
-
-    public class DefaultRetryableActionConfigurationQueryLocator implements RetryableActionConfigurationQueryLocator {
-
-        @TestVisible
-        private List<rflib_Retryable_Action_Config__mdt> allConfigValues = rflib_Retryable_Action_Config__mdt.getAll().values();
-
-        public Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames) {
-            Map<String, List<RetryableActionConfigurationWrapper>> mapOfSortableLists = new Map<String, List<RetryableActionConfigurationWrapper>>();
-            for (rflib_Retryable_Action_Config__mdt config : allConfigValues) {
-                if (mapOfSortableLists.get(config.Action_Name__c) == null) {
-                    mapOfSortableLists.put(config.Action_Name__c, new List<RetryableActionConfigurationWrapper>());
-                }
-
-                if (config.Active__c && actionNames.contains(config.Action_Name__c)) {
-                    List<RetryableActionConfigurationWrapper> sortable = mapOfSortableLists.get(config.Action_Name__c);
-                    sortable.add(new RetryableActionConfigurationWrapper(config));
-                }
-            }
-
-            for (String actionName : mapOfSortableLists.keySet()) {
-                mapOfSortableLists.get(actionName).sort();
-            }
-
-            Map<String, List<rflib_Retryable_Action_Config__mdt>> result = new Map<String, List<rflib_Retryable_Action_Config__mdt>>();
-            for (String actionName : mapOfSortableLists.keySet()) {
-                if (result.get(actionName) == null) {
-                    result.put(actionName, new List<rflib_Retryable_Action_Config__mdt>());
-                }
-
-                for (RetryableActionConfigurationWrapper configWrapper : mapOfSortableLists.get(actionName)) {
-                    result.get(actionName).add(configWrapper.actionConfig);
-                }
-            }
-            return result;
-        }
     }
 
     public class RetryableActionConfigurationWrapper implements Comparable {

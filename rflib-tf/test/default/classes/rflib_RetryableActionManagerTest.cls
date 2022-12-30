@@ -30,8 +30,14 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_RetryableActionManagerTest {
 
+    private static final Exception EX = new rflib_TestException('This is a rflib_MockRetryableActionHandlerException');
+
     private static void setup() {
         rflib_TestUtil.prepareLoggerForUnitTests();
+
+        rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
+            createConfiguration('Action_One', 1)
+        };
     }
 
     @IsTest
@@ -44,9 +50,68 @@ private class rflib_RetryableActionManagerTest {
             }
         };
 
+        Test.startTest();
         rflib_RetryableActionManager.dispatch(createEvents());
+        Test.stopTest();
 
         System.assertEquals(0, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+    }
+
+    @IsTest
+    public static void testExecute_OneHandler() {
+        setup();
+
+        List<rflib_Retryable_Action__e> events = createEvents();
+        
+        Test.startTest();
+        rflib_RetryableActionManager.dispatch(events);
+        Test.stopTest();
+
+        System.assertEquals(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+    }
+
+    @IsTest
+    public static void testExecute_MultipleHandler() {
+        setup();
+
+        rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
+            createConfiguration('Action_One', 1),
+            createConfiguration('Action_One', 2)
+        };
+
+        List<rflib_Retryable_Action__e> events = createEvents();
+        
+        Test.startTest();
+        rflib_RetryableActionManager.dispatch(events);
+        Test.stopTest();
+
+        // It would be expected that each handler is a different class, but the test scenario was simplified with a single mock.
+        System.assertEquals(4, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(2).Record_ID__c);
+        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(3).Record_ID__c);
+    }
+
+    @IsTest
+    public static void testExecute_DeactivatedHandler() {
+        setup();
+
+        rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
+            createConfiguration('Action_One', 1, false),
+            createConfiguration('Action_Two', 1)
+        };
+
+        List<rflib_Retryable_Action__e> events = createEvents();
+        
+        Test.startTest();
+        rflib_RetryableActionManager.dispatch(events);
+        Test.stopTest();
+
+        System.assertEquals(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        System.assertEquals('recId2', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
     }
 
     private static List<rflib_Retryable_Action__e> createEvents() {
@@ -66,12 +131,20 @@ private class rflib_RetryableActionManagerTest {
         };
     }
 
-    public class MockRetryableActionConfigurationQueryLocator implements rflib_RetryableActionManager.RetryableActionConfigurationQueryLocator {
-
-
-
-        public Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames) {
-            return null;
-        }
-    }   
+    private static rflib_Retryable_Action_Config__mdt createConfiguration(String actionName, Integer order) {
+        return createConfiguration(
+            actionName,
+            order,
+            true
+        );
+    }
+    
+    private static rflib_Retryable_Action_Config__mdt createConfiguration(String actionName, Integer order, Boolean active) {
+        return new rflib_Retryable_Action_Config__mdt(
+            Active__c = active,
+            Class_Name__c = 'rflib_MockRetryableActionHandler',
+            Action_Name__c = actionName,
+            Order__c = order
+        );
+    }
 }
