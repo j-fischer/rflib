@@ -346,7 +346,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     
     Integer messageSize = maskedLogMessagesIfApplicable.length();
     
+    // see https://github.com/j-fischer/rflib/issues/67
     String requestId = Request.getCurrent().getRequestId();
+    if (requestId == null) {
+      requestId = 'NULL';
+    }
+
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
       Request_ID__c = requestId.substring(0, Math.min(requestId.length(), 40)),
       Log_Level__c = logLevel.toString(),
