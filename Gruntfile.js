@@ -326,7 +326,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:beta:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass -c --wait 30'
+                    'sfdx force:package:beta:version:create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
             },
 
             'force-install-latest': {
@@ -418,16 +418,10 @@ module.exports = function(grunt) {
             bumpVersion(grunt, config);
         }
         
-        // Workaround for https://github.com/forcedotcom/cli/issues/1515
-        tasks.push('rename:bigObjectIndexForPackaging');
-        
         tasks.push('shell:force-create-release-candidate');
         tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
         tasks.push('gitcommit:version');
-
-        // Workaround for https://github.com/forcedotcom/cli/issues/1515
-        tasks.push('rename:bigObjectIndexForDeployment');
 
         grunt.task.run(tasks);
     });
