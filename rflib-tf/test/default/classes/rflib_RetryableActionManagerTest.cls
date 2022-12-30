@@ -30,7 +30,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_RetryableActionManagerTest {
 
-    private static final Exception EX = new rflib_TestException('This is a rflib_MockRetryableActionHandlerException');
+    private static final Exception EX = new TestException('This is a rflib_MockRetryableActionHandlerException');
 
     private static void setup() {
         rflib_TestUtil.prepareLoggerForUnitTests();
@@ -54,7 +54,7 @@ private class rflib_RetryableActionManagerTest {
         rflib_RetryableActionManager.dispatch(createEvents());
         Test.stopTest();
 
-        System.assertEquals(0, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual(0, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
     }
 
     @IsTest
@@ -67,9 +67,9 @@ private class rflib_RetryableActionManagerTest {
         rflib_RetryableActionManager.dispatch(events);
         Test.stopTest();
 
-        System.assertEquals(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
-        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+        Assert.areEqual(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
     }
 
     @IsTest
@@ -88,11 +88,11 @@ private class rflib_RetryableActionManagerTest {
         Test.stopTest();
 
         // It would be expected that each handler is a different class, but the test scenario was simplified with a single mock.
-        System.assertEquals(4, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
-        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
-        System.assertEquals('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(2).Record_ID__c);
-        System.assertEquals('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(3).Record_ID__c);
+        Assert.areEqual(4, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(2).Record_ID__c);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(3).Record_ID__c);
     }
 
     @IsTest
@@ -110,8 +110,30 @@ private class rflib_RetryableActionManagerTest {
         rflib_RetryableActionManager.dispatch(events);
         Test.stopTest();
 
-        System.assertEquals(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        System.assertEquals('recId2', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        Assert.areEqual(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual('recId2', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+    }
+
+    @IsTest
+    public static void testExecute_HandlerThrowsException() {
+        setup();
+
+        rflib_MockRetryableActionHandler.EXCEPTION_ON_EXECUTE = EX;
+
+        List<rflib_Retryable_Action__e> events = createEvents();
+        
+        Test.startTest();
+        try {
+            rflib_RetryableActionManager.dispatch(events);
+            Assert.fail('Expected RetryableException');
+        } catch (EventBus.RetryableException actualException) {
+            Assert.areEqual('Failed to execute action, retrying action event batch.', actualException.getMessage());
+        }
+        Test.stopTest();
+
+        Assert.areEqual(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
     }
 
     private static List<rflib_Retryable_Action__e> createEvents() {
@@ -147,4 +169,6 @@ private class rflib_RetryableActionManagerTest {
             Order__c = order
         );
     }
+
+    public class TestException extends Exception { }
 }
