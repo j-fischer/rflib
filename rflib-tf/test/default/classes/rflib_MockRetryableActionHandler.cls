@@ -28,50 +28,26 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_RetryableActionManagerTest {
+public class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
+    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockRetryableActionHandler');
 
-    private static void setup() {
-        rflib_TestUtil.prepareLoggerForUnitTests();
-    }
+    public static List<rflib_Retryable_Action__e> CAPTURED_ACTION_EVENTS = new List<rflib_Retryable_Action__e>();
 
-    @IsTest
-    public static void testRun_AllRetryableActionsFeatureSwitchOff() {
-        setup();
+    public static Exception EXCEPTION_ON_EXECUTE = null;
+    public static Callable ACTION_WHEN_CALLED = null;
 
-        rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
-            'All_Retryable_Actions' => new Map<String,Boolean> {
-                rflib_FeatureSwitch.GLOBAL_SCOPE => false   
-            }
-        };
+    public void execute(List<rflib_Retryable_Action__e> actions) {
+        LOGGER.info('run() invoked');
 
-        rflib_RetryableActionManager.dispatch(createEvents());
+        CAPTURED_ACTION_EVENTS.addAll(actions);
 
-        System.assertEquals(0, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-    }
-
-    private static List<rflib_Retryable_Action__e> createEvents() {
-        return new List<rflib_Retryable_Action__e> {
-            new rflib_Retryable_Action__e(
-                Record_ID__c = 'recId1',
-                Action__c = 'Action_One'
-            ),
-            new rflib_Retryable_Action__e(
-                Record_ID__c = 'recId2',
-                Action__c = 'Action_Two'
-            ),
-            new rflib_Retryable_Action__e(
-                Record_ID__c = 'recId3',
-                Action__c = 'Action_One'
-            )
-        };
-    }
-
-    public class MockRetryableActionConfigurationQueryLocator implements rflib_RetryableActionManager.RetryableActionConfigurationQueryLocator {
-
-
-
-        public Map<String, List<rflib_Retryable_Action_Config__mdt>> getRecords(Set<String> actionNames) {
-            return null;
+        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_EXECUTE != null) });
+        if (ACTION_WHEN_CALLED != null) {
+            ACTION_WHEN_CALLED.call('run', new Map<String, Object> { 'actions' => actions });
         }
-    }   
+
+        if (EXCEPTION_ON_EXECUTE != null) {
+            throw EXCEPTION_ON_EXECUTE;
+        }
+    }
 }
