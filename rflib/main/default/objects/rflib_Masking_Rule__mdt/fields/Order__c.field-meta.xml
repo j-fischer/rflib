@@ -3,7 +3,7 @@
     <fullName>Order__c</fullName>
     <description>The order in which the masking rules will be executed.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Provide a value that determines the order in which the masking rules will be applied.</inlineHelpText>
     <label>Order</label>
     <precision>5</precision>
