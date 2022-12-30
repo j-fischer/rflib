@@ -527,15 +527,16 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test', 'Run server and client tests', function() {
         var tasks = [
-            'prompt:alias',
-            'shell:lint',
-            'shell:test-lwc'
+            'prompt:alias'
         ];
 
         if (!grunt.option('lwc-only')) {
             tasks.push('shell:force-push');
             tasks.push('shell:force-test');
         }
+        
+        tasks.push('shell:lint');
+        tasks.push('shell:test-lwc');
  
         grunt.task.run(tasks);
     });

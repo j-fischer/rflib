@@ -59,7 +59,7 @@
         "grunt-semver": "^0.1.9",
         "grunt-shell": "^4.0.0",
         "hamjest": "^3.7.3",
-        "husky": "^8.0.1",
+        "husky": "^8.0.2",
         "jit-grunt": "^0.10.0",
         "js-mock": "^2.0.0",
         "lint-staged": "^13.0.3",
@@ -96,7 +96,9 @@
         "test:unit:debug": "sfdx-lwc-jest --debug",
         "test:unit:coverage": "sfdx-lwc-jest --coverage",
         "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'"
+        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'",
+        "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
+        "prepare": "husky install"
     },
     "volta": {
         "node": "16.13.1"

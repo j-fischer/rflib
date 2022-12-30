@@ -55,7 +55,7 @@ jobs:
             - run:
                   name: Define CI Org
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/$CONFIG_FILE.json -a ciorg -d 1 --wait 4
+                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/$CONFIG_FILE.json -a ciorg -d 1 --wait 10
             - run:
                   name: Remove Server Key
                   when: always
