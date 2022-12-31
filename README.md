@@ -38,6 +38,7 @@ The following lists describe some of the key features of rflib.
 -   Fully decoupled framework, trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
 -   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
+-   Framework for Retryable Actions using Platform Events for asynchronous actions
 
 ## Deploy
 
