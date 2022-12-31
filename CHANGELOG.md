@@ -1,3 +1,12 @@
+### RFLIB-TF 2.1.0
+
+Package ID: 04t3h000004sqJMAAY
+Package Alias: RFLIB-TF@2.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqJMAAY
+
+-   [PR #69](https://github.com/j-fischer/rflib/pull/69) Added new framework for Retryable Actions, which allows for the use of platform events to run asynchronous tasks that will automatically be retried if they fail
+-   Changed package dependency on RFLIB to version 4.1.0
+
 ### RFLIB 4.1.0
 
 Package ID: 04t3h000004sqJHAAY
@@ -5,7 +14,7 @@ Package Alias: RFLIB@4.1.0-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqJHAAY
 
 -   [PR #69](https://github.com/j-fischer/rflib/pull/69) Updated `rflib_DefaultBigObjectDatabaseExecutor` to always use a Queueable for inserting a record into the Log Archive (see https://developer.salesforce.com/docs/atlas.en-us.bigobjects.meta/bigobjects/big_object_considerations.htm)
--   [Issue #67](https://github.com/j-fischer/rflib/issues/67) Added handling of the edge case when the Request ID is null, which causes a NullPointerException in the default logger. If the request ID is null, a "NULL" string will be used as the request ID instead.
+-   [Issue #67](https://github.com/j-fischer/rflib/issues/67) Added handling of the edge case when the Request ID is null, which causes a NullPointerException in the default logger. If the request ID is null, a "NULL" string will be used as the request ID instead
 
 ### RFLIB 4.0.1
 
