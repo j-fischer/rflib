@@ -1,3 +1,11 @@
+### RFLIB 4.1.0
+
+Package ID: 04t3h000004sqJHAAY
+Package Alias: RFLIB@4.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqJHAAY
+
+-   [PR #69](https://github.com/j-fischer/rflib/pull/69) Updated `rflib_DefaultBigObjectDatabaseExecutor` to always use a Queueable for inserting a record into the Log Archive (see https://developer.salesforce.com/docs/atlas.en-us.bigobjects.meta/bigobjects/big_object_considerations.htm)
+-   [Issue #67](https://github.com/j-fischer/rflib/issues/67) Added handling of the edge case when the Request ID is null, which causes a NullPointerException in the default logger. If the request ID is null, a "NULL" string will be used as the request ID instead.
 
 ### RFLIB 4.0.1
 
@@ -7,7 +15,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 
 -   Improved CSS for the Management Dashboard's UserPermissionAssignmentList component
 -   Added icon for Logger Flow Action
--   Introdcued query paramenter "c__debug" that allows to trigger debugging mode for the EMP API
+-   Introdcued query paramenter "c\_\_debug" that allows to trigger debugging mode for the EMP API
 -   Changed labels for all permission sets to have the "RFLIB - " prefix to make them eassier to find
 
 ### RFLIB-TF 2.0.0
