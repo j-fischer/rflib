@@ -34,9 +34,11 @@ private class rflib_StringUtilTest {
 
     @IsTest
     private static void testReplaceWithAllMaskingRules_WithoutRules() {
-        rflib_StringUtil.allMaskingRules = new List<rflib_Masking_Rule__mdt>();
+        rflib_StringUtil.allActiveMaskingRules = new List<rflib_Masking_Rule__mdt>();
 
+        Test.startTest();
         System.assertEquals(SOURCE, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
+        Test.stopTest();
     }
 
     @IsTest
@@ -47,9 +49,11 @@ private class rflib_StringUtilTest {
             createRule('[A-Z]+', '#')
         };
 
-        rflib_StringUtil.allMaskingRules = rules;
+        rflib_StringUtil.allActiveMaskingRules = rules;
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithAllMaskingRules(SOURCE);
+        Test.stopTest();
 
         System.assertEquals('a#c*def*-#-', result);
     }
@@ -61,7 +65,9 @@ private class rflib_StringUtilTest {
             createRule('[A-Z]+', '#')
         };
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRules(SOURCE, rules);
+        Test.stopTest();
 
         System.assertEquals('a#c*def*!@_#(_', result);
     }
@@ -70,7 +76,9 @@ private class rflib_StringUtilTest {
     public static void testReplaceWithRule_Regex() {
         rflib_Masking_Rule__mdt rule = createRule('[0-9]+', '*****');
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRule(SOURCE, rule);
+        Test.stopTest();
 
         System.assertEquals('aBc*****def*****!@_#(_', result);
     }
@@ -85,18 +93,56 @@ private class rflib_StringUtilTest {
             Order__c = 1
         );
 
+        Test.startTest();
         String result = rflib_StringUtil.replaceWithRule(SOURCE, rule);
+        Test.stopTest();
 
         System.assertEquals(source, result);
     }
 
+    @IsTest
+    public static void testRuleWrapper() {
+        rflib_StringUtil.WrappedMaskingRules rule1 = new rflib_StringUtil.WrappedMaskingRules(createRule(1));
+        rflib_StringUtil.WrappedMaskingRules rule2 = new rflib_StringUtil.WrappedMaskingRules(createRule(2));
+        rflib_StringUtil.WrappedMaskingRules rule3 = new rflib_StringUtil.WrappedMaskingRules(createRule(3));
+        rflib_StringUtil.WrappedMaskingRules rule4 = new rflib_StringUtil.WrappedMaskingRules(createRule(2));
+        rflib_StringUtil.WrappedMaskingRules noRule = new rflib_StringUtil.WrappedMaskingRules(null);
+
+        System.assertEquals(1, rule1.compareTo(null));
+        System.assertEquals(1, rule1.compareTo(noRule));
+        System.assertEquals(-1, noRule.compareTo(rule1));
+        System.assertEquals(0, rule2.compareTo(rule4));
+        System.assertEquals(0, noRule.compareTo(noRule));
+        System.assertEquals(-1, noRule.compareTo(rule1));
+        System.assertEquals(-1, rule1.compareTo(rule2));
+        System.assertEquals(-1, rule2.compareTo(rule3));
+        System.assertEquals(1, rule3.compareTo(rule2));
+        System.assertEquals(1, rule3.compareTo(rule1));
+    }
+
+   @IsTest
+   private static void testMaskingRules() {
+        // This test is for code coverage purposes only
+        Test.startTest();
+        System.assertNotEquals(null, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
+        Test.stopTest();
+   }
+
     private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
+        return createRule(target, replacement, 1);
+    }
+
+    private static rflib_Masking_Rule__mdt createRule(Integer order) {
+        return createRule('[0-9]+', '*****', order);
+    }
+
+    private static rflib_Masking_Rule__mdt createRule(String target, String replacement, Integer order) {
         return new rflib_Masking_Rule__mdt(
             Target__c = target,
             Target_Type__c = 'RegEx',
             Replacement__c = replacement,
             Is_Active__c = true,
-            Order__c = 1
+            Order__c = order
         );
     }
 }

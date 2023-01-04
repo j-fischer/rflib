@@ -2,7 +2,7 @@ const _ = require('lodash');
 const semver = require('semver');
 
 const bumpVersion = function(grunt, config) {
-    if (config.package.package === "RFLIB") {
+    if (config.package.package === "RFLIB" && _.includes(['major'], config.version.nextVersionType)) {
         config.packageFile.version = config.version.nextVersion;
         grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 4));
     }
@@ -25,6 +25,9 @@ const bumpVersion = function(grunt, config) {
 }
 
 module.exports = function(grunt) {
+    // show elapsed time at the end
+    require('time-grunt')(grunt);
+
     // load all grunt tasks needed for this run
     require('jit-grunt')(grunt);
     grunt.loadNpmTasks('grunt-git');
@@ -56,6 +59,28 @@ module.exports = function(grunt) {
     grunt.initConfig({
         config: config,
         env: process.env,
+
+        rename: {
+            bigObjectIndexForPackaging: {
+              files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'},
+                ]
+            },
+            bigObjectIndexForDeployment: {
+                files: [
+                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'},
+                ]
+            }
+        },
+
+        confirm: {
+            deleteOrg: {
+                options: {
+                    question: 'Ready to delete org. Press "y" to continue or any other key to cancel...',
+                    input: '_key:y'
+                }
+            }
+        },
 
         prompt: {
             alias: {
@@ -157,8 +182,8 @@ module.exports = function(grunt) {
                             message:
                                 'Should the dependencies for the package <%= config.package.package %> be updated to version <%= config.version.nextVersion %> as well?',
                             choices: [
-                                { name: 'Yes', value: true },
-                                { name: 'No', value: false }
+                                { name: 'No', value: false },
+                                { name: 'Yes', value: true }
                             ]
                         }
                     ]
@@ -217,6 +242,7 @@ module.exports = function(grunt) {
                     ],
                     then: function(results) {
                         if (_.includes(['patch', 'minor', 'major'], results['config.version.nextVersion'])) {
+                            config.version.nextVersionType = results['config.version.nextVersion'];
                             config.version.nextVersion = config.package[results['config.version.nextVersion']];
                         }
                     }
@@ -256,7 +282,7 @@ module.exports = function(grunt) {
         gitpush: {
             origin: {
                 options: {
-                    tag: true
+                    tags: true
                 }
             }
         },
@@ -266,10 +292,18 @@ module.exports = function(grunt) {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
             },
 
+            'force-create-org-default-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -s '
+            },
+
             'force-create-org': {
                 command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
             },
-            
+
+            'force-create-org-preview': {
+                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %>'
+            },
+
             'force-delete-org': {
                 command: 'sfdx force:org:delete -u <%= config.alias %> -p'
             },
@@ -292,20 +326,43 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:version:create --path <%= config.package.path %> --package <%= config.package.package %> --installationkeybypass -c --wait 30'
+                    'sfdx force:package:beta:version:create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
             },
 
             'force-install-latest': {
                 command:
-                    'sfdx force:package:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+            },
+
+            'force-install-streaming-monitor': {
+                command:
+                    'sfdx force:package:beta:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && ' + 
+                    'sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
+            },
+
+            'force-install-bigobject-utility': {
+                command:
+                    'sfdx force:package:beta:install --package 04t7F000003irldQAA -u <%= config.alias %> -w 10'
             },
 
             'force-promote': {
-                command: 'sfdx force:package:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sfdx force:package:beta:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
                 command: 'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %>'
+            },
+
+            'force-create-qa-user': {
+                command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa_user --definitionfile config/qa-user-def.json'
+            },
+
+            'force-configure-settings': {
+                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
+            },
+
+            'force-create-log-event': {
+                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
             },
 
             'test-lwc': {
@@ -314,7 +371,17 @@ module.exports = function(grunt) {
 
             'lint': {
                 command: 'npm run lint'
-            }
+            }, 
+
+            'force-test-package-install-and-upgrade': {
+                command: 
+                    'sfdx force:package:beta:install --package 04t3h000004RdLTAA0 -u <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
+                    'sfdx force:package:beta:install --package 04t3h000004jpyMAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
+                    'sfdx force:package:beta:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
+                    'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex &&' +
+                    'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
+                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+            },
         }
     });
 
@@ -350,7 +417,7 @@ module.exports = function(grunt) {
         if (grunt.config('config.version.nextVersion') !== 'build') {
             bumpVersion(grunt, config);
         }
-
+        
         tasks.push('shell:force-create-release-candidate');
         tasks.push('__updateDependencies');
         tasks.push('gitadd:version');
@@ -362,31 +429,71 @@ module.exports = function(grunt) {
     /*
      * Public BUILD TARGETS
      */
-    grunt.registerTask('create-scratch', 'Setup default scratch org', function() {
-        grunt.task.run([
-            'prompt:alias',
-            'shell:force-create-org-default',
+    grunt.registerTask('create-scratch', 'Setup default scratch org with either the current or a preview version', function() {
+        let tasks = [
+            'prompt:alias'
+        ];
+
+        if (grunt.option('preview')) {
+            tasks.push('shell:force-create-org-default-preview');
+        } else {
+            tasks.push('shell:force-create-org-default');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-push',
+            'shell:force-configure-settings',
+            'shell:force-create-log-event',
+            'shell:force-create-qa-user',
             'shell:force-assign-permset',
+            'shell:force-install-streaming-monitor',
+            'shell:force-install-bigobject-utility',
+            'shell:force-open',
             'shell:force-test',
-            'shell:test-lwc',
-            'shell:force-open'
-        ]);
+            'shell:test-lwc'
+        ]));
     });
 
-    /*
-     * Public BUILD TARGETS
-     */
     grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
-        grunt.task.run([
+        let tasks = [
+            'prompt:alias',
+            'prompt:selectPackage',
+            'prompt:confirmVersion'
+        ];
+
+        if (grunt.option('preview')) {
+            tasks.push('shell:force-create-org-preview');
+        } else {
+            tasks.push('shell:force-create-org');
+        }
+
+        grunt.task.run(tasks.concat([
+            'shell:force-install-dependencies',
+            'shell:force-install-latest',
+            'shell:force-install-streaming-monitor',
+            'shell:force-configure-settings',
+            'shell:force-create-log-event',
+            'shell:force-assign-permset',
+            'shell:force-open'
+        ]));
+    });
+
+    grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
+        var tasks = [
             'prompt:alias',
             'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
-            'shell:force-install-dependencies',
-            'shell:force-install-latest',
-            'shell:force-open'
-        ]);
+            'shell:force-test-package-install-and-upgrade',
+            'shell:force-configure-settings',
+            'shell:force-create-log-event',
+            'shell:force-open',
+            'shell:force-test',
+            'confirm:deleteOrg',
+            'shell:force-delete-org'
+        ];
+
+        grunt.task.run(tasks);
     });
 
     grunt.registerTask('create-package', 'Create a new package version', function() {
@@ -414,19 +521,23 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test', 'Run server and client tests', function() {
         var tasks = [
-            'prompt:alias',
-            'shell:lint',
-            'shell:test-lwc'
+            'prompt:alias'
         ];
 
         if (!grunt.option('lwc-only')) {
             tasks.push('shell:force-push');
             tasks.push('shell:force-test');
         }
+        
+        tasks.push('shell:lint');
+        tasks.push('shell:test-lwc');
  
         grunt.task.run(tasks);
     });
 
+    grunt.registerTask('create-event', 'Create Log Event in org', function() {
+        grunt.task.run(['prompt:alias', 'shell:force-create-log-event']);
+    });
 
     grunt.registerTask('default', ['shell:test-lwc']);
 };

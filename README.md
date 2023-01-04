@@ -1,6 +1,6 @@
 # Reliability Force
 
-![Build Status](https://img.shields.io/circleci/build/github/j-fischer/rflib/master) ![GitHub](https://img.shields.io/github/license/j-fischer/rflib) ![GitHub package.json version](https://img.shields.io/github/package-json/v/j-fischer/rflib) [![codecov](https://codecov.io/gh/j-fischer/rflib/branch/master/graph/badge.svg)](https://codecov.io/gh/j-fischer/rflib)
+![Build Status](https://img.shields.io/circleci/build/github/j-fischer/rflib/master) ![GitHub](https://img.shields.io/github/license/j-fischer/rflib) ![NPM package version](https://shields.io/npm/v/rflib) [![codecov](https://codecov.io/gh/j-fischer/rflib/branch/master/graph/badge.svg)](https://codecov.io/gh/j-fischer/rflib)
 
 The goal of this library is to help developers to create clean, production-ready code with a high level of operational supportability.
 
@@ -21,6 +21,11 @@ The following lists describe some of the key features of rflib.
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
 -   Support Batched Logging for when DML statements are not supported
+-   Log Archive using Big Objects
+-   Dashboard for all Object and Field permissions for Profiles and Permission Sets
+-   Supports logging in Flow and Process Builder
+-   Supports Salesforce Functions (NodeJS only)
+-   Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -32,7 +37,8 @@ The following lists describe some of the key features of rflib.
 
 -   Fully decoupled framework, trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
--   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata
+-   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
+-   Framework for Retryable Actions using Platform Events for asynchronous actions
 
 ## Deploy
 
@@ -47,12 +53,10 @@ To install package via browser:
 
 https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_ID>
 
-To install latest package via SFDX CLI Plugin:
+To install package via SFDX CLI Plugin:
 
 ```
-sfdx sforce:package:install -p 04t3h000004jpwzAAA -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p 04t3h000004jpyMAAQ -w 10 -s AllUsers -u <your org alias>
-sfdx sforce:package:install -p 04t3h000004jq2OAAQ -w 10 -s AllUsers -u <your org alias>
+sfdx force:package:install -p <Package ID> -w 10 -s AdminsOnly -u <your org alias>
 ```
 
 To deploy code:
@@ -62,9 +66,17 @@ To deploy code:
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
+To install the logger in a Salesforce Function using NodeJS:
+
+```
+npm install --save rflib
+```
+
+See the [NPM Package Registry record for more details](https://www.npmjs.com/package/rflib).
+
 ## Documentation
 
-Documentation such as How To's and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki/Ops-Center-Logging-Dashboard).
+Documentation such as "How To's" and more can be found in the [Wiki of this repository](https://github.com/j-fischer/rflib/wiki).
 
 ## Log Event Dashboard
 
@@ -74,6 +86,27 @@ filter them by searching text within the messages. This will make it easy to det
 To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Log_Monitor_Dashboard.gif 'Log Monitor Dashboard')
+
+## Permissions Explorer
+
+Review object and field permissions for profiles and permission Sets easily within the same user interface. Many problems encountered in an org trace back
+to access issues. Using the Setup interface to review access for users is pretty inefficient. This dashboard provides access to all profiles and permissions
+and allows for quick filtering of the results.
+
+To enabled the Ops Center application, simply assign the `Ops Center Access` Permission Set to the users of your choice.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Permission_Explorer.gif 'Permissions Explorer')
+
+## Management Console
+
+A critical aspect of operating a Salesforce Org is managing Governor Limits. There are transactional and org-wide limits, some of which RFLIB is consuming
+in order to report and display Log Events. While there are several different tools available to monitor org-wide Governor Limits, RFLIB provides a simple
+way to stay on top of those as well through the `Management Console` tab.
+
+There, users with access to the Ops Center can view the current consumption of the org-wide Governor Limits relevant to RFLIB. In addition, RFLIB will
+display what users have not been provided with Permission Set to enable client logging and what users are assigned access to the Ops Center.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Management_Console.png 'Management Console')
 
 ## Updates
 
@@ -89,3 +122,8 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 -   Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin
 -   Thanks to René Winkelmeyer for his SFDX CLI Plugin: https://github.com/muenzpraeger/sfdx-plugin
 -   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
+-   Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader
+-   Thanks to Salesforce Labs for the Streaming Monitor package: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FYEEWUA5
+-   Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
+-   Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
+-   Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library

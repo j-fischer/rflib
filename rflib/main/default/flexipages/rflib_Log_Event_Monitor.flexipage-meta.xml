@@ -4,6 +4,7 @@
         <itemInstances>
             <componentInstance>
                 <componentName>rflibLogEventMonitor</componentName>
+                <identifier>rflibLogEventMonitorId</identifier>
             </componentInstance>
         </itemInstances>
         <name>main</name>

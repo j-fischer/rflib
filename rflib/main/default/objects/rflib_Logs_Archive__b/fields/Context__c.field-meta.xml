@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Context__c</fullName>
+    <description>The context of the logger instance who reported the event.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The context of the logger instance who reported the event.</inlineHelpText>
+    <label>Context</label>
+    <length>40</length>
+    <required>true</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,16 @@
+<template>
+    <lightning-card title={title} variant="Narrow">
+        <lightning-button-icon
+            icon-name="utility:sync"
+            alternative-text="Refresh"
+            title="Refresh"
+            size="medium"
+            slot="actions"
+            onclick={refresh}
+        ></lightning-button-icon>
+        <p class="slds-p-horizontal_small">Using <b>{currentValue}</b> out of <b>{totalLimit}</b></p>
+        <p class="slds-p-horizontal_small">
+            <lightning-progress-bar variant="circular" value={limitProgression} size="large"></lightning-progress-bar>
+        </p>
+    </lightning-card>
+</template>

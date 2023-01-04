@@ -1,6 +1,6 @@
 {
     "default": {
-        "Client_Stack_Size__c": 100,
+        "Client_Log_Size__c": 100,
         "Client_Console_Log_Level__c": "NONE",
         "Client_Server_Log_Level__c": "NONE"
     }

@@ -4,7 +4,7 @@
     <defaultValue>&quot;*****&quot;</defaultValue>
     <description>The replacement that should be used for the identified string instead.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>The replacement that should be used for the identified string instead.</inlineHelpText>
     <label>Replacement</label>
     <length>255</length>

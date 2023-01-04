@@ -1,5 +1,8 @@
-const { jestConfig } = require('@salesforce/lwc-jest/config');
-module.exports = {
+const { jestConfig } = require('@salesforce/sfdx-lwc-jest/config');
+const setupFilesAfterEnv = jestConfig.setupFilesAfterEnv || [];
+
+setupFilesAfterEnv.push('<rootDir>/jest-sa11y-setup.js');
+const newConfig = {
     ...jestConfig,
     setupFilesAfterEnv: ['./jest.setup.js'],
     moduleNameMapper: {
@@ -8,3 +11,6 @@ module.exports = {
         '^lightning/platformShowToastEvent$': '<rootDir>/rflib/test/jest-mocks/lightning/platformShowToastEvent'
     }
 };
+newConfig.collectCoverageFrom.push('dist/**/*.js');
+
+module.exports = newConfig;

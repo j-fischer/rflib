@@ -3,7 +3,7 @@
     <fullName>Class_Name__c</fullName>
     <description>Name of the class implementing the rflib_TriggerHandler interface.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Name of the class implementing the rflib_TriggerHandler interface.</inlineHelpText>
     <label>Class Name</label>
     <length>255</length>

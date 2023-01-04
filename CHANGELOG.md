@@ -1,4 +1,214 @@
-### RFLIB-FS 2.3.0
+### RFLIB-TF 2.1.0
+
+Package ID: 04t3h000004sqJMAAY
+Package Alias: RFLIB-TF@2.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqJMAAY
+
+-   [PR #69](https://github.com/j-fischer/rflib/pull/69) Added new framework for Retryable Actions, which allows for the use of platform events to run asynchronous tasks that will automatically be retried if they fail
+-   Changed package dependency on RFLIB to version 4.1.0
+
+### RFLIB 4.1.0
+
+Package ID: 04t3h000004sqJHAAY
+Package Alias: RFLIB@4.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqJHAAY
+
+-   [PR #69](https://github.com/j-fischer/rflib/pull/69) Updated `rflib_DefaultBigObjectDatabaseExecutor` to always use a Queueable for inserting a record into the Log Archive (see https://developer.salesforce.com/docs/atlas.en-us.bigobjects.meta/bigobjects/big_object_considerations.htm)
+-   [Issue #67](https://github.com/j-fischer/rflib/issues/67) Added handling of the edge case when the Request ID is null, which causes a NullPointerException in the default logger. If the request ID is null, a "NULL" string will be used as the request ID instead
+
+### RFLIB 4.0.1
+
+Package ID: 04t3h000004sqEgAAI
+Package Alias: RFLIB@4.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sqEgAAI
+
+-   Improved CSS for the Management Dashboard's UserPermissionAssignmentList component
+-   Added icon for Logger Flow Action
+-   Introdcued query paramenter "c\_\_debug" that allows to trigger debugging mode for the EMP API
+-   Changed labels for all permission sets to have the "RFLIB - " prefix to make them eassier to find
+
+### RFLIB-TF 2.0.0
+
+Package ID: 04t3h000004sq62AAA
+Package Alias: RFLIB-TF@2.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sq62AAA
+
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Changed package dependency on RFLIB to version 4.0.0 and RFLIB-FS to 2.0.0
+
+### RFLIB-FS 2.0.0
+
+Package ID: 04t3h000004sq5xAAA
+Package Alias: RFLIB-FS@2.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004sq5xAAA
+
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Changed package dependency on RFLIB to version 4.0.0
+
+### RFLIB 4.0.0
+
+Package ID: 04t3h000004RewHAAS
+Package Alias: RFLIB@4.0.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RewHAAS
+
+-   [Issue #56](https://github.com/j-fischer/rflib/issues/56) Added new property to the log event to capture platform information such as Governor Limits (Apex), Browser Details (LWC), or Node process details (SF Functions)
+-   [PR #58](https://github.com/j-fischer/rflib/pull/58) Added Management Console to display org limits and users who are not assigned the Enable Client Logging permission set as well as users who are assigned to have Ops Center Access
+-   [PR #59](https://github.com/j-fischer/rflib/pull/59) Changed `apiVersion` of all components to version 55.0 (Summer 22)
+-   Added caching to Permission Explorer to avoid the loading of permissions after the first retrieval while switching between different permission types
+-   [Issue #60](https://github.com/j-fischer/rflib/isssues/60) Fixed bug throwing a JS exception in Log Monitor when filtering archived log messages through the Created By input.
+-   [Issue #54](https://github.com/j-fischer/rflib/isssues/54) Added option to cap the creation of log events based on Governor Limits
+
+### RFLIB 3.2.0
+
+Package ID: 04t3h000004mAiBAAU
+Package Alias: RFLIB@3.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004mAiBAAU
+
+-   [Issue #54](https://github.com/j-fischer/rflib/issues/54) Added Global Config record to limit the amount of Platform Events that RFLIB will publish during a transaction
+-   Improved unit tests for code coverage and reliability
+
+### RFLIB 3.1.2
+
+Package ID: 04t3h000004mAhcAAE
+Package Alias: RFLIB@3.1.2-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004mAhcAAE
+
+-   [Issue #52](https://github.com/j-fischer/rflib/issues/52) Improved unit tests for code coverage and reliability
+
+### RFLIB-TF 1.4.0
+
+Package ID: 04t3h000004jtc2AAA
+Package Alias: RFLIB-FS@1.2.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jtc2AAA
+
+-   [Issue #47](https://github.com/j-fischer/rflib/issues/47) Changed log message for caught trigger handler exception to log at ERROR level instead of warning. The message does also indicate that the error was caught
+
+### RFLIB-FS 1.2.1
+
+Package ID: 04t3h000004jtbxAAA
+Package Alias: RFLIB-FS@1.2.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004jtbxAAA
+
+-   [Issue #49](https://github.com/j-fischer/rflib/issues/49) Bug fix for unit test failure as suggested by @mikbranchaud to handle triggers on the User object
+
+### RFLIB 3.1.1
+
+Package ID: 04t3h0000045uAmAAI
+Package Alias: RFLIB@3.1.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h0000045uAmAAI
+
+-   [Issue #46](https://github.com/j-fischer/rflib/issues/46) Fixed broken Download button in Log Monitor Dashboard
+
+### RFLIB 3.1.0
+
+Package ID: 04t3h0000045uADAAY
+Package Alias: RFLIB@3.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h0000045uADAAY
+
+-   [PR #45](https://github.com/j-fischer/rflib/pull/45) Added support for logging from Salesforce functions supporting NodeJS with Javascript and Typescript
+-   [Issue #43](https://github.com/j-fischer/rflib/issues/43) Fixed issue Client Log Size setting not taking effect
+
+### RFLIB 3.0.1
+
+Package ID: 04t3h000004bh4IAAQ
+Package Alias: RFLIB@3.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004bh4IAAQ
+
+-   [Issue #41](https://github.com/j-fischer/rflib/issues/41) - Renamed the rflib_Log_Archive**b Big Object to rflib_Logs_Archive**c (better than rflib_Log_Archive2\_\_c) in order to change the index
+-   Fixed issue with "Disconnect" not being displayed in button label
+
+IMPORTANT: The rflib_Log_Archive\_\_b will be flagged for deletion but not physically deleted. Please remove manually at your earliest convenience.
+
+### RFLIB 3.0.0
+
+Package ID: DEPRECATED
+Package Alias: RFLIB@3.0.0-1
+Install link: N/A
+
+-   Added support for logging to Log Archive (Big Object), which can be queried through Log Monitor
+-   Log Monitor: Fixed issue when the connection would not re-establish after switching to Permission Explorer
+-   Permission Explorer: Permission Type button now changes the label to the actively selected type
+
+### RFLIB 2.8.0
+
+Package ID: 04t3h000004RdhnAAC
+Package Alias: RFLIB@2.8.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdhnAAC
+
+-   Permission Explorer: Added Export to CSV button to Permission Explorer
+
+### RFLIB-TF 1.3.1
+
+Package ID: 04t3h000004RdhiAAC
+Package Alias: RFLIB-TF@1.3.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdhiAAC
+
+-   [Issue #35](https://github.com/j-fischer/rflib/issues/35) - Updated TriggerManager to track active handlers on a per Object and Trigger Operation basis, invoking onConsecutive run only if the particular handler did complete the handling of an event previously
+
+### RFLIB 2.7.0
+
+Package ID: 04t3h000004RdZsAAK
+Package Alias: RFLIB@2.7.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdZsAAK
+
+-   Permission Explorer: Optimized FLS query to return Fields stripped of their object name when using the REST API
+-   Permission Explorer: Added new component to resolve profile name by User Id to simplify entering of filter criteria
+-   Log Monitor: Added profile to the display of the user details in the Log Event Viewer
+-   Log Monitor: Fixed issue in the Ops Center Access Permission Set, which prevented non-admin users from receiving Log Events
+
+### RFLIB 2.6.0
+
+Package ID: 04t3h000004RdLTAA0
+Package Alias: RFLIB@2.6.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdLTAA0
+
+-   Added support for querying over 50,000 permissions in Permission Explorer using the REST API
+-   Moved MockQueryExecutor from RFLIB-FS to RFLIB package
+
+### RFLIB-TF 1.3.0
+
+Package ID: 04t3h000004RdLOAA0
+Package Alias: RFLIB-TF@1.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RdLOAA0
+
+-   [Issue #31](https://github.com/j-fischer/rflib/issues/31) - Improved error handling if there are invalid trigger handler names in the configuration
+-   [Issue #30](https://github.com/j-fischer/rflib/issues/30) - Improved `rflib_MockTriggerConfigQueryLocator` to allow for setting multiple object handlers in a trigger unit test class
+
+### RFLIB 2.5.0
+
+Package ID: 04t3h000004Rd7uAAC
+Package Alias: RFLIB@2.5.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004Rd7uAAC
+
+-   Added initial version of Permission Explorer
+-   Fixed issue with navigation buttons in Log Monitor getting confused when searching for Log Events
+
+### RFLIB-TF 1.2.0
+
+Package ID: 04t3h000004Rd1IAAS
+Package Alias: RFLIB-TF@1.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004Rd1IAAS
+
+-   Replaced queries for Custom Metadata Type `rflib_Trigger_Configuration__mdt` with the new Apex API methods
+
+### RFLIB-FS 1.2.0
+
+Package ID: 04t3h000004RczqAAC
+Package Alias: RFLIB-FS@1.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RczqAAC
+
+-   Replaced queries for Custom Metadata Type `rflib_Feature_Switch__mdt` with the new Apex API methods
+-   Changed log levels of some framework log messages from DEBUG to TRACE
+
+### RFLIB 2.4.0
+
+Package ID: 04t3h000004RczlAAC
+Package Alias: RFLIB@2.4.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RczlAAC
+
+-   Replaced queries for Custom Metadata Type `rflib_Global_Setting__mdt` with the new Apex API methods
+
+### RFLIB 2.3.0
 
 Package ID: 04t3h000004jqfnAAA
 Package Alias: RFLIB@2.3.0-1

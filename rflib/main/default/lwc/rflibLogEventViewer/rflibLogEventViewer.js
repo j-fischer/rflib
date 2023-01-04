@@ -33,8 +33,9 @@ import { createLogger } from 'c/rflibLogger';
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import PHONE_FIELD from '@salesforce/schema/User.Phone';
 import EMAIL_FIELD from '@salesforce/schema/User.Email';
+import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 
-const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD];
+const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
 const LOGGER = createLogger('LogEventViewer');
 
@@ -62,6 +63,14 @@ export default class LogEventViewer extends LightningElement {
         }
     }
 
+    get createdBy() {
+        return this.logEvent.CreatedById || this.logEvent.CreatedById__c;
+    }
+
+    get createdDate() {
+        return this.logEvent.CreatedDate || this.logEvent.CreatedDate__c;
+    }
+
     get title() {
         return this.logEvent.Request_ID__c + ' - ' + this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
     }
@@ -78,21 +87,44 @@ export default class LogEventViewer extends LightningElement {
         return getFieldValue(this.user, EMAIL_FIELD);
     }
 
+    get profile() {
+        return getFieldValue(this.user, PROFILE_FIELD);
+    }
+
     get hasEvent() {
         return !!this.logEvent;
     }
 
+    get platformInfo() {
+        const platformInfo = JSON.parse(this.logEvent.Platform_Info__c) || {};
+        const result = Object.keys(platformInfo).map((key, index) => {
+            let value = platformInfo[key];
+            if (typeof value === 'object') {
+                value = JSON.stringify(value, null, 2);
+            }
+
+            return { key: key, value: value, index: index };
+        });
+        LOGGER.debug('platformInfo: ' + JSON.stringify(result));
+        return result;
+    }
+
     downloadLog() {
-        var element = document.createElement('a');
+        let element = document.createElement('a');
         element.setAttribute(
             'href',
-            'data:text/plain;charset=utf-8,' + encodeURIComponent(this.logEvent.Log_Messages__c)
+            'data:text/plain;charset=utf-8,' +
+                encodeURIComponent(
+                    this.logEvent.Log_Messages__c +
+                        '\n\n>>> Platform Info:\n' +
+                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
+                )
         );
         element.setAttribute(
             'download',
-            this.logEvent.CreatedById +
+            this.createdBy +
                 '_' +
-                this.logEvent.CreatedDate +
+                this.createdDate +
                 '_' +
                 this.logEvent.Request_ID__c +
                 '_' +
@@ -101,10 +133,12 @@ export default class LogEventViewer extends LightningElement {
         );
 
         element.style.display = 'none';
-        document.body.appendChild(element);
+        
+        let downloadContainer = this.template.querySelector('.download-container');
+        downloadContainer.appendChild(element);
 
         element.click();
 
-        document.body.removeChild(element);
+        downloadContainer.removeChild(element);
     }
 }

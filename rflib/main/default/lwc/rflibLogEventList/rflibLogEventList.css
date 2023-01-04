@@ -27,10 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
- .clickable {
-    cursor: pointer;
- }
-
  .selected {
     background-color: var(--lwc-colorBackgroundRowNew);
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Log_Messages__c</fullName>
+    <description>The log messages recorded by all loggers of the current transaction/execution context.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The log messages recorded by all loggers of the current transaction/execution context.</inlineHelpText>
+    <label>Log Message</label>
+    <length>131072</length>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+</CustomField>

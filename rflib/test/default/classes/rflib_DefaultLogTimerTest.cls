@@ -41,16 +41,19 @@ private class rflib_DefaultLogTimerTest {
     
     @IsTest
     private static void testDone_LoggerHasNotBeenStarted() {
+        Test.startTest();
         try {
             LOG_TIMER.done();
             System.assert(false, 'Expected InvalidStateException');
         } catch (rflib_InvalidStateException ex) {
             System.assertEquals('Timer has not been started', ex.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
     private static void testStart_LoggerAlreadyStarted() {
+        Test.startTest();
         LOG_TIMER.start(MOCK_LOGGER, rflib_LogLevel.WARN, LOG_ALL_MESSAGE_THRESHOLD, LOG_MESSAGE);
         
         try {
@@ -59,24 +62,29 @@ private class rflib_DefaultLogTimerTest {
         } catch (rflib_InvalidStateException ex) {
             System.assertEquals('Timer has already been started', ex.getMessage());
         }
+        Test.stopTest();
     }
 
     @IsTest
     private static void testStartDone_LogsTraceIfBelowThreshold() {
+        Test.startTest();
         LOG_TIMER.start(MOCK_LOGGER, rflib_LogLevel.WARN, DO_NOT_EXCEED_THRESHOLD, LOG_MESSAGE);
         
         LOG_TIMER.done();
+        Test.stopTest();
 
         assertLogger(rflib_LogLevel.TRACE);
     }
 
     @IsTest
     private static void testStartDone_LogsProvidedLevelIfPastThreshold() {
+        Test.startTest();
         executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel.DEBUG);
         executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel.INFO);
         executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel.WARN);
         executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel.ERROR);
         executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel.FATAL);
+        Test.stopTest();
     }
 
     private static void executeLogsProvidedLevelIfPsatThresholdTest(rflib_LogLevel providedLevel) {

@@ -29,7 +29,7 @@
 
 /**
  * @group Trigger
- * @description This is the core class to manage the invocation of tflib_ITriggerHandler implementations
+ * @description This is the core class to manage the invocation of rflib_ITriggerHandler implementations
  *              based on the configuration in the Custom Metadata. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
@@ -37,7 +37,7 @@ public inherited sharing class rflib_TriggerManager {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_TriggerManager');
 
-    private static rflib_TriggerHandler ACTIVE_HANDLER;
+    private static Map<String, rflib_TriggerHandler> ACTIVE_HANDLERS = new Map<String, rflib_TriggerHandler>();
 
     private static Map<rflib_TriggerManager.Args, Integer> ON_CONSECUTIVE_RUN_COUNTERS = new Map<rflib_TriggerManager.Args,Integer>();
 
@@ -45,7 +45,7 @@ public inherited sharing class rflib_TriggerManager {
     private static ITriggerConfigurationQueryLocator QUERY_LOCATOR = new DefaultTriggerConfigurationQueryLocator();
 
     /**
-     * Call this method from any trigger with the respective object type. The framwork will handle the rest. 
+     * Call this method from any trigger with the respective object type. The framework will handle the rest. 
      * @param  objectType SObjectType for the trigger that invokes the Manager.
      */
     public static void dispatch(Schema.SObjectType objectType) {
@@ -65,7 +65,7 @@ public inherited sharing class rflib_TriggerManager {
         List<TriggerHandlerInfo> handlers = getHandlers(args);
 
         if (rflib_FeatureSwitch.isTurnedOff('All_Triggers')) {
-            LOGGER.warn('All Trigger Feature switch turned off, exiting trigger execution.');
+            LOGGER.warn('The All Trigger Feature switch is turned off, exiting trigger execution.');
             return;
         }
 
@@ -78,7 +78,7 @@ public inherited sharing class rflib_TriggerManager {
             runHandlers(args, handlers);
         } finally {
             // If active handler is not NULL, we are in a recursive loop and need to wait for the root transaction to complete.
-            if (ACTIVE_HANDLER == null) {
+            if (ACTIVE_HANDLERS.isEmpty() == null) {
                 LOGGER.publishBatchedLogEvents();
             }
         }
@@ -88,26 +88,28 @@ public inherited sharing class rflib_TriggerManager {
         for (TriggerHandlerInfo handlerInfo : handlers) {
             rflib_TriggerHandler handler = handlerInfo.handler;
 
-            LOGGER.debug('Is consecutive run? ' + (ACTIVE_HANDLER != null));
+            String recursionKey = getRecursionKey(args, handlerInfo);
+            rflib_TriggerHandler activeHandler = ACTIVE_HANDLERS.get(recursionKey);
+            LOGGER.debug('Is consecutive run? ' + (activeHandler != null));
 
-            if (ACTIVE_HANDLER == null) {
+            if (activeHandler == null) {
                 try {
-                    ACTIVE_HANDLER = handler;
+                    ACTIVE_HANDLERS.put(recursionKey, handler);
                     handler.run(args);
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
-                        LOGGER.warn('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
+                        LOGGER.error('run: Caught exception thrown by handler "{0}" with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         args.addException(ex, handlerInfo.handlerType);
                     } else {
                         LOGGER.error('run: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
                         throw ex;
                     }
                 } finally {
-                    ACTIVE_HANDLER = null;
+                    ACTIVE_HANDLERS.remove(recursionKey);
                 }
             }
 
-            if (ACTIVE_HANDLER != null) {
+            if (activeHandler != null) {
                 try {
                     handler.onConsecutiveRun(args, incrementAndGetCounter(args));
                 } catch (Exception ex) {
@@ -145,6 +147,10 @@ public inherited sharing class rflib_TriggerManager {
         for (rflib_Trigger_Configuration__mdt handlerInfo : triggerHandlers) {
             activeTriggers.add(handlerInfo.Class_Name__c);
             Type handlerType = Type.forName(handlerInfo.Class_Name__c);
+            if (handlerType == null) {
+                LOGGER.error('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
+                continue;
+            }
             rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
 
             Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';
@@ -154,6 +160,12 @@ public inherited sharing class rflib_TriggerManager {
         LOGGER.debug('{0} active trigger(s) found for operation {1} on object type {2}: {3}', new List<Object> { activeTriggers.size(), args.operation, sObjectName, String.join(activeTriggers, ',') });
 
         return result;
+    }
+
+    private static String getRecursionKey(rflib_TriggerManager.Args args, TriggerHandlerInfo handlerInfo) {
+        return args.objectType.getDescribe().getName() + '_' +
+            args.operation + '_' +
+            handlerInfo.handlerType.getName();
     }
 
     public class TriggerHandlerInfo {
@@ -253,14 +265,68 @@ public inherited sharing class rflib_TriggerManager {
     }
 
     public class DefaultTriggerConfigurationQueryLocator implements ITriggerConfigurationQueryLocator {
+
+        @TestVisible
+        private List<rflib_Trigger_Configuration__mdt> allConfigValues = rflib_Trigger_Configuration__mdt.getAll().values();
+
         public List<rflib_Trigger_Configuration__mdt> getRecords(String objectTypeName, String triggerEvent) {
-            return [SELECT Class_Name__c, Order__c, Exception_Behavior__c
-             FROM rflib_Trigger_Configuration__mdt
-             WHERE Active__c = true
-             AND Object_Name__c = :objectTypeName 
-             AND Event__c = :triggerEvent
-             ORDER BY Order__c, Class_Name__c ASC
-            ];
+            List<TriggerConfigurationWrapper> sortable = new List<TriggerConfigurationWrapper>();
+            for (rflib_Trigger_Configuration__mdt config : allConfigValues) {
+                if (config.Active__c && config.Object_Name__c == objectTypeName && config.Event__c == triggerEvent) {
+                    sortable.add(new TriggerConfigurationWrapper(config));
+                }
+            }
+
+            sortable.sort();
+
+            List<rflib_Trigger_Configuration__mdt> result = new List<rflib_Trigger_Configuration__mdt>();
+            for (TriggerConfigurationWrapper configWrapper : sortable) {
+                result.add(configWrapper.triggerConfig);
+            }
+            return result;
+        }
+    }
+
+    public class TriggerConfigurationWrapper implements Comparable {
+ 
+        public rflib_Trigger_Configuration__mdt triggerConfig;
+        
+        public TriggerConfigurationWrapper(rflib_Trigger_Configuration__mdt triggerConfig) {
+           this.triggerConfig = triggerConfig;
+        }
+        
+        public Integer compareTo(Object compareTo) {
+            TriggerConfigurationWrapper compareToConfig = (TriggerConfigurationWrapper) compareTo;
+
+            if (compareToConfig == null) {
+                return 1;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig == null) {
+                return 0;
+            } else if (triggerConfig == null && compareToConfig.triggerConfig != null) {
+                return -1;
+            } else if (triggerConfig != null && compareToConfig.triggerConfig == null) {
+                return 1;
+            }
+
+            Integer returnValue = compareFieldValue(compareToConfig, 'Order__c');
+            
+            return returnValue != 0
+                ? returnValue
+                : compareFieldValue(compareToConfig, 'Class_Name__c');
+        }
+
+        private Integer compareFieldValue(TriggerConfigurationWrapper compareTo, String fieldName) {
+            Integer returnValue = 0;
+            if ((triggerConfig.get(fieldName) == null) && (compareTo.triggerConfig.get(fieldName) != null)){
+                returnValue = -1;
+            } else if ((triggerConfig.get(fieldName) != null) && (compareTo.triggerConfig.get(fieldName) == null)){
+                returnValue = 1;
+            } else if (String.valueOf(triggerConfig.get(fieldName)) > String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+                returnValue = 1;
+            } else if (String.valueOf(triggerConfig.get(fieldName)) < String.valueOf(compareTo.triggerConfig.get(fieldName))) {
+                returnValue = -1;
+            }        
+            return returnValue;                  
         }
     }
 }

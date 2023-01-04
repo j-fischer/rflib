@@ -3,7 +3,7 @@
     <fullName>Exception_Behavior__c</fullName>
     <description>This value defines how exceptions of a single handler are treated by the Trigger Manager. If set to abort the transaction, the exception raised will not be caught and terminate the transaction leading to a rollback of all database changes. Catching the exception will lead to error to be caught and added to the Trigger Arguments. Other handlers can check for errors and adjust their behavior. However, the overall transaction may still succeed and all database changes outside of the failing handler should get committed.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Choose &quot;Abort Exception&quot; to let any exception raised inside a handler lead to a rollback of all uncommitted changes. Choose &quot;Catch Exception&quot; for the framework to catch an exception thrown by a handler and continue with the next handler without rollback.</inlineHelpText>
     <label>Exception Behavior</label>
     <required>true</required>

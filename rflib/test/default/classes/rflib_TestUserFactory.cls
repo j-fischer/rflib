@@ -26,9 +26,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@isTest
+@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_UserFactory {
+public class rflib_TestUserFactory {
     
     public static User insertAndRetrieve(String firstName, String lastName, String profileName) {
         User u = new Builder(firstName, lastName, profileName).persist();
@@ -40,12 +40,11 @@ public class rflib_UserFactory {
         return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
     }
 
-    private rflib_UserFactory() { }
+    private rflib_TestUserFactory() { }
 
     public class Builder {
 
         private final SObject record;
-        private final List<String> fieldNames = new List<String>();
         private final Set<String> assignedCustomPermissions = new Set<String>();
 
         public Builder(String firstName, String lastName, String profileName) {
@@ -65,7 +64,6 @@ public class rflib_UserFactory {
         }
 
         public Builder withField(String name, Object value) {
-            fieldNames.add(name);
             record.put(name, value);
             return this;
         }

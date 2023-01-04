@@ -3,7 +3,7 @@
     <fullName>Event__c</fullName>
     <description>Select the event under which the trigger will fire.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Select the event under which the trigger will fire.</inlineHelpText>
     <label>Event</label>
     <required>true</required>

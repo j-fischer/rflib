@@ -55,6 +55,7 @@ public without sharing class rflib_FeatureSwitch {
         private set;
     }
 
+    @TestVisible
     private static List<String> directPublicGroupAssociations {
         get {
             if (directPublicGroupAssociations == null) {
@@ -79,7 +80,7 @@ public without sharing class rflib_FeatureSwitch {
      * @return A `Boolean` value indicating if the switch is turned ON.
      */
     public static Boolean isTurnedOn(String switchName) {
-        LOGGER.debug('Evaluating feature switch ' + switchName);
+        LOGGER.trace('Evaluating feature switch ' + switchName);
 
         Boolean result = getFeatureSwitchValue(switchName);
 
@@ -100,7 +101,7 @@ public without sharing class rflib_FeatureSwitch {
      * @return A `Boolean` value indicating if the switch is turned OFF.
      */
     public static Boolean isTurnedOff(String switchName) {
-        LOGGER.debug('Evaluating feature switch ' + switchName);
+        LOGGER.trace('Evaluating feature switch ' + switchName);
 
         Boolean result = getFeatureSwitchValue(switchName) == false;
 
@@ -122,7 +123,7 @@ public without sharing class rflib_FeatureSwitch {
             result.put(key, getFeatureSwitchValue(key));
         }
 
-        LOGGER.debug('Created fully scoped feature switch map: ' + result);
+        LOGGER.trace('Created fully scoped feature switch map: ' + result);
         return result;
     }
 
@@ -165,12 +166,9 @@ public without sharing class rflib_FeatureSwitch {
     }
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {
-        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = [
-            SELECT Switch_Name__c, Scope_Name__c, Scope_Type__c, Turned_On__c 
-            FROM rflib_Feature_Switch__mdt
-        ];
+        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = rflib_Feature_Switch__mdt.getAll().values();
 
-        LOGGER.debug('All feature switch values: ' + JSON.serialize(allFeaturesSwitches));
+        LOGGER.trace('All feature switch values: ' + JSON.serialize(allFeaturesSwitches));
 
         Map<String, Map<String, Boolean>> result = new Map<String, Map<String, Boolean>>();
         for (rflib_Feature_Switch__mdt featureSwitch : allFeaturesSwitches) {

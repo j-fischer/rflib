@@ -40,7 +40,9 @@
     getObjectValues: function (obj) {
         var result = [];
         for (var key in obj) {
-            result.push(obj[key]);
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                result.push(obj[key]);
+            }
         }
         return result;
     }

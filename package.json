@@ -1,49 +1,73 @@
 {
-    "name": "reliability-force",
-    "private": true,
-    "version": "2.3.0",
+    "name": "rflib",
+    "version": "4.0.2",
     "description": "Salesforce library for improving the reliability of your org",
-    "scripts": {
-        "lint": "npm run lint:lwc && npm run lint:aura",
-        "lint:lwc": "eslint **/lwc/**",
-        "lint:aura": "sfdx force:lightning:lint rflib/main/default/aura --exit && sfdx force:lightning:lint rflib-fs/main/default/aura --exit",
-        "test": "npm run lint && npm run test:unit",
-        "test:unit": "lwc-jest",
-        "test:unit:watch": "lwc-jest --watch",
-        "test:unit:debug": "lwc-jest --debug",
-        "test:unit:coverage": "lwc-jest --coverage",
-        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,json,yaml,yml,md,cmp,page,component}'"
+    "type": "commonjs",
+    "main": "./dist/rflibLogger.js",
+    "types": "./dist/rflibLogger.d.ts",
+    "files": [
+        "dist/*.js",
+        "dist/*.ts",
+        "LICENSE",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "author": {
+        "name": "Johannes Fischer",
+        "email": "fischer.jh@gmail.com",
+        "url": "https://github.com/j_fischer/rflib"
     },
-    "author": "Johannes Fischer",
     "license": "BSD-3-Clause",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/j_fischer/rflib"
     },
+    "keywords": [
+        "salesforce",
+        "logging",
+        "reliability",
+        "functions",
+        "lwc",
+        "aura",
+        "apex"
+    ],
     "engines": {
-        "node": ">= 10.13.0",
-        "npm": ">= 6.5.0"
+        "node": ">= 14.17.3",
+        "npm": ">= 6.14.13"
+    },
+    "dependencies": {
+        "sf-fx-sdk-nodejs": "^3.0.0"
     },
     "devDependencies": {
-        "@salesforce/eslint-config-lwc": "^0.7.0",
-        "@salesforce/lwc-jest": "^0.6.2",
-        "@salesforce/sfdx-lwc-jest": "^0.10.2",
-        "codecov": "^3.8.0",
-        "eslint": "^7.12.0",
-        "grunt": "^1.3.0",
-        "grunt-git": "^1.0.14",
+        "@babel/core": "^7.19.1",
+        "@babel/eslint-parser": "^7.19.1",
+        "@lwc/eslint-plugin-lwc": "^1.5.0",
+        "@salesforce/eslint-config-lwc": "^3.3.3",
+        "@salesforce/eslint-plugin-aura": "^2.1.0",
+        "@salesforce/eslint-plugin-lightning": "^1.0.0",
+        "@salesforce/sfdx-lwc-jest": "^1.1.3",
+        "codecov": "^3.8.2",
+        "cspell": "^6.10.1",
+        "eslint": "^8.23.1",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-jest": "^27.0.4",
+        "grunt": "^1.5.3",
+        "grunt-confirm": "^1.0.8",
+        "grunt-contrib-rename": "^0.2.0",
+        "grunt-git": "^1.1.1",
         "grunt-prompt": "^1.3.3",
         "grunt-semver": "^0.1.9",
-        "grunt-shell": "^3.0.1",
-        "hamjest": "^3.7.1",
-        "husky": "^4.3.0",
+        "grunt-shell": "^4.0.0",
+        "hamjest": "^3.7.3",
+        "husky": "^8.0.2",
         "jit-grunt": "^0.10.0",
         "js-mock": "^2.0.0",
-        "lint-staged": "^10.4.2",
-        "lodash": "^4.17.20",
-        "prettier": "^2.1.2",
-        "semver": "^7.3.2"
+        "lint-staged": "^13.0.3",
+        "lodash": "^4.17.21",
+        "prettier": "^2.7.1",
+        "semver": "^7.3.7",
+        "sf-fx-sdk-nodejs": "^3.0.0",
+        "time-grunt": "^2.0.0"
     },
     "husky": {
         "hooks": {
@@ -57,8 +81,26 @@
         "**/lwc/**": [
             "eslint"
         ],
-        "*": [
-            "git add"
+        "*.{cls,apex,js,cjs,ts,html,md,xml,sql,py,yml,yaml}": [
+            "cspell --no-must-find-files"
         ]
+    },
+    "scripts": {
+        "lint": "npm run lint:lwc && npm run lint:aura && npm run lint:node",
+        "lint:node": "eslint dist/*.js dist/**/*.js",
+        "lint:lwc": "eslint **/lwc/**",
+        "lint:aura": "eslint **/aura/**/*.js",
+        "test": "npm run lint && npm run test:unit",
+        "test:unit": "sfdx-lwc-jest",
+        "test:unit:watch": "sfdx-lwc-jest --watch",
+        "test:unit:debug": "sfdx-lwc-jest --debug",
+        "test:unit:coverage": "sfdx-lwc-jest --coverage",
+        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
+        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'",
+        "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
+        "prepare": "husky install"
+    },
+    "volta": {
+        "node": "16.13.1"
     }
 }

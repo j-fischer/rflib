@@ -34,12 +34,16 @@ private class rflib_TriggerManagerTest {
     private static final String CATCH_EXCEPTION = 'Catch Exception';
 
     private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
+    private static final String AFTER_UPDATE = TriggerOperation.AFTER_UPDATE.name();
     private static final String OBJECT_TYPE_NAME = rflib_Log_Event__e.SObjectType.getDescribe().getName();
 
     private static final Exception EX = new MockTriggerHandlerException('This is a MockTriggerHandlerException');
 
-    private static final User STANDARD_USER = rflib_UserFactory.insertAndRetrieve('Jane', 'Smith', 'Standard User');
-    private static final User BYPASS_TRIGGERS_USER = rflib_UserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
+    private static final User STANDARD_USER = rflib_TestUserFactory.insertAndRetrieve('Jane', 'Smith', 'Standard User');
+    private static final User BYPASS_TRIGGERS_USER = rflib_TestUserFactory.insertWithCustomPermissionAndRetrieve('John', 'Smith', 'Standard User', 'rflib_Bypass_All_Triggers');
+
+    private static Boolean SIMPLE_HANDLER_MOCK_RUN_INVOKED = false;
+    private static Boolean SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = false;
 
     private static void setup(String exceptionBehaviour) {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
@@ -127,7 +131,7 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
-    public static void testOnConsecutiveRun_Sucess() {
+    public static void testOnConsecutiveRun_Success() {
         setup(ABORT_TRANSACTION);
 
         rflib_Log_Event__e ev = createEvent();
@@ -202,6 +206,96 @@ private class rflib_TriggerManagerTest {
         System.assertEquals(expectedResult.size(), actualResult.size());
     }
 
+    @IsTest
+    public static void testDefaultTriggerConfigurationQueryLocatorSorting() {
+        rflib_Trigger_Configuration__mdt config3 = createConfiguration(true, 'rflib_MockTriggerHandler3', OBJECT_TYPE_NAME, AFTER_INSERT, 2, ABORT_TRANSACTION);
+        rflib_Trigger_Configuration__mdt config2 = createConfiguration(true, 'rflib_MockTriggerHandler2', OBJECT_TYPE_NAME, AFTER_INSERT, 2, ABORT_TRANSACTION);
+        rflib_Trigger_Configuration__mdt config1 = createConfiguration(true, 'rflib_MockTriggerHandler1', OBJECT_TYPE_NAME, AFTER_INSERT, 1, ABORT_TRANSACTION);
+
+        List<rflib_Trigger_Configuration__mdt> configMetadata = new List<rflib_Trigger_Configuration__mdt> {
+            config3,
+            config2,
+            config1,
+            createConfiguration(false, 'InvalidHandler', OBJECT_TYPE_NAME, AFTER_INSERT, 1, ABORT_TRANSACTION),
+            createConfiguration(true, 'InvalidHandler', 'SomeOtherObject', AFTER_INSERT, 1, ABORT_TRANSACTION),
+            createConfiguration(true, 'InvalidHandler', OBJECT_TYPE_NAME, TriggerOperation.AFTER_UPDATE.name(), 1, ABORT_TRANSACTION)
+        };
+
+        rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator locator = new rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator();
+        locator.allConfigValues = configMetadata;
+        List<rflib_Trigger_Configuration__mdt> actualResult = locator.getRecords(OBJECT_TYPE_NAME, AFTER_INSERT);
+
+        System.assertEquals(3, actualResult.size());
+        System.assertEquals(config1.Class_Name__c, actualResult.get(0).Class_Name__c);
+        System.assertEquals(config2.Class_Name__c, actualResult.get(1).Class_Name__c);
+        System.assertEquals(config3.Class_Name__c, actualResult.get(2).Class_Name__c);
+    }
+
+    @IsTest
+    public static void testConfigWrapper() {
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper1 = new rflib_TriggerManager.TriggerConfigurationWrapper(createConfiguration('rflib_MockTriggerHandler', 1));
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper2 = new rflib_TriggerManager.TriggerConfigurationWrapper(createConfiguration('rflib_MockTriggerHandler', 2));
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper3 = new rflib_TriggerManager.TriggerConfigurationWrapper(createConfiguration('rflib_MockTriggerHandler', 3));
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper4 = new rflib_TriggerManager.TriggerConfigurationWrapper(createConfiguration('rflib_MockTriggerHandler', 2));
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper5 = new rflib_TriggerManager.TriggerConfigurationWrapper(createConfiguration('rflib_ATriggerHandler', 2));
+        rflib_TriggerManager.TriggerConfigurationWrapper noWrapper = new rflib_TriggerManager.TriggerConfigurationWrapper(null);
+
+        System.assertEquals(1, wrapper1.compareTo(null));
+        System.assertEquals(1, wrapper1.compareTo(noWrapper));
+        System.assertEquals(-1, noWrapper.compareTo(wrapper1));
+        System.assertEquals(0, wrapper2.compareTo(wrapper4));
+        System.assertEquals(0, noWrapper.compareTo(noWrapper));
+        System.assertEquals(-1, noWrapper.compareTo(wrapper1));
+        System.assertEquals(-1, wrapper1.compareTo(wrapper2));
+        System.assertEquals(-1, wrapper2.compareTo(wrapper3));
+        System.assertEquals(1, wrapper3.compareTo(wrapper2));
+        System.assertEquals(1, wrapper3.compareTo(wrapper1));
+        System.assertEquals(-1, wrapper5.compareTo(wrapper2));
+        System.assertEquals(1, wrapper2.compareTo(wrapper5));
+    }
+
+    @IsTest
+    public static void testInvalidHandlerName() {
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+            createConfiguration('rflib_InvalidClassName', 1), 
+            OBJECT_TYPE_NAME, 
+            AFTER_INSERT
+        );
+
+        rflib_Log_Event__e ev = createEvent();
+        
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        }
+    }
+
+    @IsTest
+    public static void testChainedHandlerInvocation() {
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+            new Map<String, Map<String, List<rflib_Trigger_Configuration__mdt>>> { 
+                OBJECT_TYPE_NAME => new Map<String, List<rflib_Trigger_Configuration__mdt>> {
+                    AFTER_INSERT => new List<rflib_Trigger_Configuration__mdt> { createConfiguration(ABORT_TRANSACTION) },
+                    AFTER_UPDATE => new List<rflib_Trigger_Configuration__mdt> { createConfiguration(true, 'rflib_TriggerManagerTest.SimpleMockTriggerHandler', OBJECT_TYPE_NAME, AFTER_UPDATE, 1, ABORT_TRANSACTION) }
+                }
+            }
+        );
+        
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_MockTriggerHandler.ACTION_WHEN_CALLED = new TriggerChainRun(createArgs(ev, TriggerOperation.AFTER_UPDATE));
+
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev);
+            
+            System.assertEquals(true, SIMPLE_HANDLER_MOCK_RUN_INVOKED);
+            System.assertEquals(false, SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED);
+        }
+    }
+
     private static rflib_TriggerManager.Args assertRunTriggerArgs(rflib_Log_Event__e ev) {
         System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
 
@@ -225,9 +319,13 @@ private class rflib_TriggerManagerTest {
     }
 
     private static rflib_TriggerManager.Args createArgs(rflib_Log_Event__e record) {
+        return createArgs(record, TriggerOperation.AFTER_INSERT);
+    }
+
+    private static rflib_TriggerManager.Args createArgs(rflib_Log_Event__e record, TriggerOperation operation) {
         return new rflib_TriggerManager.Args(
             rflib_Log_Event__e.SObjectType,
-            TriggerOperation.AFTER_INSERT,
+            operation,
             new List<SObject>(),
             new Map<Id, SObject>(),
             new List<SObject> { record },
@@ -246,12 +344,34 @@ private class rflib_TriggerManagerTest {
     }
 
     private static rflib_Trigger_Configuration__mdt createConfiguration(String exceptionBehaviour) {
+        return createConfiguration(
+            true,
+            'rflib_MockTriggerHandler',
+            OBJECT_TYPE_NAME,
+            'AFTER_INSERT',
+            1,
+            exceptionBehaviour
+        );
+    }
+
+    private static rflib_Trigger_Configuration__mdt createConfiguration(String name, Integer order) {
+        return createConfiguration(
+            true,
+            name,
+            OBJECT_TYPE_NAME,
+            'AFTER_INSERT',
+            order,
+            ABORT_TRANSACTION
+        );
+    }
+
+    private static rflib_Trigger_Configuration__mdt createConfiguration(Boolean active, String className, String objectName, String eventName, Integer order, String exceptionBehaviour) {
         return new rflib_Trigger_Configuration__mdt(
-            Active__c = true,
-            Class_Name__c = 'rflib_MockTriggerHandler',
-            Object_Name__c = 'rflib_Log_Event__e',
-            Event__c = 'AFTER_INSERT',
-            Order__c = 1,
+            Active__c = active,
+            Class_Name__c = className,
+            Object_Name__c = objectName,
+            Event__c = eventName,
+            Order__c = order,
             Exception_Behavior__c = exceptionBehaviour
         );
     }
@@ -272,6 +392,32 @@ private class rflib_TriggerManagerTest {
             }
 
             return null;
+        }
+    }
+
+    public class TriggerChainRun implements Callable {
+        
+        private rflib_TriggerManager.Args triggerArgs;
+
+        public TriggerChainRun(rflib_TriggerManager.Args triggerArgs) {
+            this.triggerArgs = triggerArgs;
+        }
+        
+        public Object call(String action, Map<String, Object> args) {
+            rflib_TriggerManager.dispatch(triggerArgs);
+
+            return null;
+        }
+    }
+
+    public class SimpleMockTriggerHandler implements rflib_TriggerHandler {
+    
+        public void run(rflib_TriggerManager.Args args) {
+            SIMPLE_HANDLER_MOCK_RUN_INVOKED = true;
+        }
+    
+        public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+            SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = true;
         }
     }
 

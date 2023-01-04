@@ -35,9 +35,11 @@ private class rflib_SendLogEventEmailActionTest {
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = true;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = new List<ApexEmailNotification>();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     @isTest
@@ -47,21 +49,39 @@ private class rflib_SendLogEventEmailActionTest {
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(0, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     @isTest
-    public static void testSuccess() {
+    public static void testSuccess_WithoutPlatformInfo() {
         createLoggerSettings('ERROR');
 
         rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
         rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
 
+        Test.startTest();
         System.assertEquals(0, Limits.getEmailInvocations());
         rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList());
         System.assertEquals(1, Limits.getEmailInvocations());
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void testSuccess_WithPlatformInfo() {
+        createLoggerSettings('ERROR');
+
+        rflib_SendLogEventEmailAction.USE_ORG_WIDE_EMAIL_ADDRESS = false;
+        rflib_SendLogEventEmailAction.APEX_EMAIL_NOTIFICATION = createApexEmailNotification();
+
+        Test.startTest();
+        System.assertEquals(0, Limits.getEmailInvocations());
+        rflib_SendLogEventEmailAction.sendEmailsIfApplicable(createLogEventList('{"someKey":"some value"}'));
+        System.assertEquals(1, Limits.getEmailInvocations());
+        Test.stopTest();
     }
 
     private static List<ApexEmailNotification> createApexEmailNotification() {
@@ -76,11 +96,16 @@ private class rflib_SendLogEventEmailActionTest {
     }
 
     private static List<rflib_Log_Event__e> createLogEventList() {
+        return createLogEventList(null);
+    }
+
+    private static List<rflib_Log_Event__e> createLogEventList(String platformInfo) {
         rflib_Log_Event__e ev = new rflib_Log_Event__e(
             Request_ID__c = 'Some Request ID',
             Context__c = 'Context Foo',
             Log_Messages__c = 'Some messages',
-            Log_Level__c = 'ERROR'
+            Log_Level__c = 'ERROR',
+            Platform_Info__c = platformInfo
         );
 
         return new List<rflib_Log_Event__e> { ev };

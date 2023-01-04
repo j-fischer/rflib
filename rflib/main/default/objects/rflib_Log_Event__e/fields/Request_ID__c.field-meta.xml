@@ -7,7 +7,7 @@
     <isNameField>false</isNameField>
     <isSortingDisabled>false</isSortingDisabled>
     <label>Request ID</label>
-    <length>255</length>
+    <length>40</length>
     <required>true</required>
     <type>Text</type>
     <unique>false</unique>

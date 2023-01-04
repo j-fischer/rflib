@@ -60,12 +60,12 @@ const addMessage = (message) => {
         state.messages.shift();
     }
 
-    let fullMessage = new Date().toISOString() + '|' + message;
+    const fullMessage = new Date().toISOString() + '|' + message;
     state.messages.push(fullMessage);
 };
 
 const log = (level, component, message) => {
-    let msgToLog = level.label + '|' + component + '|' + message;
+    const msgToLog = level.label + '|' + component + '|' + message;
     if (level.index >= state.config.consoleLogLevel.index) {
         window.console.log(msgToLog);
     }
@@ -75,7 +75,10 @@ const log = (level, component, message) => {
     //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
+            const platformInfo = performance.toJSON();
+            platformInfo.userAgent = window.navigator.userAgent;
             logMessageToServer({
+                platformInfo: JSON.stringify(platformInfo),
                 level: level.label,
                 context: component,
                 message: state.messages.join('\n')
@@ -95,13 +98,24 @@ const toUpperCase = (text) => {
 
 const initializationPromise = getSettings()
     .then((result) => {
-        log(LogLevel.DEBUG, 'rflibLogger', 'Retrieved settings for user: ' + JSON.stringify(result));
+        log(
+            LogLevel.DEBUG,
+            'rflibLogger',
+            'Retrieved settings for user: result=' +
+                JSON.stringify(result) +
+                ', current state.config=' +
+                JSON.stringify(state.config)
+        );
 
-        state.config.stackSize = result.Client_Stack_Size__c || state.config.stackSize;
+        state.config.stackSize = result.Client_Log_Size__c || state.config.stackSize;
         state.config.consoleLogLevel =
             LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || state.config.consoleLogLevel;
         state.config.serverLogLevel =
             LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || state.config.serverLogLevel;
+
+        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            state.config.serverLogLevel = LogLevel.INFO;
+        }
     })
     .catch((error) => {
         window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
@@ -110,7 +124,7 @@ const initializationPromise = getSettings()
 const createLogger = (loggerName) => {
     const setConfig = (newConfig) => {
         log(
-            LogLevel.INFO,
+            LogLevel.DEBUG,
             loggerName,
             format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig))
         );
@@ -118,6 +132,10 @@ const createLogger = (loggerName) => {
         state.config.stackSize = newConfig.stackSize || state.config.stackSize;
         state.config.consoleLogLevel = LogLevel[toUpperCase(newConfig.consoleLogLevel)] || state.config.consoleLogLevel;
         state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
+
+        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            state.config.serverLogLevel = LogLevel.INFO;
+        }
     };
 
     const trace = (...args) => {
@@ -156,13 +174,13 @@ const createLogger = (loggerName) => {
 };
 
 const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
-    let logMethodName = (logLevelStr || 'warn').toLowerCase();
+    const logMethodName = (logLevelStr || 'warn').toLowerCase();
 
-    let startTime = new Date().getTime();
+    const startTime = new Date().getTime();
 
     const done = () => {
-        let endTime = new Date().getTime();
-        let duration = endTime - startTime;
+        const endTime = new Date().getTime();
+        const duration = endTime - startTime;
 
         if (duration > threshold) {
             if (typeof logger[logMethodName] === 'function') {

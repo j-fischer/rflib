@@ -3,7 +3,7 @@
     <fullName>Switch_Name__c</fullName>
     <description>This is the actual name of the switch, which can be duplicated between records to create a hierarchy.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <inlineHelpText>Please provide the name of the switch as it will be referenced in code.</inlineHelpText>
     <label>Switch Name</label>
     <length>255</length>

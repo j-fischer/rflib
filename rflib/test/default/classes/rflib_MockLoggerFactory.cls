@@ -119,6 +119,10 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
           return capturedEvent != null;
         }
 
+        public rflib_Log_Event__e getEvent() {
+          return capturedEvent;
+        }
+
         public Boolean doesNotContainInAnyMessage(String substring) {
           Boolean result = capturedEvent.Log_Messages__c.contains(substring);
           if (result) {
@@ -131,6 +135,22 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
           Boolean result = capturedEvent.Log_Messages__c.contains(substring);
           if (!result) {
             System.debug('Actual event message:\n' + capturedEvent.Log_Messages__c);
+          }
+          return result;
+        }
+
+        public Boolean doesNotContainInPlatformInfo(String substring) {
+          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          if (result) {
+            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
+          }
+          return result == false;
+        }
+
+        public Boolean containsInPlatformInfo(String substring) {
+          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          if (!result) {
+            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
           }
           return result;
         }

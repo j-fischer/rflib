@@ -4,7 +4,7 @@
     <defaultValue>true</defaultValue>
     <description>Indicates whether a feature switch is turned on or not.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <label>Turned On</label>
     <type>Checkbox</type>
 </CustomField>

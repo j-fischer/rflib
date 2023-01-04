@@ -3,7 +3,7 @@
     <fullName>Scope_Type__c</fullName>
     <description>Defines the scope of this particular feature switch. This is needed for the evaluation of the hierarchical order.</description>
     <externalId>false</externalId>
-    <fieldManageability>DeveloperControlled</fieldManageability>
+    <fieldManageability>SubscriberControlled</fieldManageability>
     <label>Scope Type</label>
     <required>true</required>
     <type>Picklist</type>

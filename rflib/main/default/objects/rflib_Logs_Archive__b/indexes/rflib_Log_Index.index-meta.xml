@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Index xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>rflib_Log_Index</fullName>
+    <fields>
+        <name>CreatedDate__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <fields>
+        <name>Context__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <fields>
+        <name>Log_Level__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <fields>
+        <name>Request_ID__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <label>Log Index</label>
+</Index>

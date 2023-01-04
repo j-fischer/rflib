@@ -58,6 +58,7 @@ export default class LogEventList extends LightningElement {
     filteredRecordCount;
     eventsToDisplay = [];
 
+    levelSearch;
     contextSearch;
     createdBySearch;
     logMessageSearch;
@@ -89,10 +90,12 @@ export default class LogEventList extends LightningElement {
         logger.debug('Display page with index {0}', this.currentPageIndex);
 
         const filteredEvents =
-            this.contextSearch || this.createdBySearch || this.logMessageSearch
+            this.contextSearch || this.levelSearch || this.createdBySearch || this.logMessageSearch
                 ? this.allEvents.filter(
                       (evt) =>
-                          (!this.createdBySearch || evt.CreatedById.indexOf(this.createdBySearch) > -1) &&
+                          (!this.createdBySearch ||
+                              (evt.CreatedById || evt.CreatedById__c).indexOf(this.createdBySearch) > -1) &&
+                          (!this.levelSearch || evt.Log_Level__c.indexOf(this.levelSearch) > -1) &&
                           (!this.contextSearch || evt.Context__c.indexOf(this.contextSearch) > -1) &&
                           (!this.logMessageSearch || evt.Log_Messages__c.indexOf(this.logMessageSearch) > -1)
                   )
@@ -118,7 +121,10 @@ export default class LogEventList extends LightningElement {
         }
 
         const event = new CustomEvent('refreshed', {
-            detail: this.filteredRecordCount
+            detail: JSON.stringify({
+                numDisplayedRecords: this.filteredRecordCount,
+                currentPage: this.currentPageIndex + 1
+            })
         });
         this.dispatchEvent(event);
     }
@@ -127,7 +133,16 @@ export default class LogEventList extends LightningElement {
         if (this.createdBySearch !== event.target.value) {
             logger.debug('Created by search target={0}', event.target.value);
             this.createdBySearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
+            this.refreshEventList();
+        }
+    }
+
+    handleLevelKeyChange(event) {
+        if (this.levelSearch !== event.target.value) {
+            logger.debug('Level search target={0}', event.target.value);
+            this.levelSearch = event.target.value;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }
@@ -136,7 +151,7 @@ export default class LogEventList extends LightningElement {
         if (this.contextSearch !== event.target.value) {
             logger.debug('Context search target={0}', event.target.value);
             this.contextSearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }
@@ -145,7 +160,7 @@ export default class LogEventList extends LightningElement {
         if (this.logMessageSearch !== event.target.value) {
             logger.debug('Log message search target={0}', event.target.value);
             this.logMessageSearch = event.target.value;
-            this.currentpage = 1;
+            this.currentPageIndex = 0;
             this.refreshEventList();
         }
     }

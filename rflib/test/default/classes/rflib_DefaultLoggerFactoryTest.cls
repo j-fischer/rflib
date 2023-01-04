@@ -45,11 +45,15 @@ private class rflib_DefaultLoggerFactoryTest {
 
     @isTest
     public static void testCreateLogger() {
+        Test.startTest();
         System.assert(new rflib_DefaultLoggerFactory().createLogger('logger') != null);
+        Test.stopTest();
     }
 
     @isTest
     public static void testCreateBatchedLogger() {
+        Test.startTest();
         System.assert(new rflib_DefaultLoggerFactory().createBatchedLogger('logger') != null);
+        Test.stopTest();
     }
 }

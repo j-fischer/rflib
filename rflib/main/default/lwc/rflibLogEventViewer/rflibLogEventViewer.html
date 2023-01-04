@@ -1,78 +1,132 @@
 <!--
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
--->
+    * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+    * All rights reserved.
+    *
+    * Redistribution and use in source and binary forms, with or without
+    * modification, are permitted provided that the following conditions are met:
+    *
+    * 1. Redistributions of source code must retain the above copyright notice,
+    *    this list of conditions and the following disclaimer.
+    * 2. Redistributions in binary form must reproduce the above copyright
+    *    notice, this list of conditions and the following disclaimer in the
+    *    documentation and/or other materials provided with the distribution.
+    * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+    *    contributors may be used to endorse or promote products derived from
+    *    this software without specific prior written permission.
+    *
+    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    * POSSIBILITY OF SUCH DAMAGE.
+    -->
 <template>
     <lightning-card title={title} icon-name="utility:summarydetail" if:true={hasEvent}>
+        <div class="download-container" lwc:dom="manual"></div>
+
         <div slot="actions">
             <button class="slds-button slds-button_neutral" onclick={downloadLog}>Download</button>
         </div>
-        <div class="slds-m-around_medium">
-            <div class="slds-form-element">
-                <span class="slds-form-element__label">Date</span>
-                <div class="slds-form-element__control slds-border_bottom">
-                    <div class="slds-form-element__static">
-                        <lightning-formatted-date-time
-                            value={logEvent.CreatedDate}
-                            year="numeric"
-                            day="2-digit"
-                            month="long"
-                            hour="2-digit"
-                            minute="2-digit"
-                            second="2-digit"
-                            weekday="long"
-                        >
-                        </lightning-formatted-date-time>
-                    </div>
-                </div>
-            </div>
-            <div class="slds-form-element">
-                <span class="slds-form-element__label">Created By</span>
-                <div class="slds-form-element__control slds-border_bottom">
-                    <template if:false={user.id}>
-                        <div class="slds-form-element__static">{logEvent.CreatedById}</div>
-                    </template>
-                    <template if:true={user.id}>
-                        <div class="slds-form-element__static">
-                            Name: {name}<br />
-                            Email: {email}<br />
-                            Phone: {phone}
+        <lightning-tabset>
+            <lightning-tab label="Log Event">
+                <div class="slds-m-around_medium">
+                    <div class="slds-form-element">
+                        <span class="slds-form-element__label">Date</span>
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <div class="slds-form-element__static">
+                                <lightning-formatted-date-time
+                                    value={createdDate}
+                                    year="numeric"
+                                    day="2-digit"
+                                    month="long"
+                                    hour="2-digit"
+                                    minute="2-digit"
+                                    second="2-digit"
+                                    weekday="long"
+                                >
+                                </lightning-formatted-date-time>
+                            </div>
                         </div>
-                    </template>
-                </div>
-            </div>
-            <div class="slds-form-element">
-                <span class="slds-form-element__label">Log Messages</span>
-                <div class="slds-form-element__control slds-border_bottom">
-                    <div class="slds-form-element__static slds-scrollable_y logMessages">
-                        <lightning-formatted-text value={logEvent.Log_Messages__c}></lightning-formatted-text>
+                    </div>
+                    <div class="slds-form-element">
+                        <span class="slds-form-element__label">Created By</span>
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <template if:false={user.id}>
+                                <div class="slds-form-element__static">{createdBy}</div>
+                            </template>
+                            <template if:true={user.id}>
+                                <div class="slds-form-element__static slds-grid">
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <div>Name: {name}</div>
+                                        <div>Profile: {profile}</div>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <div>Email: {email}</div>
+                                        <div>Phone: {phone}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slds-form-element">
+                        <span class="slds-form-element__label">Log Messages</span>
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <div class="slds-form-element__static slds-scrollable_y logMessages">
+                                <lightning-formatted-text value={logEvent.Log_Messages__c}></lightning-formatted-text>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </lightning-tab>
+            <lightning-tab label="Platform Info">
+                <div class="slds-m-around_medium">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <div class="slds-form-element__static slds-scrollable_y platformDetails">
+                                <table
+                                    class="
+                                        slds-table
+                                        slds-table_cell-buffer
+                                        slds-table_bordered
+                                        slds-table_fixed-layout
+                                        slds-table_striped
+                                    "
+                                    aria-label="Platform Info"
+                                >
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="Type">Type</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="Info">Value</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={platformInfo} for:item="info">
+                                            <tr key={info.index} class="slds-hint-parent">
+                                                <th data-label="Name" scope="row">
+                                                    <div class="slds-truncate" title={info.key}>{info.key}</div>
+                                                </th>
+                                                <td data-label="Value" class="slds-cell-wrap">
+                                                    <div class="slds-truncate" title={info.value}>{info.value}</div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </lightning-tab>
+        </lightning-tabset>
     </lightning-card>
 </template>

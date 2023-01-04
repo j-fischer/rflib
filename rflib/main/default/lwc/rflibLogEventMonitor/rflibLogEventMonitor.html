@@ -27,6 +27,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
 -->
 <template>
+    <c-rflib-confirmation-dialog
+        title="Confirmation"
+        message="Are you sure you want to clear the archive? This will delete up to 50000 oldest records from the archive."
+        confirm-label="Clear"
+        cancel-label="Cancel"
+        visible={isClearArchiveDialogVisible}
+        original-message="confirmation"
+        name="confirmModal"
+        onmodalaction={handleClearArchiveConfirmation}
+    >
+    </c-rflib-confirmation-dialog>
+
     <div class="slds-page-header">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
@@ -49,8 +61,45 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-input
+                                    type="datetime"
+                                    name="startDate"
+                                    variant="label-hidden"
+                                    placeholder="Enter a start date"
+                                    onchange={handleStartDateChanged}
+                                >
+                                </lightning-input>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-input
+                                    type="datetime"
+                                    name="endDate"
+                                    variant="label-hidden"
+                                    placeholder="Enter a end date"
+                                    onchange={handleEndDateChanged}
+                                >
+                                </lightning-input>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <button class="slds-button slds-button_neutral" onclick={queryArchive}>
+                                    Query Archive
+                                </button>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-button-menu icon-name="utility:settings">
+                                    <lightning-menu-item label="Clear Archive" onclick={clearArchive}>
+                                    </lightning-menu-item>
+                                </lightning-button-menu>
+                            </li>
+                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                                <lightning-icon icon-name="utility:threedots_vertical"></lightning-icon>
+                            </li>
                             <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu label="Change Connection Mode" onselect={changeConnectionMode}>
+                                <lightning-button-menu
+                                    label={currentConnectionMode.label}
+                                    onselect={changeConnectionMode}
+                                >
                                     <template for:each={connectionModes} for:item="menuItem">
                                         <lightning-menu-item
                                             key={menuItem.id}
@@ -101,7 +150,7 @@
             <template if:true={hasLogEvent}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
-                    user-id={selectedLogEvent.CreatedById}
+                    user-id={selectedLogEventCreatedById}
                 ></c-rflib-log-event-viewer>
             </template>
         </div>

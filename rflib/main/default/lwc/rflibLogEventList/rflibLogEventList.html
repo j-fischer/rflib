@@ -33,7 +33,7 @@
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
             <div class="slds-grid">
-                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
+                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
                     <lightning-input
                         type="search"
                         onchange={handleCreatedByChanged}
@@ -42,7 +42,16 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="sdls-col slds-size_1-of-4 slds-m-right_x-small">
+                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
+                    <lightning-input
+                        type="search"
+                        onchange={handleLevelKeyChange}
+                        class="slds-m-bottom_small"
+                        placeholder="Search Level..."
+                    >
+                    </lightning-input>
+                </div>
+                <div class="sdls-col slds-size_3-of-12 slds-m-right_x-small">
                     <lightning-input
                         type="search"
                         onchange={handleContextKeyChange}
@@ -51,7 +60,7 @@
                     >
                     </lightning-input>
                 </div>
-                <div class="slds-col slds-size_2-of-4">
+                <div class="slds-col slds-size_5-of-12">
                     <lightning-input
                         type="search"
                         onchange={handleLogMessageKeyChange}
@@ -63,7 +72,9 @@
             </div>
             <template if:true={eventsToDisplay}>
                 <table
-                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                    class="
+                        slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout
+                    "
                 >
                     <thead>
                         <tr class="slds-text-heading_label">
@@ -86,34 +97,12 @@
                     </thead>
                     <tbody>
                         <template for:each={eventsToDisplay} for:item="evt">
-                            <tr class="clickable" key={evt.Id} data-log-id={evt.Id} onclick={handleLogSelected}>
-                                <td class="slds-truncate">
-                                    <div>
-                                        <lightning-formatted-date-time
-                                            value={evt.CreatedDate}
-                                            year="numeric"
-                                            day="2-digit"
-                                            month="2-digit"
-                                            hour="2-digit"
-                                            minute="2-digit"
-                                            second="2-digit"
-                                        >
-                                        </lightning-formatted-date-time>
-                                    </div>
-                                </td>
-                                <td class="slds-truncate">
-                                    <div>{evt.CreatedById}</div>
-                                </td>
-                                <td class="slds-truncate">
-                                    <div>{evt.Request_ID__c}</div>
-                                </td>
-                                <td>
-                                    <div class="slds-truncate">{evt.Log_Level__c}</div>
-                                </td>
-                                <td>
-                                    <div class="slds-truncate">{evt.Context__c}</div>
-                                </td>
-                            </tr>
+                            <c-rflib-log-event-list-row
+                                key={evt.Id}
+                                evt={evt}
+                                data-log-id={evt.Id}
+                                onclick={handleLogSelected}
+                            ></c-rflib-log-event-list-row>
                         </template>
                     </tbody>
                 </table>

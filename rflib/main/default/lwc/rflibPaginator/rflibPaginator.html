@@ -47,7 +47,23 @@
                 disabled={shouldDisableFirstButton}
             ></lightning-button>
         </lightning-layout-item>
-        <lightning-layout-item flexibility="grow"></lightning-layout-item>
+        <lightning-layout-item flexibility="grow">
+            <template if:true={shouldDisplayPageSelection}>
+                <div class="slds-text-align_center">
+                    <label class="slds-text-color_weak slds-p-horizontal_x-small" for="pageNum">Page:</label>
+                    <input
+                        type="number"
+                        id="pageNum"
+                        value={currentPage}
+                        maxlength="4"
+                        onkeypress={handlePageNumberChange}
+                        class="slds-input_counter page-selector"
+                        title="Change number and hit Enter to switch to a specific page"
+                    />
+                    <span>&nbsp;of&nbsp;<b id="totalPages">{totalPages}</b></span>
+                </div>
+            </template>
+        </lightning-layout-item>
         <lightning-layout-item>
             <lightning-button
                 label="Next"

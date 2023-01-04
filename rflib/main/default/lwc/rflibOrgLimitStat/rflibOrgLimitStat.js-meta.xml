@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>55.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Org Limit Stat</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="title" type="String" label="Title" placeholder="Name of Limit" description="The Title to be displayed in the card" />
+            <property name="limitName" type="String" label="Name of Org Limit" description="The name of the Org Limit as returned by the Apex OrgLimit class" datasource="AnalyticsExternalDataSizeMB,BOZosCalloutHourlyLimit,ConcurrentAsyncGetReportInstances,ConcurrentEinsteinDataInsightsStoryCreation,ConcurrentEinsteinDiscoveryStoryCreation,ConcurrentSyncReportRuns,DailyAnalyticsDataflowJobExecutions,DailyAnalyticsUploadedFilesSizeMB,DailyApiRequests,DailyAsyncApexExecutions,DailyBulkApiBatches,DailyBulkV2QueryFileStorageMB,DailyBulkV2QueryJobs,DailyDurableGenericStreamingApiEvents,DailyDurableStreamingApiEvents,DailyEinsteinDataInsightsStoryCreation,DailyEinsteinDiscoveryPredictAPICalls,DailyEinsteinDiscoveryPredictionsByCDC,DailyEinsteinDiscoveryStoryCreation,DailyFieldServiceAppointmentOptimization,DailyFunctionsApiCallLimit,DailyGenericStreamingApiEvents,DailyStandardVolumePlatformEvents,DailyStreamingApiEvents,DailyWorkflowEmails,DataStorageMB,DurableStreamingApiConcurrentClients,FileStorageMB,HourlyAsyncReportRuns,HourlyDashboardRefreshes,HourlyDashboardResults,HourlyDashboardStatuses,HourlyLongTermIdMapping,HourlyManagedContentPublicRequests,HourlyODataCallout,HourlyPublishedPlatformEvents,HourlyPublishedStandardVolumePlatformEvents,HourlyShortTermIdMapping,HourlySyncReportRuns,HourlyTimeBasedWorkflow,MassEmail,MonthlyEinsteinDiscoveryStoryCreation,MonthlyPlatformEventsUsageEntitlement,Package2VersionCreates,Package2VersionCreatesWithoutValidation,PermissionSets,PrivateConnectOutboundCalloutHourlyLimitMB,SingleEmail,StreamingApiConcurrentClients" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -10,9 +10,11 @@
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
-    <label>Ops Center</label>
+    <label>RFLIB Ops Center</label>
     <navType>Standard</navType>
+    <tabs>rflib_Management_Dashboard</tabs>
     <tabs>rflib_Log_Monitor</tabs>
+    <tabs>rflib_Permissions_Explorer</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>rflib_Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>

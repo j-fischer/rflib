@@ -3,7 +3,7 @@ version: 2.1
 # Defining default values for all jobs
 defaults: &defaults
     docker:
-        - image: circleci/node:lts
+        - image: cimg/node:lts
 
 jobs:
     setup_project:
@@ -13,13 +13,14 @@ jobs:
             - run:
                   name: Install Salesforce DX
                   command: |
-                      openssl aes-256-cbc -k $KEY -in assets/circleci.key.enc -out assets/server.key -d
+                      openssl version
+                      openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $ENCRYPTION_KEY -iv $ENCRYPTION_IV
                       export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
                       export SFDX_DOMAIN_RETRY=300
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install sfdx-cli
+                      npm install sfdx-cli@7.182.1
                       npm install
                       node_modules/sfdx-cli/bin/run --version
                       node_modules/sfdx-cli/bin/run plugins --core
@@ -54,7 +55,7 @@ jobs:
             - run:
                   name: Define CI Org
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg -d 1 --wait 4
+                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/$CONFIG_FILE.json -a ciorg -d 1 --wait 10
             - run:
                   name: Remove Server Key
                   when: always
@@ -79,6 +80,11 @@ jobs:
                   name: Push Source
                   command: |
                       node_modules/sfdx-cli/bin/run force:source:push -u ciorg
+            - run:
+                  name: Clean Up
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                  when: on_fail
     run_apex_tests:
         <<: *defaults
         steps:
@@ -88,10 +94,16 @@ jobs:
                   name: Run Apex Tests
                   command: |
                       node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+            - run:
+                  name: Clean Up
+                  command: |
+                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                  when: on_fail
             - persist_to_workspace:
                   root: ~/
                   paths:
                       - apex_tests/*
+                  when: on_success
     run_lwc_tests:
         <<: *defaults
         steps:
@@ -131,24 +143,15 @@ workflows:
             - setup_dx:
                   requires:
                       - setup_project
-                  filters:
-                      branches:
-                          only: master
             - deploy_source:
                   requires:
                       - setup_dx
-                  filters:
-                      branches:
-                          only: master
             - run_lwc_tests:
                   requires:
                       - setup_project
             - run_apex_tests:
                   requires:
                       - deploy_source
-                  filters:
-                      branches:
-                          only: master
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -158,9 +161,4 @@ workflows:
                           only: master
             - cleanup_scratch_org:
                   requires:
-                      - setup_dx
-                      - deploy_source
                       - run_apex_tests
-                  filters:
-                      branches:
-                          only: master
