@@ -434,6 +434,10 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
+        if (grunt.option('cleanup')) {
+            tasks.push('shell:force-delete-org');
+        }
+
         if (grunt.option('preview')) {
             tasks.push('shell:force-create-org-default-preview');
         } else {
