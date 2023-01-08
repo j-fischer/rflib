@@ -10,11 +10,11 @@
         <sortDirection>ASC</sortDirection>
     </fields>
     <fields>
-        <name>Created_By_ID__c</name>
+        <name>Related_Record_ID__c</name>
         <sortDirection>ASC</sortDirection>
     </fields>
     <fields>
-        <name>Related_Record_ID__c</name>
+        <name>Created_By_ID__c</name>
         <sortDirection>ASC</sortDirection>
     </fields>
     <label>Application Event Index</label>
