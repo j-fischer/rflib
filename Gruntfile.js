@@ -434,7 +434,7 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        if (grunt.option('cleanup')) {
+        if (grunt.option('refresh')) {
             tasks.push('shell:force-delete-org');
         }
 
