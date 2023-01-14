@@ -39,7 +39,7 @@ public with sharing class rflib_ArchiveLogAction {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ArchiveLogAction');
 
     @TestVisible
-    private static rflib_BigObjectDatabaseExecutor DATABASE_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
+    private static rflib_BigObjectDatabaseExecutor BIG_OBJECT_DB_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
 
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
@@ -62,7 +62,7 @@ public with sharing class rflib_ArchiveLogAction {
         }
 
         if (eventsToArchive.size() > 0) {
-            DATABASE_EXECUTOR.insertImmediate(eventsToArchive);
+            BIG_OBJECT_DB_EXECUTOR.insertImmediate(eventsToArchive);
         }
     }
 

@@ -27,7 +27,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public interface rflib_ApplicationEventService {
+public with sharing class rflib_ApplicationEventController {
 
-    void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventController');
+
+    @TestVisible
+    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
+    
+    @AuraEnabled
+    public static void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
+        try {
+            LOGGER.info('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+
+            APPLICATION_EVENT_SERVICE.saveApplicationEvent(eventName, relatedRecordId, additionalDetails);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to save application event', ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
+
 }
