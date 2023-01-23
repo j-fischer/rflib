@@ -3,9 +3,10 @@
     <fullName>Occurred_On__c</fullName>
     <description>The date and time when the event occurred. This may not be the time of the creation of this record as this would most likely be delayed.</description>
     <externalId>false</externalId>
-    <inlineHelpText>The date and time when the event occurred. This may not be the time of the creation of this record as this would most likely be delayed.</inlineHelpText>
+    <isFilteringDisabled>false</isFilteringDisabled>
+    <isNameField>false</isNameField>
+    <isSortingDisabled>false</isSortingDisabled>
     <label>Occurred On</label>
     <required>true</required>
-    <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>

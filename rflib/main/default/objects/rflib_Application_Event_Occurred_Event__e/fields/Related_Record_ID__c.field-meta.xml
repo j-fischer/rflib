@@ -4,11 +4,12 @@
     <defaultValue>&quot;NULL&quot;</defaultValue>
     <description>The record ID that this even is related to. This is not a lookup field, which means that the value does not have to be a Salesforce Record ID, but can be a Case Number, for example, instead.</description>
     <externalId>false</externalId>
-    <inlineHelpText>The record ID that this even is related to. This is not a lookup field, which means that the value does not have to be a Salesforce Record ID, but can be a Case Number, for example, instead.</inlineHelpText>
+    <isFilteringDisabled>false</isFilteringDisabled>
+    <isNameField>false</isNameField>
+    <isSortingDisabled>false</isSortingDisabled>
     <label>Related Record ID</label>
     <length>18</length>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
+    <required>true</required>
     <type>Text</type>
     <unique>false</unique>
 </CustomField>

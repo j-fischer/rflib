@@ -36,6 +36,7 @@
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ArchiveLogAction {
+    
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ArchiveLogAction');
 
     @TestVisible

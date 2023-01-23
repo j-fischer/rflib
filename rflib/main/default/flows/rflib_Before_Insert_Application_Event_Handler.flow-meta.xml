@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>56.0</apiVersion>
+    <assignments>
+        <description>Sets the record name to a concatenated string of the event name and the date of occurrence.</description>
+        <name>Assign_Record_Name</name>
+        <label>Assign Record Name</label>
+        <locationX>176</locationX>
+        <locationY>311</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Name</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>{!$Record.Event_Name__c} - {!$Record.Occurred_On__c}</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <description>Executes a before insert logic to set the Name field of an object.</description>
+    <environments>Default</environments>
+    <interviewLabel>RFLIB Before Insert Application Event Handler {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>RFLIB Before Insert Application Event Handler</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Assign_Record_Name</targetReference>
+        </connector>
+        <object>rflib_Application_Event__c</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

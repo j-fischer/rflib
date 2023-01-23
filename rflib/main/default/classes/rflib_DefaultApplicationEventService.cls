@@ -56,15 +56,14 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
         LOGGER.debug('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
         DateTime occurredOn = NOW;
-        rflib_Application_Event__c evt = new rflib_Application_Event__c(
-            Name = eventName + ' - ' + occurredOn,
+        rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
             Event_Name__c = eventName,
             Occurred_On__c = occurredOn,
             Related_Record_ID__c = relatedRecordId,
             Additional_Details__c = additionalDetails,
             Created_By_ID__c = UserInfo.getUserId()
         );
-        insert evt;
+        EventBus.publish(evt);
     }
 
     public void archiveEvents(List<rflib_Application_Event__c> events) {

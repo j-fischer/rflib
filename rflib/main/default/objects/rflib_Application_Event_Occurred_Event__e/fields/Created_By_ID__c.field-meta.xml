@@ -3,11 +3,12 @@
     <fullName>Created_By_ID__c</fullName>
     <description>ID of the user who created the event.</description>
     <externalId>false</externalId>
-    <inlineHelpText>ID of the user who created the event.</inlineHelpText>
+    <isFilteringDisabled>false</isFilteringDisabled>
+    <isNameField>false</isNameField>
+    <isSortingDisabled>false</isSortingDisabled>
     <label>Created By ID</label>
     <length>18</length>
     <required>true</required>
-    <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
 </CustomField>
