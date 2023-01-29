@@ -5,6 +5,11 @@
     "settings": {
         "lightningExperienceSettings": {
             "enableS1DesktopEnabled": true
+        },
+        "securitySettings": {
+            "sessionSettings": {
+                "lockerServiceNext": true
+            }
         }
     }
 }
