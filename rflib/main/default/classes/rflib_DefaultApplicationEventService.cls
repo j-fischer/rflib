@@ -29,7 +29,9 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_DefaultApplicationEventService implements rflib_ApplicationEventService {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('ApplicationEventService');
-
+    
+    @TestVisible 
+    private static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;
     public static Integer QUERY_RECORD_LIMIT = 50000;
 
     @TestVisible
@@ -56,11 +58,15 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
         LOGGER.debug('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
         DateTime occurredOn = NOW;
+        Integer additionalDetailsLength = additionalDetails.length();
+        String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
+            ? additionalDetails 
+            : additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
         rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
             Event_Name__c = eventName,
             Occurred_On__c = occurredOn,
             Related_Record_ID__c = relatedRecordId,
-            Additional_Details__c = additionalDetails,
+            Additional_Details__c = additionalDetailsToSave,
             Created_By_ID__c = UserInfo.getUserId()
         );
         EventBus.publish(evt);
