@@ -27,8 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public interface rflib_ApplicationEventService {
+public with sharing class rflib_ApplicationEventArchiver implements Schedulable {
 
-    void archiveEvents(List<rflib_Application_Event__c> events);
-    void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventArchiver');
+
+    @TestVisible
+    private static Date TODAY = Date.today();
+
+    @TestVisible
+    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
+
+    public void execute(SchedulableContext ctx) {
+        try {
+            LOGGER.info('execute() invoked');
+
+            Integer retainXNumberOfDays = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days').Value__c);
+            Date threshold = TODAY.addDays(retainXNumberOfDays * (-1));
+
+            List<rflib_Application_Event__c> applicationEvents = [
+                SELECT Id, Created_By_ID__c, Occurred_On__c, Event_Name__c, Related_Record_ID__c, Additional_Details__c
+                FROM rflib_Application_Event__c
+                WHERE Occurred_On__c < :threshold
+            ];
+
+            APPLICATION_EVENT_SERVICE.archiveEvents(applicationEvents);
+        } catch (Exception ex) {
+            LOGGER.fatal('Failed to archive application events', ex);
+        } 
+    }
 }

@@ -2,6 +2,6 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <deploymentStatus>InDevelopment</deploymentStatus>
     <description>An application event is a custom event that happened anywhere within the customizations of the Salesforce platform.</description>
-    <label>Application Event</label>
-    <pluralLabel>Application Events</pluralLabel>
+    <label>Application Event Archive</label>
+    <pluralLabel>Application Events Archive</pluralLabel>
 </CustomObject>

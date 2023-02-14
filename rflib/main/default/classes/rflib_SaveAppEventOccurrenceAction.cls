@@ -57,7 +57,7 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
             Created_By_ID__c = evt.Created_By_ID__c,
             Occurred_On__c = evt.Occurred_On__c,
             Event_Name__c = evt.Event_Name__c,
-            Related_Record_ID__c = evt.Related_Record_ID__c,
+            Related_Record_ID__c = String.isNotBlank(evt.Related_Record_ID__c) ? evt.Related_Record_ID__c : rflib_DefaultApplicationEventService.NO_RECORD_ID,
             Additional_Details__c = evt.Additional_Details__c
         );
     }

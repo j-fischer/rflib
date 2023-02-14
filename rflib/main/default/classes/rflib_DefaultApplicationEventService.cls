@@ -28,6 +28,9 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_DefaultApplicationEventService implements rflib_ApplicationEventService {
+
+    public static final String NO_RECORD_ID = 'NO_RECORD_ID';
+
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('ApplicationEventService');
     
     @TestVisible 
@@ -58,14 +61,14 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
         LOGGER.debug('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
         DateTime occurredOn = NOW;
-        Integer additionalDetailsLength = additionalDetails.length();
+        Integer additionalDetailsLength = additionalDetails != null ? additionalDetails.length() : 0;
         String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
             ? additionalDetails 
             : additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
         rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
             Event_Name__c = eventName,
             Occurred_On__c = occurredOn,
-            Related_Record_ID__c = relatedRecordId,
+            Related_Record_ID__c = String.isNotBlank(relatedRecordId) ? relatedRecordId : NO_RECORD_ID,
             Additional_Details__c = additionalDetailsToSave,
             Created_By_ID__c = UserInfo.getUserId()
         );
@@ -73,7 +76,15 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
     }
 
     public void archiveEvents(List<rflib_Application_Event__c> events) {
+        LOGGER.debug('archiveEvents({0})', new Object[] { events });
+        
         List<rflib_Application_Event_Archive__b> archivedRecords = new List<rflib_Application_Event_Archive__b>();
+        
+        if (events.isEmpty()) {
+            LOGGER.debug('No events found, cancelling');
+            return;
+        }
+
         for (rflib_Application_Event__c evt : events) {
             archivedRecords.add(convert(evt));
         }
@@ -87,7 +98,7 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
             Created_By_ID__c = evt.Created_By_ID__c,
             Occurred_On__c = evt.Occurred_On__c,
             Event_Name__c = evt.Event_Name__c,
-            Related_Record_ID__c = evt.Related_Record_ID__c,
+            Related_Record_ID__c = String.isNotBlank(evt.Related_Record_ID__c) ? evt.Related_Record_ID__c : NO_RECORD_ID,
             Additional_Details__c = evt.Additional_Details__c
         );
     }
