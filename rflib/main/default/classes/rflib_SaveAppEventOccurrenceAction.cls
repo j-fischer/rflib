@@ -46,7 +46,7 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
             } 
         
             LOGGER.info('Inserting events; ' + eventsToSave);
-            insert events;
+            insert eventsToSave;
         } catch (Exception ex) {
             LOGGER.error('Failed to insert application events', ex);
         }

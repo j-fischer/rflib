@@ -39,6 +39,12 @@
             <targetReference>Log_Application_Event_Insertion_Error</targetReference>
         </faultConnector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
     </actionCalls>
     <apiVersion>56.0</apiVersion>
     <description>Handles the occurrence of an Application Event Platform Event to store it in the Custom Object.</description>

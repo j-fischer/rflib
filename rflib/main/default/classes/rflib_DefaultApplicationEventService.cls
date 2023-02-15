@@ -31,7 +31,7 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
 
     public static final String NO_RECORD_ID = 'NO_RECORD_ID';
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('ApplicationEventService');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultApplicationEventService');
     
     @TestVisible 
     private static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;

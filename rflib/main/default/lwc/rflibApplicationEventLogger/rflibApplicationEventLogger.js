@@ -43,9 +43,17 @@ const logApplicationEvent = (eventName, relatedRecordId, additionalDetails) => {
         eventName: eventName,
         relatedRecordId: relatedRecordId,
         additionalDetails: additionalDetails
-    }).catch((error) => {
-        logger.error('Failed to log application event to server for: {0}, error={1}', eventName, JSON.stringify(error));
-    });
+    })
+        .then(() => {
+            logger.debug('Application Event successfully recorded');
+        })
+        .catch((error) => {
+            logger.error(
+                'Failed to log application event to server for: {0}, error={1}',
+                eventName,
+                JSON.stringify(error)
+            );
+        });
 };
 
 export { logApplicationEvent };

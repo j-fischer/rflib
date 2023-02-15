@@ -14,9 +14,21 @@
                 <stringValue>{!$Record.Event_Name__c} - {!$Record.Occurred_On__c}</stringValue>
             </value>
         </assignmentItems>
+        <assignmentItems>
+            <assignToReference>$Record.Related_Record_ID__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>formula_DefaultRecordIdIfApplicable</elementReference>
+            </value>
+        </assignmentItems>
     </assignments>
     <description>Executes a before insert logic to set the Name field of an object.</description>
     <environments>Default</environments>
+    <formulas>
+        <name>formula_DefaultRecordIdIfApplicable</name>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!$Record.Related_Record_ID__c}), &quot;NO_RECORD_ID&quot;, $Record.Related_Record_ID__c)</expression>
+    </formulas>
     <interviewLabel>RFLIB Before Insert Application Event Handler {!$Flow.CurrentDateTime}</interviewLabel>
     <label>RFLIB Before Insert Application Event Handler</label>
     <processMetadataValues>

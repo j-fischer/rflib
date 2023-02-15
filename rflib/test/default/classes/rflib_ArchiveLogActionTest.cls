@@ -35,7 +35,7 @@ private class rflib_ArchiveLogActionTest {
         createLoggerSettings('FATAL');
 
         MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
-        rflib_ArchiveLogAction.DATABASE_EXECUTOR = dbExecutor;
+        rflib_ArchiveLogAction.BIG_OBJECT_DB_EXECUTOR = dbExecutor;
         
         Test.startTest();
         System.assertEquals(null, dbExecutor.records);
@@ -49,7 +49,7 @@ private class rflib_ArchiveLogActionTest {
         createLoggerSettings('ERROR');
         
         MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
-        rflib_ArchiveLogAction.DATABASE_EXECUTOR = dbExecutor;
+        rflib_ArchiveLogAction.BIG_OBJECT_DB_EXECUTOR = dbExecutor;
 
         Test.startTest();
         System.assertEquals(null, dbExecutor.records);
