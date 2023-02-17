@@ -26,23 +26,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_ApplicationEventController {
-
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventController');
-
-    @TestVisible
-    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
+public class rflib_MockApplicationEventService implements rflib_ApplicationEventService {
     
-    @AuraEnabled
-    public static void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
-        try {
-            LOGGER.info('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+    public List<rflib_Application_Event__c> capturedEvents { get; private set; }
+    public String capturedEventName { get; private set; }
+    public String capturedRelatedRecordId { get; private set; }
+    public String capturedAdditionalDetails { get; private set; }
 
-            APPLICATION_EVENT_SERVICE.saveApplicationEvent(eventName, relatedRecordId, additionalDetails);
-        } catch (Exception ex) {
-            LOGGER.error('Failed to save application event', ex);
-            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+    private Exception exceptionToThrow;
+
+    public rflib_MockApplicationEventService() {
+        this(null);
+    }
+
+    public rflib_MockApplicationEventService(
+        Exception exceptionToThrow
+    ) {
+        this.exceptionToThrow = exceptionToThrow;
+    }
+
+    public void archiveEvents(List<rflib_Application_Event__c> events) {
+        this.capturedEvents = events;
+
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
+    }
+
+    public void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
+        this.capturedEventName = eventName;
+        this.capturedRelatedRecordId = relatedRecordId;
+        this.capturedAdditionalDetails = additionalDetails;
+
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
         }
     }
 
