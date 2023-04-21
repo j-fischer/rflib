@@ -289,80 +289,80 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -s '
+                command: 'sfdx org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> -d '
             },
 
             'force-create-org-default-preview': {
-                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -s '
+                command: 'sfdx org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> -d '
             },
 
             'force-create-org': {
-                command: 'sfdx force:org:create -f config/project-scratch-def.json -d 30 -a <%= config.alias %>'
+                command: 'sfdx org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %>'
             },
 
             'force-create-org-preview': {
-                command: 'sfdx force:org:create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %>'
+                command: 'sfdx org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %>'
             },
 
             'force-delete-org': {
-                command: 'sfdx force:org:delete -u <%= config.alias %> -p'
+                command: 'sfdx org delete scratch -o <%= config.alias %> -p'
             },
 
             'force-assign-permset': {
-                command: 'sfdx force:user:permset:assign --permsetname rflib_Ops_Center_Access -u <%= config.alias %>'
+                command: 'sfdx force user permset assign --perm-set-name rflib_Ops_Center_Access -o <%= config.alias %>'
             },
 
             'force-push': {
-                command: 'sfdx force:source:push -u <%= config.alias %> -f'
+                command: 'sfdx force source push -o <%= config.alias %> -f'
             },
 
             'force-test': {
-                command: 'sfdx force:apex:test:run -l RunAllTestsInOrg -c -r human -u <%= config.alias %>'
+                command: 'sfdx apex run test -l RunAllTestsInOrg -c -r human -o <%= config.alias %> -w 4'
             },
 
             'force-open': {
-                command: 'sfdx force:org:open -u <%= config.alias %>'
+                command: 'sfdx org open -o <%= config.alias %>'
             },
 
             'force-create-release-candidate': {
                 command:
-                    'sfdx force:package:beta:version:create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
+                    'sfdx force package beta version create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
             },
 
             'force-install-latest': {
                 command:
-                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force package beta install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
             },
 
             'force-install-streaming-monitor': {
                 command:
-                    'sfdx force:package:beta:install --package 04t1t000003Po3QAAS -u <%= config.alias %> -w 10 && ' + 
-                    'sfdx force:user:permset:assign -n Streaming_Monitor -u <%= config.alias %>'
+                    'sfdx force package beta install --package 04t1t000003Po3QAAS -o <%= config.alias %> -w 10 && ' + 
+                    'sfdx force user permset assign -n Streaming_Monitor -o <%= config.alias %>'
             },
 
-            'force-install-bigobject-utility': {
+            'force-install-bigobject-otility': {
                 command:
-                    'sfdx force:package:beta:install --package 04t7F000003irldQAA -u <%= config.alias %> -w 10'
+                    'sfdx force package beta install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
             },
 
             'force-promote': {
-                command: 'sfdx force:package:beta:version:promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sfdx force package beta version promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
-                command: 'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %>'
+                command: 'sfdx texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %>'
             },
 
-            'force-create-qa-user': {
-                command: 'sfdx force:user:create -u <%= config.alias %> --setalias qa_user --definitionfile config/qa-user-def.json'
+            'force-create-qa-oser': {
+                command: 'sfdx org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/qa-user-def.json'
             },
 
             'force-configure-settings': {
-                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
+                command: 'sfdx apex run -o <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
             },
 
             'force-create-log-event': {
-                command: 'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
+                command: 'sfdx apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
             },
 
             'test-lwc': {
@@ -373,14 +373,14 @@ module.exports = function(grunt) {
                 command: 'npm run lint'
             }, 
 
-            'force-test-package-install-and-upgrade': {
+            'force-test-package-install-and-opgrade': {
                 command: 
-                    'sfdx force:package:beta:install --package 04t3h000004RdLTAA0 -u <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
-                    'sfdx force:package:beta:install --package 04t3h000004jpyMAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
-                    'sfdx force:package:beta:install --package 04t3h000004jnfBAAQ -u <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
-                    'sfdx force:apex:execute -u <%= config.alias %> -f scripts/apex/CreateLogEvent.apex &&' +
-                    'sfdx texei:package:dependencies:install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
-                    'sfdx force:package:beta:install --package <%= config.package.latestVersionAlias %> -u <%= config.alias %> -w 10'
+                    'sfdx force package beta install --package 04t3h000004RdLTAA0 -o <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
+                    'sfdx force package beta install --package 04t3h000004jpyMAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
+                    'sfdx force package beta install --package 04t3h000004jnfBAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
+                    'sfdx apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex &&' +
+                    'sfdx texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %> &&' +
+                    'sfdx force package beta install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
             },
         }
     });
@@ -444,10 +444,10 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
-            'shell:force-create-qa-user',
+            'shell:force-create-qa-oser',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
-            'shell:force-install-bigobject-utility',
+            'shell:force-install-bigobject-otility',
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'
@@ -478,13 +478,13 @@ module.exports = function(grunt) {
         ]));
     });
 
-    grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
+    grunt.registerTask('test-package-opgrade', 'Install older versions and then upgrade to the latest package', function() {
         var tasks = [
             'prompt:alias',
             'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
-            'shell:force-test-package-install-and-upgrade',
+            'shell:force-test-package-install-and-opgrade',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
             'shell:force-open',

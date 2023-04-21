@@ -20,7 +20,7 @@ jobs:
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install sfdx-cli@7.182.1
+                      npm install sfdx-cli@7.197.8
                       npm install
                       node_modules/sfdx-cli/bin/run --version
                       node_modules/sfdx-cli/bin/run plugins --core
@@ -51,11 +51,11 @@ jobs:
             - run:
                   name: Authenticate DevHub
                   command: |
-                      node_modules/sfdx-cli/bin/run force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
+                      node_modules/sfdx-cli/bin/run auth jwt grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
             - run:
                   name: Define CI Org
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:create -v HubOrg -s -f config/$CONFIG_FILE.json -a ciorg -d 1 --wait 10
+                      node_modules/sfdx-cli/bin/run org create scratch -v HubOrg -d -f config/$CONFIG_FILE.json -a ciorg -y 1 --wait 10
             - run:
                   name: Remove Server Key
                   when: always
@@ -79,11 +79,11 @@ jobs:
             - run:
                   name: Push Source
                   command: |
-                      node_modules/sfdx-cli/bin/run force:source:push -u ciorg
+                      node_modules/sfdx-cli/bin/run force source push -o ciorg
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                      node_modules/sfdx-cli/bin/run org delete scratch -o ciorg -p
                   when: on_fail
     run_apex_tests:
         <<: *defaults
@@ -93,11 +93,11 @@ jobs:
             - run:
                   name: Run Apex Tests
                   command: |
-                      node_modules/sfdx-cli/bin/run force:apex:test:run -u ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+                      node_modules/sfdx-cli/bin/run apex run test -o ciorg --codecoverage -r human -d ~/apex_tests --wait 10
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                      node_modules/sfdx-cli/bin/run org delete scratch -o ciorg -p
                   when: on_fail
             - persist_to_workspace:
                   root: ~/
@@ -133,7 +133,7 @@ jobs:
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/sfdx-cli/bin/run force:org:delete -u ciorg -p
+                      node_modules/sfdx-cli/bin/run org delete scratch -o ciorg -p
 
 workflows:
     version: 2.1
