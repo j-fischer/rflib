@@ -37,11 +37,14 @@ public with sharing class rflib_ApplicationEventArchiver implements Schedulable 
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
 
+    @TestVisible
+    private static rflib_Global_Setting__mdt APPLICATION_EVENT_RETAIN_X_DAYS  = rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days');
+
     public void execute(SchedulableContext ctx) {
         try {
             LOGGER.info('execute() invoked');
 
-            Integer retainXNumberOfDays = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days').Value__c);
+            Integer retainXNumberOfDays = Integer.valueOf(APPLICATION_EVENT_RETAIN_X_DAYS.Value__c);
             Date threshold = TODAY.addDays(retainXNumberOfDays * (-1));
 
             List<rflib_Application_Event__c> applicationEvents = [
