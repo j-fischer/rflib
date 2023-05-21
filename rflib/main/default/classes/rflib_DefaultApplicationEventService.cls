@@ -47,6 +47,9 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
 
     @TestVisible
+    private static rflib_EventPublisher EVENT_PUBLISHER = new rflib_EventBusPublisher();
+
+    @TestVisible
     private static DateTime NOW {
         get {
             if (NOW == null) {
@@ -72,7 +75,7 @@ public with sharing class rflib_DefaultApplicationEventService implements rflib_
             Additional_Details__c = additionalDetailsToSave,
             Created_By_ID__c = UserInfo.getUserId()
         );
-        EventBus.publish(evt);
+        EVENT_PUBLISHER.publish(evt);
     }
 
     public void archiveEvents(List<rflib_Application_Event__c> events) {

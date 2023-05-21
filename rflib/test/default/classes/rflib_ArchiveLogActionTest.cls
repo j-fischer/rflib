@@ -34,7 +34,7 @@ private class rflib_ArchiveLogActionTest {
     public static void testLogArchiveLevelDoesNotMatch() {
         createLoggerSettings('FATAL');
 
-        MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
+        rflib_MockBigObjectDatabaseExecutor dbExecutor = new rflib_MockBigObjectDatabaseExecutor();
         rflib_ArchiveLogAction.BIG_OBJECT_DB_EXECUTOR = dbExecutor;
         
         Test.startTest();
@@ -48,7 +48,7 @@ private class rflib_ArchiveLogActionTest {
     public static void testSuccess() {
         createLoggerSettings('ERROR');
         
-        MockBigObjectDatabaseExecutor dbExecutor = new MockBigObjectDatabaseExecutor();
+        rflib_MockBigObjectDatabaseExecutor dbExecutor = new rflib_MockBigObjectDatabaseExecutor();
         rflib_ArchiveLogAction.BIG_OBJECT_DB_EXECUTOR = dbExecutor;
 
         Test.startTest();
@@ -79,14 +79,5 @@ private class rflib_ArchiveLogActionTest {
         
         upsert settings;
         return settings;
-    }
-
-    public class MockBigObjectDatabaseExecutor implements rflib_BigObjectDatabaseExecutor {
-
-        public List<SObject> records;
-
-        public void insertImmediate(List<SObject> records) {
-            this.records = records;
-        }
     }
 }

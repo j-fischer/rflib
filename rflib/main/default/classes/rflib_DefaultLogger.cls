@@ -45,8 +45,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private static rflib_DefaultLogger.BatchPlatformEventExecutor BATCH_EXECUTOR = new rflib_DefaultLogger.BatchPlatformEventExecutor();
 
   private final String context;
+  private final rflib_EventPublisher eventPublisher;
   private final rflib_DefaultLogger.DebugLogger debugLogger;
-  private final rflib_DefaultLogger.EventPublisher eventPublisher;
   private final List<String> logMessages;
 
   private Integer logCacheSize = 100;
@@ -177,8 +177,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   private rflib_DefaultLogger(String context, Boolean shouldBatchEvents) {
     this(
       shouldBatchEvents ? 
-        (rflib_DefaultLogger.EventPublisher) new rflib_DefaultLogger.BatchPlatformEventPublisher() : 
-        (rflib_DefaultLogger.EventPublisher) new rflib_DefaultLogger.PlatformEventPublisher(), 
+        (rflib_EventPublisher) new rflib_DefaultLogger.BatchPlatformEventPublisher() : 
+        (rflib_EventPublisher) new rflib_DefaultLogger.PlatformEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
       context
     );
@@ -186,14 +186,14 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
   @TestVisible
   private rflib_DefaultLogger(
-        rflib_DefaultLogger.EventPublisher eventPublisher, 
+        rflib_EventPublisher eventPublisher, 
         rflib_DefaultLogger.DebugLogger debugLogger, 
         String context) {
     this(eventPublisher, debugLogger, context, LOG_STATEMENTS);
   }
 
   private rflib_DefaultLogger(
-        rflib_DefaultLogger.EventPublisher eventPublisher, 
+        rflib_EventPublisher eventPublisher, 
         rflib_DefaultLogger.DebugLogger debugLogger, 
         String context,
         List<String> logMessages) {
@@ -438,24 +438,21 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
   }
 
-  public interface EventPublisher {
-    void publish(rflib_Log_Event__e event);
-  }
-
-  public class PlatformEventPublisher implements EventPublisher {
-    public void publish(rflib_Log_Event__e event) {
+  public class PlatformEventPublisher implements rflib_EventPublisher {
+    public Database.SaveResult publish(SObject evt) {
+      rflib_Log_Event__e event = (rflib_Log_Event__e) evt;
       Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
         ? rflib_GlobalSettings.publishingLimit
         : Limits.getLimitPublishImmediateDML();
         
       if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
         System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' + JSON.serialize(event));
-        return;
+        return null;
       }
 
       if (PUBLISHING_COUNTER == publishingLimit) {
         System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
-        return;
+        return null;
       }
       
       Database.SaveResult result = EventBus.publish(getUpdatedLogEventIfLimitIsReached(event, publishingLimit));
@@ -464,6 +461,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       if(!result.isSuccess()) {
         System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
       }
+
+      return result;
     }
 
     private rflib_Log_Event__e getUpdatedLogEventIfLimitIsReached(rflib_Log_Event__e logEvent, Integer publishingLimit) {
@@ -486,9 +485,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
   }
 
-  public class BatchPlatformEventPublisher implements EventPublisher {
-    public void publish(rflib_Log_Event__e event) {
-      BATCH_EXECUTOR.addEvent(event);
+  public class BatchPlatformEventPublisher implements rflib_EventPublisher {
+    public Database.SaveResult publish(SObject event) {
+      BATCH_EXECUTOR.addEvent((rflib_Log_Event__e) event);
+      return null;
     }
   }
 
