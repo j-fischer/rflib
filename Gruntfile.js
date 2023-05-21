@@ -313,7 +313,7 @@ module.exports = function(grunt) {
             },
 
             'force-push': {
-                command: 'sf force source push -o <%= config.alias %> -f'
+                command: 'sf project deploy start -o <%= config.alias %> -f'
             },
 
             'force-test': {
