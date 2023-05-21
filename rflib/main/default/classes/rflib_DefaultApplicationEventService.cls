@@ -30,12 +30,12 @@
 public with sharing class rflib_DefaultApplicationEventService implements rflib_ApplicationEventService {
 
     public static final String NO_RECORD_ID = 'NO_RECORD_ID';
+    public static Integer QUERY_RECORD_LIMIT = 50000;
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultApplicationEventService');
     
     @TestVisible 
     private static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;
-    public static Integer QUERY_RECORD_LIMIT = 50000;
 
     @TestVisible
     private static rflib_BigObjectDatabaseExecutor BIG_OBJECT_DB_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
