@@ -26,6 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+ * @group Application Events
+ * @description Controller to save `rflib_Application_Event__c` records originating from Lightning frontend components.
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApplicationEventController {
 
@@ -34,7 +39,13 @@ public with sharing class rflib_ApplicationEventController {
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
     
-    @AuraEnabled
+    /**
+     * @description Save an application event that occurred in the UI.
+     * @param  eventName         Name of the event.
+     * @param  relatedRecordId   The record ID the event is related to.
+     * @param  additionalDetails Any relevant additional information part of the event. 
+     */
+     @AuraEnabled
     public static void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
         try {
             LOGGER.info('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });

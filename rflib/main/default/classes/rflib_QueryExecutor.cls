@@ -26,8 +26,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * @group Logger
+  * @description Abstraction class for Database queries as provided by the `Database` class.  
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public interface rflib_QueryExecutor {
+
+    /**
+     * @description Execute a count query.
+     * @param  query The Query to be executed.
+     * @return       The number of records returned by the query.
+     */
     Integer countQuery(String query);
+
+    /**
+     * @description Execute a query against the database.
+     * @param  query The Query to be executed.
+     * @return       The records returned by the query.
+     */
     List<SObject> query(String query);
 }

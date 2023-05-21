@@ -26,9 +26,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * @description Utility class for common Controller specific functions.
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_ControllerUtil {
     
+    /**
+     * @description Create an `AuraHandledException` for the given error message.
+     * @param  message The message to be returned to the client. 
+     * @return         The `AuraHandledException` object with the given error message.
+     */ */
     public static AuraHandledException createAuraHandledException(String message) {
         AuraHandledException ex = new AuraHandledException(message);
         ex.setMessage(message);

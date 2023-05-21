@@ -26,8 +26,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * @group Logger
+  * @description Abstraction class for immediate Dml executions as provided by the `Databases` class.  
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public interface rflib_DmlExecutor {
+
+    /**
+     * @description Insert the given records immediately to the database.
+     * @param  sobjects The records to be inserted.
+     * @return          The `Database.SaveResult` resulting from the operation. 
+     */
     List<Database.SaveResult> insertImmediate(List<SObject> sobjects);
+    
+    /**
+     * @description Delete the given records immediately from the database.
+     * @param  sobjects The records to be deleted.
+     * @return          The `Database.DeleteResult` resulting from the operation. 
+     */
     List<Database.DeleteResult> deleteImmediate(List<SObject> sobjects);
 }

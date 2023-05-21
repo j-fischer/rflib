@@ -26,7 +26,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * group Logger
+  * @description Interface to abstract any operations with Big Objects, which is 
+  *              specifically needed for the purpose of unit testing. 
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public interface rflib_BigObjectDatabaseExecutor {
+
+    /**
+     * @description Insert the provided records immediately to the Database.
+     * @param  records THe records to be inserted.
+     */
     void insertImmediate(List<SObject> records);
 }

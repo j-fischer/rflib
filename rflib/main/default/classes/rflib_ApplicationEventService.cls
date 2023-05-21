@@ -26,9 +26,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * @group Application Event
+  * @description Service interface for application events. 
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public interface rflib_ApplicationEventService {
 
+    /**
+     * @description Archive rflib_Application_Event__c records to the corresponding Big Object. The records will also be deleted from the Custom Object. 
+     * @param  events the records to be archived.
+     */
     void archiveEvents(List<rflib_Application_Event__c> events);
+
+    /**
+     * @description Save an `rflib_Application_Event__c` record with the details provided in the parameters. All other fields are auto-calculated. 
+     * @param  eventName         Name of the application event. 
+     * @param  relatedRecordId   The ID of the record related to the event.
+     * @param  additionalDetails Any relevant information associated with the event.
+     */
     void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
 }

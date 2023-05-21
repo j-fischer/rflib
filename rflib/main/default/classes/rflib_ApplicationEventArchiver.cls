@@ -26,6 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @group Application Events
+ * @description `Schedulable` to move records from the `rflib_Application_Event__c` object to the `rflib_Application_Event_Archive__b` Big Object archive.  
+ *               The class should be scheduled upon installation if the use of application events is intended. Schedule can vary by org. 
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApplicationEventArchiver implements Schedulable {
 
@@ -40,6 +46,10 @@ public with sharing class rflib_ApplicationEventArchiver implements Schedulable 
     @TestVisible
     private static rflib_Global_Setting__mdt APPLICATION_EVENT_RETAIN_X_DAYS  = rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days');
 
+    /**
+     * @description Move records from the `rflib_Application_Event__c` object to the `rflib_Application_Event_Archive__b` Big Object archive.
+     * @param  ctx ctx The `SchedulableContext`, which is not used.
+     */
     public void execute(SchedulableContext ctx) {
         try {
             LOGGER.info('execute() invoked');
