@@ -37,7 +37,7 @@ public class rflib_ControllerUtil {
      * @description Create an `AuraHandledException` for the given error message.
      * @param  message The message to be returned to the client. 
      * @return         The `AuraHandledException` object with the given error message.
-     */ */
+     */ 
     public static AuraHandledException createAuraHandledException(String message) {
         AuraHandledException ex = new AuraHandledException(message);
         ex.setMessage(message);
