@@ -350,7 +350,7 @@ module.exports = function(grunt) {
             },
 
             'force-install-dependencies': {
-                command: 'sf texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %>'
+                command: 'sf texei package dependencies install -u <%= config.alias %> --packages <%= config.package.package %>'
             },
 
             'force-create-qa-oser': {
@@ -373,13 +373,13 @@ module.exports = function(grunt) {
                 command: 'npm run lint'
             }, 
 
-            'force-test-package-install-and-opgrade': {
+            'force-test-package-install-and-upgrade': {
                 command: 
                     'sf package install --package 04t3h000004RdLTAA0 -o <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
                     'sf package install --package 04t3h000004jpyMAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
                     'sf package install --package 04t3h000004jnfBAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
                     'sf apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex &&' +
-                    'sf texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %> &&' +
+                    'sf texei package dependencies install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
                     'sf package install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
             },
         }
@@ -488,7 +488,7 @@ module.exports = function(grunt) {
             'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
-            'shell:force-test-package-install-and-opgrade',
+            'shell:force-test-package-install-and-upgrade',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
             'shell:force-open',
