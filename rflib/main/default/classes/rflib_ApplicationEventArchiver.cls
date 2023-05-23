@@ -33,7 +33,7 @@
  *               The class should be scheduled upon installation if the use of application events is intended. Schedule can vary by org. 
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_ApplicationEventArchiver implements Schedulable {
+public inherited sharing class rflib_ApplicationEventArchiver implements Schedulable {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventArchiver');
 

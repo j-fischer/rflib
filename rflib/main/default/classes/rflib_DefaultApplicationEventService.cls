@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_DefaultApplicationEventService implements rflib_ApplicationEventService {
+public inherited sharing class rflib_DefaultApplicationEventService implements rflib_ApplicationEventService {
 
     public static final String NO_RECORD_ID = 'NO_RECORD_ID';
     public static Integer QUERY_RECORD_LIMIT = 50000;
