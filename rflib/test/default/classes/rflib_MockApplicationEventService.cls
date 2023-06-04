@@ -55,7 +55,7 @@ public class rflib_MockApplicationEventService implements rflib_ApplicationEvent
         }
     }
 
-    public void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
+    public void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
         this.capturedEventName = eventName;
         this.capturedRelatedRecordId = relatedRecordId;
         this.capturedAdditionalDetails = additionalDetails;

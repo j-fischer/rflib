@@ -45,12 +45,12 @@ public with sharing class rflib_ApplicationEventController {
      * @param  relatedRecordId   The record ID the event is related to.
      * @param  additionalDetails Any relevant additional information part of the event. 
      */
-     @AuraEnabled
-    public static void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
+    @AuraEnabled
+    public static void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
         try {
-            LOGGER.info('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+            LOGGER.info('logApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
-            APPLICATION_EVENT_SERVICE.saveApplicationEvent(eventName, relatedRecordId, additionalDetails);
+            APPLICATION_EVENT_SERVICE.publishApplicationEvent(eventName, relatedRecordId, additionalDetails);
         } catch (Exception ex) {
             LOGGER.error('Failed to save application event', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());

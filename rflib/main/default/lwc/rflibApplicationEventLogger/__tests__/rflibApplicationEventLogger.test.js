@@ -48,7 +48,7 @@ JsMock.watch(() => {
 });
 
 jest.mock(
-    '@salesforce/apex/rflib_ApplicationEventController.saveApplicationEvent',
+    '@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent',
     () => {
         return { default: mockSaveApplicationEvent };
     },

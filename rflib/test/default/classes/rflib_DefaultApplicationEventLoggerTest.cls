@@ -28,8 +28,8 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_ApplicationEventControllerTest {
-
+private class rflib_DefaultApplicationEventLoggerTest {
+    
     private static final String EVENT_NAME = 'some-event';
     private static final String RELATED_RECORD_ID = 'record-id';
     private static final String ADDITIONAL_DETAILS = 'additional-details';
@@ -38,10 +38,10 @@ private class rflib_ApplicationEventControllerTest {
     private static void testLogApplicationEvent_Success() {
         rflib_MockApplicationEventService service = new rflib_MockApplicationEventService();
         
-        rflib_ApplicationEventController.APPLICATION_EVENT_SERVICE = service;
+        rflib_DefaultApplicationEventLogger.APPLICATION_EVENT_SERVICE = service;
 
         Test.startTest();
-        rflib_ApplicationEventController.logApplicationEvent(EVENT_NAME, RELATED_RECORD_ID, ADDITIONAL_DETAILS);
+        new rflib_DefaultApplicationEventLogger().logApplicationEvent(EVENT_NAME, RELATED_RECORD_ID, ADDITIONAL_DETAILS);
         Test.stopTest();
 
         Assert.areEqual(EVENT_NAME, service.capturedEventName);
@@ -50,16 +50,16 @@ private class rflib_ApplicationEventControllerTest {
     }
 
     @IsTest
-    private static void testLogApplicationEvent_Failure() {
+    private static void testLogSaveApplicationEvent_Failure() {
         rflib_MockApplicationEventService service = new rflib_MockApplicationEventService(new ApplicationEventControllerException('foo bar'));
         
-        rflib_ApplicationEventController.APPLICATION_EVENT_SERVICE = service;
+        rflib_DefaultApplicationEventLogger.APPLICATION_EVENT_SERVICE = service;
 
         Test.startTest();
         try{
-            rflib_ApplicationEventController.logApplicationEvent(EVENT_NAME, RELATED_RECORD_ID, ADDITIONAL_DETAILS);
+            new rflib_DefaultApplicationEventLogger().logApplicationEvent(EVENT_NAME, RELATED_RECORD_ID, ADDITIONAL_DETAILS);
             Assert.fail('Expected exception has not been thrown');
-        } catch (AuraHandledException ex) {
+        } catch (ApplicationEventControllerException ex) {
             Assert.areEqual('foo bar', ex.getMessage());
         }
         Test.stopTest();

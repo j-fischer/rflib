@@ -60,7 +60,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
         set;
     }
 
-    public void saveApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
+    public void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
         LOGGER.debug('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
         DateTime occurredOn = NOW;

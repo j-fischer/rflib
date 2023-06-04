@@ -112,6 +112,23 @@ public with sharing class rflib_LoggerUtil {
 
         return logFinalizer;
     }
+
+    /**
+     * Return an instance of `rflib_ApplicationEventLogger` based on the configuration of the `Application Event Logger Class Name` field in the Logger Settings. 
+     * 
+     * @return   An instance of the configured `rflib_ApplicationEventLogger`.
+     */
+    public static rflib_ApplicationEventLogger getApplicationEventLogger() {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+
+        String logTimerTypeName = settings != null && String.isNotBlank(settings.Application_Event_Logger_Class__c) ?
+            settings.Application_Event_Logger_Class__c : 
+            'rflib_DefaultApplicationEventLogger';
+
+        Type handlerType = Type.forName(logTimerTypeName);
+        return (rflib_ApplicationEventLogger) handlerType.newInstance();
+    }
+
     
     private rflib_LoggerUtil() { }
 }

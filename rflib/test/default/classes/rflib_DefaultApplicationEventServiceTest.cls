@@ -34,7 +34,7 @@ private class rflib_DefaultApplicationEventServiceTest {
     private static final rflib_MockBigObjectDatabaseExecutor MOCK_BIG_OBJECT_DB_EXECUTOR = new rflib_MockBigObjectDatabaseExecutor();
 
     @isTest
-    static void testSaveApplicationEvent_success() {
+    static void testPublishApplicationEvent_success() {
         String eventName = 'Test Event';
         String relatedRecordId = '003123456789012345';
         String additionalDetails = 'Test Additional Details';
@@ -42,7 +42,7 @@ private class rflib_DefaultApplicationEventServiceTest {
         rflib_DefaultApplicationEventService.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
         rflib_DefaultApplicationEventService service = new rflib_DefaultApplicationEventService();
         Test.startTest();
-        service.saveApplicationEvent(eventName, relatedRecordId, additionalDetails);
+        service.publishApplicationEvent(eventName, relatedRecordId, additionalDetails);
         Test.stopTest();
 
         rflib_Application_Event_Occurred_Event__e event = (rflib_Application_Event_Occurred_Event__e) MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
@@ -53,14 +53,14 @@ private class rflib_DefaultApplicationEventServiceTest {
     }
 
     @isTest
-    static void testSaveApplicationEvent_NoRecordId() {
+    static void testPublishApplicationEvent_NoRecordId() {
         String eventName = 'Test Event';
         String additionalDetails = 'Test Additional Details';
         
         rflib_DefaultApplicationEventService.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
         rflib_DefaultApplicationEventService service = new rflib_DefaultApplicationEventService();
         Test.startTest();
-        service.saveApplicationEvent(eventName, null, additionalDetails);
+        service.publishApplicationEvent(eventName, null, additionalDetails);
         Test.stopTest();
 
         rflib_Application_Event_Occurred_Event__e event = (rflib_Application_Event_Occurred_Event__e) MOCK_EVENT_PUBLISHER.capturedPlatformEvent;

@@ -28,7 +28,7 @@
  */
 
 import { createLogger } from 'c/rflibLogger';
-import logEventToServer from '@salesforce/apex/rflib_ApplicationEventController.saveApplicationEvent';
+import logEventToServer from '@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent';
 
 const logger = createLogger('ApplicationEventLogger');
 

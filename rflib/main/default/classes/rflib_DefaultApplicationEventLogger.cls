@@ -26,25 +26,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
- /**
-  * @group Application Event
-  * @description Service interface for application events. 
-  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public interface rflib_ApplicationEventService {
+public inherited sharing class rflib_DefaultApplicationEventLogger implements rflib_ApplicationEventLogger {
+    
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultApplicationEventLogger');
 
-    /**
-     * @description Archive rflib_Application_Event__c records to the corresponding Big Object. The records will also be deleted from the Custom Object. 
-     * @param  events the records to be archived.
-     */
-    void archiveEvents(List<rflib_Application_Event__c> events);
+    @TestVisible
+    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
+    
+    public void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
+        try {
+            LOGGER.info('logApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
-    /**
-     * @description Save an `rflib_Application_Event__c` record with the details provided in the parameters. All other fields are auto-calculated. 
-     * @param  eventName         Name of the application event. 
-     * @param  relatedRecordId   The ID of the record related to the event.
-     * @param  additionalDetails Any relevant information associated with the event.
-     */
-    void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+            APPLICATION_EVENT_SERVICE.publishApplicationEvent(eventName, relatedRecordId, additionalDetails);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to log save application event', ex);
+            throw ex;
+        }
+    }
 }

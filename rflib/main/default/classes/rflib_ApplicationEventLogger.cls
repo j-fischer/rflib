@@ -28,23 +28,17 @@
  */
 
  /**
-  * @group Application Event
-  * @description Service interface for application events. 
-  */
+ * @group Application Events
+ * @description Logger interface to save `rflib_Application_Event__c` records.
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public interface rflib_ApplicationEventService {
+public interface rflib_ApplicationEventLogger {
 
     /**
-     * @description Archive rflib_Application_Event__c records to the corresponding Big Object. The records will also be deleted from the Custom Object. 
-     * @param  events the records to be archived.
+     * @description Log an application event.
+     * @param  eventName         Name of the event.
+     * @param  relatedRecordId   The record ID the event is related to.
+     * @param  additionalDetails Any relevant additional information part of the event. 
      */
-    void archiveEvents(List<rflib_Application_Event__c> events);
-
-    /**
-     * @description Save an `rflib_Application_Event__c` record with the details provided in the parameters. All other fields are auto-calculated. 
-     * @param  eventName         Name of the application event. 
-     * @param  relatedRecordId   The ID of the record related to the event.
-     * @param  additionalDetails Any relevant information associated with the event.
-     */
-    void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+    void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
 }
