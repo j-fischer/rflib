@@ -35,7 +35,7 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE  = new rflib_DefaultApplicationEventService();
 
     // Need to use an Apex Action because of this missing feature for Long Text fields: https://ideas.salesforce.com/s/idea/a0B8W00000J8A6cUAF/long-text-areas-in-flow
-    @InvocableMethod(label='Save Application Event' category='RFLIB' description='Saves an Application Event Occurrence to the Application Event Custom Object')
+    @InvocableMethod(label='INTERNAL ONLY - Save Application Event' category='RFLIB' description='Saves an Application Event Occurrence to the Application Event Custom Object')
     public static void saveApplicationEvent(List<rflib_Application_Event_Occurred_Event__e> events) {
         try {
             LOGGER.info('saveApplicationEvent(): events=' + events);

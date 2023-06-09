@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2023 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,24 +26,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public with sharing class rflib_ApplicationEventLoggerAction {
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'TRACE';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Archive_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
-        settings.Application_Event_Logger_Class__c = 'rflib_MockApplicationEventLogger';
-        
-        upsert settings;
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventLoggerAction');
+
+    @TestVisible
+    private static rflib_ApplicationEventLogger APPLICATION_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
+
+    @InvocableMethod(label='Log Application Event' category='RFLIB' description='Log an Application Event' iconName='resource:rflib_AppEventLoggerActionIcon:icon')
+    public static void logApplicationEvent(List<ApplicationEventInfo> applicationEvents) {
+        LOGGER.info('Recording Application Events: ' + applicationEvents);
+        for (ApplicationEventInfo event : applicationEvents) {   
+            APPLICATION_EVENT_LOGGER.logApplicationEvent(event.eventName, event.relatedRecordId, event.additionalDetails);
+        }
     }
+
+    public class ApplicationEventInfo {
+        @InvocableVariable(label='Event Name' description='The name of the Application Event' required=true)
+        public String eventName;
+        
+        @InvocableVariable(label='Related Record ID' description='The ID of the record associated with the Application Event' required=false)
+        public String relatedRecordId;
+        
+        @InvocableVariable(label='Additional Details' description='Additional Details associated with the event. Can be in any format' required=false)
+        public String additionalDetails;
+    }
+
 }

@@ -61,13 +61,19 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     }
 
     public void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
-        LOGGER.debug('saveApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+        LOGGER.debug('publishApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+
+        if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
+            LOGGER.warn('Failed to publish Application Event due to Publish Immediate DML Governor Limit to be exceeded.');
+            return;
+        }
 
         DateTime occurredOn = NOW;
         Integer additionalDetailsLength = additionalDetails != null ? additionalDetails.length() : 0;
         String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
             ? additionalDetails 
             : additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
+
         rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
             Event_Name__c = eventName,
             Occurred_On__c = occurredOn,
@@ -75,6 +81,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
             Additional_Details__c = additionalDetailsToSave,
             Created_By_ID__c = UserInfo.getUserId()
         );
+        
         EVENT_PUBLISHER.publish(evt);
     }
 

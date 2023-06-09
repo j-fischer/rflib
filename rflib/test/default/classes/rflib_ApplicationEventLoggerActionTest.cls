@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2023 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,22 +28,30 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+private class rflib_ApplicationEventLoggerActionTest {
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'TRACE';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Archive_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
-        settings.Application_Event_Logger_Class__c = 'rflib_MockApplicationEventLogger';
-        
-        upsert settings;
+    @IsTest
+    private static void testLogApplicationEvent() {
+        rflib_ApplicationEventLoggerAction.ApplicationEventInfo event = createEventInfo(); 
+
+        rflib_MockApplicationEventLogger mockAppEventLogger = new rflib_MockApplicationEventLogger();
+        rflib_ApplicationEventLoggerAction.APPLICATION_EVENT_LOGGER = mockAppEventLogger;
+
+        Test.startTest();
+        rflib_ApplicationEventLoggerAction.logApplicationEvent(new List<rflib_ApplicationEventLoggerAction.ApplicationEventInfo> { event });
+        Test.stopTest();
+
+        Assert.areEqual(event.eventName, mockAppEventLogger.capturedEventName);
+        Assert.areEqual(event.relatedRecordId, mockAppEventLogger.capturedRelatedRecordId);
     }
+
+    private static rflib_ApplicationEventLoggerAction.ApplicationEventInfo createEventInfo() {
+        rflib_ApplicationEventLoggerAction.ApplicationEventInfo event = new rflib_ApplicationEventLoggerAction.ApplicationEventInfo();
+
+        event.eventName = 'Foobar';
+        event.relatedRecordId = 'abc123';
+        
+        return event;
+    }
+
 }

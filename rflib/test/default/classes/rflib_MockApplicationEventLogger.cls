@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2023 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,22 +28,31 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_TestUtil {
-    private rflib_TestUtil() { }
+public class rflib_MockApplicationEventLogger implements rflib_ApplicationEventLogger {
+    
+    public String capturedEventName { get; private set; }
+    public String capturedRelatedRecordId { get; private set; }
+    public String capturedAdditionalDetails { get; private set; }
 
-    public static void prepareLoggerForUnitTests() {
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        settings.General_Log_Level__c = 'DEBUG';
-        settings.System_Debug_Log_Level__c = 'TRACE';
-        settings.Log_Event_Reporting_Level__c = 'NONE';
-        settings.Email_Log_Level__c = 'NONE';
-        settings.Archive_Log_Level__c = 'NONE';
-        settings.Batched_Log_Event_Reporting_Level__c = 'NONE';
-        settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
-        settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
-        settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
-        settings.Application_Event_Logger_Class__c = 'rflib_MockApplicationEventLogger';
-        
-        upsert settings;
+    private Exception exceptionToThrow;
+
+    public rflib_MockApplicationEventLogger() {
+        this(null);
+    }
+
+    public rflib_MockApplicationEventLogger(
+        Exception exceptionToThrow
+    ) {
+        this.exceptionToThrow = exceptionToThrow;
+    }
+
+    public void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
+        this.capturedEventName = eventName;
+        this.capturedRelatedRecordId = relatedRecordId;
+        this.capturedAdditionalDetails = additionalDetails;
+
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
     }
 }
