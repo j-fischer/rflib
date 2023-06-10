@@ -34,16 +34,17 @@
                 </groupingSortProperties>
                 <header>Application Events Names by Week</header>
                 <legendPosition>Right</legendPosition>
-                <maxValuesDisplayed>6</maxValuesDisplayed>
+                <maxValuesDisplayed>52</maxValuesDisplayed>
                 <report>RFLIB/Application_Events_Names_by_Week_nRa</report>
                 <showPercentage>false</showPercentage>
                 <showTotal>true</showTotal>
                 <showValues>true</showValues>
                 <sortBy>RowLabelAscending</sortBy>
+                <title>For up to 52 weeks</title>
                 <useReportChart>false</useReportChart>
             </dashboardComponent>
             <rowIndex>0</rowIndex>
-            <rowSpan>8</rowSpan>
+            <rowSpan>9</rowSpan>
         </dashboardGridComponents>
         <dashboardGridComponents>
             <colSpan>9</colSpan>
@@ -55,7 +56,7 @@
                     <axisBinding>y</axisBinding>
                     <column>RowCount</column>
                 </chartSummary>
-                <componentType>ColumnGrouped</componentType>
+                <componentType>LineGrouped</componentType>
                 <decimalPrecision>-1</decimalPrecision>
                 <displayUnits>Auto</displayUnits>
                 <drillEnabled>false</drillEnabled>
@@ -71,19 +72,22 @@
                     </groupingSorts>
                     <groupingSorts>
                         <groupingLevel>g2</groupingLevel>
-                        <sortOrder>a</sortOrder>
+                        <sortColumn>RowCount</sortColumn>
+                        <sortOrder>d</sortOrder>
                     </groupingSorts>
                 </groupingSortProperties>
                 <header>Application Events Names by Week</header>
                 <legendPosition>Right</legendPosition>
+                <maxValuesDisplayed>50</maxValuesDisplayed>
                 <report>RFLIB/Application_Events_Names_by_Week_nRa</report>
                 <showPercentage>false</showPercentage>
-                <showValues>true</showValues>
+                <showValues>false</showValues>
                 <sortBy>RowLabelAscending</sortBy>
+                <title>Top 50 events for each week</title>
                 <useReportChart>false</useReportChart>
             </dashboardComponent>
             <rowIndex>0</rowIndex>
-            <rowSpan>8</rowSpan>
+            <rowSpan>9</rowSpan>
         </dashboardGridComponents>
         <dashboardGridComponents>
             <colSpan>12</colSpan>
@@ -106,19 +110,22 @@
                 <groupingSortProperties>
                     <groupingSorts>
                         <groupingLevel>g1</groupingLevel>
-                        <sortOrder>a</sortOrder>
+                        <sortColumn>RowCount</sortColumn>
+                        <sortOrder>d</sortOrder>
                     </groupingSorts>
                 </groupingSortProperties>
                 <header>This Week&apos;s Application Events</header>
                 <legendPosition>Bottom</legendPosition>
+                <maxValuesDisplayed>50</maxValuesDisplayed>
                 <report>RFLIB/This_Weeks_Application_Events_Yuf</report>
                 <showPercentage>false</showPercentage>
                 <showValues>true</showValues>
                 <sortBy>RowLabelAscending</sortBy>
+                <title>Top 50 events</title>
                 <useReportChart>false</useReportChart>
             </dashboardComponent>
-            <rowIndex>8</rowIndex>
-            <rowSpan>8</rowSpan>
+            <rowIndex>9</rowIndex>
+            <rowSpan>9</rowSpan>
         </dashboardGridComponents>
         <dashboardGridComponents>
             <colSpan>12</colSpan>
@@ -141,19 +148,22 @@
                 <groupingSortProperties>
                     <groupingSorts>
                         <groupingLevel>g1</groupingLevel>
-                        <sortOrder>a</sortOrder>
+                        <sortColumn>RowCount</sortColumn>
+                        <sortOrder>d</sortOrder>
                     </groupingSorts>
                 </groupingSortProperties>
                 <header>Today&apos;s Application Events</header>
                 <legendPosition>Bottom</legendPosition>
+                <maxValuesDisplayed>50</maxValuesDisplayed>
                 <report>RFLIB/rflib_Todays_Application_Events</report>
                 <showPercentage>false</showPercentage>
                 <showValues>true</showValues>
                 <sortBy>RowLabelAscending</sortBy>
+                <title>Top 50 events</title>
                 <useReportChart>false</useReportChart>
             </dashboardComponent>
-            <rowIndex>16</rowIndex>
-            <rowSpan>8</rowSpan>
+            <rowIndex>18</rowIndex>
+            <rowSpan>9</rowSpan>
         </dashboardGridComponents>
         <numberOfColumns>12</numberOfColumns>
         <rowHeight>36</rowHeight>
@@ -161,7 +171,7 @@
     <dashboardType>SpecifiedUser</dashboardType>
     <description>Displays reports for Application Events</description>
     <isGridLayout>true</isGridLayout>
-    <runningUser>test-ilddl3zvollf@example.com</runningUser>
+    <runningUser>test-po3hhnum9fyw@example.com</runningUser>
     <textColor>#000000</textColor>
     <title>RFLIB Application Event Dashboard</title>
     <titleColor>#000000</titleColor>
