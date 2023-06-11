@@ -24,7 +24,7 @@
                 <drillEnabled>false</drillEnabled>
                 <drillToDetailEnabled>false</drillToDetailEnabled>
                 <enableHover>false</enableHover>
-                <expandOthers>false</expandOthers>
+                <expandOthers>true</expandOthers>
                 <groupingColumn>CDF1</groupingColumn>
                 <groupingSortProperties>
                     <groupingSorts>
@@ -57,7 +57,7 @@
                     <column>RowCount</column>
                 </chartSummary>
                 <componentType>LineGrouped</componentType>
-                <decimalPrecision>-1</decimalPrecision>
+                <decimalPrecision>0</decimalPrecision>
                 <displayUnits>Auto</displayUnits>
                 <drillEnabled>false</drillEnabled>
                 <drillToDetailEnabled>false</drillToDetailEnabled>
