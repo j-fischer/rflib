@@ -108,6 +108,16 @@ display what users have not been provided with Permission Set to enable client l
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Management_Console.png 'Management Console')
 
+## Application Event Dashboard
+
+Whether a product owner wants to understand feature adoption or user behaviour, Application Events provide visibility into the an
+application's usage patterns and can help teams to make better decisions and learn more about their apps.
+
+For operational teams, Application Events can be used to track integration requests and their outcomes, which can lead to a call to action to review
+RFLIB log messages for more details.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Application_Event_Dashboard.jpg 'Application Event Dashboard')
+
 ## Updates
 
 See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md) for versions, install links and package IDs.
@@ -129,4 +139,5 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 -   Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
 
 ## Attribution
- -  Application Event Logger Action icon (SVG) provided by [yogiaprelliyanto](https://www.svgrepo.com/author/yogiaprelliyanto/) under the [CC Attribution License](https://www.svgrepo.com/page/licensing#CC%20Attribution) 
+
+-   Application Event Logger Action icon (SVG) provided by [yogiaprelliyanto](https://www.svgrepo.com/author/yogiaprelliyanto/) under the [CC Attribution License](https://www.svgrepo.com/page/licensing#CC%20Attribution)
