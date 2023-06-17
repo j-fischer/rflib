@@ -353,7 +353,7 @@ module.exports = function(grunt) {
                 command: 'sf texei package dependencies install -u <%= config.alias %> --packages <%= config.package.package %>'
             },
 
-            'force-create-qa-oser': {
+            'force-create-qa-user': {
                 command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/qa-user-def.json'
             },
 
@@ -448,7 +448,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
-            'shell:force-create-qa-oser',
+            'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-otility',

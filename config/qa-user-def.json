@@ -6,6 +6,11 @@
     "EmailEncodingKey": "UTF-8",
     "LanguageLocaleKey": "en_US",
     "profileName": "Standard User",
-    "permsets": ["rflib_Ops_Center_Access", "rflib_Enable_Client_Logging", "rflib_Enable_Client_Feature_Switches"],
+    "permsets": [
+        "rflib_Ops_Center_Access",
+        "rflib_Enable_Client_Logging",
+        "rflib_Enable_Client_Feature_Switches",
+        "rflib_Create_Application_Event"
+    ],
     "generatePassword": true
 }
