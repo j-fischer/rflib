@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Configuration object for Retryable Actions.</description>
-    <label>Retryable Action Configuration</label>
-    <pluralLabel>Retryable Action Configurations</pluralLabel>
+    <label>RFLIB Retryable Action Configuration</label>
+    <pluralLabel>RFLIB Retryable Action Configurations</pluralLabel>
     <visibility>Public</visibility>
 </CustomObject>

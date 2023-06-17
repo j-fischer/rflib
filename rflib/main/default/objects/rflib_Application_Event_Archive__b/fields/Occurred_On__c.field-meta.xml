@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Occurred_On__c</fullName>
+    <description>The date and time when the event occurred. This may not be the time of the creation of this record as this would most likely be delayed.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The date and time when the event occurred. This may not be the time of the creation of this record as this would most likely be delayed.</inlineHelpText>
+    <label>Occurred On</label>
+    <required>true</required>
+    <type>DateTime</type>
+</CustomField>

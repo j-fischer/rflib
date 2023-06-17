@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Additional_Details__c</fullName>
+    <description>Allows for additional content to be stored along for any given event.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Allows for additional content to be stored along for any given event.</inlineHelpText>
+    <label>Additional Details</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

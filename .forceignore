@@ -4,9 +4,9 @@
 
 package.xml
 
-#profiles
 **/profiles/**
 **/appMenus/**
+**/applictions/standard__*
 
 rflib/main/default/apexEmailNotifications
 rflib/main/default/permissionsets/Functions.permissionset-meta.xml

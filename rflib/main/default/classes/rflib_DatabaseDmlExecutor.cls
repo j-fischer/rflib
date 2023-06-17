@@ -26,6 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /**
+  * @group Logger
+  * @description The `rflib_DmlExecutor` reference implementation acting as a proxy to Salesforce's `Database` class.
+  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_DatabaseDmlExecutor implements rflib_DmlExecutor {
 

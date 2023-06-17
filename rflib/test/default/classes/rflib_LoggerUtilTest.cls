@@ -91,4 +91,24 @@ private class rflib_LoggerUtilTest {
 
         System.assert(logFinalizer instanceof rflib_MockLogFinalizer, 'Configured LogFinalizer instance should be of type rflib_MockLogFinalizer');
     }
+
+    @IsTest
+    private static void testGetApplicationEventLogger_DefaultValue() {
+        Test.startTest();
+        rflib_ApplicationEventLogger appEventLogger = rflib_LoggerUtil.getApplicationEventLogger();
+        Test.stopTest();
+
+        System.assert(appEventLogger instanceof rflib_DefaultApplicationEventLogger, 'Default Application Event Logger instance should be of type rflib_DefaultApplicationEventLogger');
+    }
+
+    @IsTest
+    private static void testGetApplicationEventLogger_ConfiguredValue() {
+        rflib_TestUtil.prepareLoggerForUnitTests();
+
+        Test.startTest();
+        rflib_ApplicationEventLogger appEventLogger = rflib_LoggerUtil.getApplicationEventLogger();
+        Test.stopTest();
+
+        System.assert(appEventLogger instanceof rflib_MockApplicationEventLogger, 'Configured Logger Factory instance should be of type rflib_MockApplicationEventLogger');
+    }
 }

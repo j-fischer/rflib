@@ -1,0 +1,1 @@
+delete [SELECT Id FROM rflib_Application_Event__c LIMIT 50000];

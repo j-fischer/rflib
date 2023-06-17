@@ -23,6 +23,7 @@
         "**/.tmp/**",
         "**/{cspell.*,cSpell.*,.cspell.*,cspell.config.*}",
         "*.{png,jpg,pdf}",
+        "*.{report,dashboard,flexipage}*",
         "**/*.snap",
         "**/*.trie",
         "**/coverage/**",
