@@ -31,8 +31,15 @@ public class rflib_EventBusPublisher implements rflib_EventPublisher {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_EventBusPublisher');
 
+    private static Integer PUBLISHING_COUNTER = 0;
+    
+    public Integer getPublishingCounter() {
+        return PUBLISHING_COUNTER;
+    }
+
     public Database.SaveResult publish(SObject event) {
         Logger.debug('Publishing event: ' + event);
+        PUBLISHING_COUNTER++;
         return EventBus.publish(event);
     }
 }

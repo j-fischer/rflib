@@ -34,6 +34,12 @@
 public interface rflib_EventPublisher {
     
     /**
+     * @description Returns the number of events that have been published using the current `rflib_EventPublisher` type.
+     * @return  The number of platform events that have been published. 
+     */
+    Integer getPublishingCounter();
+
+    /**
      * @description Publish events, presumably using the `EventBus`.
      * @param  SObject event The Platform Event to be published.
      */

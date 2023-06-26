@@ -33,7 +33,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     public static Integer QUERY_RECORD_LIMIT = 50000;
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultApplicationEventService');
-    
+
     @TestVisible 
     private static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;
 
@@ -63,8 +63,17 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     public void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
         LOGGER.debug('publishApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
+        Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
+            ? rflib_GlobalSettings.publishingLimit
+            : Limits.getLimitPublishImmediateDML();
+            
         if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
-            LOGGER.warn('Failed to publish Application Event due to Publish Immediate DML Governor Limit to be exceeded.');
+            System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish application event: ' + eventName);
+            return;
+        }
+
+        if (EVENT_PUBLISHER.getPublishingCounter() == publishingLimit) {
+            System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish application event: ' + eventName);
             return;
         }
 
@@ -81,6 +90,16 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
             Additional_Details__c = additionalDetailsToSave,
             Created_By_ID__c = UserInfo.getUserId()
         );
+
+        if (EVENT_PUBLISHER.getPublishingCounter() == (publishingLimit - 1)) {
+            evt = new rflib_Application_Event_Occurred_Event__e(
+                Event_Name__c = 'application-event-publishing-limit-reached',
+                Occurred_On__c = occurredOn,
+                Related_Record_ID__c = NO_RECORD_ID,
+                Additional_Details__c = JSON.serialize(evt),
+                Created_By_ID__c = UserInfo.getUserId()
+            );
+        }
         
         EVENT_PUBLISHER.publish(evt);
     }

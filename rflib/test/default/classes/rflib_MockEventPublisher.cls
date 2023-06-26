@@ -32,7 +32,14 @@ public class rflib_MockEventPublisher implements rflib_EventPublisher {
     
     public SObject capturedPlatformEvent { public get; private set; }
 
+    private Integer publishingCount = 0;
+
+    public Integer getPublishingCounter() {
+        return publishingCount;
+    }
+
     public Database.SaveResult publish(SObject event) {
+        publishingCount++;
         capturedPlatformEvent = event;
         return null;
     }

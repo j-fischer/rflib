@@ -254,11 +254,12 @@ public interface rflib_Logger {
    * @param  ex An `Exception` to be logged. 
    */
   void fatal(String message, Object[] args, Exception ex);
-  
+
   /**
    * Prints all messages to the Apex logs using System.debug() separated by lines (\\n).
+   * @return   The string printed to System.debug()
    */
-  void printLogs();
+  String printLogs();
 
   /**
    * Creates a rflib_Log_Event__e Platform Event containing the value for the 'context' of the current logger

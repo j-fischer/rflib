@@ -2,8 +2,13 @@
 <DashboardFolder xmlns="http://soap.sforce.com/2006/04/metadata">
     <folderShares>
         <accessLevel>Manage</accessLevel>
-        <sharedTo>test-tj9do5od4r27@example.com</sharedTo>
+        <sharedTo>test-po3hhnum9fyw@example.com</sharedTo>
         <sharedToType>User</sharedToType>
+    </folderShares>
+    <folderShares>
+        <accessLevel>View</accessLevel>
+        <sharedTo>rflib_Ops_Center_Members</sharedTo>
+        <sharedToType>Group</sharedToType>
     </folderShares>
     <name>RFLIB</name>
 </DashboardFolder>
