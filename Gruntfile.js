@@ -365,6 +365,10 @@ module.exports = function(grunt) {
                 command: 'sf apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
             },
 
+            'force-create-application-event': {
+                command: 'sf apex run -o <%= config.alias %> -f scripts/apex/CreateApplicationEvent.apex'
+            },
+
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
             },
@@ -478,7 +482,9 @@ module.exports = function(grunt) {
             'shell:force-configure-settings',
             'shell:force-create-log-event',
             'shell:force-assign-permset',
-            'shell:force-open'
+            'shell:force-open',
+            'shell:force-create-log-event',
+            'shell:force-create-application-event'
         ]));
     });
 
@@ -491,6 +497,7 @@ module.exports = function(grunt) {
             'shell:force-test-package-install-and-upgrade',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
+            'shell:force-create-application-event',
             'shell:force-open',
             'shell:force-test',
             'confirm:deleteOrg',
