@@ -1,8 +1,8 @@
 ### RFLIB 5.0.0
 
-Package ID: 04t3h000004RfV9AAK
-Package Alias: RFLIB@5.0.0-2
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RfV9AAK
+Package ID: 04t3h000004RfWlAAK
+Package Alias: RFLIB@5.0.0-3
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RfWlAAK
 
 -   [PR #73](https://github.com/j-fischer/rflib/pull/73) Added new Application Event Framework to capture application events from various resources. For more information, please check out the [wiki](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Application-Events)
 -   Replaced interface `rflib_DefaultLogger.EventPublisher` with new interface `rflib_EventPublisher` and added a return value to the `publish()` method
