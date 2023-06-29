@@ -38,7 +38,7 @@ public class rflib_EventBusPublisher implements rflib_EventPublisher {
     }
 
     public Database.SaveResult publish(SObject event) {
-        Logger.debug('Publishing event: ' + event);
+        Logger.trace('Publishing event: ' + event);
         PUBLISHING_COUNTER++;
         return EventBus.publish(event);
     }
