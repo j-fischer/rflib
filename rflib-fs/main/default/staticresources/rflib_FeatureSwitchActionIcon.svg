@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg id="icon" viewBox="0 0 24 24" data-name="Flat Line" class="icon flat-line" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <path fill="#FFFFFF" id="a" d="M66.586 45.356h668.758v219.059H66.586z"/>
+    </defs>
+    <path fill="#ffad1d" d="M15 6H9a6 6 0 0 0 0 12h6a6 6 0 0 0 0-12Zm-.5 8.5A2.5 2.5 0 1 1 17 12a2.5 2.5 0 0 1-2.5 2.5Z" style="stroke-width:2" transform="translate(0 3.78)"/>
+    <path fill="#000000" d="M17 12a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 17 12Zm4 0v0a6 6 0 0 0-6-6H9a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6h6a6 6 0 0 0 6-6z" style="stroke:#000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" transform="translate(0 3.78)"/>
+    <text xml:space="preserve" transform="scale(.03)" style="font-style:normal;font-variant:normal;font-weight:700;font-stretch:normal;font-size:170.667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';text-align:center;letter-spacing:0;word-spacing:0;white-space:pre;shape-inside:url(#a);fill:#000;fill-opacity:1;stroke:none" x="311.168"><tspan x="71.578" y="200.641"><tspan style="fill:#ffad1d">Feature</tspan></tspan></text>
+</svg>
