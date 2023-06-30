@@ -434,10 +434,15 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        if (grunt.option('preview')) {
-            tasks.push('shell:force-create-org-default-preview');
-        } else {
-            tasks.push('shell:force-create-org-default');
+        let noSkipCreation = grunt.option('no-skip-creation');
+        let previewMode = !!grunt.option('preview');
+        
+        if (noSkipCreation) {
+            if (previewMode) {
+                tasks.push('shell:force-create-org-default-preview');
+            } else {
+                tasks.push('shell:force-create-org-default');
+            }
         }
 
         grunt.task.run(tasks.concat([
