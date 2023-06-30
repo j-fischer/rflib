@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Index xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Application_Event_Index</fullName>
+    <fields>
+        <name>Occurred_On__c</name>
+        <sortDirection>DESC</sortDirection>
+    </fields>
+    <fields>
+        <name>Event_Name__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <fields>
+        <name>Related_Record_ID__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <fields>
+        <name>Created_By_ID__c</name>
+        <sortDirection>ASC</sortDirection>
+    </fields>
+    <label>Application Event Index</label>
+</Index>

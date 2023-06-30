@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Retain_X_Days_Must_Be_A_Number</fullName>
+    <active>true</active>
+    <description>Application_Event_Retain_X_Days must be a number.</description>
+    <errorConditionFormula>DeveloperName = &apos;Application_Event_Retain_X_Days&apos; &amp;&amp;
+OR(
+NOT(ISNUMBER( Value__c )),
+VALUE( Value__c ) &lt;= 0
+)</errorConditionFormula>
+    <errorMessage>The value for the Application Event Retain X Days setting must be a number larger than 0.</errorMessage>
+</ValidationRule>

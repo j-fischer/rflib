@@ -36,10 +36,13 @@
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ArchiveLogAction {
+    
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ArchiveLogAction');
 
+    private static final rflib_ApplicationEventLogger APP_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
+
     @TestVisible
-    private static rflib_BigObjectDatabaseExecutor DATABASE_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
+    private static rflib_BigObjectDatabaseExecutor BIG_OBJECT_DB_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
 
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
@@ -50,19 +53,24 @@ public with sharing class rflib_ArchiveLogAction {
 
     @InvocableMethod(label='Archive Log Event' category='RFLIB' description='Archive Log Events in Big Object')
     public static void archiveLogIfApplicable(List<rflib_Log_Event__e> events) {
-        rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
+        try {
+            rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
 
-        LOGGER.debug('run() invoked, size=' + events.size());
-        
-        List<rflib_Logs_Archive__b> eventsToArchive = new List<rflib_Logs_Archive__b>();
-        for (rflib_Log_Event__e evt : events) {
-            if (matchesConfiguredLogLevel(loggerSettings, evt)) {
-                eventsToArchive.add(createArchiveLogRecord(evt));
+            LOGGER.debug('run() invoked, size=' + events.size());
+            
+            List<rflib_Logs_Archive__b> eventsToArchive = new List<rflib_Logs_Archive__b>();
+            for (rflib_Log_Event__e evt : events) {
+                if (matchesConfiguredLogLevel(loggerSettings, evt)) {
+                    eventsToArchive.add(createArchiveLogRecord(evt));
+                }
             }
-        }
 
-        if (eventsToArchive.size() > 0) {
-            DATABASE_EXECUTOR.insertImmediate(eventsToArchive);
+            if (eventsToArchive.size() > 0) {
+                BIG_OBJECT_DB_EXECUTOR.insertImmediate(eventsToArchive);
+            }
+        } catch (Exception ex) {
+            LOGGER.error('Failed to archive log event', ex);
+            APP_EVENT_LOGGER.logApplicationEvent('rflib-archive-log-even-failed', null, LOGGER.printLogs());
         }
     }
 

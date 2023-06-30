@@ -289,19 +289,19 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> -d '
+                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
             },
 
             'force-create-org-default-preview': {
-                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> -d '
+                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
             },
 
             'force-create-org': {
-                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org-preview': {
-                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-delete-org': {
@@ -326,34 +326,34 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sf force package beta version create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
+                    'sf package version create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
             },
 
             'force-install-latest': {
                 command:
-                    'sf force package beta install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
+                    'sf package install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
             },
 
             'force-install-streaming-monitor': {
                 command:
-                    'sf force package beta install --package 04t1t000003Po3QAAS -o <%= config.alias %> -w 10 && ' + 
+                    'sf package install --package 04t1t000003Po3QAAS -o <%= config.alias %> -w 10 && ' + 
                     'sf force user permset assign -n Streaming_Monitor -o <%= config.alias %>'
             },
 
             'force-install-bigobject-otility': {
                 command:
-                    'sf force package beta install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
+                    'sf package install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
             },
 
             'force-promote': {
-                command: 'sf force package beta version promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sf package version promote --package <%= config.package.latestVersionAlias %> --noprompt'
             },
 
             'force-install-dependencies': {
-                command: 'sf texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %>'
+                command: 'sf texei package dependencies install -u <%= config.alias %> --packages <%= config.package.package %>'
             },
 
-            'force-create-qa-oser': {
+            'force-create-qa-user': {
                 command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/qa-user-def.json'
             },
 
@@ -365,6 +365,10 @@ module.exports = function(grunt) {
                 command: 'sf apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex'
             },
 
+            'force-create-application-event': {
+                command: 'sf apex run -o <%= config.alias %> -f scripts/apex/CreateApplicationEvent.apex'
+            },
+
             'test-lwc': {
                 command: 'npm run test:unit:coverage'
             },
@@ -373,14 +377,14 @@ module.exports = function(grunt) {
                 command: 'npm run lint'
             }, 
 
-            'force-test-package-install-and-opgrade': {
+            'force-test-package-install-and-upgrade': {
                 command: 
-                    'sf force package beta install --package 04t3h000004RdLTAA0 -o <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
-                    'sf force package beta install --package 04t3h000004jpyMAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
-                    'sf force package beta install --package 04t3h000004jnfBAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
+                    'sf package install --package 04t3h000004RdLTAA0 -o <%= config.alias %> -w 10 &&' + //RFLIB@2.6.0-1
+                    'sf package install --package 04t3h000004jpyMAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-FS@1.0.2-1
+                    'sf package install --package 04t3h000004jnfBAAQ -o <%= config.alias %> -w 10 &&' + //RFLIB-TF@1.0.1
                     'sf apex run -o <%= config.alias %> -f scripts/apex/CreateLogEvent.apex &&' +
-                    'sf texei package dependencies install -o <%= config.alias %> --packages <%= config.package.package %> &&' +
-                    'sf force package beta install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
+                    'sf texei package dependencies install -u <%= config.alias %> --packages <%= config.package.package %> &&' +
+                    'sf package install --package <%= config.package.latestVersionAlias %> -o <%= config.alias %> -w 10'
             },
         }
     });
@@ -411,7 +415,7 @@ module.exports = function(grunt) {
         grunt.file.write('sfdx-project.json', JSON.stringify(config.projectFile, null, 4));
     });
 
-    grunt.registerTask('__bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating beta package version', function() {
+    grunt.registerTask('__bumpVersionAndPackage', 'PRIVATE - Bumping version number and creating package version', function() {
         var tasks = ['shell:lint', 'shell:test-lwc', 'shell:force-push', 'shell:force-test'];
 
         if (grunt.config('config.version.nextVersion') !== 'build') {
@@ -449,7 +453,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
-            'shell:force-create-qa-oser',
+            'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-otility',
@@ -479,19 +483,22 @@ module.exports = function(grunt) {
             'shell:force-configure-settings',
             'shell:force-create-log-event',
             'shell:force-assign-permset',
-            'shell:force-open'
+            'shell:force-open',
+            'shell:force-create-log-event',
+            'shell:force-create-application-event'
         ]));
     });
 
-    grunt.registerTask('test-package-opgrade', 'Install older versions and then upgrade to the latest package', function() {
+    grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
         var tasks = [
             'prompt:alias',
             'prompt:selectPackage',
             'prompt:confirmVersion',
             'shell:force-create-org',
-            'shell:force-test-package-install-and-opgrade',
+            'shell:force-test-package-install-and-upgrade',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
+            'shell:force-create-application-event',
             'shell:force-open',
             'shell:force-test',
             'confirm:deleteOrg',

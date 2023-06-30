@@ -150,8 +150,9 @@ public class rflib_MockLogger implements rflib_Logger {
         logDetails.add(new LogDetails(logLevel, message, args, ex));
     }
     
-    public void printLogs() {
+    public String printLogs() {
         logsPrinted = true;
+        return 'Printed log messages';
     }
     
     public void reportLogs() {

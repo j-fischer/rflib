@@ -104,11 +104,17 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
     }
 
-    public class EventCapture implements rflib_DefaultLogger.EventPublisher {
+    public class EventCapture implements rflib_EventPublisher {
         private rflib_Log_Event__e capturedEvent;
+        private Integer publishingCount = 0;
 
-        public void publish(SObject event) {
+        public Integer getPublishingCounter() {
+            return publishingCount;
+        }
+
+        public Database.SaveResult publish(SObject event) {
           capturedEvent = (rflib_Log_Event__e) event;
+          return null;
         }
 
         public Boolean eventHasNotBeenPublished() {

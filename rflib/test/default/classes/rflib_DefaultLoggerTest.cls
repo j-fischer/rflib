@@ -41,23 +41,7 @@ public class rflib_DefaultLoggerTest {
 
     rflib_Logger logger = loggerFactory.createLogger('testDefaultBehaviour');
 
-    logger.trace('trace statement to ignore');
-    logger.info('first info statement');
-
-    Integer i;
-    for (i = 2; i < 101; i++) {
-      logger.info('info statement ' + i);
-    }
-
-    logger.warn('warn statement');
-
-    System.assert(loggerFactory.eventCapture.eventHasBeenPublished(), 'event should have been published');
-
-    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('trace statement to ignore'), 'falsely contained trace statement to ignore');
-    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('first info statement'), 'debugLogger did not contain statement');
-    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('warn statement'), 'debugLogger did not contain statement');
-
-    loggerFactory.debugLogCapture.clearCapturedLogs();
+    createLogStatements(loggerFactory, logger);
 
     logger.printLogs();
 
@@ -240,11 +224,11 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testSyncPlatformEventPublisher() {
+  private static void testSyncLogEventPublisher() {
     rflib_Logger logger = new rflib_DefaultLogger(
-      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.LogEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
-      'testSyncPlatformEventPublisher'
+      'testSyncLogEventPublisher'
     );
 
     logger.info('This is a test message');
@@ -257,11 +241,11 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testSyncPlatformEventPublisher_publishingLimits() {
+  private static void testSyncLogEventPublisher_publishingLimits() {
     rflib_Logger logger = new rflib_DefaultLogger(
-      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.LogEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
-      'testSyncPlatformEventPublisher'
+      'testSyncLogEventPublisher'
     );
 
     logger.info('This is a test message');
@@ -279,11 +263,11 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testSyncPlatformEventPublisher_governorLimitReached() {
+  private static void testSyncLogEventPublisher_governorLimitReached() {
     rflib_Logger logger = new rflib_DefaultLogger(
-      new rflib_DefaultLogger.PlatformEventPublisher(), 
+      new rflib_DefaultLogger.LogEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
-      'testSyncPlatformEventPublisher'
+      'testSyncLogEventPublisher'
     );
 
     logger.info('This is a test message');
@@ -302,11 +286,11 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testBatchPlatformEventPublisher() {
+  private static void testBatchLogEventPublisher() {
     rflib_Logger logger = new rflib_DefaultLogger(
-      new rflib_DefaultLogger.BatchPlatformEventPublisher(), 
+      new rflib_DefaultLogger.BatchLogEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
-      'testBatchPlatformEventPublisher'
+      'testBatchLogEventPublisher'
     );
     
     Test.startTest();
@@ -444,6 +428,44 @@ public class rflib_DefaultLoggerTest {
     
     System.assert(loggerFactory.eventCapture.doesNotContainInPlatformInfo('"SOQL queries":1'), 'Platform should not contain information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
     System.assert(loggerFactory.eventCapture.doesNotContainInPlatformInfo('"Query Rows":1'), 'Platform should not contain information:' + loggerFactory.eventCapture.getEvent().Platform_Info__c);
+  }
+
+  @IsTest
+  private static void testPrintLogs() {
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+    rflib_Logger logger = loggerFactory.createLogger('testPrintLogs');
+
+    Test.startTest();
+    createLogStatements(loggerFactory, logger);
+
+    String actualLogMessages = logger.printLogs();
+
+    Test.stopTest();
+
+    Assert.isTrue(actualLogMessages.contains('Log statements reported by'), 'debugLogger did not contain header statement'); 
+    Assert.isFalse(actualLogMessages.contains('first info statement'), 'debugLogger falsely contained statement');
+    Assert.isTrue(actualLogMessages.contains('warn statement'), 'debugLogger did not contain statement');
+  }
+
+  private static void createLogStatements(rflib_MockLoggerFactory loggerFactory, rflib_Logger logger) {
+    logger.trace('trace statement to ignore');
+    logger.info('first info statement');
+
+    Integer i;
+    for (i = 2; i < 101; i++) {
+      logger.info('info statement ' + i);
+    }
+
+    logger.warn('warn statement');
+
+    System.assert(loggerFactory.eventCapture.eventHasBeenPublished(), 'event should have been published');
+
+    System.assert(loggerFactory.debugLogCapture.doesNotContainInAnyMessage('trace statement to ignore'), 'falsely contained trace statement to ignore');
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('first info statement'), 'debugLogger did not contain statement');
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('warn statement'), 'debugLogger did not contain statement');
+
+    loggerFactory.debugLogCapture.clearCapturedLogs();
   }
 
   private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {

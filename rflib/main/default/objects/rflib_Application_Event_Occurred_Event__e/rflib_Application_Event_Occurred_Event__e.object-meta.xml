@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>An Application Event is a custom event that happened anywhere within the customizations of the Salesforce platform. The Platform Event makes sure that the Application Event is recorded independent of the transaction&apos;s success.</description>
+    <eventType>HighVolume</eventType>
+    <label>Application Event Occurred Event</label>
+    <pluralLabel>Application Event Occurred Events</pluralLabel>
+    <publishBehavior>PublishAfterCommit</publishBehavior>
+</CustomObject>

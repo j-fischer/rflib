@@ -42,7 +42,8 @@ public class rflib_TestUtil {
         settings.Logger_Factory_Class__c = 'rflib_MockLoggerFactory';
         settings.Log_Timer_Class__c = 'rflib_MockLogTimer';
         settings.Log_Finalizer_Class__c = 'rflib_MockLogFinalizer';
-
+        settings.Application_Event_Logger_Class__c = 'rflib_MockApplicationEventLogger';
+        
         upsert settings;
     }
 }
