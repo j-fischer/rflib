@@ -434,10 +434,10 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        let noSkipCreation = grunt.option('no-skip-creation');
+        let skipCreation = !!grunt.option('skip-creation');
         let previewMode = !!grunt.option('preview');
         
-        if (noSkipCreation) {
+        if (!skipCreation) {
             if (previewMode) {
                 tasks.push('shell:force-create-org-default-preview');
             } else {
