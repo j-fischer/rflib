@@ -30,8 +30,9 @@
  /**
  * @group Feature Switch
  * @description Plugin for Flow Builder to retrieve the hierarchical value of a feature switch. 
+ * 
+ * THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN THE NEXT RELEASE.
  */ 
-@Deprecated
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.AvoidGlobalModifier')
 global class rflib_FeatureSwitchPlugin implements Process.Plugin {
 

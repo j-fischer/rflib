@@ -32,20 +32,31 @@ public with sharing class rflib_GetFeatureSwitchValueAction {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_FeatureSwitchPlugin');
 
     @InvocableMethod(label='Get Feature Switch Value' category='RFLIB' description='Returns the Feature Switch Value for a given switch' iconName='resource:rflib_FeatureSwitchActionIcon:icon')
-    public static List<FeatureSwitchInfo> getFeatureSwitchValue(List<FeatureSwitchInfo> switchInfoList) {
+    public static List<FeatureSwitchInfoResult> getFeatureSwitchValue(List<FeatureSwitchInfoRequest> switchInfoList) {
 
         LOGGER.info('Flow Action invoked for switch with name: ' + switchInfoList); 
     
-        List<FeatureSwitchInfo> result = new List<FeatureSwitchInfo>();
-        for (FeatureSwitchInfo switchInfo : switchInfoList) {
-            switchInfo.isTurnedOn = rflib_FeatureSwitch.isTurnedOn(switchInfo.name);
+        List<FeatureSwitchInfoResult> result = new List<FeatureSwitchInfoResult>();
+        for (FeatureSwitchInfoRequest switchRequest : switchInfoList) {
+            FeatureSwitchInfoResult switchInfo = new FeatureSwitchInfoResult();
+            switchInfo.name = switchRequest.name;
+            switchInfo.isTurnedOn = rflib_FeatureSwitch.isTurnedOn(switchRequest.name);
             result.add(switchInfo);
         }
 
         return result;
     }
     
-    public class FeatureSwitchInfo {
+    public class FeatureSwitchInfoRequest {
+
+        @InvocableVariable(
+            label = 'Switch Name'
+            description = 'The name of the Feature Switch'
+        )
+        public String name;
+    }
+
+    public class FeatureSwitchInfoResult {
 
         @InvocableVariable(
             label = 'Switch Name'

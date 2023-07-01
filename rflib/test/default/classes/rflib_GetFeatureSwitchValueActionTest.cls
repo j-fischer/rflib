@@ -65,6 +65,10 @@ private class rflib_GetFeatureSwitchValueActionTest {
         executeActionAndAssertSwitchOff(rflib_FeatureSwitchTest.ANOTHER_USER_SWITCH);
     }
 
+    private static void executePluginAndAssertSwitchOn(String switchName) {
+        executePluginAndAssertSwitch(switchName, true);
+    }
+
     private static void executeActionAndAssertSwitchOff(String switchName) {
         executePluginAndAssertSwitch(switchName, false);
     }
@@ -72,7 +76,10 @@ private class rflib_GetFeatureSwitchValueActionTest {
     private static void executePluginAndAssertSwitch(String switchName, Boolean expectedTurnedOnValue) {
         System.runAs(rflib_FeatureSwitchTest.USER) {
 
-            List<FeatureSwitchInfo> result = rflib_GetFeatureSwitchValueAction.getFeatureSwitchValue(new List<FeatureSwitchInfo>{ switchName });
+            rflib_GetFeatureSwitchValueAction.FeatureSwitchInfoRequest switchInfo = new rflib_GetFeatureSwitchValueAction.FeatureSwitchInfoRequest();
+            switchInfo.name = switchName;
+
+            List<rflib_GetFeatureSwitchValueAction.FeatureSwitchInfoResult> result = rflib_GetFeatureSwitchValueAction.getFeatureSwitchValue(new List<rflib_GetFeatureSwitchValueAction.FeatureSwitchInfoRequest>{ switchInfo });
 
             System.assertEquals(switchName, result.get(0).name);
             System.assertEquals(expectedTurnedOnValue, result.get(0).isTurnedOn);
