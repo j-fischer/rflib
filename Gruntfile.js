@@ -340,7 +340,7 @@ module.exports = function(grunt) {
                     'sf force user permset assign -n Streaming_Monitor -o <%= config.alias %>'
             },
 
-            'force-install-bigobject-otility': {
+            'force-install-bigobject-utility': {
                 command:
                     'sf package install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
             },
@@ -456,7 +456,7 @@ module.exports = function(grunt) {
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
-            'shell:force-install-bigobject-otility',
+            'shell:force-install-bigobject-utility',
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'
