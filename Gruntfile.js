@@ -289,11 +289,11 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org-default-preview': {
-                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org': {
