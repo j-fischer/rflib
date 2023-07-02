@@ -3,6 +3,7 @@
     <fullName>All_Records</fullName>
     <columns>MasterLabel</columns>
     <columns>DeveloperName</columns>
+    <columns>Switch_Name__c</columns>
     <columns>Scope_Type__c</columns>
     <columns>Scope_Name__c</columns>
     <columns>Turned_On__c</columns>
