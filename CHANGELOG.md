@@ -1,8 +1,16 @@
+### RFLIB-FS 3.0.0
+
+Package ID: 04t3h000004RffLAAS
+Package Alias: RFLIB-FS@3.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RffLAAS
+
+-   REMOVED `rflib_FeatureSwitchPlugin` and test class. If you are using the plugin in your flows, please install RFLIB-FS v2.1 first and replace all occurrences with the new Invocable Action.
+
 ### RFLIB-FS 2.1.0
 
-Package ID: 04t3h000004RffBAAS
-Package Alias: RFLIB-FS@2.1.0-1
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RffBAAS
+Package ID: 04t3h000004RffGAAS
+Package Alias: RFLIB-FS@2.1.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RffGAAS
 
 -   Added new Flow Action to get RFLIB Feature Switch value in replacement for the legacy Plugin
 -   DEPRECATED `rflib_FeatureSwitchPlugin`, which will be removed in the RFLIB-FS 3.0.0 release.

@@ -346,7 +346,7 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sf package version promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sf package version promote --package <%= config.package.latestVersionAlias %> --no-prompt'
             },
 
             'force-install-dependencies': {
@@ -516,8 +516,16 @@ module.exports = function(grunt) {
         var tasks = [
             'prompt:alias',
             'prompt:selectPackage',
-            'prompt:confirmVersion',
-            'shell:force-create-org',
+            'prompt:confirmVersion'
+        ];
+
+        let skipCreation = !!grunt.option('skip-creation');
+        
+        if (!skipCreation) {
+            tasks.push('shell:force-create-org');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-install-dependencies',
             'shell:force-install-latest',
             'shell:force-test',
@@ -526,9 +534,7 @@ module.exports = function(grunt) {
             'shell:force-delete-org',
             'gittag:version',
             'gitpush:origin',
-        ];
-
-        grunt.task.run(tasks);
+        ]));
     });
 
     grunt.registerTask('test', 'Run server and client tests', function() {
