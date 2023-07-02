@@ -29,12 +29,12 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_GetFeatureSwitchValueAction {
     
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_FeatureSwitchPlugin');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_GetFeatureSwitchValueAction');
 
     @InvocableMethod(label='Get Feature Switch Value' category='RFLIB' description='Returns the Feature Switch Value for a given switch' iconName='resource:rflib_FeatureSwitchActionIcon:icon')
     public static List<FeatureSwitchInfoResult> getFeatureSwitchValue(List<FeatureSwitchInfoRequest> switchInfoList) {
 
-        LOGGER.info('Flow Action invoked for switch with name: ' + switchInfoList); 
+        LOGGER.debug('Flow Action invoked for switches with name: ' + switchInfoList); 
     
         List<FeatureSwitchInfoResult> result = new List<FeatureSwitchInfoResult>();
         for (FeatureSwitchInfoRequest switchRequest : switchInfoList) {
@@ -44,6 +44,8 @@ public with sharing class rflib_GetFeatureSwitchValueAction {
             result.add(switchInfo);
         }
 
+        LOGGER.info('Results: ' + result); 
+
         return result;
     }
     
@@ -52,6 +54,7 @@ public with sharing class rflib_GetFeatureSwitchValueAction {
         @InvocableVariable(
             label = 'Switch Name'
             description = 'The name of the Feature Switch'
+            required=true
         )
         public String name;
     }
