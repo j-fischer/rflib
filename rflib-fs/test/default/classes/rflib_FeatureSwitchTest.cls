@@ -26,9 +26,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@isTest
-@SuppressWarnings('PMD.ClassNamingConventions')
+@IsTest
 @TestVisible
+@SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_FeatureSwitchTest {
     
     private static final String TRIGGER_SWITCH = 'All_Triggers';

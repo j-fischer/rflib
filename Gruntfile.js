@@ -289,11 +289,11 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org-default-preview': {
-                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> -d orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org': {
@@ -340,7 +340,7 @@ module.exports = function(grunt) {
                     'sf force user permset assign -n Streaming_Monitor -o <%= config.alias %>'
             },
 
-            'force-install-bigobject-otility': {
+            'force-install-bigobject-utility': {
                 command:
                     'sf package install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
             },
@@ -438,14 +438,15 @@ module.exports = function(grunt) {
             'prompt:alias'
         ];
 
-        if (grunt.option('refresh')) {
-            tasks.push('shell:force-delete-org');
-        }
-
-        if (grunt.option('preview')) {
-            tasks.push('shell:force-create-org-default-preview');
-        } else {
-            tasks.push('shell:force-create-org-default');
+        let skipCreation = !!grunt.option('skip-creation');
+        let previewMode = !!grunt.option('preview');
+        
+        if (!skipCreation) {
+            if (previewMode) {
+                tasks.push('shell:force-create-org-default-preview');
+            } else {
+                tasks.push('shell:force-create-org-default');
+            }
         }
 
         grunt.task.run(tasks.concat([
@@ -455,7 +456,7 @@ module.exports = function(grunt) {
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
-            'shell:force-install-bigobject-otility',
+            'shell:force-install-bigobject-utility',
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'

@@ -1,3 +1,12 @@
+### RFLIB-FS 2.1.0
+
+Package ID: 04t3h000004RffBAAS
+Package Alias: RFLIB-FS@2.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RffBAAS
+
+-   Added new Flow Action to get RFLIB Feature Switch value in replacement for the legacy Plugin
+-   DEPRECATED `rflib_FeatureSwitchPlugin`, which will be removed in the RFLIB-FS 3.0.0 release.
+
 ### RFLIB 5.0.0
 
 Package ID: 04t3h000004RfWlAAK

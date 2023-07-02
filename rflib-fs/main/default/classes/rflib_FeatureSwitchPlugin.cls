@@ -30,6 +30,8 @@
  /**
  * @group Feature Switch
  * @description Plugin for Flow Builder to retrieve the hierarchical value of a feature switch. 
+ * 
+ * THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN THE NEXT RELEASE.
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.AvoidGlobalModifier')
 global class rflib_FeatureSwitchPlugin implements Process.Plugin {
@@ -44,7 +46,7 @@ global class rflib_FeatureSwitchPlugin implements Process.Plugin {
      * If the switch is not configured in the Custom Metadata for the user's hierarchy, the return value
      * will be `false`.
      * 
-     * @param request The `Process.PluginRequest` including the `siwtchName` input parameter.
+     * @param request The `Process.PluginRequest` including the `switchName` input parameter.
      * @return A `Process.PluginResult` including the `turnedOn` output parameter.
      */
     global Process.PluginResult invoke(Process.PluginRequest request) {
@@ -67,7 +69,7 @@ global class rflib_FeatureSwitchPlugin implements Process.Plugin {
      */
     global Process.PluginDescribeResult describe() { 
         Process.PluginDescribeResult result = new Process.PluginDescribeResult(); 
-        result.name = 'Is Feature Switch Turned On';
+        result.name = 'DEPRECATED - Is Feature Switch Turned On';
         result.description = 'Returns the value for a feature switch including the user and profile hierarchy';
         result.tag = 'rflib';
         result.inputParameters = new 
