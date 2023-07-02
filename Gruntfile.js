@@ -346,7 +346,7 @@ module.exports = function(grunt) {
             },
 
             'force-promote': {
-                command: 'sf package version promote --package <%= config.package.latestVersionAlias %> --noprompt'
+                command: 'sf package version promote --package <%= config.package.latestVersionAlias %> --no-prompt'
             },
 
             'force-install-dependencies': {
