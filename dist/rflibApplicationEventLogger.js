@@ -43,7 +43,7 @@ const createApplicationEventLogger = (context, logger) => {
                     Occurred_On__c: new Date().toISOString(),
                     Related_Record_ID__c: relatedRecordId || 'NO_RECORD_ID',
                     Additional_Details__c: JSON.stringify(additionalDetails),
-                    Created_By_ID__c: context.org.user.onBehalfOfUserId || context.org.user.id
+                    Created_By_ID__c: context.org.user.onBehalfOfUserId || context.org.user.id || 'NO_USER_ID'
                 }
             })
             .then(() => {
