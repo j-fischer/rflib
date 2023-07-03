@@ -26,6 +26,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+const appEventLogger = require('./rflibApplicationEventLogger');
+
 const LogLevel = Object.freeze({
     TRACE: { index: 0, label: 'TRACE' },
     DEBUG: { index: 1, label: 'DEBUG' },
@@ -231,7 +234,14 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
     };
 };
 
+const createApplicationEventLogger = (context, computeLogger) => {
+    const logger = createLogger(context, computeLogger, 'rflib-application-event-logger');
+
+    return appEventLogger.createApplicationEventLogger(context, logger);
+};
+
 module.exports = {
     createLogger,
-    startLogTimer
+    startLogTimer,
+    createApplicationEventLogger
 };

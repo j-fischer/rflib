@@ -98,12 +98,26 @@ export interface RflibLogger {
 /**
  * Represents a Log Timer instance of RFLIB, which starts counting the time of its instantiation.
  */
-export interface LogTimer {
+export interface RflibLogTimer {
 
     /**
      * Stops the Log Timer instance and logs a message based on the threshold value. 
      */
     done(): void;
+}
+
+/**
+ * Represents a Application Event Logger instance of RFLIB.
+ */
+export interface RflibApplicationEventLogger {
+
+    /**
+     * Log an Application Event. 
+     * @param eventName The name of the application event.
+     * @param relatedRecordId A Salesforce record ID the event is related to.
+     * @param additionalDetails Any additional details related to the event.
+    */
+    logApplicationEvent(eventName: string, relatedRecordId?: string, additionalDetails?: string): void;
 }
 
 /**
@@ -122,4 +136,11 @@ export function createLogger(context: Context, computeLogger: Logger, loggerName
  * @param timerName The name of the timer. 
  * @param logLevelStr (Optional) The Log Level that should be used for a message when the threshold is exceeded. Default is "WARN".
  */
-export function startLogTimer(logger: RflibLogger, threshold: number, timerName: string, logLevelStr?: string): LogTimer;
+export function startLogTimer(logger: RflibLogger, threshold: number, timerName: string, logLevelStr?: string): RflibLogTimer;
+
+/**
+ * Represents a factory method to create an application event logger instance. 
+ * @param context Represents the Salesforce Function execution context.
+ * @param computeLogger Represents the Salesforce Function Logger instance.
+ */
+export function createApplicationEventLogger(context: Context, computeLogger: Logger, loggerName: string): RflibApplicationEventLogger;
