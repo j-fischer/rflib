@@ -143,4 +143,4 @@ export function startLogTimer(logger: RflibLogger, threshold: number, timerName:
  * @param context Represents the Salesforce Function execution context.
  * @param computeLogger Represents the Salesforce Function Logger instance.
  */
-export function createApplicationEventLogger(context: Context, computeLogger: Logger, loggerName: string): RflibApplicationEventLogger;
+export function createApplicationEventLogger(context: Context, computeLogger: Logger): RflibApplicationEventLogger;
