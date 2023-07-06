@@ -3,5 +3,10 @@
         "Functions_Log_Size__c": 100,
         "Functions_Compute_Log_Level__c": "NONE",
         "Functions_Server_Log_Level__c": "NONE"
+    },
+    "computeError": {
+        "Functions_Log_Size__c": 100,
+        "Functions_Compute_Log_Level__c": "ERROR",
+        "Functions_Server_Log_Level__c": "NONE"
     }
 }
