@@ -22,6 +22,7 @@ Package Alias: RFLIB@5.0.0-3
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004RfWlAAK
 
 -   [PR #73](https://github.com/j-fischer/rflib/pull/73) Added new Application Event Framework to capture application events from various resources. For more information, please check out the [wiki](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Application-Events)
+-   [PR #76](https://github.com/j-fischer/rflib/pull/76) Salesforce Functions support for Application Events. For more information, please check out the [wiki](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions)
 -   Replaced interface `rflib_DefaultLogger.EventPublisher` with new interface `rflib_EventPublisher` and added a return value to the `publish()` method
 -   Added more Apex Doc comments
 
