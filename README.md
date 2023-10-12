@@ -53,7 +53,13 @@ To install package via browser:
 
 https://login.salesforce.com/packaging/installPackage.apexp?p0=<PACKAGE_VERSION_ID>
 
-To install package via SFDX CLI Plugin:
+To install package via SFDX CLI Plugin (v2):
+
+```
+sf package install --package <Package ID> --target-org <your org alias>
+```
+
+Using the legacy CLI command:
 
 ```
 sfdx force:package:install -p <Package ID> -w 10 -s AdminsOnly -u <your org alias>
