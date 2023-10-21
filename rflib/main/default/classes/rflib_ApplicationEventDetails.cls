@@ -26,32 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockEventPublisher implements rflib_EventPublisher {
+public with sharing class rflib_ApplicationEventDetails {
+
+    public String eventName { get; private set; }
+    public String relatedRecordId { get; private set; }
+    public String additionalDetails { get; private set; }
     
-    public List<SObject> capturedPlatformEvents { public get; private set; }
-    public SObject capturedPlatformEvent { 
-        public get {
-            return capturedPlatformEvents == null ? null : capturedPlatformEvents[0];
-        } 
-    }
-
-    private Integer publishingCount = 0;
-
-    public Integer getPublishingCounter() {
-        return publishingCount;
-    }
-
-    public Database.SaveResult publish(SObject event) {
-        publishingCount++;
-        capturedPlatformEvents = new List<SObject> { event };
-        return null;
-    }
-
-    public List<Database.SaveResult> publish(List<SObject> events) {
-        publishingCount++;
-        capturedPlatformEvents = events;
-        return null;
+    public rflib_ApplicationEventDetails(String eventName, String relatedRecordId, String additionalDetails) {
+        this.eventName = eventName;
+        this.relatedRecordId = relatedRecordId;
+        this.additionalDetails = additionalDetails;
     }
 }

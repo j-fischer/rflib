@@ -63,45 +63,57 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     public void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails) {
         LOGGER.debug('publishApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
+        publishApplicationEvents(new List<rflib_ApplicationEventDetails> { 
+            new rflib_ApplicationEventDetails(eventName, relatedRecordId, additionalDetails)
+        });
+    }
+
+    public void publishApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents) {
+        LOGGER.debug('publishApplicationEvents({0})', new Object[] { applicationEvents });
+
         Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
             ? rflib_GlobalSettings.publishingLimit
             : Limits.getLimitPublishImmediateDML();
             
         if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
-            System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish application event: ' + eventName);
+            System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish application events');
             return;
         }
 
         if (EVENT_PUBLISHER.getPublishingCounter() == publishingLimit) {
-            System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish application event: ' + eventName);
+            System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish application events: ');
             return;
         }
 
         DateTime occurredOn = NOW;
-        Integer additionalDetailsLength = additionalDetails != null ? additionalDetails.length() : 0;
-        String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
-            ? additionalDetails 
-            : additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
 
-        rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
-            Event_Name__c = eventName,
-            Occurred_On__c = occurredOn,
-            Related_Record_ID__c = String.isNotBlank(relatedRecordId) ? relatedRecordId : NO_RECORD_ID,
-            Additional_Details__c = additionalDetailsToSave,
-            Created_By_ID__c = UserInfo.getUserId()
-        );
+        List<rflib_Application_Event_Occurred_Event__e> eventsToPublish = new List<rflib_Application_Event_Occurred_Event__e>();
+        for (rflib_ApplicationEventDetails evt : applicationEvents) {
+            Integer additionalDetailsLength = evt.additionalDetails != null ? evt.additionalDetails.length() : 0;
+            String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
+                ? evt.additionalDetails 
+                : evt.additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
+
+            eventsToPublish.add(new rflib_Application_Event_Occurred_Event__e(
+                Event_Name__c = evt.eventName,
+                Occurred_On__c = occurredOn,
+                Related_Record_ID__c = String.isNotBlank(evt.relatedRecordId) ? evt.relatedRecordId : NO_RECORD_ID,
+                Additional_Details__c = additionalDetailsToSave,
+                Created_By_ID__c = UserInfo.getUserId()
+            ));
+        }
 
         if (EVENT_PUBLISHER.getPublishingCounter() == (publishingLimit - 1)) {
-            evt = new rflib_Application_Event_Occurred_Event__e(
+            eventsToPublish.add(new rflib_Application_Event_Occurred_Event__e(
                 Event_Name__c = 'application-event-publishing-limit-reached',
                 Occurred_On__c = occurredOn,
                 Related_Record_ID__c = NO_RECORD_ID,
-                Additional_Details__c = JSON.serialize(evt),
+                Additional_Details__c = null,
                 Created_By_ID__c = UserInfo.getUserId()
-            );
+            ));
         }
         
-        EVENT_PUBLISHER.publish(evt);
+        EVENT_PUBLISHER.publish(eventsToPublish);
     }
 
     public void archiveEvents(List<rflib_Application_Event__c> events) {

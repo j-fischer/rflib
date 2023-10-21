@@ -105,7 +105,7 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
     }
 
     public class EventCapture implements rflib_EventPublisher {
-        private rflib_Log_Event__e capturedEvent;
+        private List<rflib_Log_Event__e> capturedEvents;
         private Integer publishingCount = 0;
 
         public Integer getPublishingCounter() {
@@ -113,50 +113,59 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
 
         public Database.SaveResult publish(SObject event) {
-          capturedEvent = (rflib_Log_Event__e) event;
+          capturedEvents = new List<rflib_Log_Event__e> { (rflib_Log_Event__e) event };
+          return null;
+        }
+
+        public List<Database.SaveResult> publish(List<SObject> events) {
+          capturedEvents = (List<rflib_Log_Event__e>) events;
           return null;
         }
 
         public Boolean eventHasNotBeenPublished() {
-          return capturedEvent == null;
+          return capturedEvents == null;
         }
 
         public Boolean eventHasBeenPublished() {
-          return capturedEvent != null;
+          return capturedEvents != null;
         }
 
         public rflib_Log_Event__e getEvent() {
-          return capturedEvent;
+          return getEvent(0);
+        }
+
+        public rflib_Log_Event__e getEvent(Integer index) {
+          return capturedEvents[index];
         }
 
         public Boolean doesNotContainInAnyMessage(String substring) {
-          Boolean result = capturedEvent.Log_Messages__c.contains(substring);
+          Boolean result = getEvent().Log_Messages__c.contains(substring);
           if (result) {
-            System.debug('Actual event message:\n' + capturedEvent.Log_Messages__c);
+            System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
           }
           return result == false;
         }
 
         public Boolean containsInAnyMessage(String substring) {
-          Boolean result = capturedEvent.Log_Messages__c.contains(substring);
+          Boolean result = getEvent().Log_Messages__c.contains(substring);
           if (!result) {
-            System.debug('Actual event message:\n' + capturedEvent.Log_Messages__c);
+            System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
           }
           return result;
         }
 
         public Boolean doesNotContainInPlatformInfo(String substring) {
-          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          Boolean result = getEvent().Platform_Info__c.contains(substring);
           if (result) {
-            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
+            System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
           }
           return result == false;
         }
 
         public Boolean containsInPlatformInfo(String substring) {
-          Boolean result = capturedEvent.Platform_Info__c.contains(substring);
+          Boolean result = getEvent().Platform_Info__c.contains(substring);
           if (!result) {
-            System.debug('Actual event message:\n' + capturedEvent.Platform_Info__c);
+            System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
           }
           return result;
         }

@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 /* eslint-disable jest/expect-expect */
-import _ from 'lodash';
 import JsMock from 'js-mock';
 import Matcher from 'hamjest';
 

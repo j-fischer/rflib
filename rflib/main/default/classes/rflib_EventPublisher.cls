@@ -40,8 +40,14 @@ public interface rflib_EventPublisher {
     Integer getPublishingCounter();
 
     /**
-     * @description Publish events, presumably using the `EventBus`.
-     * @param  SObject event The Platform Event to be published.
+     * @description Publish a single event, presumably using the `EventBus`.
+     * @param event SObject event The Platform Event to be published.
      */
     Database.SaveResult publish(SObject event);
+
+    /**
+     * @description Publish multiple events, presumably using the `EventBus`.
+     * @param events The list of Platform Event to be published.
+     */
+    List<Database.SaveResult> publish(List<SObject> events);
 }

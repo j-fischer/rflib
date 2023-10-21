@@ -34,6 +34,8 @@ public class rflib_MockApplicationEventLogger implements rflib_ApplicationEventL
     public String capturedRelatedRecordId { get; private set; }
     public String capturedAdditionalDetails { get; private set; }
 
+    public List<rflib_ApplicationEventDetails> capturedEventDetails { get; private set; }
+    
     private Exception exceptionToThrow;
 
     public rflib_MockApplicationEventLogger() {
@@ -50,6 +52,14 @@ public class rflib_MockApplicationEventLogger implements rflib_ApplicationEventL
         this.capturedEventName = eventName;
         this.capturedRelatedRecordId = relatedRecordId;
         this.capturedAdditionalDetails = additionalDetails;
+
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
+    }
+    
+    public void logApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents) {
+        this.capturedEventDetails = applicationEvents;
 
         if (exceptionToThrow != null) {
             throw exceptionToThrow;
