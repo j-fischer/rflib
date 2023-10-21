@@ -447,47 +447,59 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
 
     public Database.SaveResult publish(SObject evt) {
-      rflib_Log_Event__e event = (rflib_Log_Event__e) evt;
+      List<Database.SaveResult> result = publish(new List<SObject> { evt });
+      return result == null ? null : result[0];
+    }
+
+    public List<Database.SaveResult> publish(List<SObject> events) {
+      
+      List<rflib_Log_Event__e> eventsToPublish = new List<rflib_Log_Event__e>((List<rflib_Log_Event__e>) events);
+
       Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
         ? rflib_GlobalSettings.publishingLimit
         : Limits.getLimitPublishImmediateDML();
         
       if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
-        System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' + JSON.serialize(event));
+        System.debug(LoggingLevel.ERROR, 'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' + JSON.serialize(events));
         return null;
       }
 
       if (eventBusPublisher.getPublishingCounter() == publishingLimit) {
-        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(event));
+        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(events));
         return null;
       }
       
-      Database.SaveResult result = eventBusPublisher.publish(getUpdatedLogEventIfLimitIsReached(event, publishingLimit));
+      List<Database.SaveResult> results = eventBusPublisher.publish(addLogEventIfLimitIsReached(eventsToPublish, publishingLimit));
       
-      if(!result.isSuccess()) {
-        System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+      for (Database.SaveResult result : results) {
+        if(!result.isSuccess()) {
+          System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+        }
       }
 
-      return result;
+      return results;
     }
 
-    private rflib_Log_Event__e getUpdatedLogEventIfLimitIsReached(rflib_Log_Event__e logEvent, Integer publishingLimit) {
+    private List<rflib_Log_Event__e> addLogEventIfLimitIsReached(List<rflib_Log_Event__e> logEvents, Integer publishingLimit) {
       if (eventBusPublisher.getPublishingCounter() < (publishingLimit - 1)) {
-        return logEvent;
+        return logEvents;
       }
 
       String rflibInfoMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n';
-      Integer rflibInfoMessageSize = rflibInfoMessage.length();
+      String requestId = Request.getCurrent().getRequestId();
+      if (requestId == null) {
+        requestId = 'NULL';
+      }
 
-      Integer expectedMessageSize = logEvent.Log_Messages__c.length() + rflibInfoMessageSize;
-
-      String logMessage = expectedMessageSize < MAX_MESSAGE_SIZE
-        ? rflibInfoMessage + logEvent.Log_Messages__c 
-        : rflibInfoMessage + logEvent.Log_Messages__c.substring(expectedMessageSize - MAX_MESSAGE_SIZE);
-
-      logEvent.Log_Messages__c = logMessage;
-
-      return logEvent;
+      logEvents.add(new rflib_Log_Event__e(
+        Request_ID__c = requestId.substring(0, Math.min(requestId.length(), 40)),
+        Log_Level__c = rflib_LogLevel.WARN.toString(),
+        Context__c = 'RFLIB_INTERNAL_WARNING',
+        Platform_Info__c = 'N/A',
+        Log_Messages__c = rflibInfoMessage
+      ));
+      
+      return logEvents;
     }
   }
 
@@ -502,6 +514,14 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     public Database.SaveResult publish(SObject event) {
       publishingCounter++;
       BATCH_EXECUTOR.addEvent((rflib_Log_Event__e) event);
+      return null;
+    }
+
+    public List<Database.SaveResult> publish(List<SObject> events) {
+      publishingCounter++;
+      for (SObject event : events) {
+        BATCH_EXECUTOR.addEvent((rflib_Log_Event__e) event);
+      }
       return null;
     }
   }

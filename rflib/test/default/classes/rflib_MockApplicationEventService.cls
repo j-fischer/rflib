@@ -30,11 +30,13 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockApplicationEventService implements rflib_ApplicationEventService {
     
-    public List<rflib_Application_Event__c> capturedEvents { get; private set; }
     public String capturedEventName { get; private set; }
     public String capturedRelatedRecordId { get; private set; }
     public String capturedAdditionalDetails { get; private set; }
-
+    
+    public List<rflib_Application_Event__c> capturedEvents { get; private set; }
+    public List<rflib_ApplicationEventDetails> capturedEventDetails { get; private set; }
+    
     private Exception exceptionToThrow;
 
     public rflib_MockApplicationEventService() {
@@ -65,4 +67,11 @@ public class rflib_MockApplicationEventService implements rflib_ApplicationEvent
         }
     }
 
+    public void publishApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents) {
+        this.capturedEventDetails = applicationEvents;
+
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
+    }
 }

@@ -47,4 +47,10 @@ public interface rflib_ApplicationEventService {
      * @param  additionalDetails Any relevant information associated with the event.
      */
     void publishApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+
+    /**
+     * @description Save multiple `rflib_Application_Event__c` records with the details provided in the parameters. All other fields are auto-calculated. 
+     * @param  applicationEvents List of `rflib_ApplicationEventDetails` to be created.
+     */
+    void publishApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents);
 }

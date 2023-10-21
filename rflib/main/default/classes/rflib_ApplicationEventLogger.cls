@@ -41,4 +41,10 @@ public interface rflib_ApplicationEventLogger {
      * @param  additionalDetails Any relevant additional information part of the event. 
      */
     void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails);
+
+    /**
+     * @description Log multiple application events at the same time.
+     * @param  applicationEvents List of `rflib_ApplicationEventDetails` to be created.
+     */
+    void logApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents);
 }

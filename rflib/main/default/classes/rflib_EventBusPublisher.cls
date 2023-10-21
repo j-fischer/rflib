@@ -42,4 +42,10 @@ public class rflib_EventBusPublisher implements rflib_EventPublisher {
         PUBLISHING_COUNTER++;
         return EventBus.publish(event);
     }
+
+    public List<Database.SaveResult> publish(List<SObject> events) {
+        Logger.trace('Publishing events: ' + events);
+        PUBLISHING_COUNTER++;
+        return EventBus.publish(events);
+    }
 }
