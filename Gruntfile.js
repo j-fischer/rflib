@@ -453,6 +453,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
+            'shell:force-create-application-event',
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
