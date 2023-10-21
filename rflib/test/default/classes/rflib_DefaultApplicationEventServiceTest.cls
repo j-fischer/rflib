@@ -53,6 +53,25 @@ private class rflib_DefaultApplicationEventServiceTest {
     }
 
     @isTest
+    static void testPublishApplicationEvents_success() {
+        String eventName = 'Test Event';
+        String relatedRecordId = '003123456789012345';
+        String additionalDetails = 'Test Additional Details';
+        
+        rflib_DefaultApplicationEventService.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
+        rflib_DefaultApplicationEventService service = new rflib_DefaultApplicationEventService();
+        Test.startTest();
+        service.publishApplicationEvents(createDetails(eventName, relatedRecordId, additionalDetails));
+        Test.stopTest();
+
+        rflib_Application_Event_Occurred_Event__e event = (rflib_Application_Event_Occurred_Event__e) MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        Assert.areEqual(eventName, event.Event_Name__c);
+        Assert.areEqual(relatedRecordId, event.Related_Record_ID__c);
+        Assert.areEqual(additionalDetails, event.Additional_Details__c);
+        Assert.areEqual(UserInfo.getUserId(), event.Created_By_ID__c);
+    }
+
+    @isTest
     static void testPublishApplicationEvent_NoRecordId() {
         String eventName = 'Test Event';
         String additionalDetails = 'Test Additional Details';
@@ -200,6 +219,12 @@ private class rflib_DefaultApplicationEventServiceTest {
             Created_By_ID__c = UserInfo.getUserId(), 
             Occurred_On__c = Datetime.now()
         );
+    }
+    
+    private static List<rflib_ApplicationEventDetails> createDetails(String eventName, String relatedRecordId, String additionalDetails) {
+        return new List<rflib_ApplicationEventDetails> {
+            new rflib_ApplicationEventDetails(eventName, relatedRecordId, additionalDetails)
+        };
     }
 
     public class MockBigObjectQueryLocator implements rflib_DefaultApplicationEventService.IBigObjectQueryLocator {

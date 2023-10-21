@@ -31,20 +31,37 @@
 private class rflib_EventBusPublisherTest {
 
     @IsTest
-    static void testPublish() {
-        rflib_Application_Event_Occurred_Event__e evt = new rflib_Application_Event_Occurred_Event__e(
-            Event_Name__c = 'Test Event 1', 
+    static void testPublish_SingleEvent() {
+        rflib_Application_Event_Occurred_Event__e evt = createEvent(1);
+        
+        Test.startTest();
+        Database.SaveResult sr = new rflib_EventBusPublisher().publish(evt);
+        Test.stopTest();
+        
+        Assert.isTrue(sr.isSuccess());
+    }
+
+    @IsTest
+    static void testPublish_BatchEvents() {
+        rflib_Application_Event_Occurred_Event__e evt1 = createEvent(1);
+        rflib_Application_Event_Occurred_Event__e evt2 = createEvent(2);
+        
+        Test.startTest();
+        List<Database.SaveResult> sr = new rflib_EventBusPublisher().publish(new List<SObject> { evt1, evt2 });
+        Test.stopTest();
+        
+        Assert.isTrue(sr[0].isSuccess());
+        Assert.isTrue(sr[1].isSuccess());
+    }
+
+    private static rflib_Application_Event_Occurred_Event__e createEvent(Integer index) {
+        return new rflib_Application_Event_Occurred_Event__e(
+            Event_Name__c = 'Test Event ' + index, 
             Related_Record_ID__c = '003123456789012345', 
-            Additional_Details__c = 'Test Additional Details 1',
+            Additional_Details__c = 'Test Additional Details ' + index,
             Created_By_ID__c = UserInfo.getUserId(),
             Occurred_On__c = DateTime.now()
         );
-        
-        Test.startTest();
-        
-        Database.SaveResult sr = new rflib_EventBusPublisher().publish(evt);
-        
-        Assert.isTrue(sr.isSuccess());
-        Test.stopTest();
     }
+            
 }
