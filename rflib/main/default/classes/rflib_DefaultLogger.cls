@@ -70,7 +70,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   /**
-   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createBatchedLogger()` instead.
+   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
    * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
    * associated with this user. Events are published in batches.
@@ -83,7 +83,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
   }
 
   /**
-   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` or `new rflib_DefaultLoggerFactory.createBatchedLogger()` 
+   * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` or `new rflib_DefaultLoggerFactory.createLogger()` 
    *              depending on the value for `shouldPublishEventsInBatch` instead.
    * 
    * Create an rflib_Logger instance for the given context based on the configuration of the Logger Custom Settings
