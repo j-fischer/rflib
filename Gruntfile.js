@@ -4,7 +4,7 @@ const semver = require('semver');
 const bumpVersion = function(grunt, config) {
     if (config.package.package === "RFLIB" && _.includes(['major'], config.version.nextVersionType)) {
         config.packageFile.version = config.version.nextVersion;
-        grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 4));
+        grunt.file.write('package.json', JSON.stringify(config.packageFile, null, 2));
     }
     
     config.projectFile.packageDirectories[config.packageIndex].versionName = 'ver ' + config.version.nextVersion;
@@ -21,7 +21,7 @@ const bumpVersion = function(grunt, config) {
         }
     }
     
-    grunt.file.write('sfdx-project.json', JSON.stringify(config.projectFile, null, 4));
+    grunt.file.write('sfdx-project.json', JSON.stringify(config.projectFile, null, 2));
 }
 
 module.exports = function(grunt) {
