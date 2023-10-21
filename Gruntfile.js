@@ -289,19 +289,19 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %>'
             },
 
             'force-create-org-default-preview': {
-                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
             },
 
             'force-create-org': {
-                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %>'
             },
 
             'force-create-org-preview': {
-                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
             },
 
             'force-delete-org': {
