@@ -36,7 +36,7 @@
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_SendLogEventEmailAction {
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_EmailLogEventHandler');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_EmailLogEventHandler');
 
     private static final String PLAIN_TEXT_MESSAGE = 'A Log Event was created by {0}.\Request ID: {1}\nContext: {2}\nLog Messages: {3}\nPlatform Info: {4}';
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Request ID: {1}</h3><h3>Context: {2}</h3><p><b>Log Messages:</b> {3}</p></h3><p><b>Platform Info:</b> {4}</p>';

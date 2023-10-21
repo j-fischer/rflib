@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_EventBusPublisher implements rflib_EventPublisher {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_EventBusPublisher');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_EventBusPublisher');
 
     private static Integer PUBLISHING_COUNTER = 0;
     

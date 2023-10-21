@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_DefaultApplicationEventLogger implements rflib_ApplicationEventLogger {
     
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_DefaultApplicationEventLogger');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_DefaultApplicationEventLogger');
 
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();

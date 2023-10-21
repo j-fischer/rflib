@@ -34,7 +34,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApplicationEventController {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventController');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApplicationEventController');
 
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();

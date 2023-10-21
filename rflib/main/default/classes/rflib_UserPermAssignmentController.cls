@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_UserPermAssignmentController {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_UserPermAssignmentController');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_UserPermAssignmentController');
 
     @AuraEnabled
     public static List<UserPermissionAssignmentInfo> getUserPermissionAssignments(String permSetApiName, Boolean shouldBeAssigned){

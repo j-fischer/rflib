@@ -34,7 +34,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public without sharing class rflib_FeatureSwitch {
     
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_FeatureSwitch');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_FeatureSwitch');
 
     private static final String NO_PROFILE = '__NO_PROFILE__';
     

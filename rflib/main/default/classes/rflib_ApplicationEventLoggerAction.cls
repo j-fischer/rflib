@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApplicationEventLoggerAction {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventLoggerAction');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApplicationEventLoggerAction');
 
     @TestVisible
     private static rflib_ApplicationEventLogger APPLICATION_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();

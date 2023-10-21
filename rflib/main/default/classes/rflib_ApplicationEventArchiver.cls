@@ -35,7 +35,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public inherited sharing class rflib_ApplicationEventArchiver implements Schedulable {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_ApplicationEventArchiver');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApplicationEventArchiver');
 
     @TestVisible
     private static Date TODAY = Date.today();

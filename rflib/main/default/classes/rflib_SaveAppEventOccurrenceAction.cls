@@ -29,7 +29,7 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_SaveAppEventOccurrenceAction {
 
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_SaveAppEventOccurrenceAction');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_SaveAppEventOccurrenceAction');
     
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE  = new rflib_DefaultApplicationEventService();
