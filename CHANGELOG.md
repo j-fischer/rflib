@@ -1,3 +1,12 @@
+### RFLIB 6.0.0
+
+Package ID: 04t3h000004pOeVAAU
+Package Alias: RFLIB@6.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOeVAAU
+
+-   [PR #78](https://github.com/j-fischer/rflib/pull/78) Adding batch capabilities for the creation of application events
+-   Upgraded API version (`<apiVersion>`) to v59.0
+
 ### RFLIB 5.0.1
 
 Package ID: 04t3h000004pOeQAAU
