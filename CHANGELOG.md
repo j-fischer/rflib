@@ -1,3 +1,11 @@
+### RFLIB 5.0.1
+
+Package ID: 04t3h000004pOeQAAU
+Package Alias: RFLIB@5.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOeQAAU
+
+-   Replaced internal logger instances within RFLIB and RFLIB-FS from batch to regular.
+
 ### RFLIB-FS 3.0.1
 
 Package ID: 04t3h000004pOeLAAU
