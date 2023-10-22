@@ -44,4 +44,15 @@ public inherited sharing class rflib_DefaultApplicationEventLogger implements rf
             throw ex;
         }
     }
+
+    public void logApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents){
+        try {
+            LOGGER.info('logApplicationEvent({0})', new Object[] { applicationEvents });
+
+            APPLICATION_EVENT_SERVICE.publishApplicationEvents(applicationEvents);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to log save application events', ex);
+            throw ex;
+        }
+    }
 }

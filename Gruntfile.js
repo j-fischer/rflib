@@ -289,11 +289,11 @@ module.exports = function(grunt) {
 
         shell: {
             'force-create-org-default': {
-                command: 'sf force org create -f config/project-scratch-def.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def.json -s -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org-default-preview': {
-                command: 'sf force org create -f config/project-scratch-def-preview.json -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
+                command: 'sf force org create -f config/project-scratch-def-preview.json -s -d 30 -a <%= config.alias %> orgName=<%= config.alias %>'
             },
 
             'force-create-org': {
@@ -309,11 +309,11 @@ module.exports = function(grunt) {
             },
 
             'force-assign-permset': {
-                command: 'sf force user permset assign --perm-set-name rflib_Ops_Center_Access -o <%= config.alias %>'
+                command: 'sf force user permset assign --perm-set-name rflib_Ops_Center_Access --target-org <%= config.alias %>'
             },
 
             'force-push': {
-                command: 'sf force source push -o <%= config.alias %> -f'
+                command: 'sf project deploy start -o <%= config.alias %> -c'
             },
 
             'force-test': {
@@ -453,6 +453,7 @@ module.exports = function(grunt) {
             'shell:force-push',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
+            'shell:force-create-application-event',
             'shell:force-create-qa-user',
             'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',

@@ -69,5 +69,46 @@ private class rflib_DefaultApplicationEventLoggerTest {
         Assert.areEqual(ADDITIONAL_DETAILS, service.capturedAdditionalDetails);
     }
 
+    @IsTest
+    private static void testLogApplicationEvents_Success() {
+        rflib_MockApplicationEventService service = new rflib_MockApplicationEventService();
+        
+        rflib_DefaultApplicationEventLogger.APPLICATION_EVENT_SERVICE = service;
+
+        Test.startTest();
+        new rflib_DefaultApplicationEventLogger().logApplicationEvents(createDetails());
+        Test.stopTest();
+
+        Assert.areEqual(EVENT_NAME, service.capturedEventDetails[0].eventName);
+        Assert.areEqual(RELATED_RECORD_ID, service.capturedEventDetails[0].relatedRecordId);
+        Assert.areEqual(ADDITIONAL_DETAILS, service.capturedEventDetails[0].additionalDetails);
+    }
+
+    @IsTest
+    private static void testLogSaveApplicationEvents_Failure() {
+        rflib_MockApplicationEventService service = new rflib_MockApplicationEventService(new ApplicationEventControllerException('foo bar'));
+        
+        rflib_DefaultApplicationEventLogger.APPLICATION_EVENT_SERVICE = service;
+
+        Test.startTest();
+        try{
+            new rflib_DefaultApplicationEventLogger().logApplicationEvents(createDetails());
+            Assert.fail('Expected exception has not been thrown');
+        } catch (ApplicationEventControllerException ex) {
+            Assert.areEqual('foo bar', ex.getMessage());
+        }
+        Test.stopTest();
+
+        Assert.areEqual(EVENT_NAME, service.capturedEventDetails[0].eventName);
+        Assert.areEqual(RELATED_RECORD_ID, service.capturedEventDetails[0].relatedRecordId);
+        Assert.areEqual(ADDITIONAL_DETAILS, service.capturedEventDetails[0].additionalDetails);
+    }
+
+    private static List<rflib_ApplicationEventDetails> createDetails() {
+        return new List<rflib_ApplicationEventDetails> {
+            new rflib_ApplicationEventDetails(EVENT_NAME, RELATED_RECORD_ID, ADDITIONAL_DETAILS)
+        };
+    }
+
     public class ApplicationEventControllerException extends Exception { }
 }

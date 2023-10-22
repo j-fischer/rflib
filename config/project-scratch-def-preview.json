@@ -1,7 +1,7 @@
 {
     "orgName": "RFLIB DEV",
     "edition": "Developer",
-    "features": [],
+    "features": ["EinsteinGPTForDevelopers"],
     "release": "Preview",
     "settings": {
         "lightningExperienceSettings": {
