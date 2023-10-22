@@ -326,7 +326,7 @@ module.exports = function(grunt) {
 
             'force-create-release-candidate': {
                 command:
-                    'sf package version create --path <%= config.package.path %> --installationkeybypass --codecoverage --wait 30'
+                    'sf package version create --path <%= config.package.path %> --installationkeybypass --code-coverage --wait 30'
             },
 
             'force-install-latest': {
