@@ -30,6 +30,8 @@
 public with sharing class rflib_LogArchiveController {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveController');
+
+    private static final Integer ARCHIVE_LOG_QUERY_LIMIT = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Archive_Log_Query_Limit').Value__c);
     
     @TestVisible
     private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();
@@ -38,13 +40,16 @@ public with sharing class rflib_LogArchiveController {
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
 
     @AuraEnabled
-    public static List<rflib_Logs_Archive__b> getArchivedRecords(Datetime startDate, Datetime endDate) {
+    public static ArchiveQueryResult getArchivedRecords(Datetime startDate, Datetime endDate) {
         try {
             LOGGER.debug('getArchivedRecords({0}, {1})', new Object[] { startDate, endDate } );
             Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
             Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
             
-            return QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault);
+            return new ArchiveQueryResult(
+                ARCHIVE_LOG_QUERY_LIMIT,
+                QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault)
+            );
         } catch (Exception ex) {
             LOGGER.error('Failed to query rflib_Logs_Archive__b', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -70,6 +75,19 @@ public with sharing class rflib_LogArchiveController {
         List<rflib_Logs_Archive__b> getOldestRecords();
     }
 
+    public class ArchiveQueryResult {
+        public final Integer queryLimit;
+        public final List<rflib_Logs_Archive__b> records;
+
+        public ArchiveQueryResult (
+            Integer queryLimit,
+            List<rflib_Logs_Archive__b> records
+        ) {
+            this.queryLimit = queryLimit;
+            this.records = records;
+        }
+    }
+
     public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
@@ -78,7 +96,7 @@ public with sharing class rflib_LogArchiveController {
                 FROM rflib_Logs_Archive__b
                 WHERE CreatedDate__c > :startDate
                 AND CreatedDate__c < :endDate
-                LIMIT 50000
+                LIMIT :ARCHIVE_LOG_QUERY_LIMIT
             ];
         }
 
@@ -87,7 +105,7 @@ public with sharing class rflib_LogArchiveController {
                 SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c 
                 FROM rflib_Logs_Archive__b 
                 ORDER BY CreatedDate__c ASC 
-                LIMIT 50000
+                LIMIT :ARCHIVE_LOG_QUERY_LIMIT
             ];
         }
     }

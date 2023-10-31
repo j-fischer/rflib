@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import { LightningElement, wire } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 import { subscribe, unsubscribe, onError, setDebugFlag } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
@@ -126,7 +127,7 @@ export default class LogEventMonitor extends LightningElement {
         };
 
         if (_this.debugEnabled) {
-            setDebugFlag(true).then(result => {
+            setDebugFlag(true).then((result) => {
                 logger.debug('setDebugFlag() successful: ' + result);
             });
         }
@@ -162,13 +163,31 @@ export default class LogEventMonitor extends LightningElement {
                 endDate: this.endDate
             };
             getArchivedRecords(args)
-                .then((results) => {
-                    _this.capturedEvents = results;
-                    _this.numTotalRecords = results.length;
+                .then((result) => {
+                    _this.capturedEvents = result.records;
+                    _this.numTotalRecords = _this.capturedEvents;
                     _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
+
+                    if (result.querySize === _this.capturedEvents) {
+                        const evt = new ShowToastEvent({
+                            title: 'Query Limit Reached',
+                            message:
+                                'The number of records retrieved reached the configured query limit of ' +
+                                result.querySize +
+                                ' records. Please change the search criteria to retrieve all records.',
+                            variant: 'warning'
+                        });
+                        this.dispatchEvent(evt);
+                    }
                 })
                 .catch((ex) => {
                     logger.debug('Failed to retrieve archived records: ' + JSON.stringify(ex));
+                    const evt = new ShowToastEvent({
+                        title: 'Failed to retrieve archived records',
+                        message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
+                        variant: 'error'
+                    });
+                    this.dispatchEvent(evt);
                 });
         }
 
@@ -234,6 +253,12 @@ export default class LogEventMonitor extends LightningElement {
                     })
                     .catch((ex) => {
                         logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
+                        const evt = new ShowToastEvent({
+                            title: 'Failed to clear archived records',
+                            message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
+                            variant: 'error'
+                        });
+                        this.dispatchEvent(evt);
                     });
             } else if (event.detail.status === 'cancel') {
                 logger.debug('Cancelled clearing of archive');
@@ -252,12 +277,31 @@ export default class LogEventMonitor extends LightningElement {
             endDate: this.endDate
         };
         getArchivedRecords(args)
-            .then((results) => {
-                _this.capturedEvents = results;
-                _this.numTotalRecords = results.length;
+            .then((result) => {
+                _this.capturedEvents = result.records;
+                _this.numTotalRecords = _this.capturedEvents;
+                _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
+
+                if (result.querySize === _this.capturedEvents) {
+                    const evt = new ShowToastEvent({
+                        title: 'Query Limit Reached',
+                        message:
+                            'The number of records retrieved reached the configured query limit of ' +
+                            result.querySize +
+                            ' records. Please change the search criteria to retrieve all records.',
+                        variant: 'warning'
+                    });
+                    this.dispatchEvent(evt);
+                }
             })
             .catch((ex) => {
                 logger.debug('Failed to retrieve archived records: ' + JSON.stringify(ex));
+                const evt = new ShowToastEvent({
+                    title: 'Failed to retrieve archived records',
+                    message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
+                    variant: 'error'
+                });
+                this.dispatchEvent(evt);
             });
     }
 

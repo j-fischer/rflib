@@ -41,7 +41,7 @@ private class rflib_LogArchiveControllerTest {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
 
         Test.startTest();
-        System.assertEquals(RESULT, rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()));
+        System.assertEquals(RESULT, rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()).records);
         Test.stopTest();
     }
 
