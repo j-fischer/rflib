@@ -30,6 +30,8 @@ import { api, LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 import getUserPermissionAssignments from '@salesforce/apex/rflib_UserPermAssignmentController.getUserPermissionAssignments';
 
+const DEFAULT_PAGE_SIZE = 25;
+
 const logger = createLogger('UserPermissionAssignmentList');
 
 const columns = [
@@ -44,12 +46,19 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
     @api isAssigned;
     @api title;
 
+    userPermissionAssignments = [];
     data = [];
     columns = columns;
 
+    page = 1;
+    pageSize = DEFAULT_PAGE_SIZE;
+    totalPages;
+    numTotalRecords;
+    numDisplayedRecords;
+
     // eslint-disable-next-line @lwc/lwc/no-async-await
     async connectedCallback() {
-        logger.debug('Initializing component');
+        logger.debug('Initializing component, DEFAULT_PAGE_SIZE={0}', DEFAULT_PAGE_SIZE);
 
         const args = {
             permSetApiName: this.permissionSetName,
@@ -62,8 +71,58 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
         getUserPermissionAssignments(args)
             .then((result) => {
                 logger.debug('Users identified={0}', JSON.stringify(result));
-                _this.data = result;
+                _this.userPermissionAssignments = result;
+                _this.numTotalRecords = result.length;
+                _this.totalPages = Math.ceil(_this.numTotalRecords / DEFAULT_PAGE_SIZE);
+                _this.handlePageChanged();
             })
             .catch((ex) => logger.error('Failed to retrieve user permission information', ex));
+    }
+
+    handlePageChanged() {
+        logger.debug('Navigate to previous page, current page={0}', this.page);
+
+        let startIndex = (this.page - 1) * DEFAULT_PAGE_SIZE;
+        this.data = this.userPermissionAssignments.slice(startIndex, startIndex + DEFAULT_PAGE_SIZE);
+        this.numDisplayedRecords = this.data.length;
+    }
+
+    handlePrevious() {
+        logger.debug('Navigate to previous page, current page={0}', this.page);
+        if (this.page > 1) {
+            this.page = this.page - 1;
+            this.handlePageChanged();
+        }
+    }
+    handleNext() {
+        logger.debug('Navigate to next page, current page={0}', this.page);
+        if (this.page < this.totalPages) {
+            this.page = this.page + 1;
+            this.handlePageChanged();
+        }
+    }
+
+    handleFirst() {
+        logger.debug('Navigate to first page, current page={0}', this.page);
+        this.page = 1;
+        this.handlePageChanged();
+    }
+
+    handleLast() {
+        logger.debug('Navigate to last page, current page={0}', this.page);
+        this.page = this.totalPages;
+        this.handlePageChanged();
+    }
+
+    handleGoToPage(evt) {
+        logger.debug('Navigate to page, current page={0}', evt.detail);
+        this.page = evt.detail;
+        this.handlePageChanged();
+    }
+
+    handlePageChange(event) {
+        logger.debug('Page changed, current page={0}', event.detail);
+        this.page = event.detail;
+        this.handlePageChanged();
     }
 }

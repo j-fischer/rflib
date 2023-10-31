@@ -28,6 +28,6 @@
  */
 
 .datatable-container { 
-    max-height: 271px; 
+    max-height: 240; 
     overflow-y: auto;
 }

@@ -32,5 +32,19 @@
             <lightning-datatable key-field="id" data={data} columns={columns} hide-checkbox-column>
             </lightning-datatable>
         </div>
+        <div class="slds-m-around_medium">
+            <c-rflib-paginator
+                onprevious={handlePrevious}
+                onnext={handleNext}
+                onfirst={handleFirst}
+                onlast={handleLast}
+                ongotopage={handleGoToPage}
+                current-page={page}
+                total-records={numTotalRecords}
+                page-size={pageSize}
+                should-display-page-selection="true"
+            >
+            </c-rflib-paginator>
+        </div>
     </lightning-card>
 </template>
