@@ -46,8 +46,8 @@ public with sharing class rflib_UserPermAssignmentController {
 
     private static List<UserPermissionAssignmentInfo> getUserPermissionAssignmentInfo(Set<Id> assignedUserIds, Boolean shouldBeAssigned) {
         List<User> userRecords = shouldBeAssigned
-            ? [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id IN :assignedUserIds]
-            : [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id NOT IN :assignedUserIds];
+            ? [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id IN :assignedUserIds ORDER BY Name]
+            : [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id NOT IN :assignedUserIds ORDER BY Name];
 
         LOGGER.debug('userRecords=' + userRecords);
 
