@@ -1,3 +1,14 @@
+### RFLIB 6.1.0
+
+Package ID: 04t3h000004pOglAAE
+Package Alias: RFLIB@6.1.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOglAAE
+
+-   Log Archive: Added new Global Setting called Archive Log Query Limit to limit the number of results returned for a Big Object query
+    This can help with the occurrence of Heap Limit exceptions that could be caussed by querying the archive.
+-   Management Dashboard: Updated rflibUserPermissionAssignmentList to include pagination to help with environments that have large user lists which could cause severe performance issues
+-   Management Dashboard: Added ORDER BY clause to queries of User Permission Assignments component
+
 ### RFLIB 6.0.0
 
 Package ID: 04t3h000004pOeVAAU
@@ -13,7 +24,7 @@ Package ID: 04t3h000004pOeQAAU
 Package Alias: RFLIB@5.0.1-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOeQAAU
 
--    [PR #79](https://github.com/j-fischer/rflib/pull/79) Replaced internal logger instances within RFLIB and RFLIB-FS from batch to regular.
+-   [PR #79](https://github.com/j-fischer/rflib/pull/79) Replaced internal logger instances within RFLIB and RFLIB-FS from batch to regular.
 
 ### RFLIB-FS 3.0.1
 
