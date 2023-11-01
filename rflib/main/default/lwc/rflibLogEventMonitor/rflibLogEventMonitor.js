@@ -279,7 +279,7 @@ export default class LogEventMonitor extends LightningElement {
         getArchivedRecords(args)
             .then((result) => {
                 _this.capturedEvents = result.records;
-                _this.numTotalRecords = _this.capturedEvents;
+                _this.numTotalRecords = result.records.length;
                 _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
 
                 if (result.querySize === _this.capturedEvents) {
