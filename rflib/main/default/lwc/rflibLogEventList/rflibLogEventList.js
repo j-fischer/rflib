@@ -51,7 +51,7 @@ export default class LogEventList extends LightningElement {
         return this.allEvents;
     }
     set logEvents(value) {
-        this.allEvents = value;
+        this.allEvents = value || [];
         this.refreshEventList();
     }
 
@@ -73,7 +73,7 @@ export default class LogEventList extends LightningElement {
     displayedPageIndex;
     selectedRow;
 
-    allEvents;
+    allEvents = [];
     filteredEvents = [];
 
     connectedCallback() {

@@ -76,8 +76,8 @@ public with sharing class rflib_LogArchiveController {
     }
 
     public class ArchiveQueryResult {
-        public final Integer queryLimit;
-        public final List<rflib_Logs_Archive__b> records;
+        @AuraEnabled public final Integer queryLimit;
+        @AuraEnabled public final List<rflib_Logs_Archive__b> records;
 
         public ArchiveQueryResult (
             Integer queryLimit,
