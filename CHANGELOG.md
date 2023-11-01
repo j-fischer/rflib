@@ -1,8 +1,15 @@
+### RFLIB 6.1.1
+
+Package ID: 04t3h000004pOhAAAU
+Package Alias: RFLIB@6.1.1-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOhAAAU
+
+-   Log Monitor: Fixed regression introduced in 6.1.0 that broke the Log Archive view.
+
 ### RFLIB 6.1.0
 
-Package ID: 04t3h000004pOglAAE
+Package ID: DEPRECATED
 Package Alias: RFLIB@6.1.0-2
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOglAAE
 
 -   Log Archive: Added new Global Setting called Archive Log Query Limit to limit the number of results returned for a Big Object query
     This can help with the occurrence of Heap Limit exceptions that could be caussed by querying the archive.
