@@ -309,7 +309,9 @@ module.exports = function(grunt) {
             },
 
             'force-assign-permset': {
-                command: 'sf force user permset assign --perm-set-name rflib_Ops_Center_Access --target-org <%= config.alias %>'
+                command: 
+                    'sf org assign permset --name rflib_Ops_Center_Access --target-org <%= config.alias %> && ' +
+                    'sf org assign permset --name rflib_Create_Application_Event --target-org <%= config.alias %>'
             },
 
             'force-push': {
@@ -451,11 +453,11 @@ module.exports = function(grunt) {
 
         grunt.task.run(tasks.concat([
             'shell:force-push',
+            'shell:force-assign-permset',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
             'shell:force-create-application-event',
             'shell:force-create-qa-user',
-            'shell:force-assign-permset',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-utility',
             'shell:force-open',
@@ -481,9 +483,9 @@ module.exports = function(grunt) {
             'shell:force-install-dependencies',
             'shell:force-install-latest',
             'shell:force-install-streaming-monitor',
+            'shell:force-assign-permset',
             'shell:force-configure-settings',
             'shell:force-create-log-event',
-            'shell:force-assign-permset',
             'shell:force-open',
             'shell:force-create-log-event',
             'shell:force-create-application-event'
