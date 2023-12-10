@@ -1,3 +1,11 @@
+### RFLIB 6.1.2
+
+Package ID: 04t3h000004pOrKAAU
+Package Alias: RFLIB@6.1.2-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOrKAAU
+
+-   Application Events: Fixed permissions in Create Application Event Permission Set.
+
 ### RFLIB 6.1.1
 
 Package ID: 04t3h000004pOhAAAU
