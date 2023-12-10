@@ -339,7 +339,7 @@ module.exports = function(grunt) {
             'force-install-streaming-monitor': {
                 command:
                     'sf package install --package 04t1t000003Po3QAAS -o <%= config.alias %> -w 10 && ' + 
-                    'sf force user permset assign -n Streaming_Monitor -o <%= config.alias %>'
+                    'sf org assign permset --name Streaming_Monitor -o <%= config.alias %>'
             },
 
             'force-install-bigobject-utility': {
