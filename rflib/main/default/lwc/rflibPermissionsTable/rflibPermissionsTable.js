@@ -187,5 +187,6 @@ export default class RflibFieldPermissionsTable extends LightningElement {
         const profileName = event.detail;
 
         this.securityObjectNameSearch = profileName;
+        this.executeSearch();
     }
 }

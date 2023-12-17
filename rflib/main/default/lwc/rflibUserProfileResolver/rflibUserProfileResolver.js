@@ -44,6 +44,19 @@ export default class RflibUserProfileResolver extends LightningElement {
 
     user = {};
 
+    userFilter = {
+        criteria: [
+            {
+                fieldPath: 'IsActive',
+                operator: 'eq',
+                value: true
+            }
+        ]
+    };
+    userMatchingInfo = {
+        primaryField: { fieldPath: 'Name' }
+    };
+
     openModal() {
         logger.debug('Opening dialog');
         this.isModalOpen = true;
@@ -55,9 +68,10 @@ export default class RflibUserProfileResolver extends LightningElement {
     }
 
     handleUserIdChanged(event) {
-        if (this.userId !== event.target.value) {
-            logger.debug('Setting user ID={0}', event.target.value);
-            this.userId = event.target.value;
+        let newUserId = event.detail.recordId;
+        if (this.userId !== newUserId) {
+            logger.debug('Setting user ID={0}', newUserId);
+            this.userId = newUserId;
         }
     }
 
@@ -71,6 +85,7 @@ export default class RflibUserProfileResolver extends LightningElement {
                 const profileSelectedEvent = new CustomEvent('profileselected', { detail: result.Profile.Name });
 
                 this.dispatchEvent(profileSelectedEvent);
+                this.closeModal();
             })
             .catch((error) => {
                 logger.error(
