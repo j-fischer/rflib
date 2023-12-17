@@ -104,6 +104,29 @@ public class rflib_StringUtil {
         }
         return source;
     }
+
+    /**
+     * Convert a list of strings to a representation that can be used in dynamic queries as part of the 
+     * `IN` condition. 
+     * 
+     * @param  theList A list of strings.
+     * @return         A string representation of list in the format: ('elem1', 'elem2', ...)
+     */
+    public static String convertListToString(List<String> theList) {
+        String result = '(';
+    
+        for (String theString : theList) {
+            if (result != '(') {
+                result += ',';
+            }
+    
+            result += '\'' + theString + '\'';
+        }
+    
+        result += ')';
+        return result;
+    }
+                
     
     @SuppressWarnings('PMD.EmptyStatementBlock')
     private rflib_StringUtil() { }

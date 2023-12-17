@@ -29,7 +29,7 @@
 <template>
     <div class="slds-page-header">
         <div class="download-container" lwc:dom="manual"></div>
-        
+
         <div if:true={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"
@@ -94,9 +94,21 @@
     <div class="slds-grid">
         <div class="slds-col slds-size_1-of-1">
             <lightning-card>
+                <template if:true={isUserModeSelected}>
+                    <lightning-record-picker
+                        label="Select a user"
+                        placeholder="Search Name..."
+                        object-api-name="User"
+                        filter={userFilter}
+                        matching-info={userMatchingInfo}
+                        onchange={handleUserSelectionChanged}
+                    >
+                    </lightning-record-picker>
+                </template>
                 <c-rflib-permissions-table
                     is-field-permissions={isFieldPermissions}
                     is-profile-permissions={isProfilePermissions}
+                    is-user-mode={isUserModeSelected}
                     permission-records={permissionRecords}
                     current-page={page}
                     page-size={pageSize}

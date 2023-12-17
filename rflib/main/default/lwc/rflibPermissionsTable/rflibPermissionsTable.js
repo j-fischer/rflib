@@ -38,6 +38,7 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     @api pageSize;
     @api isFieldPermissions;
     @api isProfilePermissions;
+    @api isUserMode;
 
     @api
     get currentPage() {
@@ -87,7 +88,12 @@ export default class RflibFieldPermissionsTable extends LightningElement {
 
     refreshEventList() {
         this.displayedPageIndex = this.currentPageIndex;
-        logger.debug('Display page with index {0}', this.currentPageIndex);
+        logger.debug(
+            'Display page with index {0} (isFieldPermission={1}, isUserMode={2})',
+            this.currentPageIndex,
+            this.isFieldPermissions,
+            this.isUserMode
+        );
 
         if (!this.isFieldPermissions) {
             this.fieldSearch = null;

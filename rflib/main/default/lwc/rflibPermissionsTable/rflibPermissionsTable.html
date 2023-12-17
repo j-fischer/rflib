@@ -37,14 +37,15 @@
                     class="sdls-col slds-size_3-of-12 slds-m-right_x-small"
                     onkeypress={handleSecurityObjectNameKeyPress}
                 >
-                    <lightning-input
-                        type="search"
-                        onchange={handleSecurityObjectNameChanged}
-                        variant="label-hidden"
-                        placeholder="Search profile/permission set name..."
-                        value={securityObjectNameSearch}
-                    >
-                    </lightning-input>
+                    <template if:false={isUserMode}>
+                        <lightning-input
+                            type="search"
+                            onchange={handleSecurityObjectNameChanged}
+                            variant="label-hidden"
+                            placeholder="Search profile/permission set name..."
+                            value={securityObjectNameSearch}
+                        ></lightning-input>
+                    </template>
                     <template if:true={isProfilePermissions}>
                         <c-rflib-user-profile-resolver onprofileselected={handleProfileSelected}>
                         </c-rflib-user-profile-resolver>
@@ -78,9 +79,7 @@
             </div>
             <template if:true={recordsToDisplay}>
                 <table
-                    class="
-                        slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout
-                    "
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
                 >
                     <thead>
                         <tr class="slds-text-heading_label">

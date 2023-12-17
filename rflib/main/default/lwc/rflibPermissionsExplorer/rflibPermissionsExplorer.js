@@ -33,6 +33,7 @@ import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_Permissi
 import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
 import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
 import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets';
+import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PERMISSION_TYPES = {
@@ -44,7 +45,7 @@ const PERMISSION_TYPES = {
     OBJECT_PERMISSIONS_PERMISSION_SETS: {
         id: '2',
         value: 'ObjectPermissionsPermissionSets',
-        label: 'Object Permission For Permission Sets'
+        label: 'Object Permission for Permission Sets'
     },
     FIELD_PERMISSIONS_PROFILES: {
         id: '3',
@@ -55,6 +56,16 @@ const PERMISSION_TYPES = {
         id: '4',
         value: 'FieldPermissionsPermissionSets',
         label: 'Field Permissions for Permission Sets'
+    },
+    OBJECT_PERMISSIONS_USER: {
+        id: '5',
+        value: 'ObjectPermissionsUser',
+        label: 'Object Permission for a User'
+    },
+    FIELD_PERMISSIONS_USER: {
+        id: '6',
+        value: 'FieldPermissionsUser',
+        label: 'Field Permissions for a User'
     }
 };
 
@@ -70,12 +81,26 @@ export default class PermissionsExplorer extends LightningElement {
     numDisplayedRecords;
     numTotalRecords;
 
+    userId = null;
     currentPermissionType = PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES;
     permissionRecords = [];
     isLoadingRecords = false;
     progressText = 'Loading Permissions';
 
     cache = {};
+
+    userFilter = {
+        criteria: [
+            {
+                fieldPath: 'IsActive',
+                operator: 'eq',
+                value: true
+            }
+        ]
+    };
+    userMatchingInfo = {
+        primaryField: { fieldPath: 'Name' }
+    };
 
     connectedCallback() {
         this.loadPermissions();
@@ -95,13 +120,22 @@ export default class PermissionsExplorer extends LightningElement {
         );
     }
 
+    get isUserModeSelected() {
+        return (
+            this.currentPermissionType === PERMISSION_TYPES.OBJECT_PERMISSIONS_USER ||
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
+        );
+    }
+
     get permissionTypes() {
         const permissionTypes = JSON.parse(
             JSON.stringify([
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES,
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SETS,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES,
-                PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS
+                PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS,
+                PERMISSION_TYPES.OBJECT_PERMISSIONS_USER,
+                PERMISSION_TYPES.FIELD_PERMISSIONS_USER
             ])
         );
 
@@ -155,12 +189,28 @@ export default class PermissionsExplorer extends LightningElement {
                 remoteAction = getFieldLevelSecurityForAllPermissionSets;
                 break;
 
+            case PERMISSION_TYPES.OBJECT_PERMISSIONS_USER.value:
+                if (this.userId) {
+                    remoteAction = getObjectLevelSecurityForUser;
+                }
+                break;
+
+            case PERMISSION_TYPES.FIELD_PERMISSIONS_USER.value:
+                if (this.userId) {
+                    remoteAction = getObjectLevelSecurityForUser; //FIXME
+                }
+                break;
+
             default:
                 logger.error('Unknown permission type: ' + this.currentPermissionType.value);
         }
 
         this.permissionRecords = [];
         this.numTotalRecords = 0;
+
+        if (remoteAction === null) {
+            return;
+        }
 
         const loadingPermissionsLabel = 'Loading Permissions';
         this.progressText = loadingPermissionsLabel;
@@ -174,7 +224,9 @@ export default class PermissionsExplorer extends LightningElement {
                 loadingPermissionsLabel + ' (' + this.numTotalRecords + ' / ' + result.totalNumOfRecords + ')';
 
             if (result.nextRecordsUrl) {
-                return remoteAction({ servicePath: result.nextRecordsUrl }).then(retrievePermissionsCallback);
+                return remoteAction({ servicePath: result.nextRecordsUrl, userId: this.userId }).then(
+                    retrievePermissionsCallback
+                );
             }
 
             this.isLoadingRecords = false;
@@ -216,7 +268,7 @@ export default class PermissionsExplorer extends LightningElement {
                 return;
             }
 
-            remoteAction()
+            remoteAction({ userId: this.userId })
                 .then(retrievePermissionsCallback)
                 .then(() => {
                     logger.debug('Caching result');
@@ -294,7 +346,7 @@ export default class PermissionsExplorer extends LightningElement {
         element.setAttribute('download', this.currentPermissionType.value + '_' + new Date().toISOString() + '.csv');
 
         element.style.display = 'none';
-        
+
         let downloadContainer = this.template.querySelector('.download-container');
         downloadContainer.appendChild(element);
 
@@ -343,5 +395,12 @@ export default class PermissionsExplorer extends LightningElement {
     handlePageChange(event) {
         logger.debug('Page changed, current page={0}', event.detail);
         this.page = event.detail;
+    }
+
+    handleUserSelectionChanged(event) {
+        logger.debug('User selected, recordId={0}', event.detail.recordId);
+        this.userId = event.detail.recordId;
+
+        this.loadPermissions();
     }
 }
