@@ -81,7 +81,7 @@ export default class PermissionsExplorer extends LightningElement {
     numDisplayedRecords;
     numTotalRecords;
 
-    userId = null;
+    selectedUserId = null;
     currentPermissionType = PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES;
     permissionRecords = [];
     isLoadingRecords = false;
@@ -190,13 +190,13 @@ export default class PermissionsExplorer extends LightningElement {
                 break;
 
             case PERMISSION_TYPES.OBJECT_PERMISSIONS_USER.value:
-                if (this.userId) {
+                if (this.selectedUserId) {
                     remoteAction = getObjectLevelSecurityForUser;
                 }
                 break;
 
             case PERMISSION_TYPES.FIELD_PERMISSIONS_USER.value:
-                if (this.userId) {
+                if (this.selectedUserId) {
                     remoteAction = getObjectLevelSecurityForUser; //FIXME
                 }
                 break;
@@ -224,7 +224,7 @@ export default class PermissionsExplorer extends LightningElement {
                 loadingPermissionsLabel + ' (' + this.numTotalRecords + ' / ' + result.totalNumOfRecords + ')';
 
             if (result.nextRecordsUrl) {
-                return remoteAction({ servicePath: result.nextRecordsUrl, userId: this.userId }).then(
+                return remoteAction({ servicePath: result.nextRecordsUrl, userId: this.selectedUserId }).then(
                     retrievePermissionsCallback
                 );
             }
@@ -268,7 +268,7 @@ export default class PermissionsExplorer extends LightningElement {
                 return;
             }
 
-            remoteAction({ userId: this.userId })
+            remoteAction({ userId: this.selectedUserId })
                 .then(retrievePermissionsCallback)
                 .then(() => {
                     logger.debug('Caching result');
@@ -355,6 +355,66 @@ export default class PermissionsExplorer extends LightningElement {
         downloadContainer.removeChild(element);
     }
 
+    consolidatePermission() {
+        logger.debug('Consolidating permissions');
+
+        let consolidatedPermissions = {};
+        if (this.isFieldPermissions) {
+            let i;
+            for (i = 0; i < this.numTotalRecords; i++) {
+                let permission = this.permissionRecords[i];
+
+                let consolidatePermissionKey = permission.SobjectType + '|' + permission.Field;
+                if (!consolidatedPermissions[consolidatePermissionKey]) {
+                    consolidatedPermissions[consolidatePermissionKey] = {
+                        SecurityObjectName: permission.SecurityObjectName,
+                        SobjectType: permission.SobjectType,
+                        Field: permission.Field
+                    };
+                }
+
+                consolidatedPermissions[consolidatePermissionKey].PermissionsRead =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsRead || permission.PermissionsRead;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsEdit =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsEdit || permission.PermissionsEdit;
+            }
+        } else {
+            let i;
+            for (i = 0; i < this.numTotalRecords; i++) {
+                let permission = this.permissionRecords[i];
+
+                let consolidatePermissionKey = permission.SobjectType;
+                if (!consolidatedPermissions[consolidatePermissionKey]) {
+                    consolidatedPermissions[consolidatePermissionKey] = {
+                        SecurityObjectName: permission.SecurityObjectName,
+                        SobjectType: permission.SobjectType
+                    };
+                }
+
+                consolidatedPermissions[consolidatePermissionKey].PermissionsRead =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsRead || permission.PermissionsRead;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsCreate =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsCreate || permission.PermissionsCreate;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsEdit =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsEdit || permission.PermissionsEdit;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsDelete =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsDelete || permission.PermissionsDelete;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllRecords =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllRecords ||
+                    permission.PermissionsViewAllRecords;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsModifyAllRecords =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsModifyAllRecords ||
+                    permission.PermissionsModifyAllRecords;
+            }
+        }
+
+        this.permissionRecords = [];
+        Object.keys(consolidatedPermissions).forEach((key) => {
+            this.permissionRecords.push(consolidatedPermissions[key]);
+        });
+        this.numTotalRecords = this.permissionRecords.length;
+    }
+
     handlePrevious() {
         logger.debug('Navigate to previous page, current page={0}', this.page);
         if (this.page > 1) {
@@ -399,7 +459,7 @@ export default class PermissionsExplorer extends LightningElement {
 
     handleUserSelectionChanged(event) {
         logger.debug('User selected, recordId={0}', event.detail.recordId);
-        this.userId = event.detail.recordId;
+        this.selectedUserId = event.detail.recordId;
 
         this.loadPermissions();
     }

@@ -104,6 +104,11 @@
                         onchange={handleUserSelectionChanged}
                     >
                     </lightning-record-picker>
+                    <lightning-button
+                        type="submit"
+                        label="Consolidate Permissions"
+                        onclick={consolidatePermission}
+                    ></lightning-button>
                 </template>
                 <c-rflib-permissions-table
                     is-field-permissions={isFieldPermissions}
