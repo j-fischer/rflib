@@ -83,6 +83,7 @@ export default class PermissionsExplorer extends LightningElement {
     numTotalRecords;
 
     selectedUserId = null;
+    arePermissionsAggregated = false;
     currentPermissionType = PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES;
     permissionRecords = [];
     isLoadingRecords = false;
@@ -153,6 +154,14 @@ export default class PermissionsExplorer extends LightningElement {
 
     get hasRecords() {
         return this.numTotalRecords > 0;
+    }
+
+    get isUserNotSelected() {
+        return this.selectedUserId == null;
+    }
+
+    get isPermissionRecordsEmpty() {
+        return this.permissionRecords == null || this.permissionRecords.length === 0;
     }
 
     changePermissionType(event) {
@@ -345,7 +354,15 @@ export default class PermissionsExplorer extends LightningElement {
 
         let element = document.createElement('a');
         element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-        element.setAttribute('download', this.currentPermissionType.value + '_' + new Date().toISOString() + '.csv');
+
+        let fileName =
+            (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
+            this.currentPermissionType.value +
+            '_' +
+            new Date().toISOString() +
+            '.csv';
+
+        element.setAttribute('download', fileName);
 
         element.style.display = 'none';
 
@@ -412,11 +429,18 @@ export default class PermissionsExplorer extends LightningElement {
 
         logger.debug('Aggregated permissions: ' + JSON.stringify(consolidatedPermissions));
 
+        this.arePermissionsAggregated = true;
         this.permissionRecords = [];
         Object.keys(consolidatedPermissions).forEach((key) => {
             this.permissionRecords.push(consolidatedPermissions[key]);
         });
         this.numTotalRecords = this.permissionRecords.length;
+    }
+
+    resetPermission() {
+        logger.debug('resetPermission() invoked');
+        this.arePermissionsAggregated = false;
+        this.loadPermissions();
     }
 
     handlePrevious() {
@@ -462,8 +486,13 @@ export default class PermissionsExplorer extends LightningElement {
     }
 
     handleUserSelectionChanged(event) {
-        logger.debug('User selected, recordId={0}', event.detail.recordId);
-        this.selectedUserId = event.detail.recordId;
+        let newUserId = event.detail.recordId;
+        logger.debug('User selected, recordId={0}', newUserId);
+        this.selectedUserId = newUserId;
+
+        if (newUserId == null) {
+            delete this.cache[this.currentPermissionType.value];
+        }
 
         this.loadPermissions();
     }

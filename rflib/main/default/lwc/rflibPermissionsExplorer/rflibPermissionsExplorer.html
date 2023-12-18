@@ -82,6 +82,7 @@
                                     type="submit"
                                     label="Export to CSV"
                                     onclick={exportToCsv}
+                                    disabled={isPermissionRecordsEmpty}
                                 ></lightning-button>
                             </li>
                         </ul>
@@ -120,11 +121,22 @@
                                 ></lightning-record-picker>
                             </div>
                             <div class="slds-col slds-size_3-of-12 slds-m-right_x-small">
-                                <lightning-button
-                                    type="submit"
-                                    label="Aggregate Permissions"
-                                    onclick={aggregatePermission}
-                                ></lightning-button>
+                                <template lwc:if={arePermissionsAggregated}>
+                                    <lightning-button
+                                        type="submit"
+                                        label="Reset Permissions"
+                                        onclick={resetPermission}
+                                        disabled={isUserNotSelected}
+                                    ></lightning-button>
+                                </template>
+                                <template lwc:else>
+                                    <lightning-button
+                                        type="submit"
+                                        label="Aggregate Permissions"
+                                        onclick={aggregatePermission}
+                                        disabled={isUserNotSelected}
+                                    ></lightning-button>
+                                </template>
                             </div>
                             <div class="slds-col slds-size_6-of-12 slds-m-right_x-small">&nbsp;</div>
                         </div>
