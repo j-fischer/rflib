@@ -119,6 +119,21 @@ public with sharing class rflib_PermissionsExplorerController {
         }
     }
 
+    @AuraEnabled
+    public static QueryResult getFieldLevelSecurityForUser(String servicePath, String userId){
+        try {
+            LOGGER.info('getFieldLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
+            UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
+
+            return useRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
+                queryFieldPermissionsApex(FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve object level security for user', ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
+
     private static String getCompleteUserQueryCondition(UserPermissionsDetails userPermissionDetails) {
         List<String> permissionSetAndGroupIds = new List<String> ( userPermissionDetails.permissionSets );
         permissionSetAndGroupIds.addAll(userPermissionDetails.permissionSetGroups);

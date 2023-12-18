@@ -34,6 +34,7 @@ import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_Pe
 import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
 import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets';
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
+import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PERMISSION_TYPES = {
@@ -109,7 +110,8 @@ export default class PermissionsExplorer extends LightningElement {
     get isFieldPermissions() {
         return (
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES ||
-            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS ||
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
         );
     }
 
@@ -197,7 +199,7 @@ export default class PermissionsExplorer extends LightningElement {
 
             case PERMISSION_TYPES.FIELD_PERMISSIONS_USER.value:
                 if (this.selectedUserId) {
-                    remoteAction = getObjectLevelSecurityForUser; //FIXME
+                    remoteAction = getFieldLevelSecurityForUser;
                 }
                 break;
 
@@ -355,8 +357,8 @@ export default class PermissionsExplorer extends LightningElement {
         downloadContainer.removeChild(element);
     }
 
-    consolidatePermission() {
-        logger.debug('Consolidating permissions');
+    aggregatePermission() {
+        logger.debug('Aggregating permissions');
 
         let consolidatedPermissions = {};
         if (this.isFieldPermissions) {
@@ -407,6 +409,8 @@ export default class PermissionsExplorer extends LightningElement {
                     permission.PermissionsModifyAllRecords;
             }
         }
+
+        logger.debug('Aggregated permissions: ' + JSON.stringify(consolidatedPermissions));
 
         this.permissionRecords = [];
         Object.keys(consolidatedPermissions).forEach((key) => {
