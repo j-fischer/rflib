@@ -37,15 +37,13 @@
                     class="sdls-col slds-size_3-of-12 slds-m-right_x-small"
                     onkeypress={handleSecurityObjectNameKeyPress}
                 >
-                    <template if:false={isUserMode}>
-                        <lightning-input
-                            type="search"
-                            onchange={handleSecurityObjectNameChanged}
-                            variant="label-hidden"
-                            placeholder="Search profile/permission set name..."
-                            value={securityObjectNameSearch}
-                        ></lightning-input>
-                    </template>
+                    <lightning-input
+                        type="search"
+                        onchange={handleSecurityObjectNameChanged}
+                        variant="label-hidden"
+                        placeholder="Search profile/permission set name..."
+                        value={securityObjectNameSearch}
+                    ></lightning-input>
                     <template if:true={isProfilePermissions}>
                         <c-rflib-user-profile-resolver onprofileselected={handleProfileSelected}>
                         </c-rflib-user-profile-resolver>
