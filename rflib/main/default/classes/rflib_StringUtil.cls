@@ -110,11 +110,14 @@ public class rflib_StringUtil {
      * `IN` condition. 
      * 
      * @param  theList A list of strings.
-     * @return         A string representation of list in the format: ('elem1', 'elem2', ...)
+     * @return         A string representation of list in the format: ('elem1', 'elem2', ...) or ('') if list is null or empty.
      */
-    public static String convertListToString(List<String> theList) {
+    public static String convertListToStringForQuery(List<String> theList) {
+        if (theList == null || theList.isEmpty()) {
+            return '(\'\')';
+        }
+
         String result = '(';
-    
         for (String theString : theList) {
             if (result != '(') {
                 result += ',';
@@ -126,7 +129,6 @@ public class rflib_StringUtil {
         result += ')';
         return result;
     }
-                
     
     @SuppressWarnings('PMD.EmptyStatementBlock')
     private rflib_StringUtil() { }

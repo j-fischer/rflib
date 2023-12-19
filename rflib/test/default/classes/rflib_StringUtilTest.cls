@@ -120,13 +120,41 @@ private class rflib_StringUtilTest {
         System.assertEquals(1, rule3.compareTo(rule1));
     }
 
-   @IsTest
-   private static void testMaskingRules() {
-        // This test is for code coverage purposes only
-        Test.startTest();
-        System.assertNotEquals(null, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
-        Test.stopTest();
-   }
+    @IsTest
+    private static void testMaskingRules() {
+            // This test is for code coverage purposes only
+            Test.startTest();
+            System.assertNotEquals(null, rflib_StringUtil.replaceWithAllMaskingRules(SOURCE));
+            Test.stopTest();
+    }
+
+    @IsTest
+    private static void testConvertListToStringForQuery_NullList() {
+        List<String> testList = null;
+        String result = rflib_StringUtil.convertListToStringForQuery(testList);
+        System.assertEquals('(\'\')', result, 'The result should be (\'\') for a null list.');
+    }
+
+    @IsTest
+    private static void testConvertListToStringForQuery_EmptyList() {
+        List<String> testList = new List<String>();
+        String result = rflib_StringUtil.convertListToStringForQuery(testList);
+        System.assertEquals('(\'\')', result, 'The result should be (\'\') for an empty list.');
+    }
+
+    @IsTest
+    private static void testConvertListToStringForQuery_OneElementList() {
+        List<String> testList = new List<String>{'Test1'};
+        String result = rflib_StringUtil.convertListToStringForQuery(testList);
+        System.assertEquals('(\'Test1\')', result, 'The result should correctly format a single-element list.');
+    }
+
+    @IsTest
+    private static void testConvertListToStringForQuery_MultipleElementsList() {
+        List<String> testList = new List<String>{'Test1', 'Test2', 'Test3'};
+        String result = rflib_StringUtil.convertListToStringForQuery(testList);
+        System.assertEquals('(\'Test1\',\'Test2\',\'Test3\')', result, 'The result should correctly format a multi-element list.');
+    }
 
     private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
         return createRule(target, replacement, 1);

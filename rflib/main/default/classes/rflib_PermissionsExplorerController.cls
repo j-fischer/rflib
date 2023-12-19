@@ -115,7 +115,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 
@@ -130,7 +130,7 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 
@@ -138,9 +138,9 @@ public with sharing class rflib_PermissionsExplorerController {
         List<String> permissionSetAndGroupIds = new List<String> ( userPermissionDetails.permissionSets );
         permissionSetAndGroupIds.addAll(userPermissionDetails.permissionSetGroups);
 
-        String permissionSetsAsString = rflib_StringUtil.convertListToString(permissionSetAndGroupIds);
+        String permissionSetsAsQueryString = rflib_StringUtil.convertListToStringForQuery(permissionSetAndGroupIds);
 
-        return String.format(USER_QUERY_CONDITION, new String[] { '\'' + userPermissionDetails.profileId + '\'', permissionSetsAsString});
+        return String.format(USER_QUERY_CONDITION, new String[] { '\'' + userPermissionDetails.profileId + '\'', permissionSetsAsQueryString });
     }
 
     private static UserPermissionsDetails getUserPermissionsDetails(String userId) {
