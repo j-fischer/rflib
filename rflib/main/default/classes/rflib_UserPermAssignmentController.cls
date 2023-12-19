@@ -40,7 +40,7 @@ public with sharing class rflib_UserPermAssignmentController {
             return getUserPermissionAssignmentInfo(assignedUserIds, shouldBeAssigned);
         } catch (Exception ex) {
             LOGGER.error('Failed to get user permission assignments.', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 

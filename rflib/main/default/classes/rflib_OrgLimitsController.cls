@@ -42,7 +42,7 @@ public with sharing class rflib_OrgLimitsController {
             return result;
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve OrgLimits', ex);
-            throw new AuraHandledException(ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
 
