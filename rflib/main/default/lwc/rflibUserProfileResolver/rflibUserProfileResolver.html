@@ -74,14 +74,15 @@
                         <b>Fill out the search field and click Insert to set the profile in the search field.</b>
                     </div>
                     <div class="slds-col slds-size_8-of-12" onkeypress={handleFieldSearchKeyPress}>
-                        <lightning-input
-                            type="search"
+                        <lightning-record-picker
+                            label="Select a user"
+                            placeholder="Search Name..."
+                            object-api-name="User"
+                            filter={userFilter}
+                            matching-info={userMatchingInfo}
                             onchange={handleUserIdChanged}
-                            class="slds-m-bottom_small slds-m-right_small"
-                            variant="label-hidden"
-                            placeholder="User ID..."
                         >
-                        </lightning-input>
+                        </lightning-record-picker>
                     </div>
                 </div>
                 <!-- Modal/Popup Box LWC footer starts here -->

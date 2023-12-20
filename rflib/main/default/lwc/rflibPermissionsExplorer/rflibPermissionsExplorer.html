@@ -29,7 +29,7 @@
 <template>
     <div class="slds-page-header">
         <div class="download-container" lwc:dom="manual"></div>
-        
+
         <div if:true={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"
@@ -82,6 +82,7 @@
                                     type="submit"
                                     label="Export to CSV"
                                     onclick={exportToCsv}
+                                    disabled={isPermissionRecordsEmpty}
                                 ></lightning-button>
                             </li>
                         </ul>
@@ -94,28 +95,74 @@
     <div class="slds-grid">
         <div class="slds-col slds-size_1-of-1">
             <lightning-card>
-                <c-rflib-permissions-table
-                    is-field-permissions={isFieldPermissions}
-                    is-profile-permissions={isProfilePermissions}
-                    permission-records={permissionRecords}
-                    current-page={page}
-                    page-size={pageSize}
-                    onrefreshed={handleRefreshed}
+                <div
+                    class="slds-grid slds-grid_vertical-stretch"
+                    style="display: flex; flex-direction: column; height: 100%"
                 >
-                </c-rflib-permissions-table>
-                <div class="slds-m-around_medium">
-                    <c-rflib-paginator
-                        onprevious={handlePrevious}
-                        onnext={handleNext}
-                        onfirst={handleFirst}
-                        onlast={handleLast}
-                        ongotopage={handleGoToPage}
+                    <template if:true={isUserModeSelected}>
+                        <div
+                            class="slds-grid slds-m-left_medium"
+                            style="
+                                flex-grow: 1;
+                                display: flex;
+                                flex-direction: row;
+                                justify-content: start;
+                                align-items: end;
+                            "
+                        >
+                            <div class="slds-col slds-size_3-of-12 slds-m-right_x-small">
+                                <lightning-record-picker
+                                    label="Select a user"
+                                    placeholder="Search Name..."
+                                    object-api-name="User"
+                                    filter={userFilter}
+                                    matching-info={userMatchingInfo}
+                                    onchange={handleUserSelectionChanged}
+                                ></lightning-record-picker>
+                            </div>
+                            <div class="slds-col slds-size_3-of-12 slds-m-right_x-small">
+                                <template lwc:if={arePermissionsAggregated}>
+                                    <lightning-button
+                                        type="submit"
+                                        label="Reset Permissions"
+                                        onclick={resetPermission}
+                                        disabled={isUserNotSelected}
+                                    ></lightning-button>
+                                </template>
+                                <template lwc:else>
+                                    <lightning-button
+                                        type="submit"
+                                        label="Aggregate Permissions"
+                                        onclick={aggregatePermission}
+                                        disabled={isUserNotSelected}
+                                    ></lightning-button>
+                                </template>
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 slds-m-right_x-small">&nbsp;</div>
+                        </div>
+                    </template>
+                    <c-rflib-permissions-table
+                        is-field-permissions={isFieldPermissions}
+                        is-profile-permissions={isProfilePermissions}
+                        is-user-mode={isUserModeSelected}
+                        permission-records={permissionRecords}
                         current-page={page}
-                        total-records={numDisplayedRecords}
                         page-size={pageSize}
-                        should-display-page-selection="true"
-                    >
-                    </c-rflib-paginator>
+                        onrefreshed={handleRefreshed}
+                    ></c-rflib-permissions-table>
+                    <div class="slds-m-around_medium">
+                        <c-rflib-paginator
+                            onprevious={handlePrevious}
+                            onnext={handleNext}
+                            onfirst={handleFirst}
+                            onlast={handleLast}
+                            ongotopage={handleGoToPage}
+                            current-page={page}
+                            total-records={numDisplayedRecords}
+                            page-size={pageSize}
+                            should-display-page-selection="true"
+                        ></c-rflib-paginator>
+                    </div>
                 </div>
             </lightning-card>
         </div>

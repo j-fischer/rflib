@@ -43,8 +43,7 @@
                         variant="label-hidden"
                         placeholder="Search profile/permission set name..."
                         value={securityObjectNameSearch}
-                    >
-                    </lightning-input>
+                    ></lightning-input>
                     <template if:true={isProfilePermissions}>
                         <c-rflib-user-profile-resolver onprofileselected={handleProfileSelected}>
                         </c-rflib-user-profile-resolver>
@@ -78,9 +77,7 @@
             </div>
             <template if:true={recordsToDisplay}>
                 <table
-                    class="
-                        slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout
-                    "
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
                 >
                     <thead>
                         <tr class="slds-text-heading_label">

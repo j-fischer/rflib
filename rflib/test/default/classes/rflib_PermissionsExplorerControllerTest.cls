@@ -30,8 +30,8 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_PermissionsExplorerControllerTest {
     
-    private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v51.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}';
-    private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v51.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}';
+    private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v51.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}'; // cspell:disable-line
+    private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v51.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}'; // cspell:disable-line
     private static final String ERR_RESPONSE = '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]';
 
     private static final String FLS_PROFILE_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
@@ -44,6 +44,11 @@ private class rflib_PermissionsExplorerControllerTest {
         + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
         + rflib_PermissionsExplorerController.FLS_ORDER;
     
+    private static final String FLS_USER_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
+        + rflib_PermissionsExplorerController.FLS_TABLE
+        + rflib_PermissionsExplorerController.USER_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.FLS_ORDER;
+    
     private static final String OBJ_PROFILE_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
         + rflib_PermissionsExplorerController.OBJ_TABLE
         + rflib_PermissionsExplorerController.PROFILE_QUERY_CONDITION
@@ -52,6 +57,11 @@ private class rflib_PermissionsExplorerControllerTest {
     private static final String OBJ_PERMISSION_SET_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
         + rflib_PermissionsExplorerController.OBJ_TABLE
         + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.OBJ_ORDER;
+
+    private static final String OBJ_USER_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
+        + rflib_PermissionsExplorerController.OBJ_TABLE
+        + rflib_PermissionsExplorerController.USER_QUERY_CONDITION
         + rflib_PermissionsExplorerController.OBJ_ORDER;
 
     private static final String ENDPOINT = 'callout:rflib_SF_REST_API';
@@ -83,8 +93,8 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            49999, 
-            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT 49999')
+            49997, 
+            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT 49997')
         );
 
         Test.startTest();
@@ -184,7 +194,7 @@ private class rflib_PermissionsExplorerControllerTest {
         FROM FieldPermissions 
         WHERE Parent.IsOwnedByProfile = false 
         ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-        LIMIT 49999].size(), records.size());
+        LIMIT 49997].size(), records.size());
     }
 
     @IsTest
@@ -213,6 +223,51 @@ private class rflib_PermissionsExplorerControllerTest {
     }
 
     @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityUser_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, UserInfo.getUserId());
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertUserPermissions(records);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityForUser_Fails() {
+        setup(true);
+        
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(
+            String.format(FLS_USER_QUERY, new String[] { '\'' + UserInfo.getProfileId() + '\'', getPermissionSetsAsQueryString()}), 
+            'UTF-8'
+        ));
+        HttpResponse resp = createResponse(OBJ_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, UserInfo.getUserId());
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
     private static void testGetObjectLevelSecurityForAllProfiles_RestApiDisabled() {
         setup(false);
@@ -231,8 +286,8 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            49999, 
-            Database.query(OBJ_PROFILE_QUERY + ' LIMIT 49999')
+            49997, 
+            Database.query(OBJ_PROFILE_QUERY + ' LIMIT 49997')
         );
 
         Test.startTest();
@@ -337,6 +392,58 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.stopTest();
     }
 
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityUser_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, UserInfo.getUserId());
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertUserPermissions(records);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityForUser_Fails() {
+        setup(true);
+        
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            50000, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(
+            String.format(OBJ_USER_QUERY, new String[] { '\'' + UserInfo.getProfileId() + '\'', getPermissionSetsAsQueryString()}), 
+            'UTF-8'
+        ));
+        HttpResponse resp = createResponse(OBJ_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, UserInfo.getUserId());
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    private static void assertUserPermissions(List<rflib_PermissionsExplorerController.PermissionInfo> records) {
+        System.assert(records.size() > 0);
+        
+        String profileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId()].Name;
+        System.assert(containsPermissionsForProfile(records, profileName), 'The profile for the current user was not returned by the User search');
+    }
+
     private static void assertObjectPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
         System.assert(records.size() > 0);
 
@@ -355,6 +462,30 @@ private class rflib_PermissionsExplorerControllerTest {
         System.assertEquals(expectedSecurityType, info.securityType);
         System.assertNotEquals(null, info.PermissionsRead);
         System.assertNotEquals(null, info.PermissionsEdit);
+    }
+
+    private static Boolean containsPermissionsForProfile(List<rflib_PermissionsExplorerController.PermissionInfo> myObjectList, String profileName) {
+        for (rflib_PermissionsExplorerController.PermissionInfo item : myObjectList) {
+            if (item.SecurityType == 'Profile' && item.SecurityObjectName == profileName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String getPermissionSetsAsQueryString() {
+        List<PermissionSetAssignment> permSetAssignments = [SELECT PermissionSet.Name, PermissionSet.IsOwnedByProfile, PermissionSet.Label FROM PermissionSetAssignment WHERE AssigneeId = :UserInfo.getUserId()];
+        List<String> permSetIds = new List<String>();
+        for (PermissionSetAssignment psa : permSetAssignments) {
+            if (psa.PermissionSet?.IsOwnedByProfile) {
+                // Skip as it's part of the profile
+                continue;
+            }
+            
+            permSetIds.add(psa.PermissionSetId != null ? psa.PermissionSetId : psa.PermissionSetGroupId);
+        }
+
+        return rflib_StringUtil.convertListToStringForQuery(permSetIds);
     }
 
     private static HttpResponse createResponse(String body) {
