@@ -57,8 +57,8 @@
                     <div class="slds-form-element">
                         <span class="slds-form-element__label">Created By</span>
                         <div class="slds-form-element__control slds-border_bottom">
-                            <template if:false={user.id}>
-                                <div class="slds-form-element__static">{createdBy}</div>
+                            <template lwc:if={isUserInfoNotAvailable}>
+                                <div class="slds-form-element__static">User ID: {createdBy}</div>
                             </template>
                             <template lwc:if={user.id}>
                                 <div class="slds-form-element__static slds-grid">

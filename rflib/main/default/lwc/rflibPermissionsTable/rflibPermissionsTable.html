@@ -97,7 +97,7 @@
                             <th scope="col">
                                 <div class="slds-truncate" title="Read Access">Read Access</div>
                             </th>
-                            <template if:false={isFieldPermissions}>
+                            <template lwc:if={isObjectPermissions}>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Create Access">Create Access</div>
                                 </th>
@@ -105,7 +105,7 @@
                             <th scope="col">
                                 <div class="slds-truncate" title="Edit Access">Edit Access</div>
                             </th>
-                            <template if:false={isFieldPermissions}>
+                            <template lwc:if={isObjectPermissions}>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Delete Access">Delete Access</div>
                                 </th>
@@ -137,7 +137,7 @@
                                 <td>
                                     <div class="slds-truncate">{rec.PermissionsRead}</div>
                                 </td>
-                                <template if:false={isFieldPermissions}>
+                                <template lwc:if={isObjectPermissions}>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsCreate}</div>
                                     </td>
@@ -145,7 +145,7 @@
                                 <td>
                                     <div class="slds-truncate">{rec.PermissionsEdit}</div>
                                 </td>
-                                <template if:false={isFieldPermissions}>
+                                <template lwc:if={isObjectPermissions}>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsDelete}</div>
                                     </td>

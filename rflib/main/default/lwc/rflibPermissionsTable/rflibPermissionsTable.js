@@ -74,6 +74,10 @@ export default class RflibFieldPermissionsTable extends LightningElement {
         return this.filteredRecordCount + ' Displayed Permissions';
     }
 
+    get isObjectPermissions() {
+        return !this.isFieldPermissions;
+    }
+
     totalPages = 1;
     currentPageIndex = 0;
     displayedPageIndex;

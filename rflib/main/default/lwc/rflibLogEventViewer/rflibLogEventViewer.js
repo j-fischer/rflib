@@ -95,6 +95,10 @@ export default class LogEventViewer extends LightningElement {
         return !!this.logEvent;
     }
 
+    get isUserInfoNotAvailable() {
+        return !this.user.id;
+    }
+
     get platformInfo() {
         const platformInfo = JSON.parse(this.logEvent.Platform_Info__c) || {};
         const result = Object.keys(platformInfo).map((key, index) => {
@@ -133,7 +137,7 @@ export default class LogEventViewer extends LightningElement {
         );
 
         element.style.display = 'none';
-        
+
         let downloadContainer = this.template.querySelector('.download-container');
         downloadContainer.appendChild(element);
 
