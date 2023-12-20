@@ -48,7 +48,7 @@
             ></lightning-button>
         </lightning-layout-item>
         <lightning-layout-item flexibility="grow">
-            <template if:true={shouldDisplayPageSelection}>
+            <template lwc:if={shouldDisplayPageSelection}>
                 <div class="slds-text-align_center">
                     <label class="slds-text-color_weak slds-p-horizontal_x-small" for="pageNum">Page:</label>
                     <input

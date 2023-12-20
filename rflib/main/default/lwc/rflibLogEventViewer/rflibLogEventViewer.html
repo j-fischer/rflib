@@ -27,7 +27,7 @@
     * POSSIBILITY OF SUCH DAMAGE.
     -->
 <template>
-    <lightning-card title={title} icon-name="utility:summarydetail" if:true={hasEvent}>
+    <lightning-card title={title} icon-name="utility:summarydetail" lwc:if={hasEvent}>
         <div class="download-container" lwc:dom="manual"></div>
 
         <div slot="actions">
@@ -60,7 +60,7 @@
                             <template if:false={user.id}>
                                 <div class="slds-form-element__static">{createdBy}</div>
                             </template>
-                            <template if:true={user.id}>
+                            <template lwc:if={user.id}>
                                 <div class="slds-form-element__static slds-grid">
                                     <div class="slds-col slds-size_1-of-2">
                                         <div>Name: {name}</div>
@@ -90,13 +90,7 @@
                         <div class="slds-form-element__control slds-border_bottom">
                             <div class="slds-form-element__static slds-scrollable_y platformDetails">
                                 <table
-                                    class="
-                                        slds-table
-                                        slds-table_cell-buffer
-                                        slds-table_bordered
-                                        slds-table_fixed-layout
-                                        slds-table_striped
-                                    "
+                                    class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped"
                                     aria-label="Platform Info"
                                 >
                                     <thead>

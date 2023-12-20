@@ -61,7 +61,7 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
-                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-input
                                     type="datetime"
                                     name="startDate"
@@ -71,7 +71,7 @@
                                 >
                                 </lightning-input>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-input
                                     type="datetime"
                                     name="endDate"
@@ -81,18 +81,18 @@
                                 >
                                 </lightning-input>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
                                 <button class="slds-button slds-button_neutral" onclick={queryArchive}>
                                     Query Archive
                                 </button>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-button-menu icon-name="utility:settings">
                                     <lightning-menu-item label="Clear Archive" onclick={clearArchive}>
                                     </lightning-menu-item>
                                 </lightning-button-menu>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" if:true={isArchiveMode}>
+                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-icon icon-name="utility:threedots_vertical"></lightning-icon>
                             </li>
                             <li class="slds-m-horizontal_xx-small">
@@ -147,7 +147,7 @@
             </lightning-card>
         </div>
         <div class="slds-col slds-size_5-of-12 container">
-            <template if:true={hasLogEvent}>
+            <template lwc:if={hasLogEvent}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
                     user-id={selectedLogEventCreatedById}

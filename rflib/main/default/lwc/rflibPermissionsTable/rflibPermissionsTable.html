@@ -44,7 +44,7 @@
                         placeholder="Search profile/permission set name..."
                         value={securityObjectNameSearch}
                     ></lightning-input>
-                    <template if:true={isProfilePermissions}>
+                    <template lwc:if={isProfilePermissions}>
                         <c-rflib-user-profile-resolver onprofileselected={handleProfileSelected}>
                         </c-rflib-user-profile-resolver>
                     </template>
@@ -59,7 +59,7 @@
                     >
                     </lightning-input>
                 </div>
-                <template if:true={isFieldPermissions}>
+                <template lwc:if={isFieldPermissions}>
                     <div class="slds-col slds-size_4-of-12" onkeypress={handleFieldSearchKeyPress}>
                         <lightning-input
                             type="search"
@@ -75,7 +75,7 @@
                     <lightning-button type="submit" label="Search" onclick={executeSearch}> </lightning-button>
                 </div>
             </div>
-            <template if:true={recordsToDisplay}>
+            <template lwc:if={recordsToDisplay}>
                 <table
                     class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
                 >
@@ -89,7 +89,7 @@
                             <th scope="col">
                                 <div class="slds-truncate" title="Object">Object</div>
                             </th>
-                            <template if:true={isFieldPermissions}>
+                            <template lwc:if={isFieldPermissions}>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Field">Field</div>
                                 </th>
@@ -129,7 +129,7 @@
                                 <td class="slds-truncate">
                                     <div>{rec.SobjectType}</div>
                                 </td>
-                                <template if:true={isFieldPermissions}>
+                                <template lwc:if={isFieldPermissions}>
                                     <td class="slds-truncate">
                                         <div>{rec.Field}</div>
                                     </td>

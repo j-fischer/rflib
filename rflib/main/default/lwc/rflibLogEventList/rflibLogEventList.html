@@ -70,11 +70,9 @@
                     </lightning-input>
                 </div>
             </div>
-            <template if:true={eventsToDisplay}>
+            <template lwc:if={eventsToDisplay}>
                 <table
-                    class="
-                        slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout
-                    "
+                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
                 >
                     <thead>
                         <tr class="slds-text-heading_label">

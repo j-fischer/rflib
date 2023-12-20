@@ -30,7 +30,7 @@
     <div class="slds-page-header">
         <div class="download-container" lwc:dom="manual"></div>
 
-        <div if:true={isLoadingRecords}>
+        <div lwc:if={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"
                 size="large"
@@ -99,7 +99,7 @@
                     class="slds-grid slds-grid_vertical-stretch"
                     style="display: flex; flex-direction: column; height: 100%"
                 >
-                    <template if:true={isUserModeSelected}>
+                    <template lwc:if={isUserModeSelected}>
                         <div
                             class="slds-grid slds-m-left_medium"
                             style="

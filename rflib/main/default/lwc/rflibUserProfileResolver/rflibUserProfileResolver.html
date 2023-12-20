@@ -39,8 +39,8 @@
         class="slds-m-left_x-small"
     >
     </lightning-button>
-    <!--Use template if:true to display/hide popup based on isModalOpen value-->
-    <template if:true={isModalOpen}>
+    <!--Use template lwc:if to display/hide popup based on isModalOpen value-->
+    <template lwc:if={isModalOpen}>
         <!-- Modal/Popup Box LWC starts here -->
         <section
             role="dialog"
