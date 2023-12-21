@@ -35,7 +35,8 @@ import { createLogger } from 'c/rflibLogger';
 const logger = createLogger('FieldPermissionsTable');
 
 export default class RflibFieldPermissionsTable extends LightningElement {
-    @api pageSize;
+    _pageSize;
+
     @api isFieldPermissions;
     @api isProfilePermissions;
     @api isUserMode;
@@ -59,6 +60,16 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
     set permissionRecords(value) {
         this.allRecords = value;
+        this.refreshEventList();
+    }
+
+    @api
+    get pageSize() {
+        return this._pageSize;
+    }
+    set pageSize(value) {
+        this._pageSize = value;
+        this.currentPageIndex = 0;
         this.refreshEventList();
     }
 
@@ -124,10 +135,10 @@ export default class RflibFieldPermissionsTable extends LightningElement {
         logger.debug('Filtered records count {0}', this.filteredRecordCount);
 
         if (this.filteredRecordCount > 0) {
-            this.totalPages = Math.ceil(this.filteredRecordCount / this.pageSize);
+            this.totalPages = Math.ceil(this.filteredRecordCount / this._pageSize);
 
-            const startIndex = this.currentPageIndex * this.pageSize;
-            this.recordsToDisplay = this.filteredRecords.slice(startIndex, startIndex + this.pageSize);
+            const startIndex = this.currentPageIndex * this._pageSize;
+            this.recordsToDisplay = this.filteredRecords.slice(startIndex, startIndex + this._pageSize);
         } else {
             this.recordsToDisplay = [];
             this.totalPages = 1;

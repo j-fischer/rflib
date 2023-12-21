@@ -37,6 +37,29 @@ import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExp
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 
 const DEFAULT_PAGE_SIZE = 10;
+const PAGE_SIZES = [
+    {
+        id: '1',
+        value: 10,
+        label: '10'
+    },
+    {
+        id: '2',
+        value: 25,
+        label: '25'
+    },
+    {
+        id: '3',
+        value: 50,
+        label: '50'
+    },
+    {
+        id: '4',
+        value: 100,
+        label: '100'
+    }
+];
+
 const PERMISSION_TYPES = {
     OBJECT_PERMISSIONS_PROFILES: {
         id: '1',
@@ -128,6 +151,19 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType === PERMISSION_TYPES.OBJECT_PERMISSIONS_USER ||
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
         );
+    }
+
+    get pageSizes() {
+        const pageSizes = JSON.parse(JSON.stringify(PAGE_SIZES));
+
+        let i,
+            len = pageSizes.length;
+        for (i = 0; i < len; i++) {
+            const menuItem = pageSizes[i];
+            menuItem.checked = this.pageSize !== null && menuItem.value === this.pageSize;
+        }
+
+        return pageSizes;
     }
 
     get permissionTypes() {
@@ -496,5 +532,12 @@ export default class PermissionsExplorer extends LightningElement {
         this.selectedUserId = newUserId;
 
         this.loadPermissions();
+    }
+
+    handlePageSizeChanged(event) {
+        const newPageSize = parseInt(event.detail.value, 10);
+        logger.debug('New page size selected: pageSize=' + newPageSize);
+
+        this.pageSize = newPageSize;
     }
 }

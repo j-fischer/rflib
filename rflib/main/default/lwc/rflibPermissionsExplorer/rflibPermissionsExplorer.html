@@ -85,6 +85,25 @@
                                     disabled={isPermissionRecordsEmpty}
                                 ></lightning-button>
                             </li>
+                            <li class="slds-m-horizontal_xx-small">
+                                <lightning-button-menu
+                                    variant="border-filled"
+                                    icon-name="utility:settings"
+                                    menu-alignment="right"
+                                    onselect={handlePageSizeChanged}
+                                    alternative-text="Select page size"
+                                >
+                                    <template for:each={pageSizes} for:item="menuItem">
+                                        <lightning-menu-item
+                                            key={menuItem.id}
+                                            value={menuItem.value}
+                                            label={menuItem.label}
+                                            checked={menuItem.checked}
+                                        >
+                                        </lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </li>
                         </ul>
                     </div>
                 </div>
