@@ -227,7 +227,11 @@ export default class PermissionsExplorer extends LightningElement {
         this.progressText = loadingPermissionsLabel;
 
         const retrievePermissionsCallback = (result) => {
-            logger.debug('Received field permission records: nextRecordsUrl={0}', result.nextRecordsUrl);
+            logger.debug(
+                'Received field permission records: numberOfRecord={0}, nextRecordsUrl={1}',
+                result.records.length,
+                result.nextRecordsUrl
+            );
             this.permissionRecords = this.permissionRecords.concat(result.records);
             this.numTotalRecords = this.permissionRecords.length;
 

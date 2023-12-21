@@ -30,8 +30,8 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_PermissionsExplorerControllerTest {
     
-    private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v51.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}'; // cspell:disable-line
-    private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v51.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v51.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v51.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}'; // cspell:disable-line
+    private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v59.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v59.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v59.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}'; // cspell:disable-line
+    private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v59.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v59.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v59.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}'; // cspell:disable-line
     private static final String ERR_RESPONSE = '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]';
 
     private static final String FLS_PROFILE_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
@@ -65,7 +65,7 @@ private class rflib_PermissionsExplorerControllerTest {
         + rflib_PermissionsExplorerController.OBJ_ORDER;
 
     private static final String ENDPOINT = 'callout:rflib_SF_REST_API';
-    private static final String ENDPOINT_PATH = '/services/data/v51.0/query?q=';
+    private static final String ENDPOINT_PATH = '/services/data/v59.0/query?q=';
     private static final String METHOD = 'GET';
 
     private static void setup(Boolean isRestApiEnabled) {
@@ -89,12 +89,12 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
-    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_ResultOfLessThanMaxRecordLimitUsesApex() {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            49997, 
-            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT 49997')
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT, 
+            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
         );
 
         Test.startTest();
@@ -107,11 +107,11 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
-    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_ResultOfMoreThanMaxRecordLimitUsesRest() {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -132,11 +132,11 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
-    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest_RequestFails() {
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiEnabled_ResultOfMoreThanMaxRecordLimitUsesRest_RequestFails() {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -161,7 +161,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -194,7 +194,7 @@ private class rflib_PermissionsExplorerControllerTest {
         FROM FieldPermissions 
         WHERE Parent.IsOwnedByProfile = false 
         ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
-        LIMIT 49997].size(), records.size());
+        LIMIT :rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT].size(), records.size());
     }
 
     @IsTest
@@ -203,7 +203,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -241,7 +241,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
         
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -282,12 +282,12 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
-    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_LessThan50kRecordsUsesApex() {
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_ResultOfLessThanMaxRecordLimitUsesApex() {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            49997, 
-            Database.query(OBJ_PROFILE_QUERY + ' LIMIT 49997')
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT, 
+            Database.query(OBJ_PROFILE_QUERY + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
         );
 
         Test.startTest();
@@ -300,11 +300,11 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
-    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_MoreThan50kRecordsUsesRest() {
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiEnabled_ResultOfMoreThanMaxRecordLimitUsesRest() {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -327,7 +327,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
 
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -369,7 +369,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
         
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 
@@ -411,7 +411,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(true);
         
         rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
-            50000, 
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
             null
         );
 

@@ -34,6 +34,8 @@ public with sharing class rflib_PermissionsExplorerController {
     private static final String FLS_SEARCH_TYPE = 'FLS';
     private static final String OBJ_SEARCH_TYPE = 'OBJ';
     
+    @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 49995;
+    
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead';
     @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
@@ -183,7 +185,7 @@ public with sharing class rflib_PermissionsExplorerController {
         String fieldSelection = isFlsSearch ? FLS_FIELDS : OBJ_FIELDS;
         String tableName = isFlsSearch ? FLS_TABLE : OBJ_TABLE;
         String sortOrder = isFlsSearch ? FLS_ORDER : OBJ_ORDER;
-        String query = fieldSelection + tableName + condition + sortOrder + ' LIMIT 49997';
+        String query = fieldSelection + tableName + condition + sortOrder + ' LIMIT ' + APEX_QUERY_RECORD_LIMIT;
 
         LOGGER.debug('Final query: ' + query);
 
@@ -200,13 +202,13 @@ public with sharing class rflib_PermissionsExplorerController {
 
         Integer totalNumOfRecords = queryExecutor.countQuery(COUNT + tableName + condition);
         
-        if (totalNumOfRecords < 50000) {
+        if (totalNumOfRecords <= APEX_QUERY_RECORD_LIMIT) {
             LOGGER.info('Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
             return queryFieldPermissionsApex(searchType, condition);
         }
         
         String query = fieldSelection + tableName + condition + sortOrder;
-        String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v51.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
+        String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v59.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
         
         rflib_HttpRequest req = new rflib_HttpRequest();        
         req.setEndpoint('callout:rflib_SF_REST_API' + urlPath);
@@ -220,6 +222,7 @@ public with sharing class rflib_PermissionsExplorerController {
         }
             
         QueryResult result = (QueryResult) JSON.deserialize(res.getBody(), QueryResult.class);
+        LOGGER.info('REST results received: size=' + result.records.size());
         result.totalNumOfRecords = totalNumOfRecords;
 
         if (searchType == FLS_SEARCH_TYPE) {
