@@ -293,7 +293,7 @@ module.exports = function(grunt) {
             },
 
             'force-create-org-default-preview': {
-                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
+                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
             },
 
             'force-create-org': {
@@ -301,7 +301,7 @@ module.exports = function(grunt) {
             },
 
             'force-create-org-preview': {
-                command: 'sf org create scratch -f config/project-scratch-def-preview.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
+                command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --release=preview'
             },
 
             'force-delete-org': {
