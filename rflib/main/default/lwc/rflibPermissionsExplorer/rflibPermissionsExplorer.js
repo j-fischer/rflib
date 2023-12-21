@@ -273,7 +273,8 @@ export default class PermissionsExplorer extends LightningElement {
             // The cached responses for a permission type instead of making the HTTP requests.
             // Using timeout to guarantee rendering of spinner widget, which may not happen if the browser accesses
 
-            const cachedRecords = this.cache[this.currentPermissionType.value];
+            const cacheKey = this.currentPermissionType.value + (this.selectedUserId || '');
+            const cachedRecords = this.cache[cacheKey];
             if (cachedRecords) {
                 logger.debug('Using cached value');
                 this.permissionRecords = cachedRecords;
@@ -287,7 +288,7 @@ export default class PermissionsExplorer extends LightningElement {
                 .then(retrievePermissionsCallback)
                 .then(() => {
                     logger.debug('Caching result');
-                    this.cache[this.currentPermissionType.value] = this.permissionRecords;
+                    this.cache[cacheKey] = this.permissionRecords;
                 })
                 .catch((error) => {
                     logger.error(
@@ -493,10 +494,6 @@ export default class PermissionsExplorer extends LightningElement {
         let newUserId = event.detail.recordId;
         logger.debug('User selected, recordId={0}', newUserId);
         this.selectedUserId = newUserId;
-
-        if (newUserId == null) {
-            delete this.cache[this.currentPermissionType.value];
-        }
 
         this.loadPermissions();
     }
