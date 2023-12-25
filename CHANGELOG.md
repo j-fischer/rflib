@@ -1,3 +1,15 @@
+### RFLIB 6.2.0
+
+Package ID: 04t3h000004pOt1AAE
+Package Alias: RFLIB@6.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOt1AAE
+
+-   [PR #80](https://github.com/j-fischer/rflib/pull/80) Permission Explorer: Added new mode to display object and field permissions for a specific user.
+-   Permission Explorer: Added user search to User Profile lookup.
+-   Permission Explorer: Changed API version for the REST API to v59.0 which fixes some gaps in the permission retrieval.
+-   Permission Explorer: Added button to select page size.
+-   Replaced all deprecated `if:true` and `if:false` directives with `lwc:if`.
+
 ### RFLIB 6.1.2
 
 Package ID: 04t3h000004pOrKAAU
