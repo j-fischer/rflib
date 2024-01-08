@@ -8,7 +8,7 @@ package.xml
 **/appMenus/**
 **/applictions/standard__*
 
-rflib/main/default/apexEmailNotifications
+rflib/main/default/apexEmailNotifications/apexEmailNotifications.notifications-meta.xml
 rflib/main/default/permissionsets/Functions.permissionset-meta.xml
 
 # LWC configuration files
