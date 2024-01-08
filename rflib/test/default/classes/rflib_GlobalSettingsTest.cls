@@ -87,4 +87,31 @@ private class rflib_GlobalSettingsTest {
         }
         Test.stopTest();
     }
+
+    @IsTest
+    static void testDaysToRetainApplicationEvents() {
+        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days').Value__c);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.daysToRetainApplicationEvents);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testArchiveLogQueryLimit() {
+        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Archive_Log_Query_Limit').Value__c);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.archiveLogQueryLimit);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testUseRestQueryModeForPermissionRetrieval() {
+        Boolean expectedValue = Boolean.valueOf(rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled').Value__c);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.useRestQueryModeForPermissionRetrieval);
+        Test.stopTest();
+    }
 }

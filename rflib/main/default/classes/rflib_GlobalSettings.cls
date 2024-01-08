@@ -31,19 +31,47 @@
  * @group Common
  * @description Provides values for any rflib related global settings.
  */ 
- @SuppressWarnings('PMD.ClassNamingConventions')
+@SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_GlobalSettings {
+    
+    public static Integer daysToRetainApplicationEvents {
+        get {
+            String val = getSetting('Application_Event_Retain_X_Days');
+            return val == null ? null : Integer.valueOf(val);
+        }
+    }
+    
+    public static Integer archiveLogQueryLimit {
+        get {
+            String val = getSetting('Archive_Log_Query_Limit');
+            return val == null ? null : Integer.valueOf(val);
+        }
+    }
 
+    public static Boolean useRestQueryModeForPermissionRetrieval {
+        get {
+            String val = getSetting('Permissions_Explorer_REST_API_Enabled');
+            return val == null ? false : Boolean.valueOf(val);
+        }
+    }
+        
+    public static Integer publishingLimit {
+        get {
+            String val = getSetting('Publish_Platform_Event_Transaction_Limit');
+            return val == null ? null : Integer.valueOf(val);
+        }
+    }
+    
     public static String traceIdHeaderName {
         get {
             return getSetting('Trace_ID_Header_Name');
         }
     }
-
-    public static Integer publishingLimit {
+    
+    public static Boolean useOrgWideEmailAddress {
         get {
-            String val = getSetting('Publish_Platform_Event_Transaction_Limit');
-            return val == null ? null : Integer.valueOf(val);
+            String val = getSetting('Use_Org_Wide_Email_Address');
+            return val == null ? true : Boolean.valueOf(val);
         }
     }
 
