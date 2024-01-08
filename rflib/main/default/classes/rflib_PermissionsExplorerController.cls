@@ -50,15 +50,13 @@ public with sharing class rflib_PermissionsExplorerController {
     @TestVisible private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
     @TestVisible private static final String OBJ_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType'; 
 
-    @TestVisible private static rflib_Global_Setting__mdt queryMode = rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled');
-
     @TestVisible private static rflib_QueryExecutor queryExecutor  = new rflib_DatabaseQueryExecutor();
 
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllProfiles(String servicePath){
         try {
             LOGGER.info('getFieldLevelSecurityForAllProfiles: servicePath=' + servicePath);
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
@@ -71,7 +69,7 @@ public with sharing class rflib_PermissionsExplorerController {
     public static QueryResult getFieldLevelSecurityForAllPermissionSets(String servicePath) {
         try {
             LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
@@ -84,7 +82,7 @@ public with sharing class rflib_PermissionsExplorerController {
     public static QueryResult getObjectLevelSecurityForAllProfiles(String servicePath){
         try {
             LOGGER.info('getObjectLevelSecurityForAllProfiles: servicePath=' + servicePath);
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
@@ -97,7 +95,7 @@ public with sharing class rflib_PermissionsExplorerController {
     public static QueryResult getObjectLevelSecurityForAllPermissionSets(String servicePath){
         try {
             LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
@@ -112,7 +110,7 @@ public with sharing class rflib_PermissionsExplorerController {
             LOGGER.info('getObjectLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
@@ -127,7 +125,7 @@ public with sharing class rflib_PermissionsExplorerController {
             LOGGER.info('getFieldLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
-            return useRestQueryModel() ? 
+            return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
                 queryFieldPermissionsApex(FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
@@ -173,9 +171,10 @@ public with sharing class rflib_PermissionsExplorerController {
         return details;
     }
         
-    private static Boolean useRestQueryModel() {
-        LOGGER.info('REST API Enabled: {0}', new Object[] { queryMode } );
-        return String.isNotBlank(queryMode.Value__c) && Boolean.valueOf(queryMode.Value__c);
+    private static Boolean shouldUseRestQueryModel() {
+        Boolean result = rflib_GlobalSettings.useRestQueryModeForPermissionRetrievalOrDefault;
+        LOGGER.info('REST API Enabled: {0}', new Object[] { result } );
+        return result;
     }
 
     @SuppressWarnings('PMD.ApexSOQLInjection')

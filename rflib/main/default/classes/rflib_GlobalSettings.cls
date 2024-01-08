@@ -34,47 +34,49 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_GlobalSettings {
     
-    public static Integer daysToRetainApplicationEvents {
+    public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
-            return val == null ? null : Integer.valueOf(val);
+            return String.isBlank(val) ? 45 : Integer.valueOf(val);
         }
     }
     
-    public static Integer archiveLogQueryLimit {
+    public static Integer archiveLogQueryLimitOrDefault {
         get {
             String val = getSetting('Archive_Log_Query_Limit');
-            return val == null ? null : Integer.valueOf(val);
+            return String.isBlank(val) ? 50000 : Integer.valueOf(val);
         }
     }
 
-    public static Boolean useRestQueryModeForPermissionRetrieval {
+    public static Boolean useRestQueryModeForPermissionRetrievalOrDefault {
         get {
             String val = getSetting('Permissions_Explorer_REST_API_Enabled');
-            return val == null ? false : Boolean.valueOf(val);
+            return String.isBlank(val) ? false : Boolean.valueOf(val);
         }
     }
         
-    public static Integer publishingLimit {
+    public static Integer publishingLimitOrDefault {
         get {
             String val = getSetting('Publish_Platform_Event_Transaction_Limit');
-            return val == null ? null : Integer.valueOf(val);
+            return String.isBlank(val) ? 150 : Integer.valueOf(val);
         }
     }
     
-    public static String traceIdHeaderName {
+    public static String traceIdHeaderNameOrDefault {
         get {
-            return getSetting('Trace_ID_Header_Name');
+            String val = getSetting('Trace_ID_Header_Name');
+            return String.isBlank(val) ? 'X-Trace-ID' : val;
         }
     }
     
     public static Boolean useOrgWideEmailAddress {
         get {
             String val = getSetting('Use_Org_Wide_Email_Address');
-            return val == null ? true : Boolean.valueOf(val);
+            return String.isBlank(val) ? true : Boolean.valueOf(val);
         }
     }
 
+    @TestVisible
     private static final Map<String, String> SETTINGS = new Map<String, String>();
 
     @SuppressWarnings('PMD.EmptyStatementBlock')
@@ -90,7 +92,7 @@ public with sharing class rflib_GlobalSettings {
         return SETTINGS.get(name);
     }
 
-    public static void overridePublishingLimit(Integer newLimit) {
+    public static void overridePublishingLimitOrDefault(Integer newLimit) {
         if (newLimit < 0 || newLimit > Limits.getLimitPublishImmediateDML()) {
             throw new rflib_InvalidArgumentException('newLimit', 'value provided (' + newLimit + ') is less than 0 or higher than allowed limit: ' + Limits.getPublishImmediateDML());
         }

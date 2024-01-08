@@ -241,7 +241,7 @@ public class rflib_DefaultLoggerTest {
   }
 
   @IsTest
-  private static void testSyncLogEventPublisher_publishingLimits() {
+  private static void testSyncLogEventPublisher_publishingLimitOrDefaults() {
     rflib_Logger logger = new rflib_DefaultLogger(
       new rflib_DefaultLogger.LogEventPublisher(), 
       new rflib_DefaultLogger.SystemDebugLogger(), 
@@ -255,7 +255,7 @@ public class rflib_DefaultLoggerTest {
     logger.reportLogs();
     System.assertEquals(1, Limits.getPublishImmediateDML());
     
-    rflib_GlobalSettings.overridePublishingLimit(1);
+    rflib_GlobalSettings.overridePublishingLimitOrDefault(1);
 
     logger.reportLogs();
     System.assertEquals(1, Limits.getPublishImmediateDML());
@@ -272,7 +272,7 @@ public class rflib_DefaultLoggerTest {
 
     logger.info('This is a test message');
 
-    rflib_GlobalSettings.overridePublishingLimit(null);
+    rflib_GlobalSettings.overridePublishingLimitOrDefault(null);
 
     Test.startTest();
     System.assertEquals(0, Limits.getPublishImmediateDML());

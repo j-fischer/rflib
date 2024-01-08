@@ -43,9 +43,6 @@ public inherited sharing class rflib_ApplicationEventArchiver implements Schedul
     @TestVisible
     private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE = new rflib_DefaultApplicationEventService();
 
-    @TestVisible
-    private static rflib_Global_Setting__mdt APPLICATION_EVENT_RETAIN_X_DAYS  = rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days');
-
     /**
      * @description Move records from the `rflib_Application_Event__c` object to the `rflib_Application_Event_Archive__b` Big Object archive.
      * @param  ctx ctx The `SchedulableContext`, which is not used.
@@ -54,8 +51,7 @@ public inherited sharing class rflib_ApplicationEventArchiver implements Schedul
         try {
             LOGGER.info('execute() invoked');
 
-            Integer retainXNumberOfDays = Integer.valueOf(APPLICATION_EVENT_RETAIN_X_DAYS.Value__c);
-            Date threshold = TODAY.addDays(retainXNumberOfDays * (-1));
+            Date threshold = TODAY.addDays(rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault * (-1));
 
             List<rflib_Application_Event__c> applicationEvents = [
                 SELECT Id, Created_By_ID__c, Occurred_On__c, Event_Name__c, Related_Record_ID__c, Additional_Details__c

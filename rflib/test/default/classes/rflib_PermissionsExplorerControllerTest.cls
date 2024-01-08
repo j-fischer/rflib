@@ -69,9 +69,7 @@ private class rflib_PermissionsExplorerControllerTest {
     private static final String METHOD = 'GET';
 
     private static void setup(Boolean isRestApiEnabled) {
-        rflib_PermissionsExplorerController.queryMode = new rflib_Global_Setting__mdt(
-            Value__c = String.valueOf(isRestApiEnabled)
-        );
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_REST_API_Enabled', String.valueOf(isRestApiEnabled));
     }
 
     @IsTest
@@ -249,9 +247,6 @@ private class rflib_PermissionsExplorerControllerTest {
             String.format(FLS_USER_QUERY, new String[] { '\'' + UserInfo.getProfileId() + '\'', getPermissionSetsAsQueryString()}), 
             'UTF-8'
         ));
-        HttpResponse resp = createResponse(OBJ_RESPONSE);
-
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
         CalloutException expectedEx = new CalloutException('something went wrong');
 
@@ -332,10 +327,6 @@ private class rflib_PermissionsExplorerControllerTest {
         );
 
         rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PROFILE_QUERY, 'UTF-8'));
-        HttpResponse resp = createResponse(OBJ_RESPONSE);
-
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
-
         CalloutException expectedEx = new CalloutException('something went wrong');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
@@ -374,10 +365,6 @@ private class rflib_PermissionsExplorerControllerTest {
         );
 
         rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PERMISSION_SET_QUERY, 'UTF-8'));
-        HttpResponse resp = createResponse(OBJ_RESPONSE);
-
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
-
         CalloutException expectedEx = new CalloutException('something went wrong');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
@@ -419,9 +406,6 @@ private class rflib_PermissionsExplorerControllerTest {
             String.format(OBJ_USER_QUERY, new String[] { '\'' + UserInfo.getProfileId() + '\'', getPermissionSetsAsQueryString()}), 
             'UTF-8'
         ));
-        HttpResponse resp = createResponse(OBJ_RESPONSE);
-
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
         CalloutException expectedEx = new CalloutException('something went wrong');
 

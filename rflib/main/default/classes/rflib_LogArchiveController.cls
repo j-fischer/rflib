@@ -31,7 +31,7 @@ public with sharing class rflib_LogArchiveController {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveController');
 
-    private static final Integer ARCHIVE_LOG_QUERY_LIMIT = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Archive_Log_Query_Limit').Value__c);
+    private static final Integer ARCHIVE_LOG_QUERY_LIMIT = rflib_GlobalSettings.archiveLogQueryLimitOrDefault;
     
     @TestVisible
     private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();

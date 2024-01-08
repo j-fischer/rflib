@@ -55,13 +55,13 @@ private class rflib_HttpRequestTest {
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testCommonRequestProperties');
 
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderName }));
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderNameOrDefault }));
 
         HttpResponse actualResponse = req.send();
         Test.stopTest();
 
         System.assertNotEquals(null, actualResponse);
-        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderName));
+        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), req.getPlatformRequest().getHeader(rflib_GlobalSettings.traceIdHeaderNameOrDefault));
         
         assertResponse(resp, actualResponse);
     }
@@ -75,7 +75,7 @@ private class rflib_HttpRequestTest {
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testSend_withLogTimer');
 
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderName }));
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp, new String[] { rflib_GlobalSettings.traceIdHeaderNameOrDefault }));
 
         logTimer.start(logger, rflib_LogLevel.WARN, -1, 'HttpRequest timer');
         HttpResponse actualResponse = req.send(logTimer);

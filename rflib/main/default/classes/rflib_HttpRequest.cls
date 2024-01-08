@@ -59,7 +59,7 @@ public with sharing class rflib_HttpRequest {
         try {
             LOGGER.info('Sending request: {0} with body: {1}', new String[] { delegatee.toString(), delegatee.getBody() } );
     
-            delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderName, rflib_TraceId.value);
+            delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderNameOrDefault, rflib_TraceId.value);
     
             Http http = new Http();
             HttpResponse response = http.send(delegatee);
