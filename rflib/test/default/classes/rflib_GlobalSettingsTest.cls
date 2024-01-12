@@ -114,4 +114,13 @@ private class rflib_GlobalSettingsTest {
         System.assertEquals(expectedValue, rflib_GlobalSettings.useRestQueryModeForPermissionRetrievalOrDefault);
         Test.stopTest();
     }
+
+    @IsTest
+    static void testUseDefaultWorkflowUserForLogEvents() {
+        Boolean expectedValue = Boolean.valueOf(rflib_Global_Setting__mdt.getInstance('Use_Default_Workflow_User_for_Log_Events').Value__c);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.useDefaultWorkflowUserForLogEventsOrDefault);
+        Test.stopTest();
+    }
 }

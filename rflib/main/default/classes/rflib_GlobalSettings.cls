@@ -69,10 +69,10 @@ public with sharing class rflib_GlobalSettings {
         }
     }
     
-    public static Boolean useOrgWideEmailAddress {
+    public static Boolean useDefaultWorkflowUserForLogEventsOrDefault {
         get {
-            String val = getSetting('Use_Org_Wide_Email_Address');
-            return String.isBlank(val) ? true : Boolean.valueOf(val);
+            String val = getSetting('Use_Default_Workflow_User_for_Log_Events');
+            return String.isBlank(val) ? false : Boolean.valueOf(val);
         }
     }
 
