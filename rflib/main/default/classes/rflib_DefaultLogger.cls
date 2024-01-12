@@ -455,8 +455,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       
       List<rflib_Log_Event__e> eventsToPublish = new List<rflib_Log_Event__e>((List<rflib_Log_Event__e>) events);
 
-      Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
-        ? rflib_GlobalSettings.publishingLimit
+      Integer publishingLimitOrDefault = rflib_GlobalSettings.publishingLimitOrDefault != null 
+        ? rflib_GlobalSettings.publishingLimitOrDefault
         : Limits.getLimitPublishImmediateDML();
         
       if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
@@ -464,12 +464,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         return null;
       }
 
-      if (eventBusPublisher.getPublishingCounter() == publishingLimit) {
-        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish ' + JSON.serialize(events));
+      if (eventBusPublisher.getPublishingCounter() == publishingLimitOrDefault) {
+        System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimitOrDefault +') reached; failed to publish ' + JSON.serialize(events));
         return null;
       }
       
-      List<Database.SaveResult> results = eventBusPublisher.publish(addLogEventIfLimitIsReached(eventsToPublish, publishingLimit));
+      List<Database.SaveResult> results = eventBusPublisher.publish(addLogEventIfLimitIsReached(eventsToPublish, publishingLimitOrDefault));
       
       for (Database.SaveResult result : results) {
         if(!result.isSuccess()) {
@@ -480,12 +480,12 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
       return results;
     }
 
-    private List<rflib_Log_Event__e> addLogEventIfLimitIsReached(List<rflib_Log_Event__e> logEvents, Integer publishingLimit) {
-      if (eventBusPublisher.getPublishingCounter() < (publishingLimit - 1)) {
+    private List<rflib_Log_Event__e> addLogEventIfLimitIsReached(List<rflib_Log_Event__e> logEvents, Integer publishingLimitOrDefault) {
+      if (eventBusPublisher.getPublishingCounter() < (publishingLimitOrDefault - 1)) {
         return logEvents;
       }
 
-      String rflibInfoMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n';
+      String rflibInfoMessage = '>>>>> RFLIB: Publish Immediate DML limit (' + publishingLimitOrDefault +') reached; THIS IS THE LAST EVENT FOR THIS TRANSACTION  <<<<<\n\n';
       String requestId = Request.getCurrent().getRequestId();
       if (requestId == null) {
         requestId = 'NULL';

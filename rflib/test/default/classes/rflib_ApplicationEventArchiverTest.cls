@@ -38,10 +38,8 @@ private class rflib_ApplicationEventArchiverTest {
 
         rflib_ApplicationEventArchiver.APPLICATION_EVENT_SERVICE = mockApplicationEventService;
         rflib_ApplicationEventArchiver.TODAY = TODAY;
-        rflib_ApplicationEventArchiver.APPLICATION_EVENT_RETAIN_X_DAYS = new rflib_Global_Setting__mdt(
-            DeveloperName = 'Application_Event_Retain_X_Days',
-            Value__c = '30'
-        );
+        
+        rflib_GlobalSettings.SETTINGS.put('Application_Event_Retain_X_Days', '30');
 
         List<rflib_Application_Event__c> events = new List<rflib_Application_Event__c>{
             new rflib_Application_Event__c(

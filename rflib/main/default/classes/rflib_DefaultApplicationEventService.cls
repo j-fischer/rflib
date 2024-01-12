@@ -71,8 +71,8 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     public void publishApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents) {
         LOGGER.debug('publishApplicationEvents({0})', new Object[] { applicationEvents });
 
-        Integer publishingLimit = rflib_GlobalSettings.publishingLimit != null 
-            ? rflib_GlobalSettings.publishingLimit
+        Integer publishingLimitOrDefault = rflib_GlobalSettings.publishingLimitOrDefault != null 
+            ? rflib_GlobalSettings.publishingLimitOrDefault
             : Limits.getLimitPublishImmediateDML();
             
         if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
@@ -80,8 +80,8 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
             return;
         }
 
-        if (EVENT_PUBLISHER.getPublishingCounter() == publishingLimit) {
-            System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimit +') reached; failed to publish application events: ');
+        if (EVENT_PUBLISHER.getPublishingCounter() == publishingLimitOrDefault) {
+            System.debug(LoggingLevel.ERROR, 'RFLIB: Publish Immediate DML limit (' + publishingLimitOrDefault +') reached; failed to publish application events: ');
             return;
         }
 
@@ -103,7 +103,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
             ));
         }
 
-        if (EVENT_PUBLISHER.getPublishingCounter() == (publishingLimit - 1)) {
+        if (EVENT_PUBLISHER.getPublishingCounter() == (publishingLimitOrDefault - 1)) {
             eventsToPublish.add(new rflib_Application_Event_Occurred_Event__e(
                 Event_Name__c = 'application-event-publishing-limit-reached',
                 Occurred_On__c = occurredOn,

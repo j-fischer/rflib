@@ -42,7 +42,7 @@ public with sharing class rflib_SendLogEventEmailAction {
     private static final String HTML_MESSAGE = '<h2>A Log Event was created by {0}.</h2><h3>Request ID: {1}</h3><h3>Context: {2}</h3><p><b>Log Messages:</b> {3}</p></h3><p><b>Platform Info:</b> {4}</p>';
 
     @TestVisible
-    private static Boolean USE_ORG_WIDE_EMAIL_ADDRESS = true;
+    private static Boolean USE_ORG_WIDE_EMAIL_ADDRESS = ! rflib_GlobalSettings.useDefaultWorkflowUserForLogEventsOrDefault;
 
     @TestVisible
     private static List<ApexEmailNotification> APEX_EMAIL_NOTIFICATION = [SELECT Email, UserId FROM ApexEmailNotification];
