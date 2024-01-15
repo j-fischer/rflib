@@ -168,12 +168,12 @@ export default class LogEventMonitor extends LightningElement {
                     _this.numTotalRecords = result.records.length;
                     _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
 
-                    if (result.querySize === _this.capturedEvents) {
+                    if (result.queryLimit === _this.numTotalRecords) {
                         const evt = new ShowToastEvent({
                             title: 'Query Limit Reached',
                             message:
                                 'The number of records retrieved reached the configured query limit of ' +
-                                result.querySize +
+                                result.queryLimit +
                                 ' records. Please change the search criteria to retrieve all records.',
                             variant: 'warning'
                         });
@@ -282,12 +282,12 @@ export default class LogEventMonitor extends LightningElement {
                 _this.numTotalRecords = result.records.length;
                 _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
 
-                if (result.querySize === _this.capturedEvents) {
+                if (result.queryLimit === _this.numTotalRecords) {
                     const evt = new ShowToastEvent({
                         title: 'Query Limit Reached',
                         message:
                             'The number of records retrieved reached the configured query limit of ' +
-                            result.querySize +
+                            result.queryLimit +
                             ' records. Please change the search criteria to retrieve all records.',
                         variant: 'warning'
                     });
