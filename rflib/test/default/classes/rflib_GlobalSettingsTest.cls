@@ -41,7 +41,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testPublishingLimitOrDefault() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
