@@ -38,15 +38,17 @@ private class rflib_RetryableActionManagerTest {
         rflib_RetryableActionManager.ALL_CONFIG_VALUES = new List<rflib_Retryable_Action_Config__mdt> {
             createConfiguration('Action_One', 1)
         };
+
+        rflib_FeatureSwitch.DEFAULT_VALUE = false; // Needs to be set for backwards version compatibility
     }
 
     @IsTest
-    public static void testRun_AllRetryableActionsFeatureSwitchOff() {
+    public static void testRun_DisableAllRetryableActionsFeatureSwitchOn() {
         setup();
 
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
-            'All_Retryable_Actions' => new Map<String,Boolean> {
-                rflib_FeatureSwitch.GLOBAL_SCOPE => false   
+            'rflib_Disable_All_Retryable_Actions' => new Map<String,Boolean> {
+                rflib_FeatureSwitch.GLOBAL_SCOPE => true   
             }
         };
 
