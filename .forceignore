@@ -11,6 +11,9 @@ package.xml
 rflib/main/default/apexEmailNotifications/apexEmailNotifications.notifications-meta.xml
 rflib/main/default/permissionsets/Functions.permissionset-meta.xml
 
+# Custom Metadata Types
+rflib/main/default/customMetadata/rflib_Global_Setting.*
+
 # LWC configuration files
 **/jsconfig.json
 **/.eslintrc.json

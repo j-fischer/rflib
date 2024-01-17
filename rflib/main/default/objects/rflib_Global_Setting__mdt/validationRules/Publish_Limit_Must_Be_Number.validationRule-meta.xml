@@ -6,8 +6,9 @@
     <errorConditionFormula>DeveloperName = &apos;Publish_Platform_Event_Transaction_Limit&apos; &amp;&amp; 
 OR(
   NOT(ISNUMBER( Value__c )),
-  VALUE( Value__c ) &lt;= 0
+  VALUE( Value__c ) &lt;= 1,
+  VALUE( Value__c ) &gt;= 150
 )</errorConditionFormula>
     <errorDisplayField>Value__c</errorDisplayField>
-    <errorMessage>The value for the Publish Platform Event Transaction Limit setting must be a number larger than 0.</errorMessage>
+    <errorMessage>The value for the Publish Platform Event Transaction Limit setting must be a number larger than 1 and less or equal to 150.</errorMessage>
 </ValidationRule>

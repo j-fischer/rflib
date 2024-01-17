@@ -2,12 +2,12 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Archive_Record_Limit_Validation</fullName>
     <active>true</active>
-    <description>The value must be an integer between 0 and 50,000</description>
-    <errorConditionFormula>DeveloperName = &quot;Archive_Log_Query_Record_Limit&quot; &amp;&amp;
-( 
-   NOT(ISNUMBER( Value__c )) ||
-   VALUE(Value__c) &lt; 0 ||
+    <description>The value must be a number between 0 and 50,000</description>
+    <errorConditionFormula>DeveloperName = &quot;Archive_Log_Query_Limit&quot; &amp;&amp;
+OR( 
+   NOT(ISNUMBER( Value__c )),
+   VALUE(Value__c) &lt; 1,
    VALUE(Value__c) &gt; 50000
 )</errorConditionFormula>
-    <errorMessage>The Archive Log Query Record Limit must be a number larger than 0 and less than 50,000</errorMessage>
+    <errorMessage>The Archive Log Query Record Limit must be a number larger than 1 and less or equal to 50,000.</errorMessage>
 </ValidationRule>

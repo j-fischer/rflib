@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Trace_ID_Header_Name_Validation</fullName>
+    <active>true</active>
+    <description>Must be a valid HTTP Header name.</description>
+    <errorConditionFormula>DeveloperName = &quot;Trace_ID_Header_Name&quot; &amp;&amp;
+OR(
+    BEGINS(Value__c, &quot; &quot;),
+    CONTAINS(Value__c, &quot;:&quot;),
+    CONTAINS(Value__c, &apos;&quot;&apos;)
+)</errorConditionFormula>
+    <errorMessage>The value for ‘‘Trace ID Header Name&quot; must be a valid HTTP Header name.</errorMessage>
+</ValidationRule>

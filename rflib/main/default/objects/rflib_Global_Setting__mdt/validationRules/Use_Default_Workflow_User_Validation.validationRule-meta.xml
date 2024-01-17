@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Use_Default_Workflow_User_Validation</fullName>
+    <active>true</active>
+    <description>The value must be a string representing a Boolean either upper or lower case.</description>
+    <errorConditionFormula>DeveloperName = &quot;Use_Default_Workflow_User_for_Log_Events&quot; &amp;&amp;
+Value__c != &quot;TRUE&quot; &amp;&amp;
+Value__c != &quot;true&quot; &amp;&amp;
+Value__c != &quot;FALSE&quot; &amp;&amp;
+Value__c != &quot;false&quot;</errorConditionFormula>
+    <errorMessage>The value for ‘Use Default Workflow User for Log Events’ must be either ‘TRUE’ or ‘FALSE’, using all upper or lower case letters.</errorMessage>
+</ValidationRule>
