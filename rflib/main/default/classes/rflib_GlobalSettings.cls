@@ -33,46 +33,64 @@
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_GlobalSettings {
+
+    @TestVisible
+    private static final Integer APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE = 45;
     
+    @TestVisible
+    private static final Integer ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE = 50000;
+    
+    @TestVisible
+    private static final Boolean PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE = false;
+    
+    @TestVisible
+    private static final Integer PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE = 150;
+    
+    @TestVisible
+    private static final String TRACE_ID_HEADER_NAME_DEFAULT_VALUE = 'X-Trace-ID';
+    
+    @TestVisible
+    private static final Boolean USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE = false;    
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
-            return String.isBlank(val) ? 45 : Integer.valueOf(val);
+            return String.isBlank(val) ? APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
     
     public static Integer archiveLogQueryLimitOrDefault {
         get {
             String val = getSetting('Archive_Log_Query_Limit');
-            return String.isBlank(val) ? 50000 : Integer.valueOf(val);
+            return String.isBlank(val) ? ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 
     public static Boolean useRestQueryModeForPermissionRetrievalOrDefault {
         get {
             String val = getSetting('Permissions_Explorer_REST_API_Enabled');
-            return String.isBlank(val) ? false : Boolean.valueOf(val);
+            return String.isBlank(val) ? PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
         
     public static Integer publishingLimitOrDefault {
         get {
             String val = getSetting('Publish_Platform_Event_Transaction_Limit');
-            return String.isBlank(val) ? 150 : Integer.valueOf(val);
+            return String.isBlank(val) ? PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
     
     public static String traceIdHeaderNameOrDefault {
         get {
             String val = getSetting('Trace_ID_Header_Name');
-            return String.isBlank(val) ? 'X-Trace-ID' : val;
+            return String.isBlank(val) ? TRACE_ID_HEADER_NAME_DEFAULT_VALUE : val;
         }
     }
     
     public static Boolean useDefaultWorkflowUserForLogEventsOrDefault {
         get {
             String val = getSetting('Use_Default_Workflow_User_for_Log_Events');
-            return String.isBlank(val) ? false : Boolean.valueOf(val);
+            return String.isBlank(val) ? USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
 
