@@ -45,14 +45,16 @@ private class rflib_TriggerManagerTest {
     private static Boolean SIMPLE_HANDLER_MOCK_RUN_INVOKED = false;
     private static Boolean SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = false;
 
+    static {
+        rflib_FeatureSwitch.DEFAULT_VALUE = false; // Needs to be set for backwards version compatibility
+    }
+
     private static void setup(String exceptionBehaviour) {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
             createConfiguration(exceptionBehaviour), 
             OBJECT_TYPE_NAME, 
             AFTER_INSERT
         );
-
-        rflib_FeatureSwitch.DEFAULT_VALUE = false; // Needs to be set for backwards version compatibility
     }
 
     @IsTest
