@@ -1,3 +1,13 @@
+### RFLIB 6.3.0
+
+Package ID: 04t3h000004pOuTAAU
+Package Alias: RFLIB@6.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOuTAAU
+
+-   [PR #81](https://github.com/j-fischer/rflib/pull/81) Added new Global Setting config value to choose whether to use the Org Wide Email Address for sending out notifications or not. This allows orgs to take advantage of the new configuration setting to select the workflow user for record triggered flows. See https://help.salesforce.com/s/articleView?id=release-notes.rn_automate_flow_builder_run_event_triggered_flows_as_workflow_user.htm&release=248&type=5
+-   Log Monitor: Fixed bug where the query limit message would not be displayed when viewing the Log Archive.
+-   Removed all Global Setting CMT records and aligned their validation rules according to the documentation.
+
 ### RFLIB 6.2.0
 
 Package ID: 04t3h000004pOt1AAE

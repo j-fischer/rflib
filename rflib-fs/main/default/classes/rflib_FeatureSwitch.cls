@@ -42,7 +42,7 @@ public without sharing class rflib_FeatureSwitch {
     private static final String GLOBAL_SCOPE = '__GLOBAL__';
 
     @TestVisible
-    private static Boolean DEFAULT_VALUE = Test.isRunningTest();
+    private static Boolean DEFAULT_VALUE = false;
 
     @TestVisible
     private static Map<String, Map<String, Boolean>> featureSwitches {

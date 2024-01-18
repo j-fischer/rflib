@@ -32,7 +32,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testTraceIdHeaderNameOrDefault() {
-        String expectedValue = rflib_Global_Setting__mdt.getInstance('Trace_ID_Header_Name').Value__c;
+        String expectedValue = getConfiguredStringValueOrDefault('Trace_ID_Header_Name', rflib_GlobalSettings.TRACE_ID_HEADER_NAME_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdHeaderNameOrDefault);
@@ -41,7 +41,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testPublishingLimitOrDefault() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
@@ -50,7 +50,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testOverridePublishingLimitOrDefault_Success() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         rflib_GlobalSettings.overridePublishingLimitOrDefault(5);
@@ -61,7 +61,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testOverridePublishingLimitOrDefault_NullValue() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         rflib_GlobalSettings.overridePublishingLimitOrDefault(0);
@@ -74,7 +74,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testOverridePublishingLimitOrDefault_ValueExceedsLimit() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
@@ -90,7 +90,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testDaysToRetainApplicationEvents() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Application_Event_Retain_X_Days').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Application_Event_Retain_X_Days', rflib_GlobalSettings.APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault);
@@ -99,7 +99,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testArchiveLogQueryLimit() {
-        Integer expectedValue = Integer.valueOf(rflib_Global_Setting__mdt.getInstance('Archive_Log_Query_Limit').Value__c);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault('Archive_Log_Query_Limit', rflib_GlobalSettings.ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.archiveLogQueryLimitOrDefault);
@@ -108,7 +108,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testUseRestQueryModeForPermissionRetrieval() {
-        Boolean expectedValue = Boolean.valueOf(rflib_Global_Setting__mdt.getInstance('Permissions_Explorer_REST_API_Enabled').Value__c);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Permissions_Explorer_REST_API_Enabled', rflib_GlobalSettings.PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.useRestQueryModeForPermissionRetrievalOrDefault);
@@ -117,10 +117,28 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testUseDefaultWorkflowUserForLogEvents() {
-        Boolean expectedValue = Boolean.valueOf(rflib_Global_Setting__mdt.getInstance('Use_Default_Workflow_User_for_Log_Events').Value__c);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Use_Default_Workflow_User_for_Log_Events', rflib_GlobalSettings.USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.useDefaultWorkflowUserForLogEventsOrDefault);
         Test.stopTest();
+    }
+
+    private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
+        String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
+
+        return String.isBlank(value) ? defaultValue : value;
+    }
+
+    private static Integer getConfiguredIntegerValueOrDefault(String settingName, Integer defaultValue) {
+        String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
+
+        return String.isBlank(value) ? defaultValue : Integer.valueOf(value);
+    }
+
+    private static Boolean getConfiguredBooleanValueOrDefault(String settingName, Boolean defaultValue) {
+        String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
+
+        return String.isBlank(value) ? defaultValue : Boolean.valueOf(value);
     }
 }
