@@ -467,16 +467,22 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('create-package-scratch', 'Setup scratch org and install all packages', function() {
+
+        let skipCreation = !!grunt.option('skip-creation');
+        let previewMode = !!grunt.option('preview');
+
         let tasks = [
             'prompt:alias',
             'prompt:selectPackage',
             'prompt:confirmVersion'
         ];
 
-        if (grunt.option('preview')) {
-            tasks.push('shell:force-create-org-preview');
-        } else {
-            tasks.push('shell:force-create-org');
+        if (!skipCreation) {
+            if (previewMode) {
+                tasks.push('shell:force-create-org-preview');
+            } else {
+                tasks.push('shell:force-create-org');
+            }
         }
 
         grunt.task.run(tasks.concat([
@@ -493,22 +499,40 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test-package-upgrade', 'Install older versions and then upgrade to the latest package', function() {
-        var tasks = [
+
+        let skipCreation = !!grunt.option('skip-creation');
+        let previewMode = !!grunt.option('preview');
+
+        let tasks = [
             'prompt:alias',
             'prompt:selectPackage',
-            'prompt:confirmVersion',
-            'shell:force-create-org',
+            'prompt:confirmVersion'
+        ];
+
+        if (!skipCreation) {
+            if (previewMode) {
+                tasks.push('shell:force-create-org-preview');
+            } else {
+                tasks.push('shell:force-create-org');
+            }
+        }
+
+        tasks = tasks.concat([
             'shell:force-test-package-install-and-upgrade',
             'shell:force-configure-settings',
-            'shell:force-create-log-event',
-            'shell:force-create-application-event',
+            'shell:force-create-log-event'
+        ]);
+
+        if (config.package.package === 'RFLIB') {        
+            tasks.push('shell:force-create-application-event');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-open',
             'shell:force-test',
             'confirm:deleteOrg',
             'shell:force-delete-org'
-        ];
-
-        grunt.task.run(tasks);
+        ]));
     });
 
     grunt.registerTask('create-package', 'Create a new package version', function() {
