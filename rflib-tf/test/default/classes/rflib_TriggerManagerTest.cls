@@ -51,15 +51,17 @@ private class rflib_TriggerManagerTest {
             OBJECT_TYPE_NAME, 
             AFTER_INSERT
         );
+
+        rflib_FeatureSwitch.DEFAULT_VALUE = false; // Needs to be set for backwards version compatibility
     }
 
     @IsTest
-    public static void testRun_AllTriggersFeatureSwitchOff() {
+    public static void testRun_DisableAllTriggersFeatureSwitchOn() {
         setup(ABORT_TRANSACTION);
 
         rflib_FeatureSwitch.featureSwitches = new Map<String,Map<String,Boolean>> {
-            'All_Triggers' => new Map<String,Boolean> {
-                rflib_FeatureSwitch.GLOBAL_SCOPE => false   
+            'rflib_Disable_All_Triggers' => new Map<String,Boolean> {
+                rflib_FeatureSwitch.GLOBAL_SCOPE => true   
             }
         };
 
