@@ -1,8 +1,8 @@
-### RFLIB-TF 3.0.0
+### RFLIB-TF 3.0.1
 
-Package ID: 04t3h000004pOunAAE
-Package Alias: RFLIB-TF@3.0.0-1
-Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOunAAE
+Package ID: 04t3h000004pOuxAAE
+Package Alias: RFLIB-TF@3.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOuxAAE
 
 -   Trigger Framework: Refactored handling of Feature Switches to invert behaviour so that they don't need to be configured. CHANGED NAME OF FEATURE SWITCHES FOR TRIGGERS AND RETRYABLE ACTION. Renamed the Feature Switches used from All_Triggers to rflib_Disable_All_Triggers and from All_Retryable_Actions to flib_Disable_All_Retryable_Actions. The old values will not be considered anymore.
     IMPORTANT: THIS CHANGE BREAKS BACKWARDS COMPATIBILITY IF THOSE TRIGGER SWITCHES ARE USED.
