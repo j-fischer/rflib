@@ -1,0 +1,15 @@
+{
+    "orgName": "RFLIB DEV",
+    "edition": "Developer",
+    "features": ["EinsteinGPTForDevelopers", "InsuranceCalculationUser"],
+    "settings": {
+        "lightningExperienceSettings": {
+            "enableS1DesktopEnabled": true
+        },
+        "securitySettings": {
+            "sessionSettings": {
+                "lockerServiceNext": true
+            }
+        }
+    }
+}
