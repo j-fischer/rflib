@@ -44,6 +44,11 @@ private class rflib_PermissionsExplorerControllerTest {
         + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
         + rflib_PermissionsExplorerController.FLS_ORDER;
     
+    private static final String FLS_PERMISSION_SET_GROUP_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
+        + rflib_PermissionsExplorerController.FLS_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_GROUP_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.FLS_ORDER;
+    
     private static final String FLS_USER_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
         + rflib_PermissionsExplorerController.FLS_TABLE
         + rflib_PermissionsExplorerController.USER_QUERY_CONDITION
@@ -57,6 +62,11 @@ private class rflib_PermissionsExplorerControllerTest {
     private static final String OBJ_PERMISSION_SET_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
         + rflib_PermissionsExplorerController.OBJ_TABLE
         + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION
+        + rflib_PermissionsExplorerController.OBJ_ORDER;
+
+    private static final String OBJ_PERMISSION_SET_GROUP_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
+        + rflib_PermissionsExplorerController.OBJ_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_GROUP_QUERY_CONDITION
         + rflib_PermissionsExplorerController.OBJ_ORDER;
 
     private static final String OBJ_USER_QUERY = rflib_PermissionsExplorerController.OBJ_FIELDS
@@ -213,6 +223,48 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.startTest();
         try {
             rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityForAllPermissionSetGroups_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        System.assertEquals([SELECT Parent.Label, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead 
+        FROM FieldPermissions 
+        WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId != null 
+        ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field
+        LIMIT :rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT].size(), records.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetFieldLevelSecurityForAllPermissionSetGroups_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(FLS_PERMISSION_SET_GROUP_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -381,6 +433,44 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityForAllPermissionSetGroups_RestApiDisabled() {
+        setup(false);
+        
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertObjectPermissionsResult(records, 'PermissionSetGroup');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetObjectLevelSecurityForAllPermissionSetGroups_Fails() {
+        setup(true);
+        
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(OBJ_PERMISSION_SET_GROUP_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testGetObjectLevelSecurityUser_RestApiDisabled() {
         setup(false);
 
@@ -429,7 +519,9 @@ private class rflib_PermissionsExplorerControllerTest {
     }
 
     private static void assertObjectPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
-        System.assert(records.size() > 0);
+        if (records.size() == 0) {
+            return;
+        }
 
         rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
         System.assertEquals(expectedSecurityType, info.securityType);

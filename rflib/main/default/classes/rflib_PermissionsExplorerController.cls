@@ -37,14 +37,15 @@ public with sharing class rflib_PermissionsExplorerController {
     @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 49995;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
-    @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, Field, PermissionsEdit, PermissionsRead';
-    @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
+    @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
+    @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
  
     @TestVisible private static final String FLS_TABLE = ' FROM FieldPermissions';
     @TestVisible private static final String OBJ_TABLE = ' FROM ObjectPermissions';
 
     @TestVisible private static final String PROFILE_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = true';
-    @TestVisible private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false';
+    @TestVisible private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId = null';
+    @TestVisible private static final String PERMISSION_SET_GROUP_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId != null';
     @TestVisible private static final String USER_QUERY_CONDITION = ' WHERE Parent.ProfileId = {0} OR ParentId IN {1}';
  
     @TestVisible private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
@@ -77,6 +78,19 @@ public with sharing class rflib_PermissionsExplorerController {
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
+
+    @AuraEnabled(cacheable = true)
+    public static QueryResult getFieldLevelSecurityForAllPermissionSetGroups(String servicePath) {
+        try {
+            LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
+            return shouldUseRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
     
     @AuraEnabled(cacheable = true)
     public static QueryResult getObjectLevelSecurityForAllProfiles(String servicePath){
@@ -98,6 +112,19 @@ public with sharing class rflib_PermissionsExplorerController {
             return shouldUseRestQueryModel() ? 
                 queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable = true)
+    public static QueryResult getObjectLevelSecurityForAllPermissionSetGroups(String servicePath){
+        try {
+            LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
+            return shouldUseRestQueryModel() ? 
+                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
+                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -269,11 +296,13 @@ public with sharing class rflib_PermissionsExplorerController {
     @SuppressWarnings('PMD.VariableNamingConventions')
     public class ParentInfo {
         @AuraEnabled public Boolean IsOwnedByProfile;
+        @AuraEnabled public String PermissionSetGroupId;
         @AuraEnabled public String Label;
         @AuraEnabled public ProfileInfo Profile = new ProfileInfo();
 
-        public ParentInfo(Boolean isOwnedByProfile, String label, String profileName) {
+        public ParentInfo(Boolean isOwnedByProfile, String permissionSetGroupId, String label, String profileName) {
             this.IsOwnedByProfile = isOwnedByProfile;
+            this.permissionSetGroupId = permissionSetGroupId;
             this.Label = label;
             this.Profile.Name = profileName;
         }
@@ -298,12 +327,19 @@ public with sharing class rflib_PermissionsExplorerController {
 
         @AuraEnabled public String SecurityType {
             get {
-                return this.Parent.IsOwnedByProfile ? 'Profile' : 'PermissionSet';
+                return this.Parent.IsOwnedByProfile ? 'Profile' : String.isBlank(this.Parent.PermissionSetGroupId) ? 'PermissionSet' : 'PermissionSetGroup';
             }
         }
+
         @AuraEnabled public String SecurityObjectName {
             get {
                 return this.Parent.IsOwnedByProfile ? this.Parent.Profile.Name : this.Parent.Label;
+            }
+        }
+
+        @AuraEnabled public String Label {
+            get {
+                return this.SecurityType + ': ' + this.SecurityObjectName;
             }
         }
 
@@ -313,7 +349,7 @@ public with sharing class rflib_PermissionsExplorerController {
             this.PermissionsEdit = record.PermissionsEdit;
             this.PermissionsRead = record.PermissionsRead;
 
-            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.Label, record.Parent.Profile.Name);
+            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.PermissionSetGroupId, record.Parent.Label, record.Parent.Profile.Name);
         }
         
         public PermissionInfo(ObjectPermissions record) {
@@ -325,7 +361,7 @@ public with sharing class rflib_PermissionsExplorerController {
             this.PermissionsViewAllRecords = record.PermissionsViewAllRecords;
             this.PermissionsModifyAllRecords = record.PermissionsModifyAllRecords;
 
-            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.Label, record.Parent.Profile.Name);
+            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.PermissionSetGroupId, record.Parent.Label, record.Parent.Profile.Name);
         }
     }
 

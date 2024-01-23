@@ -31,8 +31,10 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles';
 import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
+import getFieldLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups';
 import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
 import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets';
+import getObjectLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups';
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 
@@ -71,23 +73,33 @@ const PERMISSION_TYPES = {
         value: 'ObjectPermissionsPermissionSets',
         label: 'Object Permission for Permission Sets'
     },
-    FIELD_PERMISSIONS_PROFILES: {
+    OBJECT_PERMISSIONS_PERMISSION_SET_GROUPS: {
         id: '3',
+        value: 'ObjectPermissionsPermissionSetGroups',
+        label: 'Object Permission for Permission Set Groups'
+    },
+    FIELD_PERMISSIONS_PROFILES: {
+        id: '4',
         value: 'FieldPermissionsProfiles',
         label: 'Field Permissions for Profiles'
     },
     FIELD_PERMISSIONS_PERMISSION_SETS: {
-        id: '4',
+        id: '5',
         value: 'FieldPermissionsPermissionSets',
         label: 'Field Permissions for Permission Sets'
     },
+    FIELD_PERMISSIONS_PERMISSION_SET_GROUPS: {
+        id: '6',
+        value: 'FieldPermissionsPermissionSetGroups',
+        label: 'Field Permissions for Permission Set Groups'
+    },
     OBJECT_PERMISSIONS_USER: {
-        id: '5',
+        id: '7',
         value: 'ObjectPermissionsUser',
         label: 'Object Permission for a User'
     },
     FIELD_PERMISSIONS_USER: {
-        id: '6',
+        id: '8',
         value: 'FieldPermissionsUser',
         label: 'Field Permissions for a User'
     }
@@ -135,6 +147,7 @@ export default class PermissionsExplorer extends LightningElement {
         return (
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES ||
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS ||
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SET_GROUPS ||
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
         );
     }
@@ -171,8 +184,10 @@ export default class PermissionsExplorer extends LightningElement {
             JSON.stringify([
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES,
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SETS,
+                PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SET_GROUPS,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS,
+                PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SET_GROUPS,
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_USER,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_USER
             ])
@@ -228,12 +243,20 @@ export default class PermissionsExplorer extends LightningElement {
                 remoteAction = getObjectLevelSecurityForAllPermissionSets;
                 break;
 
+            case PERMISSION_TYPES.OBJECT_PERMISSIONS_PERMISSION_SET_GROUPS.value:
+                remoteAction = getObjectLevelSecurityForAllPermissionSetGroups;
+                break;
+
             case PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES.value:
                 remoteAction = getFieldLevelSecurityForAllProfiles;
                 break;
 
             case PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS.value:
                 remoteAction = getFieldLevelSecurityForAllPermissionSets;
+                break;
+
+            case PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SET_GROUPS.value:
+                remoteAction = getFieldLevelSecurityForAllPermissionSetGroups;
                 break;
 
             case PERMISSION_TYPES.OBJECT_PERMISSIONS_USER.value:
