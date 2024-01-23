@@ -358,8 +358,15 @@ export default class PermissionsExplorer extends LightningElement {
 
                     const evt = new ShowToastEvent({
                         title: 'Failed to retrieve permissions',
-                        message: 'An error occurred: ' + (error instanceof String ? error : JSON.stringify(error)),
-                        variant: 'error'
+                        message:
+                            'An error occurred: ' +
+                            (error instanceof String
+                                ? error
+                                : error?.body?.message
+                                  ? error?.body?.message
+                                  : JSON.stringify(error)),
+                        variant: 'error',
+                        mode: 'sticky'
                     });
                     this.dispatchEvent(evt);
                 });
