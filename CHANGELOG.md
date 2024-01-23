@@ -1,3 +1,11 @@
+### RFLIB 6.4.0
+
+Package ID: 04t3h000004pOv2AAE
+Package Alias: RFLIB@6.4.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOv2AAE
+
+-   Permission Explorer: Added two new modes to query Permission Set Groups specifically and added filter to exclude Permission Set Groups when looking up Permission Sets only.
+
 ### RFLIB-TF 3.0.1
 
 Package ID: 04t3h000004pOuxAAE
