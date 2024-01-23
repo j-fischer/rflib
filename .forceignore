@@ -13,6 +13,7 @@ rflib/main/default/permissionsets/Functions.permissionset-meta.xml
 
 # Custom Metadata Types
 rflib/main/default/customMetadata/rflib_Global_Setting.*
+rflib/main/default/customMetadata/rflib_Feature_Switch.*
 
 # LWC configuration files
 **/jsconfig.json
