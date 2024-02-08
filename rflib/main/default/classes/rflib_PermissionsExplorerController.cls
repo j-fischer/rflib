@@ -33,23 +33,29 @@ public with sharing class rflib_PermissionsExplorerController {
 
     private static final String FLS_SEARCH_TYPE = 'FLS';
     private static final String OBJ_SEARCH_TYPE = 'OBJ';
+    private static final String APEX_PAGE_SEARCH_TYPE = 'APX';
     
     @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 49995;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
     @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
+    @TestVisible private static final String APEX_PAGE_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SetupEntityType, SetupEntityId';
  
     @TestVisible private static final String FLS_TABLE = ' FROM FieldPermissions';
     @TestVisible private static final String OBJ_TABLE = ' FROM ObjectPermissions';
+    @TestVisible private static final String APEX_PAGE_TABLE = ' FROM SetupEntityAccess';
 
     @TestVisible private static final String PROFILE_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = true';
     @TestVisible private static final String PERMISSION_SET_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId = null';
     @TestVisible private static final String PERMISSION_SET_GROUP_QUERY_CONDITION = ' WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId != null';
     @TestVisible private static final String USER_QUERY_CONDITION = ' WHERE Parent.ProfileId = {0} OR ParentId IN {1}';
+
+    @TestVisible private static final String APEX_PAGE_CONDITIONS = ' AND SetupEntityType = \'ApexClass\' OR SetupEntityType = \'ApexPage\'';
  
     @TestVisible private static final String FLS_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType, Field'; 
     @TestVisible private static final String OBJ_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label, SobjectType'; 
+    @TestVisible private static final String APEX_PAGE_ORDER = ' ORDER BY Parent.Profile.Name, Parent.Label'; 
 
     @TestVisible private static rflib_QueryExecutor queryExecutor  = new rflib_DatabaseQueryExecutor();
 
@@ -58,8 +64,8 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getFieldLevelSecurityForAllProfiles: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all profiles', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -71,8 +77,8 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -84,8 +90,8 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -97,8 +103,8 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getObjectLevelSecurityForAllProfiles: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
+                queryPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all profiles', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -110,8 +116,8 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
+                queryPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -123,10 +129,49 @@ public with sharing class rflib_PermissionsExplorerController {
         try {
             LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath=' + servicePath);
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
-                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
+                queryPermissionsRest(servicePath, OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
+                queryPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for all permission sets', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable = true)
+    public static QueryResult getApexPageSecurityForAllProfiles(String servicePath){
+        try {
+            LOGGER.info('getApexPageSecurityForAllProfiles: servicePath=' + servicePath);
+            return shouldUseRestQueryModel() ? 
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve field level security for all profiles', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+    
+    @AuraEnabled(cacheable = true)
+    public static QueryResult getApexPageSecurityForAllPermissionSets(String servicePath) {
+        try {
+            LOGGER.info('getApexPageSecurityForAllPermissionSets: servicePath=' + servicePath);
+            return shouldUseRestQueryModel() ? 
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable = true)
+    public static QueryResult getApexPageSecurityForAllPermissionSetGroups(String servicePath) {
+        try {
+            LOGGER.info('getApexPageSecurityForAllPermissionSetGroups: servicePath=' + servicePath);
+            return shouldUseRestQueryModel() ? 
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve field level security for all permission sets', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
@@ -138,8 +183,8 @@ public with sharing class rflib_PermissionsExplorerController {
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
-                queryFieldPermissionsApex(OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
+                queryPermissionsRest(servicePath, OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
+                queryPermissionsApex(OBJ_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -153,8 +198,8 @@ public with sharing class rflib_PermissionsExplorerController {
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
             return shouldUseRestQueryModel() ? 
-                queryFieldPermissionsRest(servicePath, FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
-                queryFieldPermissionsApex(FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
+                queryPermissionsRest(servicePath, FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails)) : 
+                queryPermissionsApex(FLS_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails));
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -205,7 +250,7 @@ public with sharing class rflib_PermissionsExplorerController {
     }
 
     @SuppressWarnings('PMD.ApexSOQLInjection')
-    private static QueryResult queryFieldPermissionsApex(String searchType, String condition) {
+    private static QueryResult queryPermissionsApex(String searchType, String condition) {
         Boolean isFlsSearch = searchType == FLS_SEARCH_TYPE;
 
         String fieldSelection = isFlsSearch ? FLS_FIELDS : OBJ_FIELDS;
@@ -215,13 +260,23 @@ public with sharing class rflib_PermissionsExplorerController {
 
         LOGGER.debug('Final query: ' + query);
 
-        return isFlsSearch
-            ? convertToPermissionInfo((List<FieldPermissions>) queryExecutor.query(query))
-            : convertToPermissionInfo((List<ObjectPermissions>) queryExecutor.query(query));       
+        switch on (searchType) {
+            when 'OBJ' {
+                return convertToPermissionInfo((List<ObjectPermissions>) queryExecutor.query(query));
+            }
+
+            when 'FLS' {
+                return convertToPermissionInfo((List<FieldPermissions>) queryExecutor.query(query));
+            }
+
+            when else {
+                return convertToPermissionInfo((List<SetupEntityAccess>) queryExecutor.query(query));
+            }
+        } 
     }
     
     @SuppressWarnings('PMD.ExcessiveParameterList')
-    private static QueryResult queryFieldPermissionsRest(String servicePath, String searchType, String condition) {
+    private static QueryResult queryPermissionsRest(String servicePath, String searchType, String condition) {
         String fieldSelection = searchType == FLS_SEARCH_TYPE ? FLS_FIELDS : OBJ_FIELDS;
         String tableName = searchType == FLS_SEARCH_TYPE ? FLS_TABLE : OBJ_TABLE;
         String sortOrder = searchType == FLS_SEARCH_TYPE ? FLS_ORDER : OBJ_ORDER;
@@ -230,7 +285,7 @@ public with sharing class rflib_PermissionsExplorerController {
         
         if (totalNumOfRecords <= APEX_QUERY_RECORD_LIMIT) {
             LOGGER.info('Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
-            return queryFieldPermissionsApex(searchType, condition);
+            return queryPermissionsApex(searchType, condition);
         }
         
         String query = fieldSelection + tableName + condition + sortOrder;
@@ -276,6 +331,42 @@ public with sharing class rflib_PermissionsExplorerController {
         for (ObjectPermissions op : objectPermissionsList) {
             result.records.add(new PermissionInfo(op));
         }
+        return result;
+    }
+    
+    private static QueryResult convertToPermissionInfo(List<SetupEntityAccess> apexPermissionsList) {
+        QueryResult result = new QueryResult();
+        result.totalNumOfRecords = apexPermissionsList.size();
+
+        Map<Id, ApexPageInfo> entityInfo = getEntityInfo(apexPermissionsList);
+
+        for (SetupEntityAccess ap : apexPermissionsList) {
+            result.records.add(new PermissionInfo(ap, entityInfo));
+        }
+        return result;
+    }
+
+    private static Map<Id, ApexPageInfo> getEntityInfo(List<SetupEntityAccess> apexPermissionsList) {
+        Set<Id> apexClassIds = new Set<Id>();
+        Set<Id> apexPageIds = new Set<Id>();
+
+        for (SetupEntityAccess ea : apexPermissionsList) {
+            if (ea.SetupEntityType == 'ApexClass') {
+                apexClassIds.add(ea.SetupEntityId);
+            } else {
+                apexPageIds.add(ea.SetupEntityId);
+            }
+        }
+
+        Map<Id, ApexPageInfo> result = new Map<Id, ApexPageInfo>();
+        for (ApexClass ac : [SELECT Id, Name FROM ApexClass WHERE Id IN :apexClassIds]) {
+            result.put(ac.Id, new ApexPageInfo(ac.Name));
+        }
+
+        for (ApexPage ap : [SELECT Id, Name FROM ApexPage WHERE Id IN :apexPageIds]) {
+            result.put(ap.Id, new ApexPageInfo(ap.Name));
+        }
+
         return result;
     }
 
@@ -327,6 +418,10 @@ public with sharing class rflib_PermissionsExplorerController {
 
         @AuraEnabled public String SecurityType {
             get {
+                if (String.isNotBlank(SetupEntityType)) {
+                    return SetupEntityType;
+                }
+
                 return this.Parent.IsOwnedByProfile ? 'Profile' : String.isBlank(this.Parent.PermissionSetGroupId) ? 'PermissionSet' : 'PermissionSetGroup';
             }
         }
@@ -342,6 +437,8 @@ public with sharing class rflib_PermissionsExplorerController {
                 return this.SecurityType + ': ' + this.SecurityObjectName;
             }
         }
+
+        private String SetupEntityType;
 
         public PermissionInfo(FieldPermissions record) {
             this.SobjectType = record.SobjectType;
@@ -363,6 +460,13 @@ public with sharing class rflib_PermissionsExplorerController {
 
             this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.PermissionSetGroupId, record.Parent.Label, record.Parent.Profile.Name);
         }
+
+        public PermissionInfo(SetupEntityAccess record, Map<Id, ApexPageInfo> entityInfo) {
+            this.SetupEntityType = record.SetupEntityType;
+            this.SobjectType = entityInfo.get(record.SetupEntityId).name;
+
+            this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.PermissionSetGroupId, record.Parent.Label, record.Parent.Profile.Name);
+        }
     }
 
     public class UserPermissionsDetails {
@@ -370,6 +474,14 @@ public with sharing class rflib_PermissionsExplorerController {
         public String profileId;
         public Set<String> permissionSets = new Set<String>();
         public Set<String> permissionSetGroups = new Set<String>();
+    }
+    
+    public class ApexPageInfo {
+        public String name;
+
+        public ApexPageInfo(String name) {
+            this.name = name;
+        }
     }
     
     public class RestError {
