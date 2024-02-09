@@ -37,7 +37,7 @@ const logger = createLogger('FieldPermissionsTable');
 export default class RflibFieldPermissionsTable extends LightningElement {
     _pageSize;
 
-    @api isFieldPermissions;
+    @api permissionType;
     @api isProfilePermissions;
     @api isUserMode;
 
@@ -86,7 +86,19 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
 
     get isObjectPermissions() {
-        return !this.isFieldPermissions;
+        return this.permissionType === 'OLS';
+    }
+
+    get isFieldPermissions() {
+        return this.permissionType === 'FLS';
+    }
+
+    get isApexPermissions() {
+        return this.permissionType === 'APX';
+    }
+
+    get isNotApexPermissions() {
+        return this.permissionType !== 'APX';
     }
 
     totalPages = 1;
@@ -104,9 +116,12 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     refreshEventList() {
         this.displayedPageIndex = this.currentPageIndex;
         logger.debug(
-            'Display page with index {0} (isFieldPermission={1}, isUserMode={2})',
+            'Display page with index {0} (permissionType={1}, isFieldPermission={2}, isObjectPermissions={3}, isApexPermissions={4}, isUserMode={5})',
             this.currentPageIndex,
+            this.permissionType,
             this.isFieldPermissions,
+            this.isObjectPermissions,
+            this.isApexPermissions,
             this.isUserMode
         );
 

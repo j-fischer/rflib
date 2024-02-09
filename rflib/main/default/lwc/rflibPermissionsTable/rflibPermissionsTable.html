@@ -55,7 +55,7 @@
                         onchange={handleObjectSearchKeyChange}
                         class="slds-m-bottom_small"
                         variant="label-hidden"
-                        placeholder="Search Object..."
+                        placeholder="Search Object/Class/Page..."
                     >
                     </lightning-input>
                 </div>
@@ -87,7 +87,12 @@
                                 </div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Object">Object</div>
+                                <template lwc:if={isNotApexPermissions}>
+                                    <div class="slds-truncate" title="Object">Object</div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="slds-truncate" title="Class/Page Name">Class/Page Name</div>
+                                </template>
                             </th>
                             <template lwc:if={isFieldPermissions}>
                                 <th scope="col">
@@ -95,16 +100,23 @@
                                 </th>
                             </template>
                             <th scope="col">
-                                <div class="slds-truncate" title="Read Access">Read Access</div>
+                                <template lwc:if={isNotApexPermissions}>
+                                    <div class="slds-truncate" title="Read Access">Read Access</div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="slds-truncate" title="Class/Page Access">Class/Page Access</div>
+                                </template>
                             </th>
                             <template lwc:if={isObjectPermissions}>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Create Access">Create Access</div>
                                 </th>
                             </template>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Edit Access">Edit Access</div>
-                            </th>
+                            <template lwc:if={isNotApexPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Edit Access">Edit Access</div>
+                                </th>
+                            </template>
                             <template lwc:if={isObjectPermissions}>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Delete Access">Delete Access</div>
@@ -127,7 +139,7 @@
                                     </div>
                                 </td>
                                 <td class="slds-truncate">
-                                    <div>{rec.SobjectType}</div>
+                                    <div title={rec.ApexLabel}>{rec.SobjectType}</div>
                                 </td>
                                 <template lwc:if={isFieldPermissions}>
                                     <td class="slds-truncate">
@@ -135,16 +147,23 @@
                                     </td>
                                 </template>
                                 <td>
-                                    <div class="slds-truncate">{rec.PermissionsRead}</div>
+                                    <template lwc:if={isNotApexPermissions}>
+                                        <div class="slds-truncate">{rec.PermissionsRead}</div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="slds-truncate">true</div>
+                                    </template>
                                 </td>
                                 <template lwc:if={isObjectPermissions}>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsCreate}</div>
                                     </td>
                                 </template>
-                                <td>
-                                    <div class="slds-truncate">{rec.PermissionsEdit}</div>
-                                </td>
+                                <template lwc:if={isNotApexPermissions}>
+                                    <td>
+                                        <div class="slds-truncate">{rec.PermissionsEdit}</div>
+                                    </td>
+                                </template>
                                 <template lwc:if={isObjectPermissions}>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsDelete}</div>

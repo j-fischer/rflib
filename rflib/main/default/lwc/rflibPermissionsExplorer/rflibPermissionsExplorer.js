@@ -35,8 +35,12 @@ import getFieldLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rfl
 import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
 import getObjectLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets';
 import getObjectLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups';
+import getApexSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllProfiles';
+import getApexSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets';
+import getApexSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups';
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
+import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZES = [
@@ -66,42 +70,74 @@ const PERMISSION_TYPES = {
     OBJECT_PERMISSIONS_PROFILES: {
         id: '1',
         value: 'ObjectPermissionsProfiles',
-        label: 'Object Permission For Profiles'
+        label: 'Object Permission For Profiles',
+        type: 'OLS'
     },
     OBJECT_PERMISSIONS_PERMISSION_SETS: {
         id: '2',
         value: 'ObjectPermissionsPermissionSets',
-        label: 'Object Permission for Permission Sets'
+        label: 'Object Permission for Permission Sets',
+        type: 'OLS'
     },
     OBJECT_PERMISSIONS_PERMISSION_SET_GROUPS: {
         id: '3',
         value: 'ObjectPermissionsPermissionSetGroups',
-        label: 'Object Permission for Permission Set Groups'
+        label: 'Object Permission for Permission Set Groups',
+        type: 'OLS'
     },
     FIELD_PERMISSIONS_PROFILES: {
         id: '4',
         value: 'FieldPermissionsProfiles',
-        label: 'Field Permissions for Profiles'
+        label: 'Field Permissions for Profiles',
+        type: 'FLS'
     },
     FIELD_PERMISSIONS_PERMISSION_SETS: {
         id: '5',
         value: 'FieldPermissionsPermissionSets',
-        label: 'Field Permissions for Permission Sets'
+        label: 'Field Permissions for Permission Sets',
+        type: 'FLS'
     },
     FIELD_PERMISSIONS_PERMISSION_SET_GROUPS: {
         id: '6',
         value: 'FieldPermissionsPermissionSetGroups',
-        label: 'Field Permissions for Permission Set Groups'
+        label: 'Field Permissions for Permission Set Groups',
+        type: 'FLS'
+    },
+    APEX_PERMISSIONS_PROFILES: {
+        id: '7',
+        value: 'ApexPermissionsProfiles',
+        label: 'Apex Permissions for Profiles',
+        type: 'APX'
+    },
+    APEX_PERMISSIONS_PERMISSION_SETS: {
+        id: '8',
+        value: 'ApexPermissionsPermissionSets',
+        label: 'Apex Permissions for Permission Sets',
+        type: 'APX'
+    },
+    APEX_PERMISSIONS_PERMISSION_SET_GROUPS: {
+        id: '9',
+        value: 'ApexPermissionsPermissionSetGroups',
+        label: 'Apex Permissions for Permission Set Groups',
+        type: 'APX'
     },
     OBJECT_PERMISSIONS_USER: {
-        id: '7',
+        id: '10',
         value: 'ObjectPermissionsUser',
-        label: 'Object Permission for a User'
+        label: 'Object Permission for a User',
+        type: 'OLS'
     },
     FIELD_PERMISSIONS_USER: {
-        id: '8',
+        id: '11',
         value: 'FieldPermissionsUser',
-        label: 'Field Permissions for a User'
+        label: 'Field Permissions for a User',
+        type: 'FLS'
+    },
+    APEX_PERMISSIONS_USER: {
+        id: '12',
+        value: 'ApexPermissionsUser',
+        label: 'Apex Permissions for a User',
+        type: 'APX'
     }
 };
 
@@ -143,6 +179,10 @@ export default class PermissionsExplorer extends LightningElement {
         this.loadPermissions();
     }
 
+    get permissionType() {
+        return this.currentPermissionType.type;
+    }
+
     get isFieldPermissions() {
         return (
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES ||
@@ -155,14 +195,16 @@ export default class PermissionsExplorer extends LightningElement {
     get isProfilePermissions() {
         return (
             this.currentPermissionType === PERMISSION_TYPES.OBJECT_PERMISSIONS_PROFILES ||
-            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES ||
+            this.currentPermissionType === PERMISSION_TYPES.APEX_PERMISSIONS_PROFILES
         );
     }
 
     get isUserModeSelected() {
         return (
             this.currentPermissionType === PERMISSION_TYPES.OBJECT_PERMISSIONS_USER ||
-            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
+            this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER ||
+            this.currentPermissionType === PERMISSION_TYPES.APEX_PERMISSIONS_USER
         );
     }
 
@@ -188,8 +230,12 @@ export default class PermissionsExplorer extends LightningElement {
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PROFILES,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SETS,
                 PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SET_GROUPS,
+                PERMISSION_TYPES.APEX_PERMISSIONS_PROFILES,
+                PERMISSION_TYPES.APEX_PERMISSIONS_PERMISSION_SETS,
+                PERMISSION_TYPES.APEX_PERMISSIONS_PERMISSION_SET_GROUPS,
                 PERMISSION_TYPES.OBJECT_PERMISSIONS_USER,
-                PERMISSION_TYPES.FIELD_PERMISSIONS_USER
+                PERMISSION_TYPES.FIELD_PERMISSIONS_USER,
+                PERMISSION_TYPES.APEX_PERMISSIONS_USER
             ])
         );
 
@@ -259,6 +305,18 @@ export default class PermissionsExplorer extends LightningElement {
                 remoteAction = getFieldLevelSecurityForAllPermissionSetGroups;
                 break;
 
+            case PERMISSION_TYPES.APEX_PERMISSIONS_PROFILES.value:
+                remoteAction = getApexSecurityForAllProfiles;
+                break;
+
+            case PERMISSION_TYPES.APEX_PERMISSIONS_PERMISSION_SETS.value:
+                remoteAction = getApexSecurityForAllPermissionSets;
+                break;
+
+            case PERMISSION_TYPES.APEX_PERMISSIONS_PERMISSION_SET_GROUPS.value:
+                remoteAction = getApexSecurityForAllPermissionSetGroups;
+                break;
+
             case PERMISSION_TYPES.OBJECT_PERMISSIONS_USER.value:
                 if (this.selectedUserId) {
                     remoteAction = getObjectLevelSecurityForUser;
@@ -268,6 +326,12 @@ export default class PermissionsExplorer extends LightningElement {
             case PERMISSION_TYPES.FIELD_PERMISSIONS_USER.value:
                 if (this.selectedUserId) {
                     remoteAction = getFieldLevelSecurityForUser;
+                }
+                break;
+
+            case PERMISSION_TYPES.APEX_PERMISSIONS_USER.value:
+                if (this.selectedUserId) {
+                    remoteAction = getApexSecurityForUser;
                 }
                 break;
 
