@@ -326,6 +326,10 @@ module.exports = function(grunt) {
                 command: 'sf org open -o <%= config.alias %>'
             },
 
+            'force-set-debug-mode': {
+                command: 'sf texei user update -o <%= config.alias %> --values "UserPreferencesUserDebugModePref=true"'
+            },
+
             'force-create-release-candidate': {
                 command:
                     'sf package version create --path <%= config.package.path %> --installationkeybypass --code-coverage --wait 30'
@@ -452,6 +456,7 @@ module.exports = function(grunt) {
         }
 
         grunt.task.run(tasks.concat([
+            'shell:force-set-debug-mode',
             'shell:force-push',
             'shell:force-assign-permset',
             'shell:force-configure-settings',
