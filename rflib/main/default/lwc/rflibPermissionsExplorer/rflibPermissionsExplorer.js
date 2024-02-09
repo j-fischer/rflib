@@ -273,6 +273,11 @@ export default class PermissionsExplorer extends LightningElement {
             .map((key) => PERMISSION_TYPES[key])
             .find((permType) => permType.value === newPermissionType);
 
+        if (parseInt(this.currentPermissionType.id, 10) < 10) {
+            logger.debug('Clearing selected user id');
+            this.selectedUserId = null;
+        }
+
         this.loadPermissions();
     }
 
@@ -397,9 +402,11 @@ export default class PermissionsExplorer extends LightningElement {
             // Using timeout to guarantee rendering of spinner widget, which may not happen if the browser accesses
 
             const cacheKey = this.currentPermissionType.value + (this.selectedUserId || '');
+            logger.debug('Cache key: ' + cacheKey);
+
             const cachedRecords = this.cache[cacheKey];
             if (cachedRecords) {
-                logger.debug('Using cached value');
+                logger.debug('Using cached value for key: ' + cacheKey);
                 this.permissionRecords = cachedRecords;
                 this.numTotalRecords = cachedRecords.length;
                 this.isLoadingRecords = false;
