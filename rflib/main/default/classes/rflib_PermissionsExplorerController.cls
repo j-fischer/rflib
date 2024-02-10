@@ -358,6 +358,11 @@ public with sharing class rflib_PermissionsExplorerController {
             for (PermissionInfo pi : result.records) {
                 pi.Field = pi.Field.substringAfter('.');
             }
+        } else if (searchType == APEX_SEARCH_TYPE) {
+            Map<Id, ApexInfo> entityInfo = getEntityInfo(result);
+            for (PermissionInfo pi : result.records) {
+                pi.updateSObjectType(entityInfo);
+            }
         }
         return result;
     }
@@ -406,6 +411,25 @@ public with sharing class rflib_PermissionsExplorerController {
             }
         }
 
+        return getEntityInfo(apexClassIds, apexPageIds);
+    }
+
+    private static Map<Id, ApexInfo> getEntityInfo(QueryResult restResult) {
+        Set<Id> apexClassIds = new Set<Id>();
+        Set<Id> apexPageIds = new Set<Id>();
+        
+        for (PermissionInfo pi : restResult.records) {
+            if (pi.SetupEntityType == 'ApexClass') {
+                apexClassIds.add(pi.SetupEntityId);
+            } else {
+                apexPageIds.add(pi.SetupEntityId);
+            }
+        }
+
+        return getEntityInfo(apexClassIds, apexPageIds);
+    }
+        
+    private static Map<Id, ApexInfo> getEntityInfo(Set<Id> apexClassIds, Set<Id> apexPageIds) {
         Map<Id, ApexInfo> result = new Map<Id, ApexInfo>();
         for (ApexClass ac : [SELECT Id, NamespacePrefix, Name FROM ApexClass WHERE Id IN :apexClassIds]) {
             result.put(ac.Id, new ApexInfo(ac.NamespacePrefix, ac.Name));
@@ -458,6 +482,8 @@ public with sharing class rflib_PermissionsExplorerController {
     public class PermissionInfo {
         @AuraEnabled public ParentInfo Parent;
         @AuraEnabled public String SobjectType;
+        @AuraEnabled public String SetupEntityId;
+        @AuraEnabled public String SetupEntityType;
         @AuraEnabled public String Field;
         @AuraEnabled public Boolean PermissionsEdit;
         @AuraEnabled public Boolean PermissionsRead;
@@ -490,8 +516,6 @@ public with sharing class rflib_PermissionsExplorerController {
             }
         }
 
-        private String SetupEntityType;
-
         public PermissionInfo(FieldPermissions record) {
             this.SobjectType = record.SobjectType;
             this.Field = record.Field.substringAfter('.');
@@ -514,11 +538,16 @@ public with sharing class rflib_PermissionsExplorerController {
         }
 
         public PermissionInfo(SetupEntityAccess record, Map<Id, ApexInfo> entityInfo) {
+            this.SetupEntityId = record.SetupEntityId;
             this.SetupEntityType = record.SetupEntityType;
             this.SobjectType = entityInfo.get(record.SetupEntityId).name;
 
             this.Parent = new ParentInfo(record.Parent.IsOwnedByProfile, record.Parent.PermissionSetGroupId, record.Parent.Label, record.Parent.Profile.Name);
         }
+
+        public void updateSObjectType(Map<Id, ApexInfo> entityInfo) {
+            this.SobjectType = entityInfo.get(this.SetupEntityId).name;
+        } 
     }
 
     public class UserPermissionsDetails {
