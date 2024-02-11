@@ -11,6 +11,11 @@ jobs:
         steps:
             - checkout
             - run:
+                  name: Install jq
+                  command: |
+                      sudo apt-get update
+                      sudo apt-get install -y jq
+            - run:
                   name: Install Salesforce DX
                   command: |
                       openssl version
@@ -20,7 +25,7 @@ jobs:
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install sfdx-cli@7.197.8
+                      npm install sfdx-cli@7.209.6
                       npm install
                       node_modules/sfdx-cli/bin/run --version
                       node_modules/sfdx-cli/bin/run plugins --core
@@ -85,18 +90,51 @@ jobs:
                   command: |
                       node_modules/sfdx-cli/bin/run org delete scratch -o ciorg -p
                   when: on_fail
+
     run_apex_tests:
         <<: *defaults
         steps:
             - attach_workspace:
                   at: ~/
             - run:
+                  name: Retrieve User ID and Setup Debug Mode
+                  command: |
+                      # Retrieve User ID
+                      USER_ID=$(node_modules/sfdx-cli/bin/run force user display --target-org ciorg --json | jq -r '.result.id')
+
+                      echo "User ID: $USER_ID"
+
+                      # Create a DebugLevel
+                      DEBUG_LEVEL_ID=$(node_modules/sfdx-cli/bin/run data create record --target-org ciorg --use-tooling-api --sobject DebugLevel --values "DeveloperName='MyDebugLevel' MasterLabel='My Debug Level' ApexCode='DEBUG' ApexProfiling='INFO' Callout='INFO' Database='INFO' System='DEBUG' Validation='INFO' Visualforce='INFO' Workflow='INFO'" --json | jq -r '.result.id')
+
+                      echo "Debug Level ID: $DEBUG_LEVEL_ID"
+
+                      # Set ExpirationDate to 30 minutes from now
+                      EXPIRATION_DATE=$(date -v+30M -u +'%Y-%m-%dT%H:%M:%SZ')
+
+                      # Create a TraceFlag
+                      node_modules/sfdx-cli/bin/run data create record --use-tooling-api --sobject TraceFlag --values "DebugLevelId='$DEBUG_LEVEL_ID' ExpirationDate='$EXPIRATION_DATE' LogType='USER_DEBUG' TracedEntityId='$USER_ID'" --target-org ciorg
+            - run:
                   name: Run Apex Tests
                   command: |
                       node_modules/sfdx-cli/bin/run apex run test -o ciorg --codecoverage -r human -d ~/apex_tests --wait 10
             - run:
+                  name: Retrieve and Print Debug Log
+                  command: |
+                      # Get the list of debug logs
+                      LOGS=$(node_modules/sfdx-cli/bin/run apex list log --target-org ciorg --json)
+
+                      # Extract the log IDs where Operation is "ApexTestHandler" and print the debug log for each ID
+                      echo "$LOGS" | jq -r '.result[] | select(.Operation == "ApexTestHandler") | .Id' | while read LOG_ID; do
+                          echo "Log ID: $LOG_ID"
+                          node_modules/sfdx-cli/bin/run apex get log --log-id $LOG_ID --target-org ciorg
+                      done
+                  when: on_fail
+
+            - run:
                   name: Clean Up
                   command: |
+                      # Delete the scratch org
                       node_modules/sfdx-cli/bin/run org delete scratch -o ciorg -p
                   when: on_fail
             - persist_to_workspace:
@@ -104,6 +142,7 @@ jobs:
                   paths:
                       - apex_tests/*
                   when: on_success
+
     run_lwc_tests:
         <<: *defaults
         steps:
