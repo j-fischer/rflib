@@ -26,8 +26,8 @@ jobs:
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
                       npm install @salesforce/cli@2.27.6
-                      node_modules/.bin/sf --version
-                      node_modules/.bin/sf plugins --core
+                      npx sf --version
+                      npx sf plugins --core
             - persist_to_workspace:
                   # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
                   # we'd have to re-run installation for every workflow step.
@@ -55,11 +55,11 @@ jobs:
             - run:
                   name: Authenticate DevHub
                   command: |
-                      node_modules/.bin/sf auth jwt grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
+                      npx sf auth jwt grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
             - run:
                   name: Define CI Org
                   command: |
-                      node_modules/.bin/sf org create scratch -v HubOrg -d -f config/$CONFIG_FILE.json -a ciorg -y 1 --wait 10
+                      npx sf org create scratch -v HubOrg -d -f config/$CONFIG_FILE.json -a ciorg -y 1 --wait 10
             - run:
                   name: Remove Server Key
                   when: always
@@ -83,11 +83,11 @@ jobs:
             - run:
                   name: Push Source
                   command: |
-                      node_modules/.bin/sf force source push -o ciorg
+                      npx sf force source push -o ciorg
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/.bin/sf org delete scratch -o ciorg -p
+                      npx sf org delete scratch -o ciorg -p
                   when: on_fail
 
     run_apex_tests:
@@ -99,12 +99,12 @@ jobs:
                   name: Retrieve User ID and Setup Debug Mode
                   command: |
                       # Retrieve User ID
-                      USER_ID=$(node_modules/.bin/sf force user display --target-org ciorg --json | jq -r '.result.id')
+                      USER_ID=$(npx sf force user display --target-org ciorg --json | jq -r '.result.id')
 
                       echo "User ID: $USER_ID"
 
                       # Create a DebugLevel
-                      DEBUG_LEVEL_ID=$(node_modules/.bin/sf data create record --target-org ciorg --use-tooling-api --sobject DebugLevel --values "DeveloperName='MyDebugLevel' MasterLabel='My Debug Level' ApexCode='DEBUG' ApexProfiling='INFO' Callout='INFO' Database='INFO' System='DEBUG' Validation='INFO' Visualforce='INFO' Workflow='INFO'" --json | jq -r '.result.id')
+                      DEBUG_LEVEL_ID=$(npx sf data create record --target-org ciorg --use-tooling-api --sobject DebugLevel --values "DeveloperName='MyDebugLevel' MasterLabel='My Debug Level' ApexCode='DEBUG' ApexProfiling='INFO' Callout='INFO' Database='INFO' System='DEBUG' Validation='INFO' Visualforce='INFO' Workflow='INFO'" --json | jq -r '.result.id')
 
                       echo "Debug Level ID: $DEBUG_LEVEL_ID"
 
@@ -112,21 +112,21 @@ jobs:
                       EXPIRATION_DATE=$(date -v+30M -u +'%Y-%m-%dT%H:%M:%SZ')
 
                       # Create a TraceFlag
-                      node_modules/.bin/sf data create record --use-tooling-api --sobject TraceFlag --values "DebugLevelId='$DEBUG_LEVEL_ID' ExpirationDate='$EXPIRATION_DATE' LogType='USER_DEBUG' TracedEntityId='$USER_ID'" --target-org ciorg
+                      npx sf data create record --use-tooling-api --sobject TraceFlag --values "DebugLevelId='$DEBUG_LEVEL_ID' ExpirationDate='$EXPIRATION_DATE' LogType='USER_DEBUG' TracedEntityId='$USER_ID'" --target-org ciorg
             - run:
                   name: Run Apex Tests
                   command: |
-                      node_modules/.bin/sf apex run test -o ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+                      npx sf apex run test -o ciorg --codecoverage -r human -d ~/apex_tests --wait 10
             - run:
                   name: Retrieve and Print Debug Log
                   command: |
                       # Get the list of debug logs
-                      LOGS=$(node_modules/.bin/sf apex list log --target-org ciorg --json)
+                      LOGS=$(npx sf apex list log --target-org ciorg --json)
 
                       # Extract the log IDs where Operation is "ApexTestHandler" and print the debug log for each ID
                       echo "$LOGS" | jq -r '.result[] | select(.Operation == "ApexTestHandler") | .Id' | while read LOG_ID; do
                           echo "Log ID: $LOG_ID"
-                          node_modules/.bin/sf apex get log --log-id $LOG_ID --target-org ciorg
+                          npx sf apex get log --log-id $LOG_ID --target-org ciorg
                       done
                   when: on_fail
 
@@ -134,7 +134,7 @@ jobs:
                   name: Clean Up
                   command: |
                       # Delete the scratch org
-                      node_modules/.bin/sf org delete scratch -o ciorg -p
+                      npx sf org delete scratch -o ciorg -p
                   when: on_fail
             - persist_to_workspace:
                   root: ~/
@@ -171,7 +171,7 @@ jobs:
             - run:
                   name: Clean Up
                   command: |
-                      node_modules/.bin/sf org delete scratch -o ciorg -p
+                      npx sf org delete scratch -o ciorg -p
 
 workflows:
     version: 2.1
