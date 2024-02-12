@@ -25,8 +25,7 @@ jobs:
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install @salesforce/cli@2.24.4
-                      npm install
+                      npm install @salesforce/cli@2.27.6
                       node_modules/sfdx-cli/bin/run --version
                       node_modules/sfdx-cli/bin/run plugins --core
             - persist_to_workspace:
