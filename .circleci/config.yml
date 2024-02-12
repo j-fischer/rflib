@@ -25,7 +25,7 @@ jobs:
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install sfdx-cli@7.209.6
+                      npm install @salesforce/cli@2.27.6
                       npm install
                       node_modules/sfdx-cli/bin/run --version
                       node_modules/sfdx-cli/bin/run plugins --core
