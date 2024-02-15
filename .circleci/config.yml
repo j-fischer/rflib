@@ -109,7 +109,7 @@ jobs:
                       echo "Debug Level ID: $DEBUG_LEVEL_ID"
 
                       # Set ExpirationDate to 30 minutes from now
-                      EXPIRATION_DATE=$(date -v+30M -u +'%Y-%m-%dT%H:%M:%SZ')
+                      EXPIRATION_DATE=$(date -u -d '+30 minutes' +'%Y-%m-%dT%H:%M:%SZ')
 
                       # Create a TraceFlag
                       npx sf data create record --use-tooling-api --sobject TraceFlag --values "DebugLevelId='$DEBUG_LEVEL_ID' ExpirationDate='$EXPIRATION_DATE' LogType='USER_DEBUG' TracedEntityId='$USER_ID'" --target-org ciorg
