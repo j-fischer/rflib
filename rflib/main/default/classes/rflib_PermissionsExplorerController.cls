@@ -546,7 +546,7 @@ public with sharing class rflib_PermissionsExplorerController {
         }
 
         public void updateSObjectType(Map<Id, ApexInfo> entityInfo) {
-            this.SobjectType = entityInfo.get(this.SetupEntityId).name;
+            this.SobjectType = entityInfo.get(this.SetupEntityId)?.name;
         } 
     }
 
