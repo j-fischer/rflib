@@ -55,7 +55,7 @@
                         onchange={handleObjectSearchKeyChange}
                         class="slds-m-bottom_small"
                         variant="label-hidden"
-                        placeholder="Search Object..."
+                        placeholder="Search Object/Class/Page..."
                     >
                     </lightning-input>
                 </div>
@@ -76,36 +76,29 @@
                 </div>
             </div>
             <template lwc:if={recordsToDisplay}>
-                <table
-                    class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
-                >
-                    <thead>
-                        <tr class="slds-text-heading_label">
-                            <th scope="col">
-                                <div class="slds-truncate" title="Profile/Permission Set Name">
-                                    Profile/Permission Set Name
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Object">Object</div>
-                            </th>
-                            <template lwc:if={isFieldPermissions}>
+                <template lwc:if={isObjectPermissions}>
+                    <table
+                        class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                    >
+                        <thead>
+                            <tr class="slds-text-heading_label">
                                 <th scope="col">
-                                    <div class="slds-truncate" title="Field">Field</div>
+                                    <div class="slds-truncate" title="Profile/Permission Set Name">
+                                        Profile/Permission Set Name
+                                    </div>
                                 </th>
-                            </template>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Read Access">Read Access</div>
-                            </th>
-                            <template lwc:if={isObjectPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Object">Object</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Read Access">Read Access</div>
+                                </th>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Create Access">Create Access</div>
                                 </th>
-                            </template>
-                            <th scope="col">
-                                <div class="slds-truncate" title="Edit Access">Edit Access</div>
-                            </th>
-                            <template lwc:if={isObjectPermissions}>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Edit Access">Edit Access</div>
+                                </th>
                                 <th scope="col">
                                     <div class="slds-truncate" title="Delete Access">Delete Access</div>
                                 </th>
@@ -115,37 +108,26 @@
                                 <th scope="col">
                                     <div class="slds-truncate" title="Modify All">Modify All</div>
                                 </th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={recordsToDisplay} for:item="rec">
-                            <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
-                                <td class="slds-truncate">
-                                    <div>
-                                        <div title={rec.Label}>{rec.SecurityObjectName}</div>
-                                    </div>
-                                </td>
-                                <td class="slds-truncate">
-                                    <div>{rec.SobjectType}</div>
-                                </td>
-                                <template lwc:if={isFieldPermissions}>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={recordsToDisplay} for:item="rec">
+                                <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
                                     <td class="slds-truncate">
-                                        <div>{rec.Field}</div>
+                                        <div title={rec.Label}>{rec.SecurityObjectName}</div>
                                     </td>
-                                </template>
-                                <td>
-                                    <div class="slds-truncate">{rec.PermissionsRead}</div>
-                                </td>
-                                <template lwc:if={isObjectPermissions}>
+                                    <td class="slds-truncate">
+                                        <div title={rec.ApexLabel}>{rec.SobjectType}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">{rec.PermissionsRead}</div>
+                                    </td>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsCreate}</div>
                                     </td>
-                                </template>
-                                <td>
-                                    <div class="slds-truncate">{rec.PermissionsEdit}</div>
-                                </td>
-                                <template lwc:if={isObjectPermissions}>
+                                    <td>
+                                        <div class="slds-truncate">{rec.PermissionsEdit}</div>
+                                    </td>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsDelete}</div>
                                     </td>
@@ -155,11 +137,95 @@
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsModifyAllRecords}</div>
                                     </td>
-                                </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+                <template lwc:elseif={isFieldPermissions}>
+                    <table
+                        class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                    >
+                        <thead>
+                            <tr class="slds-text-heading_label">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Profile/Permission Set Name">
+                                        Profile/Permission Set Name
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Object">Object</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Field">Field</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Read Access">Read Access</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Edit Access">Edit Access</div>
+                                </th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template for:each={recordsToDisplay} for:item="rec">
+                                <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
+                                    <td class="slds-truncate">
+                                        <div title={rec.Label}>{rec.SecurityObjectName}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div title={rec.ApexLabel}>{rec.SobjectType}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div>{rec.Field}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">{rec.PermissionsRead}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">{rec.PermissionsEdit}</div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+                <template lwc:else>
+                    <table
+                        class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
+                    >
+                        <thead>
+                            <tr class="slds-text-heading_label">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Profile/Permission Set Name">
+                                        Profile/Permission Set Name
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Class/Page Name">Class/Page Name</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Class/Page Access">Class/Page Access</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={recordsToDisplay} for:item="rec">
+                                <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
+                                    <td class="slds-truncate">
+                                        <div title={rec.Label}>{rec.SecurityObjectName}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div title={rec.ApexLabel}>{rec.SobjectType}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">true</div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
             </template>
         </div>
         <p class="slds-m-around_medium">

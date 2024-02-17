@@ -32,6 +32,7 @@ private class rflib_PermissionsExplorerControllerTest {
     
     private static final String FLS_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"FieldPermissions","url":"/services/data/v59.0/sobjects/FieldPermissions/01k3F0000GacGodQQE"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v59.0/sobjects/PermissionSet/0PS3F000001TP1bWAG"},"Label":"00ex00000018ozh_128_09_04_12_1","Profile":{"attributes":{"type":"Profile","url":"/services/data/v59.0/sobjects/Profile/00e3F00000184CaQAI"},"Name":"System Administrator"},"IsOwnedByProfile":true},"SobjectType":"MaintenancePlan","Field":"MaintenancePlan.DoesGenerateUponCompletion","PermissionsEdit":true,"PermissionsRead":true}]}'; // cspell:disable-line
     private static final String OBJ_RESPONSE = '{"done":true,"totalSize":1,"records":[{"attributes":{"type":"ObjectPermissions","url":"/services/data/v59.0/sobjects/ObjectPermissions/1103F00001g9hIQQAY"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v59.0/sobjects/PermissionSet/0PS3F000001TP1SWAW"},"Label":"00eB0000000Qlc9IAC","Profile":{"attributes":{"type":"Profile","url":"/services/data/v59.0/sobjects/Profile/00e3F00000184CiQAI"},"Name":"Company Communities User"},"IsOwnedByProfile":true},"SobjectType":"Account","PermissionsRead":true,"PermissionsCreate":true,"PermissionsEdit":true,"PermissionsDelete":true,"PermissionsViewAllRecords":false,"PermissionsModifyAllRecords":false}]}'; // cspell:disable-line
+    private static final String APEX_RESPONSE ='{"done":true,"totalSize":1,"records":[{"attributes":{"type":"SetupEntityAccess","url":"/services/data/v59.0/sobjects/SetupEntityAccess/0J08B00002XcoAXSAZ"},"Parent":{"attributes":{"type":"PermissionSet","url":"/services/data/v56.0/sobjects/PermissionSet/0PS8B000000xvFyWAI"},"Label":"RFLIB - Ops Center Access","Profile":null,"IsOwnedByProfile":false},"SetupEntityType":"ApexClass","SetupEntityId":"01p8B00000B4ZadQAF"}]}'; // cspell:disable-line
     private static final String ERR_RESPONSE = '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]';
 
     private static final String FLS_PROFILE_QUERY = rflib_PermissionsExplorerController.FLS_FIELDS
@@ -73,6 +74,26 @@ private class rflib_PermissionsExplorerControllerTest {
         + rflib_PermissionsExplorerController.OBJ_TABLE
         + rflib_PermissionsExplorerController.USER_QUERY_CONDITION
         + rflib_PermissionsExplorerController.OBJ_ORDER;
+
+    private static final String APEX_PROFILE_QUERY = rflib_PermissionsExplorerController.APEX_FIELDS
+        + rflib_PermissionsExplorerController.APEX_TABLE
+        + rflib_PermissionsExplorerController.PROFILE_QUERY_CONDITION + rflib_PermissionsExplorerController.APEX_CONDITIONS
+        + rflib_PermissionsExplorerController.APEX_ORDER;
+
+    private static final String APEX_PERMISSION_SET_QUERY = rflib_PermissionsExplorerController.APEX_FIELDS
+        + rflib_PermissionsExplorerController.APEX_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_QUERY_CONDITION + rflib_PermissionsExplorerController.APEX_CONDITIONS
+        + rflib_PermissionsExplorerController.APEX_ORDER;
+    
+    private static final String APEX_PERMISSION_SET_GROUP_QUERY = rflib_PermissionsExplorerController.APEX_FIELDS
+        + rflib_PermissionsExplorerController.APEX_TABLE
+        + rflib_PermissionsExplorerController.PERMISSION_SET_GROUP_QUERY_CONDITION + rflib_PermissionsExplorerController.APEX_CONDITIONS
+        + rflib_PermissionsExplorerController.APEX_ORDER;
+    
+    private static final String APEX_USER_QUERY = rflib_PermissionsExplorerController.APEX_FIELDS
+        + rflib_PermissionsExplorerController.APEX_TABLE
+        + rflib_PermissionsExplorerController.USER_QUERY_CONDITION + rflib_PermissionsExplorerController.APEX_CONDITIONS
+        + rflib_PermissionsExplorerController.APEX_ORDER;
 
     private static final String ENDPOINT = 'callout:rflib_SF_REST_API';
     private static final String ENDPOINT_PATH = '/services/data/v59.0/query?q=';
@@ -511,6 +532,236 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.stopTest();
     }
 
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+        
+        assertApexPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_RestApiEnabled_ResultOfLessThanMaxRecordLimitUsesApex() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT, 
+            Database.query(APEX_PROFILE_QUERY +  + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
+        );
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+        
+        assertApexPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_RestApiEnabled_ResultOfMoreThanMaxRecordLimitUsesRest() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(APEX_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(APEX_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertApexPermissionsResult(records, 'PermissionSet'); // only have one mock REST API result
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_RestApiEnabled_ResultOfMoreThanMaxRecordLimitUsesRest_RequestFails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(APEX_PROFILE_QUERY, 'UTF-8'));
+        HttpResponse resp = createResponse(401, ERR_RESPONSE);
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals('Session expired or invalid', actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(APEX_PROFILE_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityForAllPermissionSets_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        System.assertEquals([SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SetupEntityType, SetupEntityId 
+        FROM SetupEntityAccess 
+        WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId = null AND (SetupEntityType = 'ApexClass' OR SetupEntityType = 'ApexPage') 
+        ORDER BY Parent.Profile.Name, Parent.Label 
+        LIMIT :rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT].size(), records.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityForAllPermissionSets_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(APEX_PERMISSION_SET_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityForAllPermissionSetGroups_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        System.assertEquals([SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SetupEntityType, SetupEntityId
+        FROM SetupEntityAccess 
+        WHERE Parent.IsOwnedByProfile = false AND Parent.PermissionSetGroupId != null AND (SetupEntityType = 'ApexClass' OR SetupEntityType = 'ApexPage') 
+        ORDER BY Parent.Profile.Name, Parent.Label 
+        LIMIT :rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT].size(), records.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityForAllPermissionSetGroups_Fails() {
+        setup(true);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(APEX_PERMISSION_SET_GROUP_QUERY, 'UTF-8'));
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null);
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityUser_RestApiDisabled() {
+        setup(false);
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForUser(null, UserInfo.getUserId());
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertUserPermissions(records);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetApexSecurityForUser_Fails() {
+        setup(true);
+        
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            null
+        );
+
+        rflib_HttpRequest req = createRequest(ENDPOINT_PATH + EncodingUtil.urlEncode(
+            String.format(APEX_USER_QUERY, new String[] { '\'' + UserInfo.getProfileId() + '\'', getPermissionSetsAsQueryString()}), 
+            'UTF-8'
+        ));
+
+        CalloutException expectedEx = new CalloutException('something went wrong');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), expectedEx));
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getApexSecurityForUser(null, UserInfo.getUserId());
+            System.assert(false, 'An exception should have been thrown.');
+        } catch (AuraHandledException actualEx) {
+            System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
+        }
+        Test.stopTest();
+    }
+
     private static void assertUserPermissions(List<rflib_PermissionsExplorerController.PermissionInfo> records) {
         System.assert(records.size() > 0);
         
@@ -538,6 +789,15 @@ private class rflib_PermissionsExplorerControllerTest {
         System.assertEquals(expectedSecurityType, info.securityType);
         System.assertNotEquals(null, info.PermissionsRead);
         System.assertNotEquals(null, info.PermissionsEdit);
+    }
+
+    private static void assertApexPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
+        System.assert(records.size() > 0);
+
+        rflib_PermissionsExplorerController.PermissionInfo info = records.get(0);
+        System.assertEquals(expectedSecurityType, info.securityType);
+        System.assertNotEquals(null, info.SetupEntityId);
+        System.assertNotEquals(null, info.SetupEntityType);
     }
 
     private static Boolean containsPermissionsForProfile(List<rflib_PermissionsExplorerController.PermissionInfo> myObjectList, String profileName) {
