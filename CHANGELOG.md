@@ -1,3 +1,11 @@
+### RFLIB 6.5.0
+
+Package ID: 04t3h000004pOyuAAE
+Package Alias: RFLIB@6.5.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOyuAAE
+
+-   [PR #84](https://github.com/j-fischer/rflib/pull/84) PermissionExplorer: Added support for viewing Apex Class and Page permissions
+
 ### RFLIB 6.4.0
 
 Package ID: 04t3h000004pOv7AAE
