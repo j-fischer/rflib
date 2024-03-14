@@ -36,7 +36,7 @@ public inherited sharing class rflib_DefaultApplicationEventLogger implements rf
     
     public void logApplicationEvent(String eventName, String relatedRecordId, String additionalDetails){
         try {
-            LOGGER.info('logApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
+            LOGGER.debug('logApplicationEvent({0}, {1}, {2})', new Object[] { eventName, relatedRecordId, additionalDetails });
 
             APPLICATION_EVENT_SERVICE.publishApplicationEvent(eventName, relatedRecordId, additionalDetails);
         } catch (Exception ex) {
@@ -47,7 +47,7 @@ public inherited sharing class rflib_DefaultApplicationEventLogger implements rf
 
     public void logApplicationEvents(List<rflib_ApplicationEventDetails> applicationEvents){
         try {
-            LOGGER.info('logApplicationEvent({0})', new Object[] { applicationEvents });
+            LOGGER.debug('logApplicationEvent({0})', new Object[] { applicationEvents });
 
             APPLICATION_EVENT_SERVICE.publishApplicationEvents(applicationEvents);
         } catch (Exception ex) {
