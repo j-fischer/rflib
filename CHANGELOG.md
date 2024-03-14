@@ -1,3 +1,11 @@
+### RFLIB 6.5.1
+
+Package ID: 04t3h000004pOzYAAU
+Package Alias: RFLIB@6.5.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h000004pOzYAAU
+
+-   Application Events: Changed logging level of DefaultApplicationEventLogger methods to DEBUG insteadl of INFO
+
 ### RFLIB 6.5.0
 
 Package ID: 04t3h000004pOyuAAE
