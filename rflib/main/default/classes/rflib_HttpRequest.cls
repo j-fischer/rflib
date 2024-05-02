@@ -60,6 +60,21 @@ public with sharing class rflib_HttpRequest {
             LOGGER.info('Sending request: {0} with body: {1}', new String[] { delegatee.toString(), delegatee.getBody() } );
     
             delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderNameOrDefault, rflib_TraceId.value);
+
+            if (rflib_GlobalSettings.httpRequestMockingEnabled && (
+                    rflib_OrgUtil.isSandboxOrg() ||
+                    (rflib_OrgUtil.isProductionOrg() && rflib_GlobalSettings.httpRequestMockingAllowInProduction)
+            )) {
+                HttpResponse mockResponse = rflib_HttpEndpointMocker.getMockResponse(delegatee);
+
+                if (mockResponse != null) {
+                    return mockResponse;
+                }
+
+                if (rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound) {
+                    throw new MockEndpointNotFoundException();
+                }
+            }
     
             Http http = new Http();
             HttpResponse response = http.send(delegatee);
@@ -117,4 +132,6 @@ public with sharing class rflib_HttpRequest {
     public override String toString() {
         return delegatee.toString();
     }
+
+    public class MockEndpointNotFoundException extends Exception {} 
 }
