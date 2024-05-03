@@ -70,6 +70,9 @@ public class rflib_HttpEndpointMocker {
                 return response;
             }
         }
+
+        LOGGER.debug('No mock response found');
+        
         return null;
     }
 
@@ -78,7 +81,7 @@ public class rflib_HttpEndpointMocker {
 
         List<rflib_HTTP_Mock_Endpoint__mdt> allMockEndpoints = rflib_HTTP_Mock_Endpoint__mdt.getAll().values();
 
-        LOGGER.trace('All mock endpoint values: ' + JSON.serialize(allMockEndpoints));
+        LOGGER.debug('All mock endpoint values: ' + JSON.serialize(allMockEndpoints));
 
         List<rflib_HTTP_Mock_Endpoint__mdt> result = new LIst<rflib_HTTP_Mock_Endpoint__mdt>();
         for (rflib_HTTP_Mock_Endpoint__mdt endpoint : allMockEndpoints) {
@@ -87,7 +90,7 @@ public class rflib_HttpEndpointMocker {
             } 
         }
 
-        LOGGER.trace('Filtered mock endpoint values: ' + JSON.serialize(result));
+        LOGGER.debug('Filtered mock endpoint values: ' + JSON.serialize(result));
 
         return result;
     }

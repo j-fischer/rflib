@@ -31,6 +31,19 @@
 private class rflib_HttpEndpointMockerTest {
 
     @IsTest
+    static void testActiveMockers() {
+        List<rflib_HTTP_Mock_Endpoint__mdt> allMockEndpoints = rflib_HTTP_Mock_Endpoint__mdt.getAll().values();
+        List<rflib_HTTP_Mock_Endpoint__mdt> expectedResult = new LIst<rflib_HTTP_Mock_Endpoint__mdt>();
+        for (rflib_HTTP_Mock_Endpoint__mdt endpoint : allMockEndpoints) {
+            if (endpoint.Is_Active__c == true) {
+                expectedResult.add(endpoint);
+            } 
+        }
+
+        Assert.areEqual(expectedResult.size(), rflib_HttpEndpointMocker.mockEndpointSettings.size(), 'Expected all active mock endpoints to be registered');
+    }
+
+    @IsTest
     static void testMatchFound() {
         setupMockEndpoints();
         HttpRequest req = createMockRequest('POST', 'http://example.com/test', 'This is a TestPayload');
