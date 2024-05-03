@@ -32,7 +32,7 @@
  * @description Provides values for any rflib related global settings.
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_GlobalSettings {
+public class rflib_GlobalSettings {
 
     @TestVisible
     private static final Integer APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE = 45;
@@ -51,6 +51,15 @@ public with sharing class rflib_GlobalSettings {
     
     @TestVisible
     private static final Boolean USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE = false;    
+    
+    @TestVisible
+    private static final Boolean HTTP_REQUEST_MOCKING_ENABLED = false;    
+    
+    @TestVisible
+    private static final Boolean HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION = false;    
+    
+    @TestVisible
+    private static final Boolean HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND = false; 
 
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
@@ -91,6 +100,27 @@ public with sharing class rflib_GlobalSettings {
         get {
             String val = getSetting('Use_Default_Workflow_User_for_Log_Events');
             return String.isBlank(val) ? USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+    
+    public static Boolean httpRequestMockingEnabled {
+        get {
+            String val = getSetting('Http_Mocking_Enabled');
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ENABLED : Boolean.valueOf(val);
+        }
+    }
+    
+    public static Boolean httpRequestMockingAllowInProduction {
+        get {
+            String val = getSetting('Http_Mocking_Allow_In_Production');
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION : Boolean.valueOf(val);
+        }
+    }
+    
+    public static Boolean httpRequestMockingThrowErrorIfNotMockNotFound {
+        get {
+            String val = getSetting('Http_Mocking_Throw_Error_If_Not_Found');
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND : Boolean.valueOf(val);
         }
     }
 

@@ -9,6 +9,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testCommonRequestProperties() {
+        setMockingDisabled();
+
         Test.startTest();
         rflib_HttpRequest req = createRequest();
 
@@ -23,6 +25,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSetBodyAsBlob() {
+        setMockingDisabled();
+
         Blob bodyAsBlob = Blob.valueOf(BODY);
 
         Test.startTest();
@@ -37,6 +41,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSetBodyAsDocument() {
+        setMockingDisabled();
+
         Dom.Document bodyAsDoc = new Dom.Document();
         bodyAsDoc.load('<test>' + BODY + '</test>');
 
@@ -51,6 +57,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSend() {
+        setMockingDisabled();
+
         Test.startTest();
         rflib_HttpRequest req = createRequest();
         HttpResponse resp = createResponse('testCommonRequestProperties');
@@ -68,6 +76,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSend_withLogTimer() {
+        setMockingDisabled();
+
         rflib_MockLogger logger = new rflib_MockLogger();
         rflib_MockLogTimer logTimer = new rflib_MockLogTimer();
         
@@ -86,6 +96,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSend_WithCustomHeader() {
+        setMockingDisabled();
+
         String headerKey = 'X-UnitTest';
         String headerValue = 'FooBar';
 
@@ -108,6 +120,8 @@ private class rflib_HttpRequestTest {
 
     @IsTest
     private static void testSend_ThrowsCalloutException() {
+        setMockingDisabled();
+
         rflib_HttpRequest req = createRequest();
         CalloutException ex = new CalloutException('Foo bar');
 
@@ -124,6 +138,57 @@ private class rflib_HttpRequestTest {
     }
 
     @IsTest
+    private static void testMockingEnabledInSandbox() {
+        setupMockEndpoints();
+
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Enabled', 'true');
+        rflib_OrgUtil.isSandbox = true;
+
+        rflib_HttpRequest req = createRequest('http://example.com/test', 'This is a TestPayload');
+        Test.startTest();
+        HttpResponse actualResponse = req.send();
+        Test.stopTest();
+
+        System.assertEquals('Mock response', actualResponse.getBody(), 'The response should be the mocked response');
+    }
+
+    @IsTest
+    private static void testMockingEnabledInProductionWithAllowance() {
+        setupMockEndpoints();
+
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Enabled', 'true');
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Allow_In_Production', 'true');
+        rflib_OrgUtil.isSandbox = false;
+
+        rflib_HttpRequest req = createRequest('http://example.com/test', 'This is a TestPayload');
+        Test.startTest();
+        HttpResponse actualResponse = req.send();
+        Test.stopTest();
+
+        System.assertEquals('Mock response', actualResponse.getBody(), 'The response should be the mocked response');
+    }
+
+    @IsTest
+    private static void testNoMockFoundAndThrowError() {
+        setupMockEndpoints();
+
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Enabled', 'true');
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Throw_Error_If_Not_Found', 'true');
+        rflib_OrgUtil.isSandbox = true;
+
+        rflib_HttpRequest req = createRequest('http://example.com/test', 'Invalid Payload Content');
+
+        try {
+            Test.startTest();
+            req.send();
+            Test.stopTest();
+            System.assert(false, 'Expected MockEndpointNotFoundException was not thrown');
+        } catch (CalloutException ex) {
+            Assert.areEqual('No matching RFLIB HTTP Mock Endpoint configuration found; please check the CMT object.', ex.getMessage(), 'CalloutException was not thrown as expected');
+        }
+    }
+
+    @IsTest
     private static void testToString() {
         Test.startTest();
         rflib_HttpRequest req = createRequest();
@@ -132,6 +197,10 @@ private class rflib_HttpRequestTest {
         Test.stopTest();
         
         System.assertEquals(req.toString(), actualRequest.toString());
+    }
+
+    private static void setMockingDisabled() {
+        rflib_GlobalSettings.SETTINGS.put('Http_Mocking_Enabled', 'false');
     }
 
     private static void assertResponse(HttpResponse expectedResponse, HttpResponse actualResponse) {
@@ -157,5 +226,44 @@ private class rflib_HttpRequestTest {
         req.setTimeout(60);
 
         return req;
+    }
+
+    private static rflib_HttpRequest createRequest(String endpoint, String body) {
+        rflib_HttpRequest req = new rflib_HttpRequest();
+        req.setEndpoint(endpoint);
+        req.setMethod('POST');
+        req.setBody(body);
+        return req;
+    }
+    
+    private static void setupMockEndpoints() {
+        List<rflib_HTTP_Mock_Endpoint__mdt> mocks = new List<rflib_HTTP_Mock_Endpoint__mdt>{
+            new rflib_HTTP_Mock_Endpoint__mdt(
+                HTTP_Method__c = 'POST',
+                URL_Pattern__c = 'http://example.com/test',
+                Payload_Pattern__c = '.*TestPayload.*',
+                Response_Status__c = 200,
+                Response_Payload__c = 'Mock response',
+                Is_Active__c = true
+            ),
+            new rflib_HTTP_Mock_Endpoint__mdt(
+                HTTP_Method__c = 'GET',
+                URL_Pattern__c = 'http://example.com/invalid',
+                Payload_Pattern__c = '.*InvalidPayload.*',
+                Response_Status__c = 400,
+                Response_Payload__c = 'Invalid URL',
+                Is_Active__c = true
+            ),
+            new rflib_HTTP_Mock_Endpoint__mdt(
+                HTTP_Method__c = 'POST',
+                URL_Pattern__c = 'http://example.com/test',
+                Payload_Pattern__c = '.*InactivePayload.*',
+                Response_Status__c = 200,
+                Response_Payload__c = 'Should not match',
+                Is_Active__c = false // Inactive entry
+            )
+        };
+
+        rflib_HttpEndpointMocker.mockEndpointSettings = mocks;
     }
 }

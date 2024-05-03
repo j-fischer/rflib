@@ -124,6 +124,33 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testHttpRequestMockingEnabled() {
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Enabled', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ENABLED);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingEnabled);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testHttpRequestMockingAllowInProduction() {
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Allow_In_Production', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingAllowInProduction);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testHttpRequestMockingThrowErrorIfNotMockNotFound() {
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Throw_Error_If_Not_Found', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 

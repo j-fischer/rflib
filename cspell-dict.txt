@@ -72,3 +72,4 @@ Archiver
 Schedulable
 ISBLANK
 yogiaprelliyanto
+Picklist
