@@ -38,6 +38,8 @@ public with sharing class rflib_HttpRequest {
 
     private final rflib_Logger logger;
     private final HttpRequest delegatee = new HttpRequest();
+
+    public Boolean suppressMocking = false;
     
     public rflib_HttpRequest() {
         this(rflib_LoggerUtil.getFactory().createLogger('rflib_HttpRequest'));
@@ -61,7 +63,8 @@ public with sharing class rflib_HttpRequest {
     
             delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderNameOrDefault, rflib_TraceId.value);
 
-            if (rflib_GlobalSettings.httpRequestMockingEnabled && (
+            if (!suppressMocking && 
+                rflib_GlobalSettings.httpRequestMockingEnabled && (
                     rflib_OrgUtil.isSandboxOrg() ||
                     (rflib_OrgUtil.isProductionOrg() && rflib_GlobalSettings.httpRequestMockingAllowInProduction)
             )) {

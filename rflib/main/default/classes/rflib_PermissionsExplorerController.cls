@@ -339,7 +339,8 @@ public with sharing class rflib_PermissionsExplorerController {
         String query = fieldSelection + tableName + condition + sortOrder;
         String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v59.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
         
-        rflib_HttpRequest req = new rflib_HttpRequest();        
+        rflib_HttpRequest req = new rflib_HttpRequest(); 
+        req.suppressMocking = true;       
         req.setEndpoint('callout:rflib_SF_REST_API' + urlPath);
         req.setMethod('GET');
         
