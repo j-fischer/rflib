@@ -83,7 +83,7 @@ jobs:
             - run:
                   name: Push Source
                   command: |
-                      npx sf force source push -o ciorg
+                      npx sf project deploy start -o ciorg
             - run:
                   name: Clean Up
                   command: |
