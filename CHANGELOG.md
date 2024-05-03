@@ -1,3 +1,11 @@
+### RFLIB 6.6.0
+
+Package ID: 04t3h0000046NG9AAM
+Package Alias: RFLIB@6.6.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t3h0000046NG9AAM
+
+-   [PR #85](https://github.com/j-fischer/rflib/pull/85) EndpointMocker: Added ability to mock requests when using the rflib_HttpRequest class for any outbound HTTP requests. This can help with integration development while the actual endpoint is not available yet. It can also be used in training or development environments where integration is generally not available.
+
 ### RFLIB 6.5.1
 
 Package ID: 04t3h000004pOzYAAU
