@@ -72,7 +72,7 @@ public with sharing class rflib_HttpRequest {
                 }
 
                 if (rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound) {
-                    throw new MockEndpointNotFoundException();
+                    throw new CalloutException('No matching RFLIB HTTP Mock Endpoint configuration found; please check the CMT object.');
                 }
             }
     
@@ -132,6 +132,4 @@ public with sharing class rflib_HttpRequest {
     public override String toString() {
         return delegatee.toString();
     }
-
-    public class MockEndpointNotFoundException extends Exception {} 
 }

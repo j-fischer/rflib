@@ -119,7 +119,7 @@ public class rflib_GlobalSettings {
     
     public static Boolean httpRequestMockingThrowErrorIfNotMockNotFound {
         get {
-            String val = getSetting('Http_Mocking_Throw_Error_If_Mock_Not_Found');
+            String val = getSetting('Http_Mocking_Throw_Error_If_Not_Found');
             return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND : Boolean.valueOf(val);
         }
     }

@@ -144,7 +144,7 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testHttpRequestMockingThrowErrorIfNotMockNotFound() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Throw_Error_If_Mock_Not_Found', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Throw_Error_If_Not_Found', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND);
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound);
