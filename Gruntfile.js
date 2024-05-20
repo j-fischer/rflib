@@ -296,6 +296,14 @@ module.exports = function(grunt) {
                 command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default --release=preview'
             },
 
+            'force-create-org-with-omni-default': {
+                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default --release=preview'
+            },
+
+            'force-create-org-with-omni-default-preview': {
+                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default'
+            },
+
             'force-create-org': {
                 command: 'sf org create scratch -f config/project-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %>'
             },
@@ -345,10 +353,17 @@ module.exports = function(grunt) {
                     'sf package install --package 04t1t000003Po3QAAS -o <%= config.alias %> -w 10 && ' + 
                     'sf org assign permset --name Streaming_Monitor -o <%= config.alias %>'
             },
-
+            
             'force-install-bigobject-utility': {
                 command:
                     'sf package install --package 04t7F000003irldQAA -o <%= config.alias %> -w 10'
+            },
+
+            'force-install-omnistudio': {
+                command:
+                    'sf package install --package 04t4W000000YWaz -o <%= config.alias %> -w 10 --no-prompt && ' + 
+                    'sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o <%= config.alias %> && ' +
+                    'sf org assign permset --name OmniStudioUser --name BRERuntime -o <%= config.alias %>'
             },
 
             'force-promote': {
@@ -446,16 +461,18 @@ module.exports = function(grunt) {
 
         let skipCreation = !!grunt.option('skip-creation');
         let previewMode = !!grunt.option('preview');
+        let omni = !!grunt.option('omni');
         
         if (!skipCreation) {
+            let createScratchTaskName = omni ? 'shell:force-create-org-with-omni-default' : 'shell:force-create-org-default';
             if (previewMode) {
-                tasks.push('shell:force-create-org-default-preview');
-            } else {
-                tasks.push('shell:force-create-org-default');
+                createScratchTaskName += '-preview';
             }
+
+            tasks.push(createScratchTaskName);
         }
 
-        grunt.task.run(tasks.concat([
+        tasks.push(...[
             'shell:force-set-debug-mode',
             'shell:force-push',
             'shell:force-assign-permset',
@@ -465,6 +482,13 @@ module.exports = function(grunt) {
             'shell:force-create-qa-user',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-utility',
+        ]);
+
+        if (omni) {
+            tasks.push('shell:force-install-omnistudio');
+        }
+
+        grunt.task.run(tasks.concat([
             'shell:force-open',
             'shell:force-test',
             'shell:test-lwc'
