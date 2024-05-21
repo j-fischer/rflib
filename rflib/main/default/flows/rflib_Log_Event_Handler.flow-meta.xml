@@ -37,7 +37,7 @@
             </value>
         </inputParameters>
     </actionCalls>
-    <apiVersion>59.0</apiVersion>
+    <apiVersion>61.0</apiVersion>
     <description>Flow to execute when an RFLIB Log Event has been dispatched. The handler currently invokes the Send Log Event Email action, but can be extended to, for example, persist log information in a Custom Object.</description>
     <interviewLabel>Log Event Handler {!$Flow.CurrentDateTime}: {!$Record.Context__c} - {!$Record.ReplayId} - {!$Record.CreatedById} - {!$Record.Log_Level__c}</interviewLabel>
     <label>RFLIB Log Event Handler</label>
