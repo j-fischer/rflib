@@ -1,0 +1,33 @@
+{
+    "env": {
+        "node": true,
+        "browser": true,
+        "es6": true
+    },
+    "extends": [
+        "@salesforce/eslint-config-lwc/recommended",
+        "plugin:@salesforce/eslint-plugin-aura/recommended",
+        "plugin:@salesforce/eslint-plugin-aura/locker"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@babel/eslint-parser",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "requireConfigFile": false,
+        "babelOptions": {
+            "parserOpts": {
+                "plugins": ["classProperties", ["decorators", { "decoratorsBeforeExport": false }]]
+            }
+        }
+    },
+
+    "plugins": ["@lwc/eslint-plugin-lwc", "@salesforce/eslint-plugin-aura"],
+    "rules": {
+        "strict": 0,
+        "no-unused-expressions": 0,
+        "vars-on-top": 0
+    }
+}
