@@ -297,11 +297,11 @@ module.exports = function(grunt) {
             },
 
             'force-create-org-with-omni-default': {
-                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default --release=preview'
+                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default'
             },
 
             'force-create-org-with-omni-default-preview': {
-                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default'
+                command: 'sf org create scratch -f config/omni-scratch-def.json -y 30 -a <%= config.alias %> --name <%= config.alias %> --set-default --release=preview'
             },
 
             'force-create-org': {
@@ -327,7 +327,7 @@ module.exports = function(grunt) {
             },
 
             'force-test': {
-                command: 'sf apex run test -l RunAllTestsInOrg -c -r human -o <%= config.alias %> -w 4'
+                command: 'sf apex run test -l RunLocalTests -c -r human -o <%= config.alias %> -w 4'
             },
 
             'force-open': {
