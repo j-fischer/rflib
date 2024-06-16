@@ -364,6 +364,7 @@ export default class PermissionsExplorer extends LightningElement {
             );
             this.permissionRecords = this.permissionRecords.concat(result.records);
             this.numRecordsLoaded = this.permissionRecords.length;
+            this.numTotalRecords = result.totalNumOfRecords;
 
             this.progressText =
                 loadingPermissionsLabel + ' (' + this.numRecordsLoaded + ' / ' + result.totalNumOfRecords + ')';

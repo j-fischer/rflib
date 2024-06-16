@@ -362,7 +362,7 @@ public with sharing class rflib_PermissionsExplorerController {
         }
         
         String query = fieldSelection + tableName + condition + sortOrder;
-        String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v59.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
+        String urlPath = String.isNotBlank(servicePath) ? servicePath : '/services/data/v61.0/query?q=' + EncodingUtil.urlEncode(query, 'UTF-8');
         
         rflib_HttpRequest req = new rflib_HttpRequest(); 
         req.suppressMocking = true;       
