@@ -16,29 +16,32 @@ The following lists describe some of the key features of rflib.
 
 #### Logging Framework (package RFLIB):
 
--   Logger for LWC and Aura, which publishes logs the same way as Apex
--   Configuration through Custom Settings allowing for different log configurations between users
+-   [Logger for LWC and Aura](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging), which publishes logs the same way as Apex
+-   [Configuration through Custom Settings](https://github.com/j-fischer/rflib/wiki/Logger-Settings) allowing for different log configurations between users
 -   Aggregation of log statements when reporting
 -   Using Platform Events for reporting of log statements
--   Support Batched Logging for when DML statements are not supported
+-   [Masking](https://github.com/j-fischer/rflib/wiki/Masking-Log-Messages) of content in Log Messages
 -   Log Archive using Big Objects
--   Dashboard for all Object and Field permissions for Profiles and Permission Sets
+-   Automatically [time and log](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Log-Timer) execution duration
+-   Dashboard for all Object, Field, and Apex/VF Page permissions for Profiles, Permission Sets, and Permission Set Groups
+-   Supports [Salesforce Functions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) (NodeJS only)
 -   Supports logging in Flow and Process Builder
--   Supports Salesforce Functions (NodeJS only)
+-   Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
 -   Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
+-   [HTTP Request mocking framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) to speed up integration development
 
 #### Feature Switches (package RFLIB-FS):
 
--   Fully configured using Custom Metadata
+-   [Fully configured](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Feature-Switches) using Custom Metadata
 -   Supports hierarchical structure (similar to Custom Settings) to override settings at the profile or user level
 -   Fully supported in Flow Builder through Get Records or Apex Action
 
 #### Trigger Framework (package RFLIB-TF):
 
--   Fully decoupled framework, trigger handlers work in isolation
+-   Fully decoupled [framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Trigger-Framework), trigger handlers work in isolation
 -   Recursion tracking to allow for easy prevention of multiple executions
 -   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
--   Framework for Retryable Actions using Platform Events for asynchronous actions
+-   [Framework for Retryable Actions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Retryable-Actions) using Platform Events for asynchronous actions with automatic retries
 
 ## Deploy
 
@@ -116,7 +119,7 @@ display what users have not been provided with Permission Set to enable client l
 
 ## Application Event Dashboard
 
-Whether a product owner wants to understand feature adoption or user behaviour, Application Events provide visibility into the an
+Whether a product owner wants to understand feature adoption or user behaviour, [Application Events](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Application-Events) provide visibility into the an
 application's usage patterns and can help teams to make better decisions and learn more about their apps.
 
 For operational teams, Application Events can be used to track integration requests and their outcomes, which can lead to a call to action to review
