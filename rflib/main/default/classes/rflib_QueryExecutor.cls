@@ -47,4 +47,13 @@ public interface rflib_QueryExecutor {
      * @return       The records returned by the query.
      */
     List<SObject> query(String query);
+
+    /**
+     * @description Execute a query against the database using a cursor.
+     * @param  query The Query to be executed.
+     * @param  position The starting position of the cursor.
+     * @param  count Number of records to retrieve.
+     * @return       The result of the cursor based query including all records returned.
+     */
+    rflib_DatabaseCursorQueryResult fetch(String query, Integer position, Integer count);
 }

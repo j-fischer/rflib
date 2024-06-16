@@ -356,30 +356,34 @@ export default class PermissionsExplorer extends LightningElement {
 
         const retrievePermissionsCallback = (result) => {
             logger.debug(
-                'Received field permission records: numberOfRecord={0}, nextRecordsUrl={1}',
+                'Received field permission records: numberOfRecords={0}, totalNumberOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}',
                 result.records.length,
-                result.nextRecordsUrl
+                result.totalNumOfRecords,
+                result.nextRecordsUrl,
+                result.nextPosition
             );
             this.permissionRecords = this.permissionRecords.concat(result.records);
-            this.numTotalRecords = this.permissionRecords.length;
+            this.numRecordsLoaded = this.permissionRecords.length;
 
             this.progressText =
-                loadingPermissionsLabel + ' (' + this.numTotalRecords + ' / ' + result.totalNumOfRecords + ')';
+                loadingPermissionsLabel + ' (' + this.numRecordsLoaded + ' / ' + result.totalNumOfRecords + ')';
 
-            if (result.nextRecordsUrl) {
-                return remoteAction({ servicePath: result.nextRecordsUrl, userId: this.selectedUserId }).then(
-                    retrievePermissionsCallback
-                );
+            if (result.nextRecordsUrl || result.nextPosition < result.totalNumOfRecords - 1) {
+                return remoteAction({
+                    servicePath: result.nextRecordsUrl,
+                    position: result.nextPosition,
+                    userId: this.selectedUserId
+                }).then(retrievePermissionsCallback);
             }
 
             this.isLoadingRecords = false;
 
-            if (this.numTotalRecords < result.totalNumOfRecords) {
+            if (this.numRecordsLoaded < result.totalNumOfRecords) {
                 const evt = new ShowToastEvent({
                     title: 'Permissions Incomplete',
                     message:
                         'Only ' +
-                        this.numTotalRecords +
+                        this.numRecordsLoaded +
                         ' of ' +
                         result.totalNumOfRecords +
                         ' permission records were retrieved. To load all records, please enable the REST API functionality.',
