@@ -109,7 +109,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
         
@@ -127,7 +127,7 @@ private class rflib_PermissionsExplorerControllerTest {
         );
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
         
@@ -150,7 +150,27 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertFieldPermissionsResult(records, 'Profile');
+
+        System.assert(records.get(0).Field.containsNone('.'));
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetFieldLevelSecurityForAllProfiles_RestApiDisabled_ResultOfMoreThanMaxRecordLimitUsesApexCursor() {
+        setup(false);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            Database.query(FLS_PROFILE_QUERY +  + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
+        );
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, 0);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -176,7 +196,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals('Session expired or invalid', actualEx.getMessage());
@@ -201,7 +221,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null);
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -215,7 +235,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -243,7 +263,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null);
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -257,7 +277,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -285,7 +305,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null);
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -299,7 +319,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, UserInfo.getUserId());
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, null, UserInfo.getUserId());
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -327,7 +347,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, UserInfo.getUserId());
+            rflib_PermissionsExplorerController.getFieldLevelSecurityForUser(null, null, UserInfo.getUserId());
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -341,7 +361,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -359,7 +379,7 @@ private class rflib_PermissionsExplorerControllerTest {
         );
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -382,7 +402,25 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null, null);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertObjectPermissionsResult(records, 'Profile');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetObjectLevelSecurityForAllProfiles_RestApiDisabled_ResultOfMoreThanMaxRecordLimitUsesApexCursor() {
+        setup(false);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            Database.query(OBJ_PROFILE_QUERY + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
+        );
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null, 0);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -406,7 +444,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null);
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -420,7 +458,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
         
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -444,7 +482,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null);
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -458,7 +496,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
         
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -482,7 +520,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null);
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -496,7 +534,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, UserInfo.getUserId());
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, null, UserInfo.getUserId());
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -524,7 +562,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, UserInfo.getUserId());
+            rflib_PermissionsExplorerController.getObjectLevelSecurityForUser(null, null, UserInfo.getUserId());
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -538,7 +576,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
         
@@ -556,7 +594,7 @@ private class rflib_PermissionsExplorerControllerTest {
         );
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
         
@@ -579,11 +617,29 @@ private class rflib_PermissionsExplorerControllerTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req.getPlatformRequest(), resp));
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
         assertApexPermissionsResult(records, 'PermissionSet'); // only have one mock REST API result
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions, PMD.ApexUnitTestClassShouldHaveAsserts')
+    private static void testGetApexSecurityForAllProfiles_RestApiDisabled_ResultOfMoreThanMaxRecordLimitUsesApexCursor() {
+        setup(false);
+
+        rflib_PermissionsExplorerController.queryExecutor = new rflib_MockQueryExecutor(
+            rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT + 1, 
+            Database.query(APEX_PROFILE_QUERY +  + ' LIMIT ' + rflib_PermissionsExplorerController.APEX_QUERY_RECORD_LIMIT)
+        );
+
+        Test.startTest();
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, 0);
+        List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
+        Test.stopTest();
+
+        assertApexPermissionsResult(records, 'Profile');
     }
 
     @IsTest
@@ -603,7 +659,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals('Session expired or invalid', actualEx.getMessage());
@@ -628,7 +684,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null);
+            rflib_PermissionsExplorerController.getApexSecurityForAllProfiles(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -642,7 +698,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -670,7 +726,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null);
+            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -684,7 +740,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null);
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null, null);
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -712,7 +768,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null);
+            rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups(null, null);
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());
@@ -726,7 +782,7 @@ private class rflib_PermissionsExplorerControllerTest {
         setup(false);
 
         Test.startTest();
-        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForUser(null, UserInfo.getUserId());
+        rflib_PermissionsExplorerController.QueryResult result = rflib_PermissionsExplorerController.getApexSecurityForUser(null, null, UserInfo.getUserId());
         List<rflib_PermissionsExplorerController.PermissionInfo> records = result.records;
         Test.stopTest();
 
@@ -754,7 +810,7 @@ private class rflib_PermissionsExplorerControllerTest {
 
         Test.startTest();
         try {
-            rflib_PermissionsExplorerController.getApexSecurityForUser(null, UserInfo.getUserId());
+            rflib_PermissionsExplorerController.getApexSecurityForUser(null, null, UserInfo.getUserId());
             System.assert(false, 'An exception should have been thrown.');
         } catch (AuraHandledException actualEx) {
             System.assertEquals(expectedEx.getMessage(), actualEx.getMessage());

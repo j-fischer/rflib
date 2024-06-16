@@ -1,47 +1,64 @@
-/*
- * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_DatabaseQueryExecutorTest {
-   @IsTest
-   private static void testCountQuery() {
-       String query = 'SELECT COUNT() FROM Account';
-       
-       Test.startTest();
-       System.assertEquals(Database.countQuery(query), new rflib_DatabaseQueryExecutor().countQuery(query));
-       Test.stopTest();
-   }
+   
+    @IsTest
+    private static void testCountQuery() {
+        String query = 'SELECT COUNT() FROM rflib_Application_Event__c';
+        
+        Test.startTest();
+        System.assertEquals(Database.countQuery(query), new rflib_DatabaseQueryExecutor().countQuery(query));
+        Test.stopTest();
+    }
 
-   @IsTest
-   private static void testQuery() {
-       Test.startTest();
-       System.assertEquals([SELECT Id FROM Account ORDER BY CreatedDate DESC LIMIT 200], new rflib_DatabaseQueryExecutor().query('SELECT Id FROM Account ORDER BY CreatedDate DESC LIMIT 200'));
-       Test.stopTest();
-   }
+    @IsTest
+    private static void testQuery() {
+        String query = 'SELECT Id FROM rflib_Application_Event__c ORDER BY CreatedDate DESC LIMIT 200';
+        
+        Test.startTest();
+        System.assertEquals(
+            [SELECT Id FROM rflib_Application_Event__c ORDER BY CreatedDate DESC LIMIT 200], 
+            new rflib_DatabaseQueryExecutor().query(query)
+        );
+        Test.stopTest();
+    }
+    
+    @IsTest
+    private static void testFetch() {
+        List<rflib_Application_Event__c> events = new List<rflib_Application_Event__c>();
+        for (Integer i = 0; i < 5000; i++) {
+            events.add(new rflib_Application_Event__c(
+                Name = 'Test Event ' + i,
+                Event_Name__c = 'test-event-' + ((Integer) i / 1000),
+                Occurred_On__c = DateTime.now(),
+                Related_Record_ID__c = 'NA',
+                Created_By_ID__c = UserInfo.getUserId()
+            ));
+        }
+        insert events;
+        
+        String query = 'SELECT Id FROM rflib_Application_Event__c ORDER BY CreatedDate DESC';
+        
+        Test.startTest();
+        
+        // Test the fetch method with a start position and count
+        rflib_DatabaseCursorQueryResult result = new rflib_DatabaseQueryExecutor().fetch(query, 0, 200);
+        System.assertEquals(200, result.records.size(), 'Expected 200 records fetched');
+        System.assertEquals(5000, result.totalQueryNumRecords, 'Expected total number of records to be 5000');
+        System.assertEquals(0, result.position, 'Expected start position to be 0');
+        
+        // Test fetching from a different position
+        result = new rflib_DatabaseQueryExecutor().fetch(query, 200, 200);
+        System.assertEquals(200, result.records.size(), 'Expected 200 records fetched from position 200');
+        System.assertEquals(5000, result.totalQueryNumRecords, 'Expected total number of records to be 5000');
+        System.assertEquals(200, result.position, 'Expected start position to be 200');
+        
+        // Test fetching with a count that exceeds the remaining records
+        result = new rflib_DatabaseQueryExecutor().fetch(query, 4900, 200);
+        System.assertEquals(100, result.records.size(), 'Expected 100 records fetched from position 4900');
+        System.assertEquals(5000, result.totalQueryNumRecords, 'Expected total number of records to be 5000');
+        System.assertEquals(4900, result.position, 'Expected start position to be 4900');
+        
+        Test.stopTest();
+    }
 }

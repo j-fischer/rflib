@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,38 +26,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockQueryExecutor implements rflib_QueryExecutor {
+public class rflib_CollectionUtil {
     
-    private final Integer countResult;
-    private final List<SObject> queryResult;
 
-    public rflib_MockQueryExecutor(Integer countResult, List<SObject> queryResult) {
-        this.countResult = countResult;
-        this.queryResult = queryResult;
-    }
-
-    public Integer countQuery(String query) {
-        return countResult;
-    }
-
-    public List<SObject> query(String query) {
-        return queryResult;
-    }
-
-    public rflib_DatabaseCursorQueryResult fetch(String query, Integer position, Integer count) {
-        if (position < 0 || position >= queryResult.size()) {
-            return new rflib_DatabaseCursorQueryResult(new List<SObject>(), position, queryResult.size());
+    public static List<Object> sublist(List<Object> input, Integer startIndex, Integer count) {
+        List<Object> result = new List<Object>();
+        
+        Integer endIndex = Math.min(startIndex + count, input.size());
+        
+        for (Integer i = startIndex; i < endIndex; i++) {
+            result.add(input[i]);
         }
 
-        Integer endIndex = Math.min(position + count, queryResult.size());
-
-        List<SObject> result = new List<SObject>();
-        for (Object o : rflib_CollectionUtil.sublist(queryResult, position, endIndex)) {
-            result.add((SObject) o);
-        }
-
-        return new rflib_DatabaseCursorQueryResult(result, position, queryResult.size());
+        return result;
     }
 }
