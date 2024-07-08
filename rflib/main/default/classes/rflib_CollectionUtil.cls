@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,32 +26,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-  /**
-  * @group Logger
-  * @description The `rflib_QueryExecutor` reference implementation acting as a proxy to Salesforce's `Database` class.
-  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public inherited sharing class rflib_DatabaseQueryExecutor implements rflib_QueryExecutor {
+public class rflib_CollectionUtil {
     
-    public Integer countQuery(String query) {
-        return Database.countQuery(query);
-    }
 
-    public List<SObject> query(String query) {
-        return Database.query(query);
-    }
-
-    public rflib_DatabaseCursorQueryResult fetch(String query, Integer position, Integer count) {
-        Database.Cursor cursor = Database.getCursor(query);
-        Integer numTotalRecords = cursor.getNumRecords();
+    public static List<Object> sublist(List<Object> input, Integer startIndex, Integer count) {
+        List<Object> result = new List<Object>();
         
-        List<SObject> result = cursor.fetch(position, Math.min(count, numTotalRecords - position));
+        Integer endIndex = Math.min(startIndex + count, input.size());
+        
+        for (Integer i = startIndex; i < endIndex; i++) {
+            result.add(input[i]);
+        }
 
-        return new rflib_DatabaseCursorQueryResult(
-            result,
-            position,
-            numTotalRecords
-        );
+        return result;
     }
 }

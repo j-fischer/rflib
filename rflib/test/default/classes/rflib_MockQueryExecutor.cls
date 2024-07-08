@@ -45,4 +45,19 @@ public class rflib_MockQueryExecutor implements rflib_QueryExecutor {
     public List<SObject> query(String query) {
         return queryResult;
     }
+
+    public rflib_DatabaseCursorQueryResult fetch(String query, Integer position, Integer count) {
+        if (position < 0 || position >= queryResult.size()) {
+            return new rflib_DatabaseCursorQueryResult(new List<SObject>(), position, queryResult.size());
+        }
+
+        Integer endIndex = Math.min(position + count, queryResult.size());
+
+        List<SObject> result = new List<SObject>();
+        for (Object o : rflib_CollectionUtil.sublist(queryResult, position, endIndex)) {
+            result.add((SObject) o);
+        }
+
+        return new rflib_DatabaseCursorQueryResult(result, position, queryResult.size());
+    }
 }
