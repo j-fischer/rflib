@@ -1,6 +1,6 @@
 {
     "name": "rflib",
-    "version": "6.0.0",
+    "version": "7.0.0",
     "description": "Salesforce library for improving the reliability of your org",
     "type": "commonjs",
     "main": "./dist/rflibLogger.js",
