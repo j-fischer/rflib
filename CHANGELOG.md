@@ -1,3 +1,11 @@
+### RFLIB 7.0.0
+
+Package ID: 04tKY000000xA5KYAU
+Package Alias: RFLIB@7.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xA5KYAU
+
+-   [PR #87](https://github.com/j-fischer/rflib/pull/87) Introduced recently added Apex Database.Cursor (beta) functionality to query large number of results in Permission Explorer. This will eventually replace the REST API based approach.
+
 ### RFLIB 6.6.0
 
 Package ID: 04t3h0000046NG9AAM
