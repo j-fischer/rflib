@@ -125,29 +125,38 @@ private class rflib_GlobalSettingsTest {
     }
 
     @IsTest
-    static void testHttpRequestMockingEnabled() {
+    static void testHttpRequestMockingEnabledOrDefault() {
         Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Enabled', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ENABLED);
 
         Test.startTest();
-        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingEnabled);
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingEnabledOrDefault);
         Test.stopTest();
     }
 
     @IsTest
-    static void testHttpRequestMockingAllowInProduction() {
+    static void testHttpRequestMockingAllowInProductionOrDefault() {
         Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Allow_In_Production', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION);
 
         Test.startTest();
-        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingAllowInProduction);
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingAllowInProductionOrDefault);
         Test.stopTest();
     }
 
     @IsTest
-    static void testHttpRequestMockingThrowErrorIfNotMockNotFound() {
+    static void testHttpRequestMockingThrowErrorIfNotMockNotFoundOrDefault() {
         Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Throw_Error_If_Not_Found', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND);
 
         Test.startTest();
-        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound);
+        System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFoundOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testTraceIdModeOrDefault() {
+        String expectedValue = getConfiguredStringValueOrDefault('Trace_ID_Value_Format', rflib_GlobalSettings.TRACE_ID_VALUE_FORMAT);
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdValueFormatOrDefault);
         Test.stopTest();
     }
 

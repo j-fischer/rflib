@@ -31,8 +31,43 @@
 private class rflib_TraceIdTest {
 
     @IsTest
-    private static void testValue(){
+    private static void testDefaultMode(){
         System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), rflib_TraceId.value);        
+    }
+
+    @IsTest
+    private static void testUser18Mode(){
+        rflib_GlobalSettings.SETTINGS.put('Trace_ID_Value_Format', 'USER18_REQUEST_ID');
+
+        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), rflib_TraceId.value);        
+    }
+    
+    @IsTest
+    private static void testTraceIdModeUnsupported(){
+        rflib_GlobalSettings.SETTINGS.put('Trace_ID_Value_Format', 'UNSUPPORTED');
+
+        System.assertEquals(UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId(), rflib_TraceId.value);        
+    }
+    
+    @IsTest
+    private static void testUser15Mode(){
+        rflib_GlobalSettings.SETTINGS.put('Trace_ID_Value_Format', 'USER15_REQUEST_ID');
+
+        System.assertEquals(Id.valueOf(UserInfo.getUserId()).to15() + '|' + Request.getCurrent().getRequestId(), rflib_TraceId.value);        
+    }
+    
+    @IsTest
+    private static void testRequestIdMode(){
+        rflib_GlobalSettings.SETTINGS.put('Trace_ID_Value_Format', 'REQUEST_ID');
+
+        System.assertEquals(Request.getCurrent().getRequestId(), rflib_TraceId.value);        
+    }
+
+    @IsTest
+    private static void testRequestIdMode_Lowercase(){
+        rflib_GlobalSettings.SETTINGS.put('Trace_ID_Value_Format', 'request_id');
+
+        System.assertEquals(Request.getCurrent().getRequestId(), rflib_TraceId.value);        
     }
 
     @IsTest
