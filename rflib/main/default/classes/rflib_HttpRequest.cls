@@ -64,9 +64,9 @@ public with sharing class rflib_HttpRequest {
             delegatee.setHeader(rflib_GlobalSettings.traceIdHeaderNameOrDefault, rflib_TraceId.value);
 
             if (!suppressMocking && 
-                rflib_GlobalSettings.httpRequestMockingEnabled && (
+                rflib_GlobalSettings.httpRequestMockingEnabledOrDefault && (
                     rflib_OrgUtil.isSandboxOrg() ||
-                    (rflib_OrgUtil.isProductionOrg() && rflib_GlobalSettings.httpRequestMockingAllowInProduction)
+                    (rflib_OrgUtil.isProductionOrg() && rflib_GlobalSettings.httpRequestMockingAllowInProductionOrDefault)
             )) {
                 HttpResponse mockResponse = rflib_HttpEndpointMocker.getMockResponse(delegatee);
 
@@ -74,7 +74,7 @@ public with sharing class rflib_HttpRequest {
                     return mockResponse;
                 }
 
-                if (rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFound) {
+                if (rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFoundOrDefault) {
                     throw new CalloutException('No matching RFLIB HTTP Mock Endpoint configuration found; please check the CMT object.');
                 }
             }

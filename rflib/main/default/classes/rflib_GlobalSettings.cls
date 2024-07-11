@@ -50,6 +50,9 @@ public class rflib_GlobalSettings {
     private static final String TRACE_ID_HEADER_NAME_DEFAULT_VALUE = 'X-Trace-ID';
     
     @TestVisible
+    private static final String TRACE_ID_VALUE_FORMAT = 'USER18_REQUEST_ID'; 
+    
+    @TestVisible
     private static final Boolean USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE = false;    
     
     @TestVisible
@@ -95,6 +98,13 @@ public class rflib_GlobalSettings {
             return String.isBlank(val) ? TRACE_ID_HEADER_NAME_DEFAULT_VALUE : val;
         }
     }
+
+    public static String traceIdValueFormatOrDefault {
+        get {
+            String val = getSetting('Trace_ID_Value_Format');
+            return String.isBlank(val) ? TRACE_ID_VALUE_FORMAT : val;
+        }
+    }
     
     public static Boolean useDefaultWorkflowUserForLogEventsOrDefault {
         get {
@@ -103,21 +113,21 @@ public class rflib_GlobalSettings {
         }
     }
     
-    public static Boolean httpRequestMockingEnabled {
+    public static Boolean httpRequestMockingEnabledOrDefault {
         get {
             String val = getSetting('Http_Mocking_Enabled');
             return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ENABLED : Boolean.valueOf(val);
         }
     }
     
-    public static Boolean httpRequestMockingAllowInProduction {
+    public static Boolean httpRequestMockingAllowInProductionOrDefault {
         get {
             String val = getSetting('Http_Mocking_Allow_In_Production');
             return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION : Boolean.valueOf(val);
         }
     }
     
-    public static Boolean httpRequestMockingThrowErrorIfNotMockNotFound {
+    public static Boolean httpRequestMockingThrowErrorIfNotMockNotFoundOrDefault {
         get {
             String val = getSetting('Http_Mocking_Throw_Error_If_Not_Found');
             return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND : Boolean.valueOf(val);
@@ -145,7 +155,8 @@ public class rflib_GlobalSettings {
             throw new rflib_InvalidArgumentException('newLimit', 'value provided (' + newLimit + ') is less than 0 or higher than allowed limit: ' + Limits.getPublishImmediateDML());
         }
 
-        String newLimitStr = newLimit != null ? String.valueOf(newLimit) : rflib_Global_Setting__mdt.getInstance('Publish_Platform_Event_Transaction_Limit')?.Value__c;
-        SETTINGS.put('Publish_Platform_Event_Transaction_Limit', newLimitStr);
+        String keyName = 'Publish_Platform_Event_Transaction_Limit';
+        String newLimitStr = newLimit != null ? String.valueOf(newLimit) : rflib_Global_Setting__mdt.getInstance(keyName)?.Value__c;
+        SETTINGS.put(keyName, newLimitStr);
     }
 }

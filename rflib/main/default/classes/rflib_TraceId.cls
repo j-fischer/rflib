@@ -35,7 +35,21 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_TraceId {
     
-    public static String value = UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId();
+    public static String value {
+        get {
+            switch on rflib_GlobalSettings.traceIdValueFormatOrDefault.toUpperCase() {
+                when 'REQUEST_ID' {
+                    return Request.getCurrent().getRequestId();
+                }
+                when 'USER15_REQUEST_ID' {
+                    return Id.valueOf(UserInfo.getUserId()).to15() + '|' + Request.getCurrent().getRequestId();
+                }
+                when else {
+                    return UserInfo.getUserId() + '|' + Request.getCurrent().getRequestId();
+                }
+            }
+        }
+    }
     
     @TestVisible
     @SuppressWarnings('PMD.EmptyStatementBlock')
