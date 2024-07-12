@@ -1,3 +1,11 @@
+### RFLIB 7.1.0
+
+Package ID: 04tKY000000xA5UYAU
+Package Alias: RFLIB@7.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xA5UYAU
+
+-   [PR #88](https://github.com/j-fischer/rflib/pull/88) Added new Global Setting called Trace_ID_Value_Format which allows for the setting of two new Trace ID value formats: SF Request ID only or current user's record ID (either 15 or 18 char) + SF Request ID.
+
 ### RFLIB 7.0.0
 
 Package ID: 04tKY000000xA5KYAU
