@@ -353,6 +353,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     }
 
     rflib_Log_Event__e eventToLog = new rflib_Log_Event__e(
+      Source_System_ID__c = UserInfo.getOrganizationId(),
       Request_ID__c = requestId.substring(0, Math.min(requestId.length(), 40)),
       Log_Level__c = logLevel.toString(),
       Context__c = context.substring(0, Math.min(context.length(), 40)),
