@@ -70,7 +70,7 @@ public with sharing class rflib_ArchiveLogAction {
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to archive log event', ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-archive-log-even-failed', null, LOGGER.printLogs());
+            APP_EVENT_LOGGER.logApplicationEvent('rflib-archive-log-event-failed', null, LOGGER.printLogs());
         }
     }
 
