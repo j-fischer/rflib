@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
-        <name>Log_to_Cloudwatch</name>
-        <label>Log to Cloudwatch</label>
+        <name>Log_to_HttpEndpoint</name>
+        <label>Log to HTTP Endpoint</label>
         <locationX>176</locationX>
         <locationY>170</locationY>
-        <actionName>rflib_CloudwatchLogAction</actionName>
+        <actionName>rflib_HttpCalloutLogAction</actionName>
         <actionType>apex</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
@@ -14,13 +14,13 @@
                 <elementReference>$Record</elementReference>
             </value>
         </inputParameters>
-        <nameSegment>rflib_CloudwatchLogAction</nameSegment>
+        <nameSegment>rflib_HttpCalloutLogAction</nameSegment>
         <versionSegment>1</versionSegment>
     </actionCalls>
     <apiVersion>61.0</apiVersion>
     <environments>Default</environments>
-    <interviewLabel>RFLIB Log To Cloudwatch {!$Flow.CurrentDateTime}</interviewLabel>
-    <label>RFLIB Log To Cloudwatch</label>
+    <interviewLabel>RFLIB Log To HTTP Endpoint {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>RFLIB Log To HTTP Endpoint</label>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -44,7 +44,7 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Log_to_Cloudwatch</targetReference>
+            <targetReference>Log_to_HttpEndpoint</targetReference>
         </connector>
         <flowRunAsUser>TriggeringUser</flowRunAsUser>
         <object>rflib_Log_Event__e</object>
