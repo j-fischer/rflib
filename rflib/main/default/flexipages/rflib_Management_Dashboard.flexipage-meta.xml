@@ -8,6 +8,20 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Autoproc Permission Set Manager</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>userAlias</name>
+                    <value>autoproc</value>
+                </componentInstanceProperties>
+                <componentName>rflibUserPermissionSetManager</componentName>
+                <identifier>c_rflibUserPermissionSetManager</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
                     <name>isAssigned</name>
                     <value>false</value>
                 </componentInstanceProperties>
