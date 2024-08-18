@@ -1,18 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation Template to write RFLIB logs to AWS Cloudwatch
-    including API Gateway, Lambda, IAM Roles
+Description: CloudFormation Template to write RFLIB logs to AWS Cloudwatch including API Gateway, Lambda, IAM Roles
 
 Resources:
-    # IAM Role for Lambda Execution
-
     # Lambda Function
     RflibLambdaFunction:
         Type: AWS::Lambda::Function
         Properties:
             FunctionName: rflib-cloudwatch-logs
-            Description: Lambda function to receive RFLIB Log Events and write them
-                individually to cloudwatch. The log stream name will be based on the
-                source org.
+            Description: Lambda function to receive RFLIB Log Events and write them individually to CloudWatch. The log stream name will be based on the source org.
             Handler: index.handler
             Role: !GetAtt RflibLambdaExecutionRole.Arn
             Runtime: nodejs20.x
@@ -46,20 +41,26 @@ Resources:
                      * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
                      * POSSIBILITY OF SUCH DAMAGE.
                      */
-                    import { CloudWatchLogsClient, CreateLogStreamCommand, DescribeLogStreamsCommand, PutLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
+                    const {
+                        CloudWatchLogsClient,
+                        CreateLogStreamCommand,
+                        DescribeLogStreamsCommand,
+                        PutLogEventsCommand
+                    } = require("@aws-sdk/client-cloudwatch-logs");
 
                     const region = process.env.AWS_REGION;
                     const client = new CloudWatchLogsClient({ region });
 
-                    export const handler = async (event, context) => {
+                    const handler = async (event, context) => {
                         console.log('Event:', JSON.stringify(event));
                         const logGroupName = process.env.LOG_GROUP_NAME;
                         
                         console.log(`Log Group Name: ${logGroupName}`);
                         
-                        const eventsArray = Array.isArray(event) ? event : [event];
+                        const jsonBody = JSON.parse(event.body);
+                        const logEventsArray = Array.isArray(jsonBody) ? jsonBody : [jsonBody];
                         const logEventsByStream = {};
-                        eventsArray.forEach(e => {
+                        logEventsArray.forEach(e => {
                             const logStreamName = e.Source_System_ID__c;
                             let platformInfoFormatted = e.Platform_Info__c;
                             // Check if Platform_Info__c is a JSON string and format it
@@ -115,13 +116,17 @@ Resources:
                         }
                     };
 
+                    module.exports = { handler };
+
             Environment:
                 Variables:
                     LOG_GROUP_NAME: !Ref LogGroupName
-                    AWS_REGION: !Ref AWS::Region
+
+    # IAM Role for Lambda Execution
     RflibLambdaExecutionRole:
         Type: AWS::IAM::Role
         Properties:
+            RoleName: !Sub ${AWS::StackName}-LambdaExecutionRole
             AssumeRolePolicyDocument:
                 Version: '2012-10-17'
                 Statement:
@@ -138,6 +143,7 @@ Resources:
                             Action:
                                 - logs:CreateLogGroup
                                 - logs:CreateLogStream
+                                - logs:DescribeLogStreams
                                 - logs:PutLogEvents
                                 - cloudwatch:PutMetricData
                             Resource: '*'
@@ -152,7 +158,7 @@ Resources:
     RflibApiExecutionRole:
         Type: AWS::IAM::Role
         Properties:
-            RoleName: !Sub ApiExecutionRole-${AWS::StackName}
+            RoleName: !Sub ${AWS::StackName}-ApiExecutionRole
             AssumeRolePolicyDocument:
                 Version: '2012-10-17'
                 Statement:
@@ -207,6 +213,15 @@ Resources:
                     - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
                     - LambdaArn: !GetAtt RflibLambdaFunction.Arn
 
+    # API Gateway Deployment and Stage
+    RflibApiGatewayDeployment:
+        Type: AWS::ApiGateway::Deployment
+        Properties:
+            RestApiId: !Ref RflibApiGatewayRestApi
+            StageName: prod
+        DependsOn:
+            - RflibApiGatewayMethod
+
 Parameters:
     LogGroupName:
         Type: String
@@ -221,10 +236,9 @@ Outputs:
     ApiGatewayUrl:
         Description: Invoke URL for the API Gateway
         Value: !Sub
-            - https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/log
-            - ApiGatewayRestApi: !Ref RflibApiGatewayRestApi
+            - https://${RflibApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/log
+            - RflibApiGatewayRestApi: !Ref RflibApiGatewayRestApi
 
     ApiExecutionRoleArn:
-        Description: ARN of the API Execution Role - use this role in the External
-            Credential Principal configuration in Salesforce
+        Description: ARN of the API Execution Role - use this role in the External Credential Principal configuration in Salesforce
         Value: !GetAtt RflibApiExecutionRole.Arn
