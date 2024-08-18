@@ -5,7 +5,7 @@
         <name>Archive_Log_Event</name>
         <label>Archive Log Event</label>
         <locationX>176</locationX>
-        <locationY>170</locationY>
+        <locationY>278</locationY>
         <actionName>rflib_ArchiveLogAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -26,13 +26,21 @@
         <versionSegment>1</versionSegment>
     </actionCalls>
     <actionCalls>
-        <description>Sends the Log Event to a remote HTTP endpoint, i.e. AWS API Gateway.</description>
+        <description>Sends the Log Event to a remote HTTP endpoint, i.e. AWS API Gateway. 
+IMPORTANT: This element must be first in this flow due to callout errors as a result of uncommitted work.</description>
         <name>Log_to_HTTP_Endpoint</name>
         <label>Log to HTTP Endpoint</label>
         <locationX>176</locationX>
-        <locationY>386</locationY>
+        <locationY>170</locationY>
         <actionName>rflib_HttpCalloutLogAction</actionName>
         <actionType>apex</actionType>
+        <connector>
+            <targetReference>Archive_Log_Event</targetReference>
+        </connector>
+        <faultConnector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Archive_Log_Event</targetReference>
+        </faultConnector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
@@ -48,16 +56,9 @@
         <name>rflib_Send_Log_Event_Emails</name>
         <label>Send Log Event Emails</label>
         <locationX>176</locationX>
-        <locationY>278</locationY>
+        <locationY>386</locationY>
         <actionName>rflib_SendLogEventEmailAction</actionName>
         <actionType>apex</actionType>
-        <connector>
-            <targetReference>Log_to_HTTP_Endpoint</targetReference>
-        </connector>
-        <faultConnector>
-            <isGoTo>true</isGoTo>
-            <targetReference>Log_to_HTTP_Endpoint</targetReference>
-        </faultConnector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
@@ -96,9 +97,9 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Archive_Log_Event</targetReference>
+            <targetReference>Log_to_HTTP_Endpoint</targetReference>
         </connector>
-        <flowRunAsUser>TriggeringUser</flowRunAsUser>
+        <flowRunAsUser>DefaultWorkflowUser</flowRunAsUser>
         <object>rflib_Log_Event__e</object>
         <triggerType>PlatformEvent</triggerType>
     </start>
