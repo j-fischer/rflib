@@ -26,3 +26,7 @@ rflib/main/default/customMetadata/rflib_Feature_Switch.*
 node_modules
 package.json
 package-lock.json
+
+**/tsconfig.json
+
+**/*.ts
