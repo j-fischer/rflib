@@ -377,7 +377,6 @@ module.exports = function(grunt) {
             'force-create-qa-user': {
                 command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/qa-user-def.json'
             },
-            },
 
             'force-create-workflow-user': {
                 command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/default-workflow-user-def.json'
