@@ -46,7 +46,7 @@ private class rflib_HttpCalloutLogActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_HttpCalloutLogAction.sentToCloudWatch(createTestLogEvents('ERROR'));
+        rflib_HttpCalloutLogAction.sendToExternalService(createTestLogEvents('ERROR'));
         Test.stopTest();
 
         Assert.areEqual(200, resp.getStatusCode(), 'Expected a 200 status code from the mock response.');
@@ -64,7 +64,7 @@ private class rflib_HttpCalloutLogActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_HttpCalloutLogAction.sentToCloudWatch(createTestLogEvents('ERROR'));
+        rflib_HttpCalloutLogAction.sendToExternalService(createTestLogEvents('ERROR'));
         Test.stopTest();
 
         // Expecting failure handling logic, normally assert log output or exception.
@@ -77,7 +77,7 @@ private class rflib_HttpCalloutLogActionTest {
         setupLoggerSettings('WARN');
 
         Test.startTest();
-        rflib_HttpCalloutLogAction.sentToCloudWatch(createTestLogEvents('INFO'));
+        rflib_HttpCalloutLogAction.sendToExternalService(createTestLogEvents('INFO'));
         Test.stopTest();
 
         // Since the log level doesn't match, no HTTP request should be made, so no mock setup.
@@ -95,7 +95,7 @@ private class rflib_HttpCalloutLogActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, expectedEx));
 
         Test.startTest();
-        rflib_HttpCalloutLogAction.sentToCloudWatch(createTestLogEvents('ERROR'));
+        rflib_HttpCalloutLogAction.sendToExternalService(createTestLogEvents('ERROR'));
         Test.stopTest();
 
         Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-http-callout-log-event-failed']);

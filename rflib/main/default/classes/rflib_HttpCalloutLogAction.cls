@@ -49,7 +49,7 @@ public with sharing class rflib_HttpCalloutLogAction {
     }
 
     @InvocableMethod(label='Log Event via HTTP to Remote System' category='RFLIB' description='Log Events in external systems such as AWS Cloudwatch')
-    public static void sentToCloudWatch(List<rflib_Log_Event__e> events) {
+    public static void sendToExternalService(List<rflib_Log_Event__e> events) {
         try {
             rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
             
