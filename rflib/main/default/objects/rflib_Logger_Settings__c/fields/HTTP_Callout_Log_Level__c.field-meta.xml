@@ -2,9 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>HTTP_Callout_Log_Level__c</fullName>
     <defaultValue>&quot;NONE&quot;</defaultValue>
-    <description>Set the log level for which a Log Event will be sent to an external HTTP service. Whenever a Log Event is created and the level of the event is encompassed by the currently set Log Archive Level, a record will be created. Otherwise, no record will be created.</description>
+    <description>Set the log level for which a Log Event will be sent to an external HTTP service. Whenever a Log Event is created and the level of the event is encompassed by the currently set HTTP Callout Log Level, a record will be created. Otherwise, no record will be created.</description>
     <externalId>false</externalId>
-    <inlineHelpText>Set the log level for which a Log Event will be sent to an external HTTP service. Whenever a Log Event is created and the level of the event is encompassed by the currently set Log Archive Level, a record will be created. Otherwise, no record will be created.</inlineHelpText>
+    <inlineHelpText>Set the log level for which a Log Event will be sent to an external HTTP service. Whenever a Log Event is created and the level of the event is encompassed by the currently set HTTP Callout Log Level, a record will be created. Otherwise, no record will be created.</inlineHelpText>
     <label>HTTP Callout Log Level</label>
     <length>5</length>
     <required>true</required>
