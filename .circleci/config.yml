@@ -20,10 +20,9 @@ jobs:
                   command: |
                       openssl version
                       openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $ENCRYPTION_KEY -iv $ENCRYPTION_IV
-                      export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
-                      export SFDX_DOMAIN_RETRY=300
-                      export SFDX_DISABLE_APP_HUB=true
-                      export SFDX_LOG_LEVEL=DEBUG
+                      export SF_USE_GENERIC_UNIX_KEYCHAIN=true
+                      export SF_DOMAIN_RETRY=300
+                      export SF_LOG_LEVEL=DEBUG
                       node -v
                       npm install @salesforce/cli@2.58.7
                       npx sf --version
