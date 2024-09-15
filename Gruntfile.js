@@ -1,3 +1,6 @@
+/**
+ * DEPRECATED - Please use Gulp to run your local build tasks. Grunt will be removed in the near future. 
+ */
 const _ = require('lodash');
 const semver = require('semver');
 
@@ -59,19 +62,6 @@ module.exports = function(grunt) {
     grunt.initConfig({
         config: config,
         env: process.env,
-
-        rename: {
-            bigObjectIndexForPackaging: {
-              files: [
-                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'},
-                ]
-            },
-            bigObjectIndexForDeployment: {
-                files: [
-                    {src: ['rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.indexe-meta.xml'], dest: 'rflib/main/default/objects/rflib_Logs_Archive__b/indexes/rflib_Log_Index.index-meta.xml'},
-                ]
-            }
-        },
 
         confirm: {
             deleteOrg: {
