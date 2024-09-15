@@ -378,6 +378,10 @@ module.exports = function(grunt) {
                 command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/qa-user-def.json'
             },
 
+            'force-create-workflow-user': {
+                command: 'sf org create user -o <%= config.alias %> --set-alias qa_user --definition-file config/default-workflow-user-def.json'
+            },
+
             'force-configure-settings': {
                 command: 'sf apex run -o <%= config.alias %> -f scripts/apex/ConfigureCustomSettings.apex'
             },
@@ -480,6 +484,7 @@ module.exports = function(grunt) {
             'shell:force-create-log-event',
             'shell:force-create-application-event',
             'shell:force-create-qa-user',
+            'shell:force-create-workflow-user',
             'shell:force-install-streaming-monitor',
             'shell:force-install-bigobject-utility',
         ]);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,20 +29,17 @@
 
 /**
  * @group Logger
- * @description Invocable Action that will send out an email to the Apex Email Notification list.
+ * @description Invocable Action that will send out an HTTP request to an external system . 
  *              Please make sure to set the Org Wide Email Sender Address in the Logger Custom Settings
  *              or the email will note be sent. This is due to the fact that Platform Event based triggers
  *              are executed by the System user. 
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_ArchiveLogAction {
-    
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ArchiveLogAction');
+public with sharing class rflib_HttpCalloutLogAction {
+
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_HttpCalloutLogAction');
 
     private static final rflib_ApplicationEventLogger APP_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
-
-    @TestVisible
-    private static rflib_BigObjectDatabaseExecutor BIG_OBJECT_DB_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
 
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
@@ -51,44 +48,46 @@ public with sharing class rflib_ArchiveLogAction {
         LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
-    @InvocableMethod(label='Archive Log Event' category='RFLIB' description='Archive Log Events in Big Object')
-    public static void archiveLogIfApplicable(List<rflib_Log_Event__e> events) {
+    @InvocableMethod(label='Log Event via HTTP to Remote System' category='RFLIB' description='Log Events in external systems such as AWS Cloudwatch')
+    public static void sendToExternalService(List<rflib_Log_Event__e> events) {
         try {
             rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
-
-            LOGGER.debug('run() invoked, size=' + events.size());
             
-            List<rflib_Logs_Archive__b> eventsToArchive = new List<rflib_Logs_Archive__b>();
+            List<rflib_Log_Event__e> eventsToSend = new List<rflib_Log_Event__e>();
             for (rflib_Log_Event__e evt : events) {
                 if (matchesConfiguredLogLevel(loggerSettings, evt)) {
-                    eventsToArchive.add(createArchiveLogRecord(evt));
+                    eventsToSend.add(evt);
                 }
             }
 
-            if (eventsToArchive.size() > 0) {
-                BIG_OBJECT_DB_EXECUTOR.insertImmediate(eventsToArchive);
+            if (eventsToSend.size() == 0) {
+                LOGGER.debug('No events to send found. Nothing to do here.');
+                return;
+            }
+
+
+            rflib_HttpRequest req = new rflib_HttpRequest(LOGGER);
+
+            req.setEndpoint('callout:RFLIB_HTTP_CALLOUT_LOG');
+            req.setMethod('POST');
+            req.setHeader('Content-Type', 'application/json');
+            req.setBody(JSON.serialize(eventsToSend));
+
+            HttpResponse res = req.send();
+            if (res.getStatusCode() == 200) {
+                LOGGER.debug('Successfully sent data to remote service');
+            } else {
+                LOGGER.debug('Failed to send data to remote service. Status: ' + res.getStatus());
+                APP_EVENT_LOGGER.logApplicationEvent('rflib-http-callout-log-event-failed', null, JSON.serialize(res));
             }
         } catch (Exception ex) {
-            LOGGER.error('Failed to archive log event', ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-archive-log-event-failed', null, LOGGER.printLogs());
+            LOGGER.error('Failed to send data to remote service', ex);
+            APP_EVENT_LOGGER.logApplicationEvent('rflib-http-callout-log-event-failed', null, LOGGER.printLogs());
         }
     }
 
     private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        return rflib_LogLevel.fromString(loggerSettings.Archive_Log_Level__c).
+        return rflib_LogLevel.fromString(loggerSettings.HTTP_Callout_Log_Level__c).
             encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
-    }
-
-    private static rflib_Logs_Archive__b createArchiveLogRecord(rflib_Log_Event__e evt) {
-        rflib_Logs_Archive__b log = new rflib_Logs_Archive__b();
-        log.CreatedDate__c = evt.CreatedDate;
-        log.CreatedById__c = evt.CreatedById;
-        log.Context__c = evt.Context__c;
-        log.Log_Level__c = evt.Log_Level__c;
-        log.Request_ID__c = evt.Request_ID__c;
-        log.Log_Messages__c = evt.Log_Messages__c;
-        log.Platform_Info__c = evt.Platform_Info__c;
-
-        return log;
     }
 }

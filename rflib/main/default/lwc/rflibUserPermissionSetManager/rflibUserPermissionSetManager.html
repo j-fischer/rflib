@@ -1,0 +1,138 @@
+<!--
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <lightning-card title={title} variant="Narrow">
+        <div class="datatable-container">
+            <lightning-datatable
+                key-field="Id"
+                data={userPermissionSets}
+                columns={columns}
+                hide-checkbox-column="true"
+                onrowaction={handleRowAction}
+            >
+            </lightning-datatable>
+        </div>
+
+        <div class="slds-m-around_medium slds-grid slds-gutters">
+            <div class="slds-col slds-size_3-of-4">
+                <lightning-combobox
+                    label="Select Permission Set to Assign"
+                    name="permissionSetSelector"
+                    value={selectedPermissionSet}
+                    placeholder="Select Permission Set to Assign"
+                    options={permissionSetOptions}
+                    onchange={handlePermissionSetChange}
+                    variant="label-hidden"
+                >
+                </lightning-combobox>
+            </div>
+            <div class="slds-col slds-align_absolute-center">
+                <lightning-button
+                    variant="brand"
+                    label="Assign"
+                    onclick={handleAssignClick}
+                    disabled={isAssignButtonDisabled}
+                >
+                </lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+
+    <!-- Modal for delete confirmation -->
+    <template if:true={isDeleteModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close"
+                        onclick={closeDeleteModal}
+                    >
+                        <lightning-icon
+                            icon-name="utility:close"
+                            alternative-text="close"
+                            size="small"
+                        ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Confirm Delete</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Are you sure you want to remove this permission set assignment?</p>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button
+                        class="slds-m-right_small"
+                        variant="neutral"
+                        label="Cancel"
+                        onclick={closeDeleteModal}
+                    ></lightning-button>
+                    <lightning-button variant="destructive" label="Delete" onclick={confirmDelete}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Modal for assign confirmation -->
+    <template if:true={isAssignModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close"
+                        onclick={closeAssignModal}
+                    >
+                        <lightning-icon
+                            icon-name="utility:close"
+                            alternative-text="close"
+                            size="small"
+                        ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Confirm Assignment</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Are you sure you want to assign this permission set?</p>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button
+                        class="slds-m-right_small"
+                        variant="neutral"
+                        label="Cancel"
+                        onclick={closeAssignModal}
+                    ></lightning-button>
+                    <lightning-button variant="brand" label="Assign" onclick={confirmAssign}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

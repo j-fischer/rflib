@@ -51,6 +51,7 @@ public with sharing class rflib_SendLogEventEmailAction {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events. 
         LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
+        LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
     @InvocableMethod(label='Send Log Event Emails' category='RFLIB' description='Send Log Events to Apex Email Notification recipients')

@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-.page-selector {
-    width: 3em;
-    padding: 1px;
+ .datatable-container { 
+    max-height: 240; 
+    overflow-y: auto;
 }

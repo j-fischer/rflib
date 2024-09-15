@@ -1,0 +1,270 @@
+# Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to write RFLIB logs to AWS Cloudwatch including API Gateway, Lambda, IAM Roles
+
+Resources:
+    # Lambda Function
+    RflibLambdaFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+            FunctionName: rflib-cloudwatch-logs
+            Description: Lambda function to receive RFLIB Log Events and write them individually to CloudWatch. The log stream name will be based on the source org.
+            Handler: index.handler
+            Role: !GetAtt RflibLambdaExecutionRole.Arn
+            Runtime: nodejs20.x
+            Code:
+                ZipFile: |
+                    /*
+                     * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+                     * All rights reserved.
+                     *
+                     * Redistribution and use in source and binary forms, with or without
+                     * modification, are permitted provided that the following conditions are met:
+                     *
+                     * 1. Redistributions of source code must retain the above copyright notice,
+                     *    this list of conditions and the following disclaimer.
+                     * 2. Redistributions in binary form must reproduce the above copyright
+                     *    notice, this list of conditions and the following disclaimer in the
+                     *    documentation and/or other materials provided with the distribution.
+                     * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+                     *    contributors may be used to endorse or promote products derived from
+                     *    this software without specific prior written permission.
+                     *
+                     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+                     * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+                     * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+                     * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+                     * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+                     * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+                     * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+                     * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+                     * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+                     * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+                     * POSSIBILITY OF SUCH DAMAGE.
+                     */
+                    const {
+                        CloudWatchLogsClient,
+                        CreateLogStreamCommand,
+                        DescribeLogStreamsCommand,
+                        PutLogEventsCommand
+                    } = require("@aws-sdk/client-cloudwatch-logs");
+
+                    const region = process.env.AWS_REGION;
+                    const client = new CloudWatchLogsClient({ region });
+
+                    const handler = async (event, context) => {
+                        console.log('Event:', JSON.stringify(event));
+                        const logGroupName = process.env.LOG_GROUP_NAME;
+                        
+                        console.log(`Log Group Name: ${logGroupName}`);
+                        
+                        const jsonBody = event.body ? JSON.parse(event.body) : event.detail.payload;
+                        const logEventsArray = Array.isArray(jsonBody) ? jsonBody : [jsonBody];
+                        const logEventsByStream = {};
+                        logEventsArray.forEach(e => {
+                            const logStreamName = e.Source_System_ID__c;
+                            let platformInfoFormatted = e.Platform_Info__c;
+                            // Check if Platform_Info__c is a JSON string and format it
+                            try {
+                                const platformInfo = JSON.parse(e.Platform_Info__c);
+                                platformInfoFormatted = JSON.stringify(platformInfo, null, 2); // Format JSON with 2-space indentation
+                            } catch (error) {
+                                // If parsing fails, use the original string
+                                console.warn('Failed to parse Platform_Info__c as JSON:', error);
+                            }
+                            const logMessage = `${e.Log_Messages__c}\nPlatform Info:\n${platformInfoFormatted}`;
+                            if (!logEventsByStream[logStreamName]) {
+                                logEventsByStream[logStreamName] = [];
+                            }
+                            logEventsByStream[logStreamName].push({
+                                timestamp: new Date(e.CreatedDate).getTime(),
+                                message: logMessage
+                            });
+                        });
+
+                        try {
+                            for (const [logStreamName, logEvents] of Object.entries(logEventsByStream)) {
+                                console.log(`Log Stream Name: ${logStreamName}`);
+                                const describeLogStreamsCommand = new DescribeLogStreamsCommand({
+                                    logGroupName,
+                                    logStreamNamePrefix: logStreamName
+                                });
+                                
+                                const describeLogStreamsResponse = await client.send(describeLogStreamsCommand);
+                                const logStreamExists = describeLogStreamsResponse.logStreams.some(stream => stream.logStreamName === logStreamName);
+                                if (!logStreamExists) {
+                                    const createLogStreamCommand = new CreateLogStreamCommand({ logGroupName, logStreamName });
+                                    await client.send(createLogStreamCommand);
+                                    console.log(`Log stream created: ${logStreamName}`);
+                                }
+                                
+                                const putLogEventsCommand = new PutLogEventsCommand({
+                                    logGroupName,
+                                    logStreamName,
+                                    logEvents
+                                });
+                                await client.send(putLogEventsCommand);
+                                
+                                console.log(`Log events sent to CloudWatch for log stream: ${logStreamName}`);
+                            }
+                            return {
+                                statusCode: 200,
+                                body: JSON.stringify('Log events sent to CloudWatch')
+                            };
+                        } catch (error) {
+                            console.error('Failed to write to CloudWatch Logs:', error);
+                            throw error;
+                        }
+                    };
+
+                    module.exports = { handler };
+
+            Environment:
+                Variables:
+                    LOG_GROUP_NAME: !Ref LogGroupName
+
+    # IAM Role for Lambda Execution
+    RflibLambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: !Sub ${AWS::StackName}-LambdaExecutionRole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: lambda.amazonaws.com
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: LambdaExecutionPolicy
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - logs:CreateLogGroup
+                                - logs:CreateLogStream
+                                - logs:DescribeLogStreams
+                                - logs:PutLogEvents
+                                - cloudwatch:PutMetricData
+                            Resource: '*'
+
+    # CloudWatch Log Group
+    RflibCloudWatchLogGroup:
+        Type: AWS::Logs::LogGroup
+        Properties:
+            LogGroupName: !Ref LogGroupName
+
+    # IAM Role for API Execution
+    RflibApiExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: !Sub ${AWS::StackName}-ApiExecutionRole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          AWS: !Ref IAMUserArn
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: ApiExecutionPolicy
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - execute-api:Invoke
+                            Resource:
+                                - !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RflibApiGatewayRestApi}/*
+
+    # API Gateway
+    RflibApiGatewayRestApi:
+        Type: AWS::ApiGateway::RestApi
+        Properties:
+            Name: RFLIB-Log-Gateway
+
+    RflibApiGatewayResource:
+        Type: AWS::ApiGateway::Resource
+        Properties:
+            ParentId: !GetAtt RflibApiGatewayRestApi.RootResourceId
+            PathPart: log
+            RestApiId: !Ref RflibApiGatewayRestApi
+
+    # Lambda Permission for API Gateway
+    RflibLambdaInvokePermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !GetAtt RflibLambdaFunction.Arn
+            Principal: apigateway.amazonaws.com
+            SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RflibApiGatewayRestApi}/*/POST/log
+
+    RflibApiGatewayMethod:
+        Type: AWS::ApiGateway::Method
+        Properties:
+            AuthorizationType: NONE
+            HttpMethod: POST
+            ResourceId: !Ref RflibApiGatewayResource
+            RestApiId: !Ref RflibApiGatewayRestApi
+            Integration:
+                IntegrationHttpMethod: POST
+                Type: AWS_PROXY
+                Uri: !Sub
+                    - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+                    - LambdaArn: !GetAtt RflibLambdaFunction.Arn
+
+    # API Gateway Deployment and Stage
+    RflibApiGatewayDeployment:
+        Type: AWS::ApiGateway::Deployment
+        Properties:
+            RestApiId: !Ref RflibApiGatewayRestApi
+            StageName: prod
+        DependsOn:
+            - RflibApiGatewayMethod
+
+Parameters:
+    LogGroupName:
+        Type: String
+        Default: /salesforce/rflib-log-group
+        Description: The name of the CloudWatch Log Group for RFLIB
+
+    IAMUserArn:
+        Type: String
+        Description: The ARN of the IAM user that can assume the API execution role
+
+Outputs:
+    ApiGatewayUrl:
+        Description: Invoke URL for the API Gateway
+        Value: !Sub
+            - https://${RflibApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/log
+            - RflibApiGatewayRestApi: !Ref RflibApiGatewayRestApi
+
+    ApiExecutionRoleArn:
+        Description: ARN of the API Execution Role - use this role in the External Credential Principal configuration in Salesforce
+        Value: !GetAtt RflibApiExecutionRole.Arn
