@@ -25,7 +25,7 @@ jobs:
                       export SFDX_DISABLE_APP_HUB=true
                       export SFDX_LOG_LEVEL=DEBUG
                       node -v
-                      npm install @salesforce/cli@2.39.6
+                      npm install @salesforce/cli@2.58.7
                       npx sf --version
                       npx sf plugins --core
             - persist_to_workspace:
@@ -116,7 +116,7 @@ jobs:
             - run:
                   name: Run Apex Tests
                   command: |
-                      npx sf apex run test -o ciorg --codecoverage -r human -d ~/apex_tests --wait 10
+                      npx sf apex run test -o ciorg --code-coverage -r human -d ~/apex_tests --wait 15
             - run:
                   name: Retrieve and Print Debug Log
                   command: |
