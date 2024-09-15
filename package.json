@@ -102,6 +102,6 @@
         "prepare": "husky install"
     },
     "volta": {
-        "node": "18.15.0"
+        "node": "20.17.0"
     }
 }
