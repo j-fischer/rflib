@@ -400,7 +400,7 @@ gulp.task(
 gulp.task(
     'shell-force-create-release-candidate',
     shellTask(
-        `sf package version create --path ${config.package.path} --installationkeybypass --code-coverage --wait 30`
+        `sf package version create --path ${config.package.path} --installation-key-bypass --code-coverage --wait 30`
     )
 );
 gulp.task(
