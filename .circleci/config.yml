@@ -82,8 +82,9 @@ jobs:
                   at: ~/
             - run:
                   name: Push Source
+                  no_output_timeout: 30m
                   command: |
-                      npx sf project deploy start -o ciorg
+                      npx sf project deploy start -o ciorg -w 25
             - run:
                   name: Clean Up
                   command: |
