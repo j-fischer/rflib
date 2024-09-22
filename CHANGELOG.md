@@ -1,3 +1,13 @@
+### RFLIB 7.2.0
+
+Package ID: 04tKY000000xABsYAM
+Package Alias: RFLIB@7.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xABsYAM
+
+-   [PR #89](https://github.com/j-fischer/rflib/pull/89) Added new configuration setting and invocable action to sent RFLIB Log Events to remote systems via HTTP Callouts. Configure the `HTTP Callout Log Level` in `Logger Settings` to enable the feature.
+-   [PR #90](https://github.com/j-fischer/rflib/pull/90) Added the `rflib_OmniStudioRemoteActions` to the package. You can now create `Log Events` or `Application Events` from OmniStudio components. Thanks to [Jonathan Gillespie](https://github.com/jongpie) for submitting the PR after he added the same functionality to [Nebula Logger](https://github.com/jongpie/NebulaLogger).
+-   Deprecated `Logger Settings` for Salesforce Functions as the feature has been end-of-lived (EOL) and is no longer available.
+
 ### RFLIB 7.1.0
 
 Package ID: 04tKY000000xA5UYAU
