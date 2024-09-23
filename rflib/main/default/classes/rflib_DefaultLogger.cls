@@ -425,6 +425,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     platformInfo.put('Mobile Apex Push Calls', Limits.getMobilePushApexCalls());
     platformInfo.put('Publish Immediate DML', Limits.getPublishImmediateDML());
     platformInfo.put('Database Time', Limits.getDatabaseTime());
+    platformInfo.put('Apex Curser Rows', Limits.getApexCursorRows());
+    platformInfo.put('Fetch Call on Apex Curser', Limits.getFetchCallsOnApexCursor());
 
     return JSON.serialize(platformInfo);
   }
