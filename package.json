@@ -67,7 +67,6 @@
         "prettier": "^3.2.5",
         "semver": "^7.6.3",
         "sf-fx-sdk-nodejs": "^3.0.0",
-        "time-grunt": "^2.0.0",
         "time-require": "^0.1.2"
     },
     "husky": {
