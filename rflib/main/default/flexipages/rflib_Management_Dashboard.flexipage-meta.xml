@@ -119,20 +119,6 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>limitName</name>
-                    <value>DailyFunctionsApiCallLimit</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>title</name>
-                    <value>Functions API Calls</value>
-                </componentInstanceProperties>
-                <componentName>rflibOrgLimitStat</componentName>
-                <identifier>c_rflibOrgLimitStat1</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>limitName</name>
                     <value>SingleEmail</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -141,6 +127,20 @@
                 </componentInstanceProperties>
                 <componentName>rflibOrgLimitStat</componentName>
                 <identifier>c_rflibOrgLimitStat2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>limitName</name>
+                    <value>MassEmail</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Mass Emails</value>
+                </componentInstanceProperties>
+                <componentName>rflibOrgLimitStat</componentName>
+                <identifier>c_rflibOrgLimitStat1</identifier>
             </componentInstance>
         </itemInstances>
         <name>region3</name>
