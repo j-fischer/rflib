@@ -185,6 +185,16 @@ public class rflib_DefaultLoggerTest {
   }
 
   @isTest
+  public static void testMessageWithEmptyArgs() {
+    rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+    rflib_Logger logger = loggerFactory.createLogger('testMessageWithEmptyArgs');
+
+    logger.warn('warn message including not including anything - {0}', new String[] {});
+    System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('warn message including not including anything - {0}'), 'debugLogger did not contain statement');
+  }
+
+  @isTest
   public static void testMessageWithException() {
     rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 

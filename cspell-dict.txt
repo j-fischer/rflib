@@ -76,3 +76,6 @@ Picklist
 sublist
 onrowaction
 autoproc
+logmessage
+logapplicationevent
+logfailure
