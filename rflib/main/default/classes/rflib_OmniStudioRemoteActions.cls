@@ -69,8 +69,9 @@ global class rflib_OmniStudioRemoteActions implements System.Callable {
 
     private static void logMessage(Map<String,Object> input) {
         String context = (String)input.get('context') ?? 'rflib_OmniStudioRemoteActions';
-        String logLevel = (String)input.get('level');
-        String message = (String)input.get('message');
+        String logLevel = (String)input.get('level') ?? 'WARN';
+        String message = (String)input.get('message') ?? JSON.serializePretty(input);
+
         List<String> args = parseArgs((String)input.get('args'));
 
         rflib_Logger logger = loggerFactory.createLogger(context);
