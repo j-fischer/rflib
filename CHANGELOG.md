@@ -1,3 +1,13 @@
+### RFLIB 7.3.0
+
+Package ID: 04tKY000000xACgYAM
+Package Alias: RFLIB@7.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xACgYAM
+
+-   [PR #91](https://github.com/j-fischer/rflib/pull/91) Created `LogFailure` method for `rflib_OmniStudioRemoteActions` class that should be used when dealing with try-catch blocks in Integration Procedures.
+-   Added new Apex Cursor Governor Limits to the Platform Info section of the log.
+-   Replaced Org Limit stat for Function API calls with Mass Email limit since SF Functions are EOL.
+
 ### RFLIB 7.2.0
 
 Package ID: 04tKY000000xABsYAM

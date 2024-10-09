@@ -38,5 +38,6 @@
         "package*.json",
         "CHANGELOG.md"
     ],
-    "ignoreWords": ["commitcomment"]
+    "ignoreWords": ["commitcomment"],
+    "ignoreRegExpList": ["/sf package install --package [\\w]{15,18} --target-org .*/g"]
 }

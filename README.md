@@ -62,10 +62,17 @@ To install package via SFDX CLI Plugin (v2):
 sf package install --package <Package ID> --target-org <your org alias>
 ```
 
-Using the legacy CLI command:
+Here are the commands for the latest versions:
 
 ```
-sfdx force:package:install -p <Package ID> -w 10 -s AdminsOnly -u <your org alias>
+rem RFLIB 7.3.0
+sf package install --package 04tKY000000xACgYAM --target-org <your org alias>
+
+rem RFLIB-FS 3.0.1
+sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
+
+rem RFLIB-TF 3.0.1
+sf package install --package 04t3h000004pOuxAAE --target-org <your org alias>
 ```
 
 To deploy code:
