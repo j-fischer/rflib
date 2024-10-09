@@ -44,10 +44,13 @@ global class rflib_OmniStudioRemoteActions implements System.Callable {
     private Boolean invokeMethod(String methodName, Map<String,Object> input, Map<String,Object> output, Map<String,Object> option) {
         System.debug('*** Input Parameters *** ' + input);
 
-        if (methodName == 'LogMessage') {
+        String methodNameAsLowerCase = methodName.toLowerCase();
+        if (methodNameAsLowerCase == 'logmessage') {
             logMessage(input);
-        } else if (methodName == 'LogApplicationEvent') {
+        } else if (methodNameAsLowerCase == 'logapplicationevent') {
             logApplicationEvent(input);
+        } else if (methodNameAsLowerCase == 'logfailure') {
+            logFailure(input);
         } else {
             output.put('errorMessage', 'Invalid method name: ' + methodName);
             return false;
@@ -56,10 +59,19 @@ global class rflib_OmniStudioRemoteActions implements System.Callable {
         return true;
     }
 
+    private static void logFailure(Map<String,Object> input) {
+        logMessage(new Map<String,Object>{
+            'context' => input.get('context'),
+            'level' => 'ERROR',
+            'message' => 'Error caught in TryCatchBlock: ' + JSON.serializePretty(input)
+        });
+    }
+
     private static void logMessage(Map<String,Object> input) {
-        String context = (String)input.get('context');
-        String logLevel = (String)input.get('level');
-        String message = (String)input.get('message');
+        String context = (String)input.get('context') ?? 'rflib_OmniStudioRemoteActions';
+        String logLevel = (String)input.get('level') ?? 'WARN';
+        String message = (String)input.get('message') ?? JSON.serializePretty(input);
+
         List<String> args = parseArgs((String)input.get('args'));
 
         rflib_Logger logger = loggerFactory.createLogger(context);
@@ -81,7 +93,7 @@ global class rflib_OmniStudioRemoteActions implements System.Callable {
                 logger.debug(message, args);
             }
             when else {
-                logger.debug(message, args);
+                logger.warn(message, args);
             }
         }
     }
