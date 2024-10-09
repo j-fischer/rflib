@@ -350,114 +350,194 @@ function shellTask(getCommand) {
 
 // Define shell tasks with variable injection at runtime
 
-gulp.task('shell-force-create-org-default', shellTask(function () {
-    return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
-}));
+gulp.task(
+    'shell-force-create-org-default',
+    shellTask(function () {
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
+    })
+);
 
-gulp.task('shell-force-create-org-default-preview', shellTask(function () {
-    return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
-}));
+gulp.task(
+    'shell-force-create-org-default-preview',
+    shellTask(function () {
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
+    })
+);
 
-gulp.task('shell-force-create-org-with-omni-default', shellTask(function () {
-    return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
-}));
+gulp.task(
+    'shell-force-create-org-with-omni-default',
+    shellTask(function () {
+        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
+    })
+);
 
-gulp.task('shell-force-create-org-with-omni-default-preview', shellTask(function () {
-    return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
-}));
+gulp.task(
+    'shell-force-create-org-with-omni-default-preview',
+    shellTask(function () {
+        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
+    })
+);
 
-gulp.task('shell-force-create-org', shellTask(function () {
-    return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias}`;
-}));
+gulp.task(
+    'shell-force-create-org',
+    shellTask(function () {
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias}`;
+    })
+);
 
-gulp.task('shell-force-create-org-preview', shellTask(function () {
-    return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --release=preview`;
-}));
+gulp.task(
+    'shell-force-create-org-preview',
+    shellTask(function () {
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --release=preview`;
+    })
+);
 
-gulp.task('shell-force-delete-org', shellTask(function () {
-    return `sf org delete scratch -o ${config.alias} -p`;
-}));
+gulp.task(
+    'shell-force-delete-org',
+    shellTask(function () {
+        return `sf org delete scratch -o ${config.alias} -p`;
+    })
+);
 
-gulp.task('shell-force-assign-permset', shellTask(function () {
-    return `sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} && sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
-}));
+gulp.task(
+    'shell-force-assign-permset',
+    shellTask(function () {
+        return `sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} && sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
+    })
+);
 
-gulp.task('shell-force-push', shellTask(function () {
-    return `sf project deploy start -o ${config.alias} -c`;
-}));
+gulp.task(
+    'shell-force-push',
+    shellTask(function () {
+        return `sf project deploy start -o ${config.alias} -c`;
+    })
+);
 
-gulp.task('shell-force-test', shellTask(function () {
-    return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4`;
-}));
+gulp.task(
+    'shell-force-test',
+    shellTask(function () {
+        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4`;
+    })
+);
 
-gulp.task('shell-force-open', shellTask(function () {
-    return `sf org open -o ${config.alias}`;
-}));
+gulp.task(
+    'shell-force-open',
+    shellTask(function () {
+        return `sf org open -o ${config.alias}`;
+    })
+);
 
-gulp.task('shell-force-set-debug-mode', shellTask(function () {
-    return `sf texei user update -o ${config.alias} --values "UserPreferencesUserDebugModePref=true"`;
-}));
+gulp.task(
+    'shell-force-set-debug-mode',
+    shellTask(function () {
+        return `sf texei user update -o ${config.alias} --values "UserPreferencesUserDebugModePref=true"`;
+    })
+);
 
-gulp.task('shell-force-create-release-candidate', shellTask(function () {
-    return `sf package version create --path ${config.package.path} --installation-key-bypass --code-coverage --wait 30`;
-}));
+gulp.task(
+    'shell-force-create-release-candidate',
+    shellTask(function () {
+        return `sf package version create --path ${config.package.path} --installation-key-bypass --code-coverage --wait 30`;
+    })
+);
 
-gulp.task('shell-force-install-latest', shellTask(function () {
-    return `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`;
-}));
+gulp.task(
+    'shell-force-install-latest',
+    shellTask(function () {
+        return `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`;
+    })
+);
 
-gulp.task('shell-force-install-streaming-monitor', shellTask(function () {
-    return `sf package install --package 04t1t000003Po3QAAS -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
-}));
+gulp.task(
+    'shell-force-install-streaming-monitor',
+    shellTask(function () {
+        return `sf package install --package 04t1t000003Po3QAAS -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
+    })
+);
 
-gulp.task('shell-force-install-bigobject-utility', shellTask(function () {
-    return `sf package install --package 04t7F000003irldQAA -o ${config.alias} -w 10`;
-}));
+gulp.task(
+    'shell-force-install-bigobject-utility',
+    shellTask(function () {
+        return `sf package install --package 04t7F000003irldQAA -o ${config.alias} -w 10`;
+    })
+);
 
-gulp.task('shell-force-install-omnistudio', shellTask(function () {
-    return `sf package install --package 04t4W000000YWaz -o ${config.alias} -w 10 --no-prompt && sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o ${config.alias} && sf org assign permset --name OmniStudioUser --name BRERuntime -o ${config.alias}`;
-}));
+gulp.task(
+    'shell-force-install-omnistudio',
+    shellTask(function () {
+        return `sf package install --package 04t4W000000YWaz -o ${config.alias} -w 10 --no-prompt && sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o ${config.alias} && sf org assign permset --name OmniStudioUser --name BRERuntime -o ${config.alias}`;
+    })
+);
 
-gulp.task('shell-force-promote', shellTask(function () {
-    return `sf package version promote --package ${config.package.latestVersionAlias} --no-prompt`;
-}));
+gulp.task(
+    'shell-force-promote',
+    shellTask(function () {
+        return `sf package version promote --package ${config.package.latestVersionAlias} --no-prompt`;
+    })
+);
 
-gulp.task('shell-force-install-dependencies', shellTask(function () {
-    return `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package}`;
-}));
+gulp.task(
+    'shell-force-install-dependencies',
+    shellTask(function () {
+        return `sf texei package dependencies install --target-org ${config.alias} --packages ${config.package.package}`;
+    })
+);
 
-gulp.task('shell-force-create-qa-user', shellTask(function () {
-    return `sf org create user -o ${config.alias} --set-alias qa_user --definition-file config/qa-user-def.json`;
-}));
+gulp.task(
+    'shell-force-create-qa-user',
+    shellTask(function () {
+        return `sf org create user -o ${config.alias} --set-alias qa_user --definition-file config/qa-user-def.json`;
+    })
+);
 
-gulp.task('shell-force-configure-settings', shellTask(function () {
-    return `sf apex run -o ${config.alias} -f scripts/apex/ConfigureCustomSettings.apex`;
-}));
+gulp.task(
+    'shell-force-configure-settings',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/ConfigureCustomSettings.apex`;
+    })
+);
 
-gulp.task('shell-force-create-log-event', shellTask(function () {
-    return `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex`;
-}));
+gulp.task(
+    'shell-force-create-log-event',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex`;
+    })
+);
 
-gulp.task('shell-force-create-application-event', shellTask(function () {
-    return `sf apex run -o ${config.alias} -f scripts/apex/CreateApplicationEvent.apex`;
-}));
+gulp.task(
+    'shell-force-create-application-event',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/CreateApplicationEvent.apex`;
+    })
+);
 
-gulp.task('shell-test-lwc', shellTask(function () {
-    return 'npm run test:unit:coverage';
-}));
+gulp.task(
+    'shell-test-lwc',
+    shellTask(function () {
+        return 'npm run test:unit:coverage';
+    })
+);
 
-gulp.task('shell-lint', shellTask(function () {
-    return 'npm run lint';
-}));
+gulp.task(
+    'shell-lint',
+    shellTask(function () {
+        return 'npm run lint';
+    })
+);
 
-gulp.task('shell-force-test-package-install-and-upgrade', shellTask(function () {
-    return `sf package install --package 04t3h000004RdLTAA0 -o ${config.alias} -w 10 &&` + //RFLIB@2.6.0-1
-        `sf package install --package 04t3h000004jpyMAAQ -o ${config.alias} -w 10 &&` + //RFLIB-FS@1.0.2-1
-        `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10 &&` + //RFLIB-TF@1.0.1
-        `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex &&` +
-        `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package} &&` +
-        `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`;
-}));
+gulp.task(
+    'shell-force-test-package-install-and-upgrade',
+    shellTask(function () {
+        return (
+            `sf package install --package 04t3h000004RdLTAA0 -o ${config.alias} -w 10 &&` + //RFLIB@2.6.0-1
+            `sf package install --package 04t3h000004jpyMAAQ -o ${config.alias} -w 10 &&` + //RFLIB-FS@1.0.2-1
+            `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10 &&` + //RFLIB-TF@1.0.1
+            `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex &&` +
+            `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package} &&` +
+            `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`
+        );
+    })
+);
 
 // Bump version and package
 gulp.task(
