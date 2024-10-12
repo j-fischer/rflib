@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>RFLIB Logger Settings Editor</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="customSettingsApiName" label="Custom Settings API Name" description="The API Name of the Custom Settings Object to be managed by this component." type="String" required="true" default="rflib_Logger_Settings__c" />
+            <property name="fieldsToDisplay" label="Fields to Display in List" description="Comma separated list of API names for the fields to be displayed in the component" type="String" required="false" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

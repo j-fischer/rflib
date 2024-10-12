@@ -1,0 +1,76 @@
+<template>
+    <lightning-card title={title} variant="Narrow">
+        <div slot="actions">
+            <lightning-button label="Refresh" onclick={handleRefresh} class="slds-m-left_small"></lightning-button>
+            <template if:true={canModifySettings}>
+                <lightning-button
+                    label="New"
+                    onclick={handleNewRecord}
+                    class="slds-m-left_small"
+                    variant="brand"
+                ></lightning-button>
+            </template>
+        </div>
+        <div>
+            <lightning-datatable
+                key-field="id"
+                data={customSettingsData}
+                columns={columns}
+                draft-values={draftValues}
+                onsave={handleSave}
+                onrowaction={handleRowAction}
+            >
+            </lightning-datatable>
+        </div>
+
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center slds-m-top_medium">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={showModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button
+                            class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close"
+                            onclick={closeModal}
+                        >
+                            <lightning-icon
+                                icon-name="utility:close"
+                                alternative-text="close"
+                                size="small"
+                            ></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 class="slds-text-heading_medium">{modalHeader}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-record-edit-form
+                            object-api-name={customSettingsApiName}
+                            record-id={recordId}
+                            onsuccess={handleModalSaveSuccess}
+                            onsubmit={handleModalSubmit}
+                        >
+                            <!-- Dynamically create fields -->
+                            <template for:each={fields} for:item="field">
+                                <lightning-input-field
+                                    key={field.fieldApiName}
+                                    field-name={field.fieldApiName}
+                                ></lightning-input-field>
+                            </template>
+                        </lightning-record-edit-form>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeModal}></lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={handleModalSave}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </lightning-card>
+</template>
