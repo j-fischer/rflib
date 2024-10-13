@@ -67,9 +67,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
                     let row = {
                         id: setting.id,
                         setupOwnerType:
-                            setting.setupOwnerType === 'Organization'
-                                ? 'Default Organization Values'
-                                : setting.setupOwnerType,
+                            setting.setupOwnerType === 'Name' ? 'Default Organization Values' : setting.setupOwnerType,
                         setupOwnerName:
                             setting.setupOwnerType === 'Organization' ? 'Organization' : setting.setupOwnerName
                     };
@@ -127,8 +125,8 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
     getRowActions(row, doneCallback) {
         logger.info('Getting row actions for row: {0}', JSON.stringify(row));
         const actions = [];
+        actions.push({ label: 'Edit', name: 'edit' });
         if (row.setupOwnerType !== 'Organization') {
-            actions.push({ label: 'Edit', name: 'edit' });
             actions.push({ label: 'Delete', name: 'delete' });
         }
         doneCallback(actions);

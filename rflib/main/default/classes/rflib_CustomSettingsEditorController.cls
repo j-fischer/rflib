@@ -28,8 +28,8 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_CustomSettingsEditorController {
-
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_CustomSettingsEditorController');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory()
+        .createLogger('rflib_CustomSettingsEditorController');
 
     @AuraEnabled(cacheable=true)
     public static String getCustomSettingLabel(String customSettingsApiName) {
@@ -38,27 +38,34 @@ public with sharing class rflib_CustomSettingsEditorController {
             DescribeSObjectResult describeResult = sObjectType.getDescribe();
             return describeResult.getLabel();
         } else {
-            throw new AuraHandledException('Custom Setting with API Name ' + customSettingsApiName + ' does not exist.');
+            throw new AuraHandledException(
+                'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
+            );
         }
     }
 
     @AuraEnabled(cacheable=true)
     public static Boolean canUserModifyLoggerSettings(String customSettingsApiName) {
         try {
-            LOGGER.info('canUserModifyLoggerSettings({0}) invoked', new Object[] {customSettingsApiName});
+            LOGGER.info('canUserModifyLoggerSettings({0}) invoked', new List<Object>{ customSettingsApiName });
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
-                LOGGER.error('Custom Setting with API Name {0} does not exist.', new Object[] {customSettingsApiName});
-                throw new AuraHandledException('Custom Setting with API Name ' + customSettingsApiName + ' does not exist.');
+                LOGGER.error(
+                    'Custom Setting with API Name {0} does not exist.',
+                    new List<Object>{ customSettingsApiName }
+                );
+                throw new AuraHandledException(
+                    'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
+                );
             }
 
             Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
             Boolean isUpdateable = customSettingType.getDescribe().isUpdateable();
-            LOGGER.info('Custom Setting is updateable: {0}', new Object[] {isUpdateable});
+            LOGGER.info('Custom Setting is updateable: {0}', new List<Object>{ isUpdateable });
 
             return isUpdateable;
         } catch (Exception ex) {
-            LOGGER.error('Error in canUserModifyLoggerSettings: {0}', new Object[] {ex.getMessage()});
+            LOGGER.error('Error in canUserModifyLoggerSettings: {0}', new List<Object>{ ex.getMessage() });
             throw new AuraHandledException('An error occurred while checking user permissions: ' + ex.getMessage());
         }
     }
@@ -66,18 +73,22 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled(cacheable=true)
     public static List<CustomSettingWrapper> getCustomSettings(String customSettingsApiName) {
         try {
-            LOGGER.info('getCustomSettings({0}) invoked', new Object[] {customSettingsApiName});
+            LOGGER.info('getCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
 
             if (String.isBlank(customSettingsApiName)) {
                 LOGGER.error('Custom Settings API Name cannot be empty.');
                 throw new AuraHandledException('Custom Settings API Name cannot be empty.');
             }
 
-            // Describe the Custom Setting Object
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
-                LOGGER.error('Custom Setting with the given API Name does not exist.');
-                throw new AuraHandledException('Custom Setting with API Name ' + customSettingsApiName + ' does not exist.');
+                LOGGER.error(
+                    'Custom Setting with API Name {0} does not exist.',
+                    new List<Object>{ customSettingsApiName }
+                );
+                throw new AuraHandledException(
+                    'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
+                );
             }
 
             Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
@@ -88,11 +99,9 @@ public with sharing class rflib_CustomSettingsEditorController {
                 throw new AuraHandledException('The provided API Name does not belong to a Custom Setting.');
             }
 
-            // Prepare the query to retrieve all records for the Custom Setting
-            String query = 'SELECT Id, SetupOwnerId, SetupOwner.Type, ';
+            String query = 'SELECT Id, SetupOwnerId, SetupOwner.Type, SetupOwner.Name, ';
             List<String> fieldNames = new List<String>();
 
-            // Collect all field names except 'Id' to avoid duplication
             for (Schema.SObjectField field : describeResult.fields.getMap().values()) {
                 String fieldName = field.getDescribe().getName();
                 if (fieldName != 'Id' && fieldName != 'SetupOwnerId') {
@@ -100,19 +109,36 @@ public with sharing class rflib_CustomSettingsEditorController {
                 }
             }
 
-            // Append field names to the query string
             query += String.join(fieldNames, ', ') + ' FROM ' + customSettingsApiName;
 
-            LOGGER.info('Executing query: {0}', new Object[] {query});
+            LOGGER.info('Executing query: {0}', new List<Object>{ query });
             List<SObject> customSettingRecords = Database.query(query);
 
-            // Create wrappers for each custom setting record
             List<CustomSettingWrapper> wrapperList = new List<CustomSettingWrapper>();
             for (SObject record : customSettingRecords) {
                 CustomSettingWrapper wrapper = new CustomSettingWrapper();
                 wrapper.id = (String) record.get('Id');
-                wrapper.setupOwnerType = String.valueOf(record.getSObject('SetupOwner').getSObjectType().getDescribe().getName());
-                wrapper.setupOwnerName = String.valueOf(record.get('SetupOwnerId'));
+
+                SObject setupOwner = record.getSObject('SetupOwner');
+                String setupOwnerId = (String) record.get('SetupOwnerId');
+                String setupOwnerPrefix = setupOwnerId.substring(0, 3);
+                String setupOwnerTypeLabel;
+
+                switch on setupOwnerPrefix {
+                    when '00D' {
+                        setupOwnerTypeLabel = 'Organization';
+                    }
+                    when '00E' {
+                        setupOwnerTypeLabel = 'Profile';
+                    }
+                    when else {
+                        setupOwnerTypeLabel = (String) setupOwner.get('Type');
+                    }
+                }
+
+                wrapper.setupOwnerType = setupOwnerTypeLabel;
+                wrapper.setupOwnerName = (String) setupOwner.get('Name');
+
                 wrapper.fields = new Map<String, Object>();
                 wrapper.fieldLabels = new Map<String, String>();
 
@@ -122,11 +148,11 @@ public with sharing class rflib_CustomSettingsEditorController {
                     wrapper.fieldLabels.put(fieldName, field.getDescribe().getLabel());
                 }
 
-                LOGGER.debug('CustomSettingWrapper created: {0}', new Object[] {wrapper});
+                LOGGER.debug('CustomSettingWrapper created: {0}', new List<Object>{ wrapper });
                 wrapperList.add(wrapper);
             }
 
-            LOGGER.info('Total custom settings retrieved: {0}', new Object[] {wrapperList.size()});
+            LOGGER.info('Total custom settings retrieved: {0}', new List<Object>{ wrapperList.size() });
             return wrapperList;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettings', ex);
@@ -137,7 +163,10 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled
     public static void deleteCustomSettingRecord(String customSettingsApiName, String recordId) {
         try {
-            LOGGER.info('deleteCustomSettingRecord({0}, {1}) invoked', new Object[] {customSettingsApiName, recordId});
+            LOGGER.info(
+                'deleteCustomSettingRecord({0}, {1}) invoked',
+                new List<Object>{ customSettingsApiName, recordId }
+            );
             if (String.isBlank(recordId)) {
                 LOGGER.error('Record Id cannot be empty.');
                 throw new AuraHandledException('Record Id cannot be empty.');
@@ -145,43 +174,60 @@ public with sharing class rflib_CustomSettingsEditorController {
 
             Schema.SObjectType targetType = Schema.getGlobalDescribe().get(customSettingsApiName);
             if (targetType == null) {
-                LOGGER.error('Custom Setting with API Name {0} does not exist.', new Object[] {customSettingsApiName});
-                throw new AuraHandledException('Custom Setting with API Name ' + customSettingsApiName + ' does not exist.');
+                LOGGER.error(
+                    'Custom Setting with API Name {0} does not exist.',
+                    new List<Object>{ customSettingsApiName }
+                );
+                throw new AuraHandledException(
+                    'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
+                );
             }
 
             SObject record = targetType.newSObject();
             record.put('Id', recordId);
 
             delete record;
-            LOGGER.info('Record deleted successfully. Record ID: {0}', new Object[] {recordId});
+            LOGGER.info('Record deleted successfully. Record ID: {0}', new List<Object>{ recordId });
         } catch (Exception ex) {
-            LOGGER.error('Error in deleteCustomSettingRecord: {0}', new Object[] {ex.getMessage()});
-            throw new AuraHandledException('An error occurred while deleting the custom setting record: ' + ex.getMessage());
+            LOGGER.error('Error in deleteCustomSettingRecord: {0}', new List<Object>{ ex.getMessage() });
+            throw new AuraHandledException(
+                'An error occurred while deleting the custom setting record: ' + ex.getMessage()
+            );
         }
     }
 
     @AuraEnabled
     public static void saveCustomSetting(SObject customSettingRecord) {
         try {
-            LOGGER.info('saveCustomSetting invoked for record: {0}', new Object[] {customSettingRecord});
+            LOGGER.info('saveCustomSetting invoked for record: {0}', new List<Object>{ customSettingRecord });
             if (customSettingRecord == null) {
                 LOGGER.error('Custom Setting record cannot be null.');
                 throw new AuraHandledException('Custom Setting record cannot be null.');
             }
 
             upsert customSettingRecord;
-            LOGGER.info('Custom Setting saved successfully. Record ID: {0}', new Object[] {customSettingRecord.Id});
+            LOGGER.info(
+                'Custom Setting saved successfully. Record ID: {0}',
+                new List<Object>{ customSettingRecord.Id }
+            );
         } catch (Exception ex) {
-            LOGGER.error('Error in saveCustomSetting: {0}', new Object[] {ex.getMessage()});
-            throw new AuraHandledException('An error occurred while saving the custom setting record: ' + ex.getMessage());
+            LOGGER.error('Error in saveCustomSetting: {0}', new List<Object>{ ex.getMessage() });
+            throw new AuraHandledException(
+                'An error occurred while saving the custom setting record: ' + ex.getMessage()
+            );
         }
     }
 
     public class CustomSettingWrapper {
-        @AuraEnabled public String id;
-        @AuraEnabled public String setupOwnerType;
-        @AuraEnabled public String setupOwnerName;
-        @AuraEnabled public Map<String, Object> fields;
-        @AuraEnabled public Map<String, String> fieldLabels; // New field to hold labels
+        @AuraEnabled
+        public String id;
+        @AuraEnabled
+        public String setupOwnerType;
+        @AuraEnabled
+        public String setupOwnerName;
+        @AuraEnabled
+        public Map<String, Object> fields;
+        @AuraEnabled
+        public Map<String, String> fieldLabels;
     }
 }
