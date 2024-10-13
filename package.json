@@ -64,7 +64,8 @@
         "js-mock": "^2.0.0",
         "lint-staged": "^15.2.2",
         "lodash": "^4.17.21",
-        "prettier": "^3.2.5",
+        "prettier": "3.3.3",
+        "prettier-plugin-apex": "2.1.5",
         "semver": "^7.6.3",
         "sf-fx-sdk-nodejs": "^3.0.0",
         "time-require": "^0.1.2"

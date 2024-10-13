@@ -1,4 +1,5 @@
 {
+    "plugins": ["prettier-plugin-apex"],
     "trailingComma": "none",
     "singleQuote": true,
     "tabWidth": 4,
@@ -11,6 +12,14 @@
         {
             "files": "*.{cmp,page,component}",
             "options": { "parser": "html" }
+        },
+        {
+            "files": "*.{trigger,cls}",
+            "options": { "parser": "apex" }
+        },
+        {
+            "files": "*.{apex}",
+            "options": { "parser": "apex-anonymous" }
         }
     ]
 }
