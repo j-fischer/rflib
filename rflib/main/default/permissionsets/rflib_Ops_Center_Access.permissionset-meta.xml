@@ -5,6 +5,10 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>rflib_CustomSettingsEditorController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_LogArchiveController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -117,6 +121,10 @@
     </tabSettings>
     <tabSettings>
         <tab>rflib_Log_Monitor</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>rflib_Logger_Settings</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
