@@ -30,6 +30,20 @@
             </div>
         </template>
 
+        <!-- Confirmation Dialog for Deletion -->
+        <template if:true={showDeleteConfirmation}>
+            <c-rflib-confirmation-dialog
+                visible={showDeleteConfirmation}
+                title={deleteDialogTitle}
+                message={deleteDialogMessage}
+                confirm-label={deleteDialogConfirmLabel}
+                cancel-label={deleteDialogCancelLabel}
+                onmodalaction={handleModalAction}
+            >
+            </c-rflib-confirmation-dialog>
+        </template>
+
+        <!-- Modal Dialog -->
         <template if:true={showModal}>
             <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
@@ -49,20 +63,52 @@
                         <h2 class="slds-text-heading_medium">{modalHeader}</h2>
                     </header>
                     <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-record-edit-form
-                            object-api-name={customSettingsApiName}
-                            record-id={recordId}
-                            onsuccess={handleModalSaveSuccess}
-                            onsubmit={handleModalSubmit}
-                        >
-                            <!-- Dynamically create fields -->
-                            <template for:each={fields} for:item="field">
-                                <lightning-input-field
-                                    key={field.fieldApiName}
-                                    field-name={field.fieldApiName}
-                                ></lightning-input-field>
+                        <form class="slds-form slds-form_stacked">
+                            <!-- Dynamically create input fields -->
+                            <template for:each={fieldInfos} for:item="fieldInfo">
+                                <div key={fieldInfo.apiName} class="slds-form-element slds-m-bottom_small">
+                                    <label class="slds-form-element__label" for={fieldInfo.apiName}>
+                                        {fieldInfo.label}
+                                        <template if:true={fieldInfo.isRequired}>
+                                            <abbr class="slds-required" title="required">*</abbr>
+                                        </template>
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <template if:true={fieldInfo.isTextField}>
+                                            <input
+                                                type="text"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                value={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                                class="slds-input"
+                                                maxlength={fieldInfo.length}
+                                            />
+                                        </template>
+                                        <template if:true={fieldInfo.isNumberField}>
+                                            <input
+                                                type="number"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                value={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                                class="slds-input"
+                                                step="any"
+                                            />
+                                        </template>
+                                        <template if:true={fieldInfo.isBooleanField}>
+                                            <lightning-input
+                                                type="checkbox"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                checked={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                            ></lightning-input>
+                                        </template>
+                                    </div>
+                                </div>
                             </template>
-                        </lightning-record-edit-form>
+                        </form>
                     </div>
                     <footer class="slds-modal__footer">
                         <lightning-button label="Cancel" onclick={closeModal}></lightning-button>

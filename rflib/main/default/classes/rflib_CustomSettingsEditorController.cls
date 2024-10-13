@@ -80,6 +80,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 throw new AuraHandledException('Custom Settings API Name cannot be empty.');
             }
 
+            // Describe the Custom Setting Object
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
                 LOGGER.error(
@@ -99,9 +100,11 @@ public with sharing class rflib_CustomSettingsEditorController {
                 throw new AuraHandledException('The provided API Name does not belong to a Custom Setting.');
             }
 
+            // Prepare the query to retrieve all records for the Custom Setting
             String query = 'SELECT Id, SetupOwnerId, SetupOwner.Type, SetupOwner.Name, ';
             List<String> fieldNames = new List<String>();
 
+            // Collect all field names except 'Id' and 'SetupOwnerId' to avoid duplication
             for (Schema.SObjectField field : describeResult.fields.getMap().values()) {
                 String fieldName = field.getDescribe().getName();
                 if (fieldName != 'Id' && fieldName != 'SetupOwnerId') {
@@ -109,11 +112,13 @@ public with sharing class rflib_CustomSettingsEditorController {
                 }
             }
 
+            // Append field names to the query string
             query += String.join(fieldNames, ', ') + ' FROM ' + customSettingsApiName;
 
             LOGGER.info('Executing query: {0}', new List<Object>{ query });
             List<SObject> customSettingRecords = Database.query(query);
 
+            // Create wrappers for each custom setting record
             List<CustomSettingWrapper> wrapperList = new List<CustomSettingWrapper>();
             for (SObject record : customSettingRecords) {
                 CustomSettingWrapper wrapper = new CustomSettingWrapper();
@@ -121,23 +126,35 @@ public with sharing class rflib_CustomSettingsEditorController {
 
                 SObject setupOwner = record.getSObject('SetupOwner');
                 String setupOwnerId = (String) record.get('SetupOwnerId');
-                String setupOwnerPrefix = setupOwnerId.substring(0, 3);
-                String setupOwnerTypeLabel;
 
-                switch on setupOwnerPrefix {
-                    when '00D' {
-                        setupOwnerTypeLabel = 'Organization';
+                if (setupOwnerId != null) {
+                    String setupOwnerPrefix = setupOwnerId.substring(0, 3).toUpperCase();
+                    String setupOwnerTypeLabel;
+
+                    // Use the provided logic to determine setupOwnerType
+                    switch on setupOwnerPrefix {
+                        when '00D' {
+                            setupOwnerTypeLabel = 'Organization';
+                        }
+                        when '00E' {
+                            setupOwnerTypeLabel = 'Profile';
+                        }
+                        when else {
+                            if (setupOwner != null) {
+                                setupOwnerTypeLabel = (String) setupOwner.get('Type');
+                            } else {
+                                setupOwnerTypeLabel = 'Unknown';
+                            }
+                        }
                     }
-                    when '00E' {
-                        setupOwnerTypeLabel = 'Profile';
-                    }
-                    when else {
-                        setupOwnerTypeLabel = (String) setupOwner.get('Type');
-                    }
+
+                    wrapper.setupOwnerType = setupOwnerTypeLabel;
+                    wrapper.setupOwnerName = (setupOwner != null) ? (String) setupOwner.get('Name') : 'Unknown';
+                } else {
+                    // For organization-level settings where SetupOwnerId might be null
+                    wrapper.setupOwnerType = 'Organization';
+                    wrapper.setupOwnerName = 'Organization';
                 }
-
-                wrapper.setupOwnerType = setupOwnerTypeLabel;
-                wrapper.setupOwnerName = (String) setupOwner.get('Name');
 
                 wrapper.fields = new Map<String, Object>();
                 wrapper.fieldLabels = new Map<String, String>();
@@ -157,6 +174,82 @@ public with sharing class rflib_CustomSettingsEditorController {
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettings', ex);
             throw new AuraHandledException('An error occurred while retrieving custom settings: ' + ex.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<FieldInfoWrapper> getCustomSettingFields(String customSettingsApiName) {
+        try {
+            LOGGER.info('getCustomSettingFields({0}) invoked', new List<Object>{ customSettingsApiName });
+
+            Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
+            if (!schemaMap.containsKey(customSettingsApiName)) {
+                LOGGER.error(
+                    'Custom Setting with API Name {0} does not exist.',
+                    new List<Object>{ customSettingsApiName }
+                );
+                throw new AuraHandledException(
+                    'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
+                );
+            }
+
+            Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
+            DescribeSObjectResult describeResult = customSettingType.getDescribe();
+
+            List<FieldInfoWrapper> fields = new List<FieldInfoWrapper>();
+
+            for (Schema.SObjectField field : describeResult.fields.getMap().values()) {
+                DescribeFieldResult fieldDescribe = field.getDescribe();
+
+                // Exclude system fields if desired
+                if (fieldDescribe.isCustom() || fieldDescribe.getName() == 'Name') {
+                    FieldInfoWrapper fieldInfo = new FieldInfoWrapper();
+                    fieldInfo.apiName = fieldDescribe.getName();
+                    fieldInfo.label = fieldDescribe.getLabel();
+                    fieldInfo.dataType = fieldDescribe.getType().name();
+                    fieldInfo.length = fieldDescribe.getLength();
+                    fieldInfo.precision = fieldDescribe.getPrecision();
+                    fieldInfo.scale = fieldDescribe.getScale();
+                    fieldInfo.isRequired = !fieldDescribe.isNillable();
+                    fieldInfo.isUpdateable = fieldDescribe.isUpdateable();
+                    fieldInfo.isCreateable = fieldDescribe.isCreateable();
+                    fieldInfo.picklistValues = new List<PicklistEntryWrapper>();
+                    if (fieldDescribe.getType() == Schema.DisplayType.Picklist) {
+                        for (Schema.PicklistEntry picklistValue : fieldDescribe.getPicklistValues()) {
+                            fieldInfo.picklistValues.add(new PicklistEntryWrapper(picklistValue.getValue(), picklistValue.isActive()));
+                        }
+                    }
+                    fields.add(fieldInfo);
+                }
+            }
+
+            return fields;
+        } catch (Exception ex) {
+            LOGGER.error('Error in getCustomSettingFields: {0}', new List<Object>{ ex.getMessage() });
+            throw new AuraHandledException('An error occurred while retrieving custom setting fields: ' + ex.getMessage());
+        }
+    }
+
+    public class FieldInfoWrapper {
+        @AuraEnabled public String apiName;
+        @AuraEnabled public String label;
+        @AuraEnabled public String dataType;
+        @AuraEnabled public Integer length;
+        @AuraEnabled public Integer precision;
+        @AuraEnabled public Integer scale;
+        @AuraEnabled public Boolean isRequired;
+        @AuraEnabled public Boolean isUpdateable;
+        @AuraEnabled public Boolean isCreateable;
+        @AuraEnabled public List<PicklistEntryWrapper> picklistValues;
+    }
+
+    public class PicklistEntryWrapper {
+        @AuraEnabled public String value;
+        @AuraEnabled public Boolean isActive;
+
+        public PicklistEntryWrapper(String value, Boolean isActive) {
+            this.value = value;
+            this.isActive = isActive;
         }
     }
 

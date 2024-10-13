@@ -82,3 +82,5 @@ logfailure
 Updateable
 updateable
 onsave
+Createable
+Nillable
