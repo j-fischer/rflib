@@ -202,7 +202,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 DescribeFieldResult fieldDescribe = field.getDescribe();
 
                 // Exclude system fields if desired
-                if (fieldDescribe.isCustom() || fieldDescribe.getName() == 'Name') {
+                if (fieldDescribe.isCustom()) {
                     FieldInfoWrapper fieldInfo = new FieldInfoWrapper();
                     fieldInfo.apiName = fieldDescribe.getName();
                     fieldInfo.label = fieldDescribe.getLabel();

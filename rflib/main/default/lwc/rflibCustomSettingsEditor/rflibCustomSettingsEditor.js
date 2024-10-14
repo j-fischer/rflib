@@ -19,7 +19,10 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
     columns = [];
     draftValues = [];
     showModal = false;
+    isNewModal = false;
     modalHeader = '';
+    selectedType = 'UserType';
+
     recordId;
     title;
     canModifySettings = false;
@@ -35,6 +38,19 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
     // Field Metadata and Record Values
     fieldInfos = [];
     @track recordValues = {};
+
+    ownerFilter = {
+        criteria: [
+            {
+                fieldPath: 'IsActive',
+                operator: 'eq',
+                value: true
+            }
+        ]
+    };
+    ownerMatchingInfo = {
+        primaryField: { fieldPath: 'Name' }
+    };
 
     connectedCallback() {
         logger.info('Connected callback invoked. Checking user permissions and loading custom settings.');
@@ -162,6 +178,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
 
     handleNewRecord() {
         logger.info('Handling new record creation.');
+        this.isNewModal = true;
         this.modalHeader = 'New Custom Setting';
         this.recordId = null;
         this.recordValues = {}; // Initialize recordValues
@@ -177,6 +194,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
 
     handleEditRecord(row) {
         logger.info('Handling edit record. Record ID: {0}', this.recordId);
+        this.isNewModal = false;
         this.modalHeader = 'Edit Custom Setting';
         // Set recordValues based on the row data
         this.recordValues = { ...row };
@@ -227,6 +245,14 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
         const fieldInfo = this.fieldInfos.find((field) => field.apiName === fieldName);
         if (fieldInfo) {
             fieldInfo.value = value;
+        }
+    }
+
+    handleOwnerIdChanged(event) {
+        let newOwnerId = event.detail.recordId;
+        if (this.recordId !== newOwnerId) {
+            logger.debug('Setting owner ID={0}', newOwnerId);
+            this.recordId = newOwnerId;
         }
     }
 
@@ -311,5 +337,24 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
             label: entry.value,
             value: entry.value
         }));
+    }
+
+    get typeOptions() {
+        return [
+            { label: 'User', value: 'UserType' },
+            { label: 'Profile', value: 'ProfileType' }
+        ];
+    }
+
+    handleTypeChange(event) {
+        this.selectedType = event.detail.value;
+    }
+
+    get isUserType() {
+        return this.selectedType === 'UserType';
+    }
+
+    get isProfileType() {
+        return this.selectedType === 'ProfileType';
     }
 }

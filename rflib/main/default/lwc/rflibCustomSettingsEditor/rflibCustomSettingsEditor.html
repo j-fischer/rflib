@@ -64,6 +64,41 @@
                     </header>
                     <div class="slds-modal__content slds-p-around_medium">
                         <form class="slds-form slds-form_stacked">
+                            <template if:true={isNewModal}>
+                                <lightning-combobox
+                                    name="typeSelector"
+                                    label="Select a Type"
+                                    value={selectedType}
+                                    placeholder="Select Type"
+                                    options={typeOptions}
+                                    onchange={handleTypeChange}
+                                >
+                                </lightning-combobox>
+
+                                <!-- Conditionally render the child components -->
+                                <template if:true={isUserType}>
+                                    <lightning-record-picker
+                                        label="Select a User"
+                                        placeholder="Search Name..."
+                                        object-api-name="User"
+                                        filter={ownerFilter}
+                                        matching-info={ownerMatchingInfo}
+                                        onchange={handleOwnerIdChanged}
+                                    >
+                                    </lightning-record-picker>
+                                </template>
+
+                                <template if:true={isProfileType}>
+                                    <lightning-record-picker
+                                        label="Select a Profile"
+                                        placeholder="Search Name..."
+                                        object-api-name="Profile"
+                                        matching-info={ownerMatchingInfo}
+                                        onchange={handleOwnerIdChanged}
+                                    >
+                                    </lightning-record-picker>
+                                </template>
+                            </template>
                             <!-- Dynamically create input fields -->
                             <template for:each={fieldInfos} for:item="fieldInfo">
                                 <div key={fieldInfo.apiName} class="slds-form-element slds-m-bottom_small">
