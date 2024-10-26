@@ -70,7 +70,7 @@ public with sharing class rflib_CustomSettingsEditorController {
         }
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<CustomSettingWrapper> getCustomSettings(String customSettingsApiName) {
         try {
             LOGGER.info('getCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
