@@ -94,6 +94,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
                 this.customSettingsData = result.map((setting) => {
                     let row = {
                         id: setting.id,
+                        setupOwnerId: setting.setupOwnerId,
                         setupOwnerType: setting.setupOwnerType,
                         setupOwnerName: setting.setupOwnerName
                     };
@@ -102,12 +103,9 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
                     fieldKeys.forEach((key) => {
                         row[key] = setting.fields[key];
                     });
-
-                    // Log the setupOwnerType for each row
-                    logger.info('Row setupOwnerType: {0}', row.setupOwnerType);
-
+                
                     return row;
-                });
+                });                
 
                 // Set up columns with correct labels
                 this.columns = this.createColumns(result[0]?.fields || [], result[0]?.fieldLabels || {});
@@ -193,11 +191,14 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
     }
 
     handleEditRecord(row) {
-        logger.info('Handling edit record. Record ID: {0}', this.recordId);
+        logger.info('Handling edit record. Record ID: {0}', row.id);
         this.isNewModal = false;
         this.modalHeader = 'Edit Custom Setting';
         // Set recordValues based on the row data
         this.recordValues = { ...row };
+        this.setupOwnerId = row.setupOwnerId;
+        this.setupOwnerType = row.setupOwnerType;
+        this.recordId = row.id;
         this.loadFieldInfos()
             .then(() => {
                 this.showModal = true;
@@ -206,7 +207,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
                 logger.error('Failed to load field infos', error);
                 this.showToast('Error', 'Failed to load field information', 'error');
             });
-    }
+    }    
 
     loadFieldInfos() {
         return getCustomSettingFields({ customSettingsApiName: this.customSettingsApiName })
@@ -265,16 +266,22 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
         logger.info('Saving custom setting.');
         // Create an object with the custom setting fields
         const customSettingRecord = {
-            sobjectType: this.customSettingsApiName,
-            Id: this.recordId
+            sobjectType: this.customSettingsApiName
         };
+        if (this.recordId) {
+            // Existing record - set Id but do not set SetupOwnerId
+            customSettingRecord.Id = this.recordId;
+        } else {
+            // New record - set SetupOwnerId
+            customSettingRecord.SetupOwnerId = this.setupOwnerId;
+        }
         this.fieldInfos.forEach((fieldInfo) => {
             if (fieldInfo.isCreateable || fieldInfo.isUpdateable) {
                 customSettingRecord[fieldInfo.apiName] = fieldInfo.value;
             }
         });
         logger.info('Custom setting record to save: {0}', JSON.stringify(customSettingRecord));
-
+    
         saveCustomSetting({ customSettingRecord })
             .then(() => {
                 logger.info('Custom setting saved successfully.');
@@ -286,36 +293,7 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
                 logger.error('Failed to save custom setting', error);
                 this.showToast('Error', 'Failed to save record', 'error');
             });
-    }
-
-    handleDeleteRecord() {
-        logger.info('Preparing to delete record. Record ID: {0}', this.recordId);
-        // Set up the confirmation dialog properties
-        this.showDeleteConfirmation = true;
-    }
-
-    handleModalAction(event) {
-        const status = event.detail.status;
-        this.showDeleteConfirmation = false;
-        if (status === 'confirm') {
-            logger.info('User confirmed deletion.');
-            deleteCustomSettingRecord({
-                customSettingsApiName: this.customSettingsApiName,
-                recordId: this.recordId
-            })
-                .then(() => {
-                    logger.info('Record deleted successfully. Record ID: {0}', this.recordId);
-                    this.showToast('Success', 'Record deleted successfully.', 'success');
-                    this.loadCustomSettings();
-                })
-                .catch((error) => {
-                    logger.error('Failed to delete record: ' + JSON.stringify(error));
-                    this.showToast('Error', 'Failed to delete record', 'error');
-                });
-        } else {
-            logger.info('User cancelled deletion.');
-        }
-    }
+    }    
 
     handleRefresh() {
         logger.info('Handling refresh action.');

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Johannes Fischer
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,15 +124,17 @@ public with sharing class rflib_CustomSettingsEditorController {
                 CustomSettingWrapper wrapper = new CustomSettingWrapper();
                 wrapper.id = (String) record.get('Id');
 
-                SObject setupOwner = record.getSObject('SetupOwner');
                 String setupOwnerId = (String) record.get('SetupOwnerId');
+                wrapper.setupOwnerId = setupOwnerId;
+
+                SObject setupOwner = record.getSObject('SetupOwner');
 
                 if (setupOwnerId != null) {
-                    String setupOwnerPrefix = setupOwnerId.substring(0, 3).toUpperCase();
+                    String setupOwnerPrefix = setupOwnerId.substring(0, 3);
                     String setupOwnerTypeLabel;
 
                     // Use the provided logic to determine setupOwnerType
-                    switch on setupOwnerPrefix {
+                    switch on setupOwnerPrefix.toUpperCase() {
                         when '00D' {
                             setupOwnerTypeLabel = 'Organization';
                         }
@@ -202,7 +204,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 DescribeFieldResult fieldDescribe = field.getDescribe();
 
                 // Exclude system fields if desired
-                if (fieldDescribe.isCustom()) {
+                if (fieldDescribe.isCustom() || fieldDescribe.getName() == 'Name') {
                     FieldInfoWrapper fieldInfo = new FieldInfoWrapper();
                     fieldInfo.apiName = fieldDescribe.getName();
                     fieldInfo.label = fieldDescribe.getLabel();
@@ -298,11 +300,34 @@ public with sharing class rflib_CustomSettingsEditorController {
                 throw new AuraHandledException('Custom Setting record cannot be null.');
             }
 
-            upsert customSettingRecord;
-            LOGGER.info(
-                'Custom Setting saved successfully. Record ID: {0}',
-                new List<Object>{ customSettingRecord.Id }
-            );
+            if (customSettingRecord.Id == null) {
+                // Insert new record
+                insert customSettingRecord;
+                LOGGER.info(
+                    'Custom Setting inserted successfully. Record ID: {0}',
+                    new List<Object>{ customSettingRecord.Id }
+                );
+            } else {
+                // Update existing record
+                // Create a new SObject instance and copy fields except SetupOwnerId
+                SObjectType csType = customSettingRecord.getSObjectType();
+                SObject updateRecord = csType.newSObject();
+                updateRecord.put('Id', customSettingRecord.get('Id'));
+
+                // Copy over fields, excluding 'SetupOwnerId'
+                Map<String, Object> fieldsToUpdate = customSettingRecord.getPopulatedFieldsAsMap();
+                for (String fieldName : fieldsToUpdate.keySet()) {
+                    if (fieldName != 'Id' && fieldName != 'SetupOwnerId') {
+                        updateRecord.put(fieldName, customSettingRecord.get(fieldName));
+                    }
+                }
+
+                update updateRecord;
+                LOGGER.info(
+                    'Custom Setting updated successfully. Record ID: {0}',
+                    new List<Object>{ customSettingRecord.Id }
+                );
+            }
         } catch (Exception ex) {
             LOGGER.error('Error in saveCustomSetting: {0}', new List<Object>{ ex.getMessage() });
             throw new AuraHandledException(
@@ -314,6 +339,8 @@ public with sharing class rflib_CustomSettingsEditorController {
     public class CustomSettingWrapper {
         @AuraEnabled
         public String id;
+        @AuraEnabled
+        public String setupOwnerId;
         @AuraEnabled
         public String setupOwnerType;
         @AuraEnabled
