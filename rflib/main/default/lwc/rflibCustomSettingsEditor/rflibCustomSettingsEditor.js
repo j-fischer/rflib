@@ -9,9 +9,9 @@ import canUserModifyLoggerSettings from '@salesforce/apex/rflib_CustomSettingsEd
 import deleteCustomSettingRecord from '@salesforce/apex/rflib_CustomSettingsEditorController.deleteCustomSettingRecord';
 import saveCustomSetting from '@salesforce/apex/rflib_CustomSettingsEditorController.saveCustomSetting';
 
-const logger = createLogger('Rflib_CustomSettingsEditor');
+const logger = createLogger('RflibCustomSettingsEditor');
 
-export default class Rflib_CustomSettingsEditor extends LightningElement {
+export default class RflibCustomSettingsEditor extends LightningElement {
     @api customSettingsApiName;
     @api fieldsToDisplay;
 
