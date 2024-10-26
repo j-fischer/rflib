@@ -251,9 +251,9 @@ export default class Rflib_CustomSettingsEditor extends LightningElement {
 
     handleOwnerIdChanged(event) {
         let newOwnerId = event.detail.recordId;
-        if (this.recordId !== newOwnerId) {
+        if (this.setupOwnerId !== newOwnerId) {
             logger.debug('Setting owner ID={0}', newOwnerId);
-            this.recordId = newOwnerId;
+            this.setupOwnerId = newOwnerId;
         }
     }
 
