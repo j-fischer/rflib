@@ -92,6 +92,9 @@ public with sharing class rflib_CustomSettingsEditorController {
                 );
             }
 
+            Map<Id, Profile> profileMap = getProfileMap();
+            LOGGER.info('Profile Map: ' + JSON.serialize(profileMap));
+
             Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
             DescribeSObjectResult describeResult = customSettingType.getDescribe();
 
@@ -142,16 +145,16 @@ public with sharing class rflib_CustomSettingsEditorController {
                             setupOwnerTypeLabel = 'Profile';
                         }
                         when else {
-                            if (setupOwner != null) {
-                                setupOwnerTypeLabel = (String) setupOwner.get('Type');
-                            } else {
-                                setupOwnerTypeLabel = 'Unknown';
-                            }
+                            setupOwnerTypeLabel = (String) setupOwner.get('Type');
                         }
                     }
 
                     wrapper.setupOwnerType = setupOwnerTypeLabel;
-                    wrapper.setupOwnerName = (setupOwner != null) ? (String) setupOwner.get('Name') : 'Unknown';
+                    wrapper.setupOwnerName = setupOwnerTypeLabel.equals('Profile') 
+                        ? profileMap.get(setupOwnerId).Name
+                        : (setupOwner != null) 
+                            ? (String) setupOwner.get('Name') 
+                            : 'Unknown';
                 } else {
                     // For organization-level settings where SetupOwnerId might be null
                     wrapper.setupOwnerType = 'Organization';
@@ -171,7 +174,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 wrapperList.add(wrapper);
             }
 
-            LOGGER.info('Total custom settings retrieved: {0}', new List<Object>{ wrapperList.size() });
+            LOGGER.info('Total custom settings retrieved: {0}\n{1}', new List<Object>{ wrapperList.size(), JSON.serialize(wrapperList) });
             return wrapperList;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettings', ex);
@@ -204,7 +207,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 DescribeFieldResult fieldDescribe = field.getDescribe();
 
                 // Exclude system fields if desired
-                if (fieldDescribe.isCustom() || fieldDescribe.getName() == 'Name') {
+                if (fieldDescribe.isCustom()) {
                     FieldInfoWrapper fieldInfo = new FieldInfoWrapper();
                     fieldInfo.apiName = fieldDescribe.getName();
                     fieldInfo.label = fieldDescribe.getLabel();
@@ -216,6 +219,11 @@ public with sharing class rflib_CustomSettingsEditorController {
                     fieldInfo.isUpdateable = fieldDescribe.isUpdateable();
                     fieldInfo.isCreateable = fieldDescribe.isCreateable();
                     fieldInfo.picklistValues = new List<PicklistEntryWrapper>();
+                    
+                    fieldInfo.defaultValue = fieldDescribe.getDefaultValueFormula() != null 
+                        ? Formula.builder().withType(customSettingType).withFormula(fieldDescribe.getDefaultValueFormula()).withReturnType(getFormulaReturnType(fieldInfo.dataType)).build().evaluate(createInstance(customSettingsApiName))
+                        : fieldDescribe.getDefaultValue();
+
                     if (fieldDescribe.getType() == Schema.DisplayType.Picklist) {
                         for (Schema.PicklistEntry picklistValue : fieldDescribe.getPicklistValues()) {
                             fieldInfo.picklistValues.add(new PicklistEntryWrapper(picklistValue.getValue(), picklistValue.isActive()));
@@ -225,10 +233,32 @@ public with sharing class rflib_CustomSettingsEditorController {
                 }
             }
 
+            LOGGER.info('getCustomSettingFields() result={0}', new List<Object>{ JSON.serialize(fields) });
+
             return fields;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettingFields: {0}', new List<Object>{ ex.getMessage() });
             throw new AuraHandledException('An error occurred while retrieving custom setting fields: ' + ex.getMessage());
+        }
+    }
+
+    private static Map<Id, Profile> getProfileMap() {
+        return new Map<Id, Profile>([SELECT Id, Name FROM Profile]);
+    }
+
+    private static Object createInstance(String customSettingsApiName) {
+        return Type.forName(customSettingsApiName).newInstance();
+    }
+
+    private static FormulaEval.FormulaReturnType getFormulaReturnType(String dataType) {
+        switch on dataType {
+            when 'CURRENCY' { return FormulaEval.FormulaReturnType.DOUBLE; }
+            when 'INTEGER' { return FormulaEval.FormulaReturnType.INTEGER; }
+            when 'PERCENT' { return FormulaEval.FormulaReturnType.DOUBLE; }
+            when 'DOUBLE', 'LONG' { return FormulaEval.FormulaReturnType.DOUBLE; }
+            when 'DATETIME' { return FormulaEval.FormulaReturnType.DATETIME; }
+            when 'DATE' { return FormulaEval.FormulaReturnType.DATE; }
+            when else { return FormulaEval.FormulaReturnType.STRING; }
         }
     }
 
@@ -243,6 +273,7 @@ public with sharing class rflib_CustomSettingsEditorController {
         @AuraEnabled public Boolean isUpdateable;
         @AuraEnabled public Boolean isCreateable;
         @AuraEnabled public List<PicklistEntryWrapper> picklistValues;
+        @AuraEnabled public Object defaultValue; 
     }
 
     public class PicklistEntryWrapper {

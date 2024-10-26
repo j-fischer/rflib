@@ -180,6 +180,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         this.modalHeader = 'New Custom Setting';
         this.recordId = null;
         this.recordValues = {}; // Initialize recordValues
+
         this.loadFieldInfos()
             .then(() => {
                 this.showModal = true;
@@ -215,13 +216,21 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 // Enhance each fieldInfo object with field type flags and value
                 this.fieldInfos = fields.map((fieldInfo) => {
                     const dataType = fieldInfo.dataType;
+                    let value = '';
+
+                    if (this.isNewModal) {
+                        value = fieldInfo.defaultValue;
+                    } else {
+                        value = this.recordValues[fieldInfo.apiName] || '';
+                    }
+
                     return {
                         ...fieldInfo,
                         isTextField:
                             dataType === 'STRING' || dataType === 'EMAIL' || dataType === 'PHONE' || dataType === 'URL',
                         isNumberField: dataType === 'DOUBLE' || dataType === 'INTEGER' || dataType === 'CURRENCY',
                         isBooleanField: dataType === 'BOOLEAN',
-                        value: this.recordValues[fieldInfo.apiName] || '' // Set the value
+                        value: value
                     };
                 });
                 logger.info('Field infos loaded: ' + JSON.stringify(this.fieldInfos));
