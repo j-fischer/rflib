@@ -150,10 +150,14 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     getRowActions(row, doneCallback) {
-        logger.info('Getting row actions for row: {0}', JSON.stringify(row));
         const actions = [];
         actions.push({ label: 'Edit', name: 'edit' });
-        actions.push({ label: 'Delete', name: 'delete' });
+
+        if (row.setupOwnerType !== 'Organization') {
+            actions.push({ label: 'Delete', name: 'delete' });
+        }
+
+        logger.info('Getting row actions for row: {0}, actions: {1}', JSON.stringify(row), JSON.stringify(actions));
         doneCallback(actions);
     }
 
@@ -194,7 +198,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     handleEditRecord(row) {
         logger.info('Handling edit record. Record ID: {0}', row.id);
         this.isNewModal = false;
-        this.modalHeader = 'Edit Custom Setting';
+        this.modalHeader = 'Edit Custom Setting for ' + row.setupOwnerName;
         // Set recordValues based on the row data
         this.recordValues = { ...row };
         this.setupOwnerId = row.setupOwnerId;
@@ -216,13 +220,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 // Enhance each fieldInfo object with field type flags and value
                 this.fieldInfos = fields.map((fieldInfo) => {
                     const dataType = fieldInfo.dataType;
-                    let value = '';
-
-                    if (this.isNewModal) {
-                        value = fieldInfo.defaultValue;
-                    } else {
-                        value = this.recordValues[fieldInfo.apiName] || '';
-                    }
+                    let value = this.isNewModal ? fieldInfo.defaultValue : this.recordValues[fieldInfo.apiName];
 
                     return {
                         ...fieldInfo,
