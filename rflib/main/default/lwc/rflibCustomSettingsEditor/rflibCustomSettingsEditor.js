@@ -2,11 +2,11 @@ import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 
-import getCustomSettingLabel from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingLabel';
-import getCustomSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettings';
-import getCustomSettingFields from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingFields';
 import canUserModifyLoggerSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.canUserModifyLoggerSettings';
 import deleteCustomSettingRecord from '@salesforce/apex/rflib_CustomSettingsEditorController.deleteCustomSettingRecord';
+import getCustomSettingFields from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingFields';
+import getCustomSettingLabel from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingLabel';
+import getCustomSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettings';
 import saveCustomSetting from '@salesforce/apex/rflib_CustomSettingsEditorController.saveCustomSetting';
 
 const logger = createLogger('RflibCustomSettingsEditor');
@@ -28,14 +28,12 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     canModifySettings = false;
     isLoading = false;
 
-    // Confirmation Dialog Properties
     showDeleteConfirmation = false;
     deleteDialogTitle = 'Confirm Deletion';
     deleteDialogMessage = 'Are you sure you want to delete this record?';
     deleteDialogConfirmLabel = 'Delete';
     deleteDialogCancelLabel = 'Cancel';
 
-    // Field Metadata and Record Values
     fieldInfos = [];
     @track recordValues = {};
 
@@ -80,7 +78,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('User permission check result: {0}', result);
             })
             .catch((error) => {
-                logger.error('Error occurred while checking user permissions: ' + JSON.stringify(error));
+                logger.error('Error occurred while checking user permissions', error);
                 this.showToast('Error', error.body.message, 'error');
             });
     }
@@ -90,15 +88,13 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         logger.info('Loading custom settings for API name: {0}', this.customSettingsApiName);
         getCustomSettings({ customSettingsApiName: this.customSettingsApiName })
             .then((result) => {
-                // Map the data for the datatable
                 this.customSettingsData = result.map((setting) => {
-                    let row = {
+                    const row = {
                         id: setting.id,
                         setupOwnerId: setting.setupOwnerId,
-                        setupOwnerType: setting.setupOwnerType,
-                        setupOwnerName: setting.setupOwnerName
+                        setupOwnerName: setting.setupOwnerName,
+                        setupOwnerType: setting.setupOwnerType
                     };
-                    // Flatten the fields map to be direct properties of the row object
                     const fieldKeys = Object.keys(setting.fields);
                     fieldKeys.forEach((key) => {
                         row[key] = setting.fields[key];
@@ -107,7 +103,6 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     return row;
                 });
 
-                // Set up columns with correct labels
                 this.columns = this.createColumns(result[0]?.fields || [], result[0]?.fieldLabels || {});
 
                 this.isLoading = false;
@@ -122,12 +117,11 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     createColumns(fields, fieldLabels) {
         logger.info('Creating columns for datatable. Fields to display: {0}', this.fieldsToDisplay);
-        let columns = [
+        const columns = [
             { label: 'Setup Owner Type', fieldName: 'setupOwnerType', type: 'text' },
             { label: 'Setup Owner Name', fieldName: 'setupOwnerName', type: 'text' }
         ];
 
-        // Add fields specified in fieldsToDisplay property, using labels
         if (this.fieldsToDisplay) {
             const fieldNames = this.fieldsToDisplay.split(',').map((field) => field.trim());
             fieldNames.forEach((fieldName) => {
@@ -183,7 +177,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         this.isNewModal = true;
         this.modalHeader = 'New Custom Setting';
         this.recordId = null;
-        this.recordValues = {}; // Initialize recordValues
+        this.recordValues = {};
 
         this.loadFieldInfos()
             .then(() => {
@@ -197,9 +191,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     handleEditRecord(row) {
         logger.info('Handling edit record. Record ID: {0}', row.id);
+
         this.isNewModal = false;
         this.modalHeader = 'Edit Custom Setting for ' + row.setupOwnerName;
-        // Set recordValues based on the row data
         this.recordValues = { ...row };
         this.setupOwnerId = row.setupOwnerId;
         this.setupOwnerType = row.setupOwnerType;
@@ -217,10 +211,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     loadFieldInfos() {
         return getCustomSettingFields({ customSettingsApiName: this.customSettingsApiName })
             .then((fields) => {
-                // Enhance each fieldInfo object with field type flags and value
                 this.fieldInfos = fields.map((fieldInfo) => {
                     const dataType = fieldInfo.dataType;
-                    let value = this.isNewModal ? fieldInfo.defaultValue : this.recordValues[fieldInfo.apiName];
+                    const value = this.isNewModal ? fieldInfo.defaultValue : this.recordValues[fieldInfo.apiName];
 
                     return {
                         ...fieldInfo,
@@ -241,15 +234,11 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     handleFieldChange(event) {
         const fieldName = event.target.dataset.fieldName;
-        let value;
-        if (event.target.type === 'checkbox') {
-            value = event.target.checked;
-        } else {
-            value = event.target.value;
-        }
+        let value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+
         logger.info('Field changed: {0} = {1}', fieldName, value);
         this.recordValues[fieldName] = value;
-        // Update the value in fieldInfos
+
         const fieldInfo = this.fieldInfos.find((field) => field.apiName === fieldName);
         if (fieldInfo) {
             fieldInfo.value = value;
@@ -271,10 +260,10 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     handleModalSave() {
         logger.info('Saving custom setting.');
-        // Create an object with the custom setting fields
         const customSettingRecord = {
             sobjectType: this.customSettingsApiName
         };
+
         if (this.recordId) {
             // Existing record - set Id but do not set SetupOwnerId
             customSettingRecord.Id = this.recordId;
@@ -282,13 +271,14 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             // New record - set SetupOwnerId
             customSettingRecord.SetupOwnerId = this.setupOwnerId;
         }
+
         this.fieldInfos.forEach((fieldInfo) => {
             if (fieldInfo.isCreateable || fieldInfo.isUpdateable) {
                 customSettingRecord[fieldInfo.apiName] = fieldInfo.value;
             }
         });
-        logger.info('Custom setting record to save: {0}', JSON.stringify(customSettingRecord));
 
+        logger.info('Custom setting record to save: {0}', JSON.stringify(customSettingRecord));
         saveCustomSetting({ customSettingRecord })
             .then(() => {
                 logger.info('Custom setting saved successfully.');
@@ -304,7 +294,6 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     handleDeleteRecord() {
         logger.info('Preparing to delete record. Record ID: {0}', this.recordId);
-        // Set up the confirmation dialog properties
         this.showDeleteConfirmation = true;
     }
 
