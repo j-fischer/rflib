@@ -46,6 +46,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             }
         ]
     };
+
     ownerMatchingInfo = {
         primaryField: { fieldPath: 'Name' }
     };
@@ -312,7 +313,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     this.loadCustomSettings();
                 })
                 .catch((error) => {
-                    logger.error('Failed to delete record: ' + JSON.stringify(error));
+                    logger.error('Failed to delete record', error);
                     this.showToast('Error', 'Failed to delete record', 'error');
                 });
         } else {
