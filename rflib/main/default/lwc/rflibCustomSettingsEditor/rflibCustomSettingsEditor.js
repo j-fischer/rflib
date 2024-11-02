@@ -53,9 +53,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     connectedCallback() {
         logger.info('Connected callback invoked. Checking user permissions and loading custom settings.');
-        this.checkUserPermissions();
-        this.loadCustomSettings();
         this.setTitle();
+        this.checkUserPermissions() // checkUserPermissions must complete before the settings are loaded to make sure the correct actions are set.
+            .finally(this.loadCustomSettings);
     }
 
     setTitle() {
@@ -73,7 +73,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     checkUserPermissions() {
         logger.info('Checking if the user can modify custom settings.');
-        canUserModifyLoggerSettings({ customSettingsApiName: this.customSettingsApiName })
+        return canUserModifyLoggerSettings({ customSettingsApiName: this.customSettingsApiName })
             .then((result) => {
                 this.canModifySettings = result;
                 logger.info('User permission check result: {0}', result);
