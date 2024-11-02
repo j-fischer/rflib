@@ -30,7 +30,7 @@ import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 
-import canUserModifyLoggerSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.canUserModifyLoggerSettings';
+import canUserModifyCustomSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.canUserModifyCustomSettings';
 import deleteCustomSettingRecord from '@salesforce/apex/rflib_CustomSettingsEditorController.deleteCustomSettingRecord';
 import getCustomSettingFields from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingFields';
 import getCustomSettingLabel from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingLabel';
@@ -101,7 +101,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     checkUserPermissions() {
         logger.info('Checking if the user can modify custom settings.');
-        return canUserModifyLoggerSettings({ customSettingsApiName: this.customSettingsApiName })
+        return canUserModifyCustomSettings({ customSettingsApiName: this.customSettingsApiName })
             .then((result) => {
                 this.canModifySettings = result;
                 logger.info('User permission check result: {0}', result);

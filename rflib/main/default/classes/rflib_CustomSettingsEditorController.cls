@@ -45,9 +45,9 @@ public with sharing class rflib_CustomSettingsEditorController {
     }
 
     @AuraEnabled(cacheable=true)
-    public static Boolean canUserModifyLoggerSettings(String customSettingsApiName) {
+    public static Boolean canUserModifyCustomSettings(String customSettingsApiName) {
         try {
-            LOGGER.info('canUserModifyLoggerSettings({0}) invoked', new List<Object>{ customSettingsApiName });
+            LOGGER.info('canUserModifyCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
                 LOGGER.error(
@@ -65,7 +65,7 @@ public with sharing class rflib_CustomSettingsEditorController {
 
             return isUpdateable;
         } catch (Exception ex) {
-            LOGGER.error('Error in canUserModifyLoggerSettings: {0}', new List<Object>{ ex.getMessage() });
+            LOGGER.error('Error in canUserModifyCustomSettings: {0}', new List<Object>{ ex.getMessage() });
             throw new AuraHandledException('An error occurred while checking user permissions: ' + ex.getMessage());
         }
     }
