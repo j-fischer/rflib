@@ -55,7 +55,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         logger.info('Connected callback invoked. Checking user permissions and loading custom settings.');
         this.setTitle();
         this.checkUserPermissions() // checkUserPermissions must complete before the settings are loaded to make sure the correct actions are set.
-            .finally(this.loadCustomSettings);
+            .finally(() => this.loadCustomSettings());
     }
 
     setTitle() {
@@ -66,7 +66,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             })
             .catch((error) => {
                 this.title = 'Custom Settings Editor';
-                logger.error('Failed to get custom setting label', error);
+                logger.error('Failed to get custom setting label: {0}', JSON.stringify(error));
                 this.showToast('Error', 'Failed to load custom setting label', 'error');
             });
     }
@@ -79,7 +79,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('User permission check result: {0}', result);
             })
             .catch((error) => {
-                logger.error('Error occurred while checking user permissions', error);
+                logger.error('Error occurred while checking user permissions: {0}', JSON.stringify(error));
                 this.showToast('Error', error.body.message, 'error');
             });
     }
@@ -110,7 +110,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('Custom settings loaded successfully.');
             })
             .catch((error) => {
-                logger.error('Failed to load custom settings', error);
+                logger.error('Failed to load custom settings: {0}', JSON.stringify(error));
                 this.showToast('Error', error.body.message, 'error');
                 this.isLoading = false;
             });
@@ -185,7 +185,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = true;
             })
             .catch((error) => {
-                logger.error('Failed to load field infos', error);
+                logger.error('Failed to load field infos: {0}', JSON.stringify(error));
                 this.showToast('Error', 'Failed to load field information', 'error');
             });
     }
@@ -204,7 +204,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = true;
             })
             .catch((error) => {
-                logger.error('Failed to load field infos', error);
+                logger.error('Failed to load field infos: {0}', JSON.stringify(error));
                 this.showToast('Error', 'Failed to load field information', 'error');
             });
     }
@@ -228,7 +228,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('Field infos loaded: ' + JSON.stringify(this.fieldInfos));
             })
             .catch((error) => {
-                logger.error('Failed to get custom setting fields', error);
+                logger.error('Failed to get custom setting fields: {0}', JSON.stringify(error));
                 throw error;
             });
     }
@@ -288,7 +288,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = false;
             })
             .catch((error) => {
-                logger.error('Failed to save custom setting', error);
+                logger.error('Failed to save custom setting: {0}', JSON.stringify(error));
                 this.showToast('Error', 'Failed to save record', 'error');
             });
     }
@@ -313,7 +313,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     this.loadCustomSettings();
                 })
                 .catch((error) => {
-                    logger.error('Failed to delete record', error);
+                    logger.error('Failed to delete record: {0}', JSON.stringify(error));
                     this.showToast('Error', 'Failed to delete record', 'error');
                 });
         } else {
