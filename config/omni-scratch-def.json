@@ -1,8 +1,17 @@
 {
     "orgName": "RFLIB DEV",
     "edition": "Developer",
-    "features": ["EinsteinGPTForDevelopers", "InsuranceCalculationUser"],
+    "features": [
+        "EinsteinGPTForDevelopers",
+        "InsuranceCalculationUser",
+        "Communities",
+        "ServiceCloud",
+        "CustomerCommunity"
+    ],
     "settings": {
+        "communitiesSettings": {
+            "enableNetworksEnabled": true
+        },
         "lightningExperienceSettings": {
             "enableS1DesktopEnabled": true
         },
