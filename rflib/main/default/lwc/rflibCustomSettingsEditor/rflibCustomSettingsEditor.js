@@ -81,6 +81,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     connectedCallback() {
         logger.info('Connected callback invoked. Checking user permissions and loading custom settings.');
+        this.isLoading = true;
         this.setTitle();
         this.checkUserPermissions() // checkUserPermissions must complete before the settings are loaded to make sure the correct actions are set.
             .finally(() => this.loadCustomSettings());
@@ -132,7 +133,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     return row;
                 });
 
-                this.columns = this.createColumns(result[0]?.fields || [], result[0]?.fieldLabels || {});
+                this.columns = this.createColumns(result[0]?.fieldLabels || {});
 
                 this.isLoading = false;
                 logger.info('Custom settings loaded successfully.');
@@ -144,7 +145,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             });
     }
 
-    createColumns(fields, fieldLabels) {
+    createColumns(fieldLabels) {
         logger.info('Creating columns for datatable. Fields to display: {0}', this.fieldsToDisplay);
         const columns = [
             { label: 'Setup Owner Type', fieldName: 'setupOwnerType', type: 'text' },

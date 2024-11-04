@@ -83,7 +83,9 @@ public with sharing class rflib_UserPermSetManagerController {
     @AuraEnabled
     public static void deletePermissionSetAssignment(Id permissionSetAssignmentId) {
         try {
-            PermissionSetAssignment psa = [SELECT Id FROM PermissionSetAssignment WHERE Id = :permissionSetAssignmentId LIMIT 1];
+            PermissionSetAssignment psa = new permissionSetAssignment(
+                Id = permissionSetAssignmentId
+            );
             delete psa;
         } catch (Exception ex) {
             LOGGER.error('Error in deletePermissionSetAssignment method for permissionSetAssignmentId: ' + permissionSetAssignmentId, ex);

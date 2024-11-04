@@ -1,6 +1,22 @@
-public with sharing class rflib_PublicGroupMemberManagerController {
+public without sharing class rflib_PublicGroupMemberManagerController {
 
     private static rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PublicGroupMemberManagerController');
+
+    @AuraEnabled(cacheable=true)
+    public static Boolean canUserModifyGroupMemberships() {
+        try {
+            LOGGER.info('canUserModifyGroupMemberships() invoked');
+            Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
+            Schema.SObjectType groupMemberType = schemaMap.get('GroupMember');
+            Boolean isCreateable = groupMemberType.getDescribe().isCreateable();
+            
+            LOGGER.info('GroupMember is isCreateable: {0}', new List<Object>{ isCreateable });
+            return isCreateable;
+        } catch (Exception ex) {
+            LOGGER.error('Error in canUserModifyGroupMemberships: {0}', new List<Object>{ ex.getMessage() });
+            throw rflib_ControllerUtil.createAuraHandledException('An error occurred while checking user permissions: ' + ex.getMessage());
+        }
+    }
 
     @AuraEnabled
     public static List<User> getGroupMembers(String groupApiName) {
@@ -21,8 +37,8 @@ public with sharing class rflib_PublicGroupMemberManagerController {
             LOGGER.info('Group members fetched successfully: ' + JSON.serialize(users));
             return users;
         } catch (Exception ex) {
-            LOGGER.error('Error fetching group members: ' + ex.getMessage());
-            throw new AuraHandledException('Error fetching group members: ' + ex.getMessage());
+            LOGGER.error('Error fetching group members: ' + ex.getMessage(), ex);
+            throw rflib_ControllerUtil.createAuraHandledException('Error fetching group members: ' + ex.getMessage());
         }
     }
 
@@ -42,11 +58,11 @@ public with sharing class rflib_PublicGroupMemberManagerController {
                 LOGGER.info('User ' + userId + ' added to group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is already a member of the group.');
-                throw new AuraHandledException('User is already a member of the group.');
+                throw rflib_ControllerUtil.createAuraHandledException('User is already a member of the group.');
             }
-        } catch (Exception e) {
-            LOGGER.error('Error adding user to group: ' + e.getMessage());
-            throw new AuraHandledException('Error adding user to group: ' + e.getMessage());
+        } catch (Exception ex) {
+            LOGGER.error('Error adding user to group: ' + ex.getMessage(), ex);
+            throw rflib_ControllerUtil.createAuraHandledException('Error adding user to group: ' + ex.getMessage());
         }
     }
 
@@ -65,11 +81,11 @@ public with sharing class rflib_PublicGroupMemberManagerController {
                 LOGGER.info('User ' + userId + ' removed from group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is not a member of the group.');
-                throw new AuraHandledException('User is not a member of the group.');
+                throw rflib_ControllerUtil.createAuraHandledException('User is not a member of the group.');
             }
-        } catch (Exception e) {
-            LOGGER.error('Error removing user from group: ' + e.getMessage());
-            throw new AuraHandledException('Error removing user from group: ' + e.getMessage());
+        } catch (Exception ex) {
+            LOGGER.error('Error removing user from group: ' + ex.getMessage(), ex);
+            throw rflib_ControllerUtil.createAuraHandledException('Error removing user from group: ' + ex.getMessage());
         }
     }
 }

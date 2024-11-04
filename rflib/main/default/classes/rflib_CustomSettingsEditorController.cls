@@ -38,7 +38,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             DescribeSObjectResult describeResult = sObjectType.getDescribe();
             return describeResult.getLabel();
         } else {
-            throw new AuraHandledException(
+            throw rflib_ControllerUtil.createAuraHandledException(
                 'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
             );
         }
@@ -54,7 +54,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                     'Custom Setting with API Name {0} does not exist.',
                     new List<Object>{ customSettingsApiName }
                 );
-                throw new AuraHandledException(
+                throw rflib_ControllerUtil.createAuraHandledException(
                     'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
                 );
             }
@@ -66,7 +66,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             return isUpdateable;
         } catch (Exception ex) {
             LOGGER.error('Error in canUserModifyCustomSettings: {0}', new List<Object>{ ex.getMessage() });
-            throw new AuraHandledException('An error occurred while checking user permissions: ' + ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException('An error occurred while checking user permissions: ' + ex.getMessage());
         }
     }
 
@@ -77,7 +77,7 @@ public with sharing class rflib_CustomSettingsEditorController {
 
             if (String.isBlank(customSettingsApiName)) {
                 LOGGER.error('Custom Settings API Name cannot be empty.');
-                throw new AuraHandledException('Custom Settings API Name cannot be empty.');
+                throw rflib_ControllerUtil.createAuraHandledException('Custom Settings API Name cannot be empty.');
             }
 
             // Describe the Custom Setting Object
@@ -87,7 +87,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                     'Custom Setting with API Name {0} does not exist.',
                     new List<Object>{ customSettingsApiName }
                 );
-                throw new AuraHandledException(
+                throw rflib_ControllerUtil.createAuraHandledException(
                     'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
                 );
             }
@@ -100,7 +100,7 @@ public with sharing class rflib_CustomSettingsEditorController {
 
             if (!describeResult.isCustomSetting()) {
                 LOGGER.error('The provided API Name does not belong to a Custom Setting.');
-                throw new AuraHandledException('The provided API Name does not belong to a Custom Setting.');
+                throw rflib_ControllerUtil.createAuraHandledException('The provided API Name does not belong to a Custom Setting.');
             }
 
             // Prepare the query to retrieve all records for the Custom Setting
@@ -178,7 +178,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             return wrapperList;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettings', ex);
-            throw new AuraHandledException('An error occurred while retrieving custom settings: ' + ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException('An error occurred while retrieving custom settings: ' + ex.getMessage());
         }
     }
 
@@ -193,7 +193,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                     'Custom Setting with API Name {0} does not exist.',
                     new List<Object>{ customSettingsApiName }
                 );
-                throw new AuraHandledException(
+                throw rflib_ControllerUtil.createAuraHandledException(
                     'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
                 );
             }
@@ -238,7 +238,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             return fields;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettingFields: {0}', new List<Object>{ ex.getMessage() });
-            throw new AuraHandledException('An error occurred while retrieving custom setting fields: ' + ex.getMessage());
+            throw rflib_ControllerUtil.createAuraHandledException('An error occurred while retrieving custom setting fields: ' + ex.getMessage());
         }
     }
 
@@ -295,7 +295,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             );
             if (String.isBlank(recordId)) {
                 LOGGER.error('Record Id cannot be empty.');
-                throw new AuraHandledException('Record Id cannot be empty.');
+                throw rflib_ControllerUtil.createAuraHandledException('Record Id cannot be empty.');
             }
 
             Schema.SObjectType targetType = Schema.getGlobalDescribe().get(customSettingsApiName);
@@ -304,7 +304,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                     'Custom Setting with API Name {0} does not exist.',
                     new List<Object>{ customSettingsApiName }
                 );
-                throw new AuraHandledException(
+                throw rflib_ControllerUtil.createAuraHandledException(
                     'Custom Setting with API Name ' + customSettingsApiName + ' does not exist.'
                 );
             }
@@ -316,7 +316,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             LOGGER.info('Record deleted successfully. Record ID: {0}', new List<Object>{ recordId });
         } catch (Exception ex) {
             LOGGER.error('Error in deleteCustomSettingRecord: {0}', new List<Object>{ ex.getMessage() });
-            throw new AuraHandledException(
+            throw rflib_ControllerUtil.createAuraHandledException(
                 'An error occurred while deleting the custom setting record: ' + ex.getMessage()
             );
         }
@@ -328,7 +328,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             LOGGER.info('saveCustomSetting invoked for record: {0}', new List<Object>{ customSettingRecord });
             if (customSettingRecord == null) {
                 LOGGER.error('Custom Setting record cannot be null.');
-                throw new AuraHandledException('Custom Setting record cannot be null.');
+                throw rflib_ControllerUtil.createAuraHandledException('Custom Setting record cannot be null.');
             }
 
             if (customSettingRecord.Id == null) {
@@ -361,7 +361,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             }
         } catch (Exception ex) {
             LOGGER.error('Error in saveCustomSetting: {0}', new List<Object>{ ex.getMessage() });
-            throw new AuraHandledException(
+            throw rflib_ControllerUtil.createAuraHandledException(
                 'An error occurred while saving the custom setting record: ' + ex.getMessage()
             );
         }
