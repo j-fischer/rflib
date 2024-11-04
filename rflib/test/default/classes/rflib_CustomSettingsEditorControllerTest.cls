@@ -166,7 +166,7 @@ private class rflib_CustomSettingsEditorControllerTest {
         
         Test.startTest();
         try {
-            rflib_CustomSettingsEditorController.deleteCustomSettingRecord(TEST_CUSTOM_SETTINGS_API_NAME, 'a0B000000000001');
+            rflib_CustomSettingsEditorController.deleteCustomSettingRecord(TEST_CUSTOM_SETTINGS_API_NAME, 'a0Bxxxxxxxxxxxx'); // cspell:disable-line
             Assert.fail('Expected AuraHandledException was not thrown.');
         } catch (AuraHandledException e) {
             Assert.isTrue(e.getMessage().contains('Invalid id'), 'Exception message should indicate invalid record, actual message: ' + e.getMessage());
