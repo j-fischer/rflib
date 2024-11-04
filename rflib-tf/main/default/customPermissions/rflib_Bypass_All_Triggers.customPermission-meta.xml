@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Users assigned this permission will bypass all triggers using the RFLIB Trigger Framework. This is the identical behavior to the &quot;ALL_TRIGGERS&quot; feature switch being turned off.</description>
-    <label>Bypass All Triggers</label>
+    <isLicensed>false</isLicensed>
+    <label>RFLIB Bypass All Triggers</label>
 </CustomPermission>
