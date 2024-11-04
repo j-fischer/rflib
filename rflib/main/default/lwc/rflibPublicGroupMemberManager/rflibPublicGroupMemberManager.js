@@ -27,10 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api } from 'lwc';
+
+import canUserModifyGroupMemberships from '@salesforce/apex/rflib_PublicGroupMemberManagerController.canUserModifyGroupMemberships';
 import getGroupMembers from '@salesforce/apex/rflib_PublicGroupMemberManagerController.getGroupMembers';
 import addUserToGroup from '@salesforce/apex/rflib_PublicGroupMemberManagerController.addUserToGroup';
 import removeUserFromGroup from '@salesforce/apex/rflib_PublicGroupMemberManagerController.removeUserFromGroup';
+
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 
@@ -40,37 +43,35 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     @api title;
     @api groupApiName;
 
-    @track groupMembers = [];
-    @track selectedUserId;
-    @track isAddButtonDisabled = true;
-    @track showDeleteConfirmation = false;
-    @track userToRemoveId;
-    @track deleteDialogTitle = 'Confirm Removal';
-    @track deleteDialogMessage = 'Are you sure you want to remove this user from the group?';
+    isLoading = false;
+    canModifyGroups = false;
+    groupMembers = [];
+    selectedUserId;
+    isAddButtonDisabled = true;
+    showDeleteConfirmation = false;
+    userToRemoveId;
+    deleteDialogTitle = 'Confirm Removal';
+    deleteDialogMessage = 'Are you sure you want to remove this user from the group?';
 
-    columns = [
-        {
-            label: 'Name',
-            fieldName: 'Name',
-            type: 'text'
-        },
-        {
-            label: 'Email',
-            fieldName: 'Email',
-            type: 'email'
-        },
-        {
-            type: 'action',
-            typeAttributes: {
-                rowActions: [{ label: 'Remove', name: 'remove' }],
-                menuAlignment: 'right'
-            }
-        }
-    ];
+    columns = [];
 
     connectedCallback() {
         logger.info('Component initialized with groupApiName: {0}', this.groupApiName);
-        this.loadGroupMembers();
+        this.checkUserPermissions().finally(this.loadGroupMembers());
+    }
+
+    checkUserPermissions() {
+        logger.info('Checking if the user can modify custom settings.');
+        return canUserModifyGroupMemberships()
+            .then((result) => {
+                this.canModifyGroups = result;
+                this.columns = this.createColumns();
+                logger.info('User permission check result: {0}', result);
+            })
+            .catch((error) => {
+                logger.error('Error occurred while checking user permissions: {0}', JSON.stringify(error));
+                this.showToast('Error', error.body.message, 'error');
+            });
     }
 
     loadGroupMembers() {
@@ -83,7 +84,37 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
             .catch((error) => {
                 logger.error('Error loading group members: {0}', JSON.stringify(error));
                 this.showToast('Error', 'Failed to load group members.', 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
             });
+    }
+
+    createColumns() {
+        logger.info('addColumnActionsIfApplicable() invoked: canModifyGroups=' + this.canModifyGroups);
+        const cols = [
+            {
+                label: 'Name',
+                fieldName: 'Name',
+                type: 'text'
+            },
+            {
+                label: 'Email',
+                fieldName: 'Email',
+                type: 'email'
+            }
+        ];
+
+        if (this.canModifyGroups) {
+            cols.push({
+                type: 'action',
+                typeAttributes: {
+                    rowActions: [{ label: 'Remove', name: 'remove' }],
+                    menuAlignment: 'right'
+                }
+            });
+        }
+        return cols;
     }
 
     handleUserSelect(event) {

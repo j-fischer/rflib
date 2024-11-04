@@ -28,7 +28,15 @@
 -->
 <template>
     <lightning-card title={title} variant="Narrow">
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="slds-m-around_medium">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
         <!-- DataTable displaying group members -->
+        <!-- <template if:false={isLoading}> -->
         <div class="datatable-container">
             <lightning-datatable
                 key-field="Id"
@@ -41,29 +49,32 @@
         </div>
 
         <!-- Section for adding a new user to the group using lightning-record-picker -->
-        <div class="slds-m-around_medium slds-grid slds-gutters">
-            <div class="slds-col slds-size_3-of-4">
-                <lightning-record-picker
-                    label="Select a User"
-                    placeholder="Search Name..."
-                    object-api-name="User"
-                    filter={ownerFilter}
-                    matching-info={ownerMatchingInfo}
-                    onchange={handleUserSelect}
-                >
-                </lightning-record-picker>
+        <template if:true={canModifyGroups}>
+            <div class="slds-m-around_medium slds-grid slds-gutters">
+                <div class="slds-col slds-size_3-of-4">
+                    <lightning-record-picker
+                        label="Select a User"
+                        placeholder="Search Name..."
+                        object-api-name="User"
+                        filter={ownerFilter}
+                        matching-info={ownerMatchingInfo}
+                        onchange={handleUserSelect}
+                    >
+                    </lightning-record-picker>
+                </div>
+                <div class="slds-col slds-align_absolute-center">
+                    <lightning-button
+                        variant="brand"
+                        label="Add User"
+                        onclick={handleAddUser}
+                        disabled={isAddButtonDisabled}
+                        class="slds-m-top_small"
+                    >
+                    </lightning-button>
+                </div>
             </div>
-            <div class="slds-col slds-align_absolute-center">
-                <lightning-button
-                    variant="brand"
-                    label="Add User"
-                    onclick={handleAddUser}
-                    disabled={isAddButtonDisabled}
-                    class="slds-m-top_small"
-                >
-                </lightning-button>
-            </div>
-        </div>
+        </template>
+        <!-- </template> -->
     </lightning-card>
 
     <!-- Custom Confirmation Dialog for Delete -->
