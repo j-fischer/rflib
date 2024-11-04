@@ -5,6 +5,10 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>rflib_CustomSettingsEditorController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_LogArchiveController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -16,6 +20,26 @@
         <apexClass>rflib_PermissionsExplorerController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <classAccesses>
+        <apexClass>rflib_PublicGroupMemberManagerController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>rflib_UserPermAssignmentController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>rflib_UserPermSetManagerController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>rflib_UserProfileResolverController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <customSettingAccesses>
+        <enabled>true</enabled>
+        <name>rflib_Logger_Settings__c</name>
+    </customSettingAccesses>
     <description>This permission set provides a user with access to the Ops Dashboard application and the Log Event object.</description>
     <fieldPermissions>
         <editable>false</editable>
@@ -117,6 +141,10 @@
     </tabSettings>
     <tabSettings>
         <tab>rflib_Log_Monitor</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>rflib_Logger_Settings</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>

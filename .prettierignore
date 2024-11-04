@@ -6,6 +6,8 @@
 
 .sf
 .sfdx
+.husky
+.github
 
 sfdx-project.json
-Gruntfile.js
+gulpfile.js

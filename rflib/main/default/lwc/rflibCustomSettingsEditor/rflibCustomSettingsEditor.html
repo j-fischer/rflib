@@ -1,0 +1,186 @@
+<!--
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <lightning-card title={title} variant="Narrow">
+        <div slot="actions">
+            <lightning-button label="Refresh" onclick={handleRefresh} class="slds-m-left_small"></lightning-button>
+            <template if:true={canModifySettings}>
+                <lightning-button
+                    label="New"
+                    onclick={handleNewRecord}
+                    class="slds-m-left_small"
+                    variant="brand"
+                ></lightning-button>
+            </template>
+        </div>
+        <div>
+            <lightning-datatable
+                key-field="id"
+                data={customSettingsData}
+                columns={columns}
+                draft-values={draftValues}
+                onsave={handleSave}
+                onrowaction={handleRowAction}
+                hide-checkbox-column
+            >
+            </lightning-datatable>
+        </div>
+
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="slds-align_absolute-center slds-m-top_medium">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Confirmation Dialog for Deletion -->
+        <template if:true={showDeleteConfirmation}>
+            <c-rflib-confirmation-dialog
+                visible={showDeleteConfirmation}
+                title={deleteDialogTitle}
+                message={deleteDialogMessage}
+                confirm-label={deleteDialogConfirmLabel}
+                cancel-label={deleteDialogCancelLabel}
+                onmodalaction={handleModalAction}
+            >
+            </c-rflib-confirmation-dialog>
+        </template>
+
+        <!-- Modal Dialog -->
+        <template if:true={showModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button
+                            class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close"
+                            onclick={closeModal}
+                        >
+                            <lightning-icon
+                                icon-name="utility:close"
+                                alternative-text="close"
+                                size="small"
+                            ></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 class="slds-text-heading_medium">{modalHeader}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <form class="slds-form slds-form_stacked">
+                            <template if:true={isNewModal}>
+                                <lightning-combobox
+                                    name="typeSelector"
+                                    label="Select a Type"
+                                    value={selectedType}
+                                    placeholder="Select Type"
+                                    options={typeOptions}
+                                    onchange={handleTypeChange}
+                                >
+                                </lightning-combobox>
+
+                                <!-- Conditionally render the child components -->
+                                <template if:true={isUserType}>
+                                    <lightning-record-picker
+                                        label="Select a User"
+                                        placeholder="Search Name..."
+                                        object-api-name="User"
+                                        filter={ownerFilter}
+                                        matching-info={ownerMatchingInfo}
+                                        onchange={handleOwnerIdChanged}
+                                    >
+                                    </lightning-record-picker>
+                                </template>
+
+                                <template if:true={isProfileType}>
+                                    <lightning-record-picker
+                                        label="Select a Profile"
+                                        placeholder="Search Name..."
+                                        object-api-name="Profile"
+                                        matching-info={ownerMatchingInfo}
+                                        onchange={handleOwnerIdChanged}
+                                    >
+                                    </lightning-record-picker>
+                                </template>
+                            </template>
+                            <!-- Dynamically create input fields -->
+                            <template for:each={fieldInfos} for:item="fieldInfo">
+                                <div key={fieldInfo.apiName} class="slds-form-element slds-m-bottom_small">
+                                    <label class="slds-form-element__label" for={fieldInfo.apiName}>
+                                        {fieldInfo.label}
+                                        <template if:true={fieldInfo.isRequired}>
+                                            <abbr class="slds-required" title="required">*</abbr>
+                                        </template>
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <template if:true={fieldInfo.isTextField}>
+                                            <input
+                                                type="text"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                value={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                                class="slds-input"
+                                                maxlength={fieldInfo.length}
+                                            />
+                                        </template>
+                                        <template if:true={fieldInfo.isNumberField}>
+                                            <input
+                                                type="number"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                value={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                                class="slds-input"
+                                                step="any"
+                                            />
+                                        </template>
+                                        <template if:true={fieldInfo.isBooleanField}>
+                                            <lightning-input
+                                                type="checkbox"
+                                                id={fieldInfo.apiName}
+                                                data-field-name={fieldInfo.apiName}
+                                                checked={fieldInfo.value}
+                                                onchange={handleFieldChange}
+                                            ></lightning-input>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </form>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeModal}></lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={handleModalSave}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </lightning-card>
+</template>

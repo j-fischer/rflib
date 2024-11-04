@@ -54,7 +54,7 @@ public class rflib_TestUserFactory {
                 Lastname = lastName,
                 Username = email,
                 Email = email,
-                Alias = 'rflibusr', 
+                Alias = firstName, 
                 ProfileId = [SELECT Id FROM Profile WHERE Name = :profileName].Id,
                 TimeZoneSidKey = 'GMT',
                 LanguageLocaleKey = 'en_US',

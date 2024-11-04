@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>customSettingsApiName</name>
+                    <value>rflib_Logger_Settings__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldsToDisplay</name>
+                    <value>General_Log_Level__c, Log_Event_Reporting_Level__c, Archive_Log_Level__c, Client_Console_Log_Level__c, Client_Server_Log_Level__c, HTTP_Callout_Log_Level__c, Email_Log_Level__c, Enable_Log_Masking__c</value>
+                </componentInstanceProperties>
+                <componentName>rflibCustomSettingsEditor</componentName>
+                <identifier>c_rflibCustomSettingsEditor</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Logger Settings</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

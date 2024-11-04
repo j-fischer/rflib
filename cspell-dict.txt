@@ -79,3 +79,8 @@ autoproc
 logmessage
 logapplicationevent
 logfailure
+Updateable
+updateable
+onsave
+Createable
+Nillable

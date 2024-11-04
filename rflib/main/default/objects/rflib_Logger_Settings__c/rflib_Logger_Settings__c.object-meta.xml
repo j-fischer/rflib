@@ -3,6 +3,6 @@
     <customSettingsType>Hierarchy</customSettingsType>
     <description>Settings to configure the logging behaviour for all users, specific profiles or specific users.</description>
     <enableFeeds>false</enableFeeds>
-    <label>Logger Settings</label>
+    <label>RFLIB Logger Settings</label>
     <visibility>Public</visibility>
 </CustomObject>

@@ -1,0 +1,90 @@
+<!--
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <lightning-card title={title} variant="Narrow">
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="slds-m-around_medium">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- DataTable displaying group members -->
+        <!-- <template if:false={isLoading}> -->
+        <div class="datatable-container">
+            <lightning-datatable
+                key-field="Id"
+                data={groupMembers}
+                columns={columns}
+                hide-checkbox-column
+                onrowaction={handleRowAction}
+            >
+            </lightning-datatable>
+        </div>
+
+        <!-- Section for adding a new user to the group using lightning-record-picker -->
+        <template if:true={canModifyGroups}>
+            <div class="slds-m-around_medium slds-grid slds-gutters">
+                <div class="slds-col slds-size_3-of-4">
+                    <lightning-record-picker
+                        label="Select a User"
+                        placeholder="Search Name..."
+                        object-api-name="User"
+                        filter={ownerFilter}
+                        matching-info={ownerMatchingInfo}
+                        onchange={handleUserSelect}
+                    >
+                    </lightning-record-picker>
+                </div>
+                <div class="slds-col slds-align_absolute-center">
+                    <lightning-button
+                        variant="brand"
+                        label="Add User"
+                        onclick={handleAddUser}
+                        disabled={isAddButtonDisabled}
+                        class="slds-m-top_small"
+                    >
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+        <!-- </template> -->
+    </lightning-card>
+
+    <!-- Custom Confirmation Dialog for Delete -->
+    <c-rflib-confirmation-dialog
+        visible={showDeleteConfirmation}
+        title={deleteDialogTitle}
+        message={deleteDialogMessage}
+        confirm-label="Remove"
+        cancel-label="Cancel"
+        onmodalaction={handleModalAction}
+    >
+    </c-rflib-confirmation-dialog>
+</template>
