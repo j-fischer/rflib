@@ -1,3 +1,11 @@
+### RFLIB 7.4.0
+
+Package ID: 04tKY000000xAEwYAM
+Package Alias: RFLIB@7.4.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xAEwYAM
+
+-   [PR #92](https://github.com/j-fischer/rflib/pull/92) Added tab for managing Custom Settings to Ops Center using a new generic Custom Settings component that allows to manage any Custom Settings object on a Lightning Page.
+
 ### RFLIB 7.3.0
 
 Package ID: 04tKY000000xACgYAM
