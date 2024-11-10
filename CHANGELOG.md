@@ -1,3 +1,11 @@
+### RFLIB-TF 3.0.2
+
+Package ID: 04tKY000000xAF1YAM
+Package Alias: RFLIB-TF@3.0.2-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xAF1YAM
+
+-   Retryable Actions: Updated page layout added missing Active field and changed order of fields.
+
 ### RFLIB 7.4.0
 
 Package ID: 04tKY000000xAEwYAM
