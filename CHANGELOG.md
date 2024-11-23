@@ -1,3 +1,11 @@
+### RFLIB 7.4.1
+
+Package ID: 04tKY000000xAFfYAM
+Package Alias: RFLIB@7.4.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xAFfYAM
+
+-   Custom Settings Editor: Improved error messages to be displayed in toast message popup.
+
 ### RFLIB-TF 3.0.2
 
 Package ID: 04tKY000000xAF1YAM
