@@ -95,8 +95,10 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             })
             .catch((error) => {
                 this.title = 'Custom Settings Editor';
+                const errorMessage =
+                    'Failed to load custom setting label: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Failed to get custom setting label: {0}', JSON.stringify(error));
-                this.showToast('Error', 'Failed to load custom setting label', 'error');
+                this.showToast('Error', errorMessage, 'error');
             });
     }
 
@@ -108,8 +110,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('User permission check result: {0}', result);
             })
             .catch((error) => {
+                const errorMessage = 'Failed to check user permissions: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Error occurred while checking user permissions: {0}', JSON.stringify(error));
-                this.showToast('Error', error.body.message, 'error');
+                this.showToast('Error', errorMessage, 'error');
             });
     }
 
@@ -139,8 +142,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 logger.info('Custom settings loaded successfully.');
             })
             .catch((error) => {
+                const errorMessage = 'Failed to load custom settings: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Failed to load custom settings: {0}', JSON.stringify(error));
-                this.showToast('Error', error.body.message, 'error');
+                this.showToast('Error', errorMessage, 'error');
                 this.isLoading = false;
             });
     }
@@ -214,8 +218,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = true;
             })
             .catch((error) => {
+                const errorMessage = 'Failed to load field information: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Failed to load field infos: {0}', JSON.stringify(error));
-                this.showToast('Error', 'Failed to load field information', 'error');
+                this.showToast('Error', errorMessage, 'error');
             });
     }
 
@@ -233,8 +238,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = true;
             })
             .catch((error) => {
+                const errorMessage = 'Failed to load field information: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Failed to load field infos: {0}', JSON.stringify(error));
-                this.showToast('Error', 'Failed to load field information', 'error');
+                this.showToast('Error', errorMessage, 'error');
             });
     }
 
@@ -317,8 +323,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.showModal = false;
             })
             .catch((error) => {
+                const errorMessage = 'Failed to save record: ' + (error?.body?.message || 'Unknown reason');
                 logger.error('Failed to save custom setting: {0}', JSON.stringify(error));
-                this.showToast('Error', 'Failed to save record', 'error');
+                this.showToast('Error', errorMessage, 'error');
             });
     }
 
@@ -342,8 +349,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     this.loadCustomSettings();
                 })
                 .catch((error) => {
+                    const errorMessage = 'Failed to delete record: ' + (error?.body?.message || 'Unknown reason');
                     logger.error('Failed to delete record: {0}', JSON.stringify(error));
-                    this.showToast('Error', 'Failed to delete record', 'error');
+                    this.showToast('Error', errorMessage, 'error');
                 });
         } else {
             logger.info('User cancelled deletion.');
