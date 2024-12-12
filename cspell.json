@@ -36,7 +36,8 @@
         "Gruntfile.js",
         "gulpfile.js",
         "package*.json",
-        "CHANGELOG.md"
+        "CHANGELOG.md",
+        ".aidigest*"
     ],
     "ignoreWords": ["commitcomment"],
     "ignoreRegExpList": ["/sf package install --package [\\w]{15,18} --target-org .*/g"]
