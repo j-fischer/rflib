@@ -132,9 +132,15 @@ export default class LogEventMonitor extends LightningElement {
             });
         }
 
-        subscribe(CHANNEL, this.currentConnectionMode.value, this.messageCallback).then(
-            _this.createSubscriptionResponseHandler(this)
-        );
+        subscribe(CHANNEL, this.currentConnectionMode.value, this.messageCallback).then(() => {
+            _this.createSubscriptionResponseHandler(this);
+            const evt = new ShowToastEvent({
+                title: 'Connection Mode Changed',
+                message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
+                variant: 'success'
+            });
+            _this.dispatchEvent(evt);
+        });
     }
 
     disconnectedCallback() {
@@ -152,11 +158,19 @@ export default class LogEventMonitor extends LightningElement {
         logger.debug(
             'Connection Mode changed: newConnectionMode={0}, currentConnectionMode={1}',
             newConnectionMode,
-            this.currentConnectionMode.value
+            _this.currentConnectionMode.value
         );
 
         if (newConnectionMode > 0) {
-            this.disconnectedCallback();
+            _this.disconnectedCallback();
+
+            _this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Disconnected from event channel',
+                    message: 'You are no longer receiving any log events.',
+                    variant: 'warn'
+                })
+            );
 
             const args = {
                 startDate: this.startDate,
@@ -189,6 +203,8 @@ export default class LogEventMonitor extends LightningElement {
                     });
                     this.dispatchEvent(evt);
                 });
+
+            return;
         }
 
         const connectToServer = function () {
@@ -204,12 +220,24 @@ export default class LogEventMonitor extends LightningElement {
                 }
 
                 logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
-                subscribe(CHANNEL, _this.currentConnectionMode.value, _this.messageCallback).then(
-                    _this.createSubscriptionResponseHandler(_this)
-                );
+                subscribe(CHANNEL, _this.currentConnectionMode.value, _this.messageCallback).then(() => {
+                    _this.createSubscriptionResponseHandler(_this);
+                    const evt = new ShowToastEvent({
+                        title: 'Connection Mode Changed',
+                        message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
+                        variant: 'success'
+                    });
+                    _this.dispatchEvent(evt);
+                });
             } else {
                 logger.debug('Connection deactivated');
                 _this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
+                const evt = new ShowToastEvent({
+                    title: 'Disconnected from event channel',
+                    message: 'You are no longer receiving any log events.',
+                    variant: 'warn'
+                });
+                _this.dispatchEvent(evt);
             }
         };
 
