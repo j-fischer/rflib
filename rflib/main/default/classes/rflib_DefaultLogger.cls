@@ -59,7 +59,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
     private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
     private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
-    private rflib_LogLevel observabilityLogLevel = rflib_LogLevel.ERROR;
+    private rflib_LogLevel observabilityLogLevel = rflib_LogLevel.NONE;
 
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
@@ -555,7 +555,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
                 eventBusPublisher.publish(addLogEventIfLimitIsReached(logEventsToPublish, publishingLimitOrDefault))
             );
             if (appEventsToPublish.size() > 0) {
-                if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML()) {
+                if (Limits.getPublishImmediateDML() == Limits.getLimitPublishImmediateDML() || eventBusPublisher.getPublishingCounter() == publishingLimitOrDefault) {
                     System.debug(
                         LoggingLevel.ERROR,
                         'RFLIB: PublishImmediateDML Governor Limit reached; failed to publish ' +
