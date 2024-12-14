@@ -84,3 +84,4 @@ updateable
 onsave
 Createable
 Nillable
+slds

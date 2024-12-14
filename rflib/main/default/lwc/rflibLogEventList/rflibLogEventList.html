@@ -32,45 +32,78 @@
 <template>
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
-            <div class="slds-grid">
-                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
+            <div class="slds-grid slds-gutters">
+                <div class={createdByFieldClass} onkeypress={handleCreatedByKeyPress}>
                     <lightning-input
                         type="search"
                         onchange={handleCreatedByChanged}
                         class="slds-m-bottom_small"
-                        placeholder="Search created by..."
+                        variant="label-hidden"
+                        placeholder="Created by..."
+                        value={createdBySearch}
+                        onfocus={handleCreatedByFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="createdBy"
                     >
                     </lightning-input>
                 </div>
-                <div class="sdls-col slds-size_2-of-12 slds-m-right_x-small">
+                <div class={requestIdFieldClass} onkeypress={handleRequestIdKeyPress}>
                     <lightning-input
                         type="search"
-                        onchange={handleLevelKeyChange}
+                        onchange={handleRequestIdChange}
                         class="slds-m-bottom_small"
-                        placeholder="Search Level..."
+                        variant="label-hidden"
+                        placeholder="Request ID..."
+                        onfocus={handleRequestIdFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="requestId"
                     >
                     </lightning-input>
                 </div>
-                <div class="sdls-col slds-size_3-of-12 slds-m-right_x-small">
+                <div class={contextFieldClass} onkeypress={handleContextKeyPress}>
                     <lightning-input
                         type="search"
                         onchange={handleContextKeyChange}
                         class="slds-m-bottom_small"
-                        placeholder="Search context..."
+                        variant="label-hidden"
+                        placeholder="Context..."
+                        onfocus={handleContextFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="context"
                     >
                     </lightning-input>
                 </div>
-                <div class="slds-col slds-size_5-of-12">
+                <div class={levelFieldClass} onkeypress={handleLevelKeyPress}>
+                    <lightning-input
+                        type="search"
+                        onchange={handleLevelKeyChange}
+                        class="slds-m-bottom_small"
+                        variant="label-hidden"
+                        placeholder="Level..."
+                        onfocus={handleLevelFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="level"
+                    >
+                    </lightning-input>
+                </div>
+                <div class={logMessageFieldClass} onkeypress={handleLogMessageKeyPress}>
                     <lightning-input
                         type="search"
                         onchange={handleLogMessageKeyChange}
                         class="slds-m-bottom_small slds-m-right_small"
-                        placeholder="Search log messages..."
+                        variant="label-hidden"
+                        placeholder="Log messages..."
+                        onfocus={handleLogMessageFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="logMessage"
                     >
                     </lightning-input>
                 </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <lightning-button type="submit" label="Search" onclick={executeSearch}></lightning-button>
+                </div>
             </div>
-            <template lwc:if={eventsToDisplay}>
+            <template lwc:if={recordsToDisplay}>
                 <table
                     class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout"
                 >
@@ -80,7 +113,7 @@
                                 <div class="slds-truncate" title="Date">Date</div>
                             </th>
                             <th scope="col">
-                                <div class="slds-truncate" title="Created By">Create By</div>
+                                <div class="slds-truncate" title="Created By">Created By</div>
                             </th>
                             <th scope="col">
                                 <div class="slds-truncate" title="Request ID">Request ID</div>
@@ -94,11 +127,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={eventsToDisplay} for:item="evt">
+                        <template for:each={recordsToDisplay} for:item="evt">
                             <c-rflib-log-event-list-row
-                                key={evt.Id}
+                                key={evt.id}
                                 evt={evt}
-                                data-log-id={evt.Id}
+                                data-log-id={evt.id}
                                 onclick={handleLogSelected}
                             ></c-rflib-log-event-list-row>
                         </template>

@@ -38,3 +38,6 @@ $RECYCLE.BIN/
 assets/server.key
 assets/server.crt
 assets/key_iv.txt
+
+#AI Digest tool to help with AI assisted development
+.aidigest*

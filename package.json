@@ -46,6 +46,7 @@
         "@salesforce/eslint-plugin-aura": "^2.1.0",
         "@salesforce/eslint-plugin-lightning": "^1.0.0",
         "@salesforce/sfdx-lwc-jest": "^5.0.0",
+        "ai-digest": "^1.0.7",
         "codecov": "^3.8.2",
         "cspell": "^8.8.1",
         "eslint": "^8.56.0",

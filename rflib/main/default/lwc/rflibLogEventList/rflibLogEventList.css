@@ -27,10 +27,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
- .selected {
+ .search-field {
+    transition: all 0.3s ease-in-out;
+}
+
+.search-field-expanded {
+    flex: 2;
+}
+
+.search-field-collapsed {
+    flex: 0.5;
+}
+
+.selected {
     background-color: var(--lwc-colorBackgroundRowNew);
 }
 
 .slds-table_striped tbody tr:nth-of-type(even).selected > td {
     background-color: var(--lwc-colorBackgroundRowNew);
- }
+}
