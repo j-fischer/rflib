@@ -118,7 +118,7 @@ public interface rflib_Logger {
     * Set the log level for when Application Events should be created.
     * Only WARN, ERROR and FATAL are valid values.
     * 
-    * rflib_DefaultLogger's default level is ERROR.
+    * rflib_DefaultLogger's default level is NONE.
     *
     * @param  newLevel The new log level to be used for observability. 
     */
