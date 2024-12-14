@@ -29,7 +29,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
 
-const logger = createLogger('LogEventList');
+const logger = createLogger('rflibLogEventList');
 
 const SEARCH_FIELDS = {
     CREATED_BY: 'createdBy',
