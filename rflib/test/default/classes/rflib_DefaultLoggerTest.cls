@@ -536,98 +536,98 @@ public class rflib_DefaultLoggerTest {
     }
 
     @isTest
-    static void testObservabilityLogEventCreation_LevelMatched() {
+    static void testLogAggregationLogEventCreation_LevelMatched() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
-        rflib_Logger logger = loggerFactory.createLogger('testObservabilityLogEventCreation');
+        rflib_Logger logger = loggerFactory.createLogger('testLogAggregationLogEventCreation');
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.WARN);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.WARN);
 
         Assert.isFalse(
             loggerFactory.eventCapture.hasAppEventBeenPublished(),
-            'One observability log event should be published.'
+            'One LogAggregation log event should be published.'
         );
 
         Test.startTest();
-        logger.warn('Test observability warning log');
+        logger.warn('Test LogAggregation warning log');
         Test.stopTest();
 
         Assert.isTrue(
             loggerFactory.eventCapture.hasAppEventBeenPublished(),
-            'One observability log event should be published.'
+            'One LogAggregation log event should be published.'
         );
 
         rflib_Application_Event_Occurred_Event__e event = loggerFactory.eventCapture.getAppEvent();
         Assert.areEqual(
-            'rflib-warn-testObservabilityLogEventCreation',
+            'rflib-warn-testLogAggregationLogEventCreation',
             event.Event_Name__c,
             'Event name should be correctly formatted.'
         );
         Assert.isTrue(
-            event.Additional_Details__c.contains('Test observability warning log'),
+            event.Additional_Details__c.contains('Test LogAggregation warning log'),
             'Log message should match.'
         );
     }
 
     @isTest
-    static void testObservability_LogEventCreationWhenLevelMatches() {
+    static void testLogAggregation_LogEventCreationWhenLevelMatches() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
-        rflib_Logger logger = loggerFactory.createLogger('testObservabilityLogEventCreation');
+        rflib_Logger logger = loggerFactory.createLogger('testLogAggregationLogEventCreation');
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.WARN);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.WARN);
 
         Assert.isFalse(
             loggerFactory.eventCapture.hasAppEventBeenPublished(),
-            'One observability log event should be published.'
+            'One LogAggregation log event should be published.'
         );
 
         Test.startTest();
-        logger.warn('Test observability warning log');
+        logger.warn('Test LogAggregation warning log');
         Test.stopTest();
 
         Assert.isTrue(
             loggerFactory.eventCapture.hasAppEventBeenPublished(),
-            'One observability log event should be published.'
+            'One LogAggregation log event should be published.'
         );
 
         rflib_Application_Event_Occurred_Event__e event = loggerFactory.eventCapture.getAppEvent();
         Assert.areEqual(
-            'rflib-warn-testObservabilityLogEventCreation',
+            'rflib-warn-testLogAggregationLogEventCreation',
             event.Event_Name__c,
             'Event name should be correctly formatted.'
         );
         Assert.isTrue(
-            event.Additional_Details__c.contains('Test observability warning log'),
+            event.Additional_Details__c.contains('Test LogAggregation warning log'),
             'Log message should match.'
         );
     }
 
     @isTest
-    static void testObservability_NoLogEventCreationWhenLevelIsBelowThreshold() {
+    static void testLogAggregation_NoLogEventCreationWhenLevelIsBelowThreshold() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
-        rflib_Logger logger = loggerFactory.createLogger('testObservabilityNoLogEventCreation');
+        rflib_Logger logger = loggerFactory.createLogger('testLogAggregationNoLogEventCreation');
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.ERROR);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.ERROR);
 
         Test.startTest();
-        logger.warn('This warning should not trigger an observability event');
+        logger.warn('This warning should not trigger an LogAggregation event');
         Test.stopTest();
 
         Assert.isFalse(
             loggerFactory.eventCapture.hasAppEventBeenPublished(),
-            'No observability log event should be published when level is below threshold.'
+            'No LogAggregation log event should be published when level is below threshold.'
         );
     }
 
     @isTest
-    static void testObservabilityLogEventCreation_SettingInvalidLevelDefaultsToWarn() {
+    static void testLogAggregationLogEventCreation_SettingInvalidLevelDefaultsToWarn() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
-        rflib_Logger logger = loggerFactory.createLogger('testObservabilityInvalidLevelDefault');
+        rflib_Logger logger = loggerFactory.createLogger('testLogAggregationInvalidLevelDefault');
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.INFO);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.INFO);
 
         Test.startTest();
         logger.warn('This should trigger an event because default level is WARN');
@@ -640,37 +640,37 @@ public class rflib_DefaultLoggerTest {
     }
 
     @isTest
-    static void testObservabilityLogEventCreation_AppEventContributesTowardsPublishingLimit() {
+    static void testLogAggregationLogEventCreation_AppEventContributesTowardsPublishingLimit() {
         rflib_DefaultLogger.LogEventPublisher eventPublisher = new rflib_DefaultLogger.LogEventPublisher();
 
         rflib_Logger logger = new rflib_DefaultLogger(
             eventPublisher,
             new rflib_DefaultLogger.SystemDebugLogger(),
-            'testObservabilityLogEventCreation'
+            'testLogAggregationLogEventCreation'
         );
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.WARN);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.WARN);
 
         rflib_GlobalSettings.overridePublishingLimitOrDefault(2);
 
         Test.startTest();
         Assert.areEqual(0, eventPublisher.getPublishingCounter());
-        logger.warn('With observability enabled, an observed log message will require to Immediate DML');
+        logger.warn('With LogAggregation enabled, an observed log message will require to Immediate DML');
         Assert.areEqual(2, eventPublisher.getPublishingCounter());
         Test.stopTest();
     }
 
     @isTest
-    static void testObservabilityLogEventCreation_AppEventNotPublishedWhenHittingPublishingLimit() {
+    static void testLogAggregationLogEventCreation_AppEventNotPublishedWhenHittingPublishingLimit() {
         rflib_DefaultLogger.LogEventPublisher eventPublisher = new rflib_DefaultLogger.LogEventPublisher();
 
         rflib_Logger logger = new rflib_DefaultLogger(
             eventPublisher,
             new rflib_DefaultLogger.SystemDebugLogger(),
-            'testObservabilityLogEventCreation'
+            'testLogAggregationLogEventCreation'
         );
 
-        logger.setObservabilityLogLevel(rflib_LogLevel.WARN);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.WARN);
 
         rflib_GlobalSettings.overridePublishingLimitOrDefault(1);
 

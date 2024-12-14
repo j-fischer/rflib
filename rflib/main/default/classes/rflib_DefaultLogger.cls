@@ -59,7 +59,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
     private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
     private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
-    private rflib_LogLevel observabilityLogLevel = rflib_LogLevel.NONE;
+    private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
 
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
@@ -126,8 +126,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
         }
 
-        if (String.isNotBlank(settings.Observability_Log_Level__c)) {
-            logger.setObservabilityLogLevel(rflib_LogLevel.fromString(settings.Observability_Log_Level__c));
+        if (String.isNotBlank(settings.Log_Aggregation_Log_Level__c)) {
+            logger.setLogAggregationLogLevel(rflib_LogLevel.fromString(settings.Log_Aggregation_Log_Level__c));
         }
 
         logger.setLogMaskingState(settings.Enable_Log_Masking__c);
@@ -259,13 +259,13 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         isLogMaskingEnabled = isEnabled;
     }
 
-    public void setObservabilityLogLevel(rflib_LogLevel newLevel) {
+    public void setLogAggregationLogLevel(rflib_LogLevel newLevel) {
         // NOTE: The observability level can only be WARN or higher to prevent accidental
         //       "floods" of Application Events being created. Following best practices, DEBUG and TRACE statements
         //       should be used within loops and should ideally never cause a Log Event to be sent out.
         //       It is recommended that most log statements should be INFO level to provide the most transparency
         //       for logging purposes, while the observability has the focus to highlight issues in the application.
-        observabilityLogLevel = rflib_LogLevel.WARN.encompasses(newLevel) || rflib_LogLevel.NONE == newLevel
+        logAggregationLogLevel = rflib_LogLevel.WARN.encompasses(newLevel) || rflib_LogLevel.NONE == newLevel
             ? newLevel
             : rflib_LogLevel.WARN;
     }
@@ -391,7 +391,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
         platformEventsToLog.add(eventToLog);
 
-        if (observabilityLogLevel.encompasses(logLevel)) {
+        if (logAggregationLogLevel.encompasses(logLevel)) {
             String eventName = String.format(
                 APPLICATION_EVENT_NAME_PATTERN,
                 new List<String>{ logLevel.toString().toLowerCase(), context }

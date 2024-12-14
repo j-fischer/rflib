@@ -122,7 +122,7 @@ public interface rflib_Logger {
     *
     * @param  newLevel The new log level to be used for observability. 
     */
-  void setObservabilityLogLevel(rflib_LogLevel newLevel);
+  void setLogAggregationLogLevel(rflib_LogLevel newLevel);
   
   /**
    * Override the platform information to be sent with any log event for this transaction. 
