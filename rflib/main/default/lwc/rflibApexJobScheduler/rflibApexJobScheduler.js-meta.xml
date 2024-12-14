@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>RFLIB Apex Job Scheduler</masterLabel>
+    <description>Displays and manages the status of a scheduled Apex job.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="className" type="String" label="Apex Class Name" description="Name of the Apex class to monitor and schedule"/>
+            <property name="jobName" type="String" label="Job Name" description="Name of the Job as listed in the Setup's Scheduled Job page"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

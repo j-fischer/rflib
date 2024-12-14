@@ -1,0 +1,52 @@
+<!-- File: rflibApexJobScheduler.html -->
+<template>
+    <lightning-card title={title} icon-name="standard:apex">
+        <div class="slds-p-around_medium">
+            <!-- Loading Spinner -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center">
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Content When Not Loading -->
+            <template if:false={isLoading}>
+                <!-- If Job is Scheduled -->
+                <template if:true={isScheduled}>
+                    <div class="slds-box slds-box_xx-small slds-m-bottom_small">
+                        <p><strong>Status:</strong> {status}</p>
+                        <p><strong>Next Run:</strong> {formattedNextRunTime}</p>
+                        <p><strong>CRON Expression:</strong> {cronExpressionInput}</p>
+                        <p><strong>Class Name:</strong> {className}</p>
+                    </div>
+                </template>
+
+                <!-- If Job is Not Scheduled -->
+                <template if:false={isScheduled}>
+                    <!-- Informational Message -->
+                    <div class="slds-m-bottom_small">
+                        <p>No job is currently scheduled. Please provide a CRON expression to schedule one.</p>
+                        <p>Class Name: <strong>{className}</strong></p>
+                    </div>
+                    <!-- CRON Expression Input -->
+                    <lightning-input
+                        label="CRON Expression"
+                        value={cronExpressionInput}
+                        onchange={handleCronChange}
+                        placeholder="e.g., 0 0 3 ? * 0#2"
+                        class="slds-m-bottom_small"
+                    >
+                    </lightning-input>
+                    <!-- Schedule Button -->
+                    <lightning-button
+                        label="Schedule Job"
+                        variant="brand"
+                        onclick={handleSchedule}
+                        class="slds-m-top_small"
+                    >
+                    </lightning-button>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>
