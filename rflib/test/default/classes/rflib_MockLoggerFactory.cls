@@ -29,26 +29,21 @@
 @isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
-
     public final DebugLogCapture debugLogCapture = new DebugLogCapture();
     public final EventCapture eventCapture = new EventCapture();
 
     private final rflib_LogLevel systemDebugLogLevel;
 
     public rflib_MockLoggerFactory() {
-       this(null);
+        this(null);
     }
 
     public rflib_MockLoggerFactory(rflib_LogLevel systemDebugLogLevel) {
-       this.systemDebugLogLevel = systemDebugLogLevel;
+        this.systemDebugLogLevel = systemDebugLogLevel;
     }
 
     public rflib_Logger createLogger(String context) {
-        rflib_DefaultLogger result = new rflib_DefaultLogger(
-            eventCapture,
-            debugLogCapture,
-            context
-        );
+        rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
 
         if (systemDebugLogLevel != null) {
             result.setSystemDebugLevel(rflib_LogLevel.DEBUG);
@@ -57,18 +52,13 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
     }
 
     public rflib_Logger createBatchedLogger(String context) {
-        rflib_DefaultLogger result = new rflib_DefaultLogger(
-            eventCapture,
-            debugLogCapture,
-            context
-        );
+        rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
 
         if (systemDebugLogLevel != null) {
             result.setSystemDebugLevel(rflib_LogLevel.DEBUG);
         }
         return result;
     }
-
 
     public class DebugLogCapture implements rflib_DefaultLogger.DebugLogger {
         public final List<String> capturedLogMessages = new List<String>();
@@ -82,30 +72,32 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
 
         public Boolean doesNotContainInAnyMessage(String substring) {
-          for (String message : capturedLogMessages) {
-            if (message.contains(substring)) {
-              System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
-              return false;
+            for (String message : capturedLogMessages) {
+                if (message.contains(substring)) {
+                    System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
+                    return false;
+                }
             }
-          }
 
-          return true;
+            return true;
         }
 
         public Boolean containsInAnyMessage(String substring) {
-          for (String message : capturedLogMessages) {
-            if (message.contains(substring)) {
-              return true;
+            for (String message : capturedLogMessages) {
+                if (message.contains(substring)) {
+                    return true;
+                }
             }
-          }
 
-          System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
-          return false;
+            System.debug('Actual messages:\n' + String.join(capturedLogMessages, '\n'));
+            return false;
         }
     }
 
     public class EventCapture implements rflib_EventPublisher {
-        private List<rflib_Log_Event__e> capturedEvents;
+        private List<rflib_Log_Event__e> capturedLogEvents;
+        private List<rflib_Application_Event_Occurred_Event__e> capturedAppEvents;
+
         private Integer publishingCount = 0;
 
         public Integer getPublishingCounter() {
@@ -113,61 +105,101 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
 
         public Database.SaveResult publish(SObject event) {
-          capturedEvents = new List<rflib_Log_Event__e> { (rflib_Log_Event__e) event };
-          return null;
+            Schema.SObjectType evtType = event.getSObjectType();
+
+            if (evtType == rflib_Log_Event__e.SObjectType) {
+                capturedLogEvents = new List<rflib_Log_Event__e>{ (rflib_Log_Event__e) event };
+            } else if (evtType == rflib_Application_Event_Occurred_Event__e.SObjectType) {
+                capturedAppEvents = new List<rflib_Application_Event_Occurred_Event__e>{
+                    (rflib_Application_Event_Occurred_Event__e) event
+                };
+            }
+
+            return null;
         }
 
         public List<Database.SaveResult> publish(List<SObject> events) {
-          capturedEvents = (List<rflib_Log_Event__e>) events;
-          return null;
+            List<rflib_Log_Event__e> logEventsToPublish = new List<rflib_Log_Event__e>();
+            List<rflib_Application_Event_Occurred_Event__e> appEventsToPublish = new List<rflib_Application_Event_Occurred_Event__e>();
+
+            for (SObject evt : events) {
+                Schema.SObjectType evtType = evt.getSObjectType();
+
+                if (evtType == rflib_Log_Event__e.SObjectType) {
+                    logEventsToPublish.add((rflib_Log_Event__e) evt);
+                } else if (evtType == rflib_Application_Event_Occurred_Event__e.SObjectType) {
+                    appEventsToPublish.add((rflib_Application_Event_Occurred_Event__e) evt);
+                }
+            }
+
+            capturedLogEvents = logEventsToPublish;
+            capturedAppEvents = appEventsToPublish;
+
+            return null;
         }
 
         public Boolean eventHasNotBeenPublished() {
-          return capturedEvents == null;
+            return capturedLogEvents == null || capturedLogEvents.isEmpty();
         }
 
         public Boolean eventHasBeenPublished() {
-          return capturedEvents != null;
+            return capturedLogEvents != null && !capturedLogEvents.isEmpty();
+        }
+
+        public Boolean hasAppEventNotBeenPublished() {
+            return capturedAppEvents == null || capturedAppEvents.isEmpty();
+        }
+
+        public Boolean hasAppEventBeenPublished() {
+            return capturedAppEvents != null && !capturedAppEvents.isEmpty();
         }
 
         public rflib_Log_Event__e getEvent() {
-          return getEvent(0);
+            return getEvent(0);
         }
 
         public rflib_Log_Event__e getEvent(Integer index) {
-          return capturedEvents[index];
+            return capturedLogEvents[index];
+        }
+
+        public rflib_Application_Event_Occurred_Event__e getAppEvent() {
+            return getAppEvent(0);
+        }
+
+        public rflib_Application_Event_Occurred_Event__e getAppEvent(Integer index) {
+            return capturedAppEvents[index];
         }
 
         public Boolean doesNotContainInAnyMessage(String substring) {
-          Boolean result = getEvent().Log_Messages__c.contains(substring);
-          if (result) {
-            System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
-          }
-          return result == false;
+            Boolean result = getEvent().Log_Messages__c.contains(substring);
+            if (result) {
+                System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
+            }
+            return result == false;
         }
 
         public Boolean containsInAnyMessage(String substring) {
-          Boolean result = getEvent().Log_Messages__c.contains(substring);
-          if (!result) {
-            System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
-          }
-          return result;
+            Boolean result = getEvent().Log_Messages__c.contains(substring);
+            if (!result) {
+                System.debug('Actual event message:\n' + getEvent().Log_Messages__c);
+            }
+            return result;
         }
 
         public Boolean doesNotContainInPlatformInfo(String substring) {
-          Boolean result = getEvent().Platform_Info__c.contains(substring);
-          if (result) {
-            System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
-          }
-          return result == false;
+            Boolean result = getEvent().Platform_Info__c.contains(substring);
+            if (result) {
+                System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
+            }
+            return result == false;
         }
 
         public Boolean containsInPlatformInfo(String substring) {
-          Boolean result = getEvent().Platform_Info__c.contains(substring);
-          if (!result) {
-            System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
-          }
-          return result;
+            Boolean result = getEvent().Platform_Info__c.contains(substring);
+            if (!result) {
+                System.debug('Actual event message:\n' + getEvent().Platform_Info__c);
+            }
+            return result;
         }
     }
 }

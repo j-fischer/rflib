@@ -113,6 +113,16 @@ public interface rflib_Logger {
    * @param  isEnabled The new state whether log masking is enabled or not.
    */
   void setLogMaskingState(Boolean isEnabled);
+
+  /**
+    * Set the log level for when Application Events should be created.
+    * Only WARN, ERROR and FATAL are valid values.
+    * 
+    * rflib_DefaultLogger's default level is NONE.
+    *
+    * @param  newLevel The new log level to be used for observability. 
+    */
+  void setLogAggregationLogLevel(rflib_LogLevel newLevel);
   
   /**
    * Override the platform information to be sent with any log event for this transaction. 

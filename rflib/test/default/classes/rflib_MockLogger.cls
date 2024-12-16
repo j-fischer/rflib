@@ -37,6 +37,7 @@ public class rflib_MockLogger implements rflib_Logger {
     public rflib_LogLevel batchReportingLogLevel;
     public rflib_LogLevel systemDebugLevel;
     public rflib_LogLevel generalLogLevel;
+    public rflib_LogLevel logAggregationLogLevel;
     public String platformInfo;
 
     public Boolean logsPrinted = false;
@@ -51,6 +52,10 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public void setReportingLogLevel(rflib_LogLevel newLevel) {
         this.reportingLogLevel = newLevel;
+    }
+
+    public void setLogAggregationLogLevel(rflib_LogLevel newLevel) {
+        this.logAggregationLogLevel = newLevel;
     }
 
     public void setFlushLogCacheLevel(rflib_LogLevel newLevel) {
