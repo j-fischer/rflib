@@ -458,7 +458,7 @@ gulp.task(
 gulp.task(
     'shell-force-install-bigobject-utility',
     shellTask(function () {
-        return `sf package install --package 04t7F000003irldQAA -o ${config.alias} -w 10`;
+        return `sf package install --package 04tGA000005dJQCYA2 -o ${config.alias} -w 10`;
     })
 );
 

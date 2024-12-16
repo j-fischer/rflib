@@ -44,7 +44,7 @@ public with sharing class rflib_LogEventViewerController {
 
             String query = 'SELECT Id, Status, Operation, DurationMilliseconds, StartTime, LastModifiedDate, LogLength, LogUserId, Request, Application ' +
                           'FROM ApexLog ' +
-                          'WHERE RequestIdentifier = :requestId ' +
+                          'WHERE RequestIdentifier = \'' + requestId + '\' ' +
                           'ORDER BY StartTime ASC';
 
             List<ApexLog> logs = (List<ApexLog>) QUERY_EXECUTOR.query(query);
