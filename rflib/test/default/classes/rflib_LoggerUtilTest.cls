@@ -38,7 +38,7 @@ private class rflib_LoggerUtilTest {
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
         Test.stopTest();
 
-        System.assert(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
+        Assert.isTrue(factory instanceof rflib_DefaultLoggerFactory, 'Default Logger Factory instance should be of type rflib_DefaultLoggerFactory');
     }
 
     @IsTest
@@ -49,7 +49,7 @@ private class rflib_LoggerUtilTest {
         rflib_LoggerFactory factory = rflib_LoggerUtil.getFactory();
         Test.stopTest();
 
-        System.assert(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
+        Assert.isTrue(factory instanceof rflib_MockLoggerFactory, 'Configured Logger Factory instance should be of type rflib_MockLoggerFactory');
     }
 
     @IsTest
@@ -58,7 +58,7 @@ private class rflib_LoggerUtilTest {
         rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
         Test.stopTest();
 
-        System.assert(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
+        Assert.isTrue(logTimer instanceof rflib_DefaultLogTimer, 'Default Logger Timer instance should be of type rflib_DefaultLogTimer');
     }
 
     @IsTest
@@ -69,7 +69,7 @@ private class rflib_LoggerUtilTest {
         rflib_LogTimer logTimer = rflib_LoggerUtil.startLogTimer(LOGGER, 500, 'some message');
         Test.stopTest();
 
-        System.assert(logTimer instanceof rflib_MockLogTimer, 'Configured LogTimer instance should be of type rflib_MockLogTimer');
+        Assert.isTrue(logTimer instanceof rflib_MockLogTimer, 'Configured LogTimer instance should be of type rflib_MockLogTimer');
     }
 
     @IsTest
@@ -78,7 +78,7 @@ private class rflib_LoggerUtilTest {
         rflib_LogFinalizer logFinalizer = rflib_LoggerUtil.createLogFinalizer(LOGGER);
         Test.stopTest();
 
-        System.assert(logFinalizer instanceof rflib_DefaultLogFinalizer, 'Default LogFinalizer instance should be of type rflib_DefaultLogFinalizer');
+        Assert.isTrue(logFinalizer instanceof rflib_DefaultLogFinalizer, 'Default LogFinalizer instance should be of type rflib_DefaultLogFinalizer');
     }
 
     @IsTest
@@ -89,7 +89,7 @@ private class rflib_LoggerUtilTest {
         rflib_LogFinalizer logFinalizer = rflib_LoggerUtil.createLogFinalizer(LOGGER);
         Test.stopTest();
 
-        System.assert(logFinalizer instanceof rflib_MockLogFinalizer, 'Configured LogFinalizer instance should be of type rflib_MockLogFinalizer');
+        Assert.isTrue(logFinalizer instanceof rflib_MockLogFinalizer, 'Configured LogFinalizer instance should be of type rflib_MockLogFinalizer');
     }
 
     @IsTest
@@ -98,7 +98,7 @@ private class rflib_LoggerUtilTest {
         rflib_ApplicationEventLogger appEventLogger = rflib_LoggerUtil.getApplicationEventLogger();
         Test.stopTest();
 
-        System.assert(appEventLogger instanceof rflib_DefaultApplicationEventLogger, 'Default Application Event Logger instance should be of type rflib_DefaultApplicationEventLogger');
+        Assert.isTrue(appEventLogger instanceof rflib_DefaultApplicationEventLogger, 'Default Application Event Logger instance should be of type rflib_DefaultApplicationEventLogger');
     }
 
     @IsTest
@@ -109,6 +109,34 @@ private class rflib_LoggerUtilTest {
         rflib_ApplicationEventLogger appEventLogger = rflib_LoggerUtil.getApplicationEventLogger();
         Test.stopTest();
 
-        System.assert(appEventLogger instanceof rflib_MockApplicationEventLogger, 'Configured Logger Factory instance should be of type rflib_MockApplicationEventLogger');
+        Assert.isTrue(appEventLogger instanceof rflib_MockApplicationEventLogger, 'Configured Logger Factory instance should be of type rflib_MockApplicationEventLogger');
     }
-}
+    
+    @isTest
+    static void testSetLoggerSettings() {
+        insert new rflib_Logger_Settings__c(
+            Log_Size__c = 50,
+            Enable_Log_Masking__c = true,
+            System_Debug_Log_Level__c = 'WARN',
+            Log_Event_Reporting_Level__c = 'ERROR',
+            Log_Aggregation_Log_Level__c = 'WARN',
+            Flush_Log_Cache_Level__c = 'INFO',
+            General_Log_Level__c = 'INFO',
+            Org_Wide_Email_Sender_Address__c = 'foo@email.com',
+            Batched_Log_Event_Reporting_Level__c = 'INFO'
+        );
+        
+        Test.startTest();
+        rflib_DefaultLogger logger = (rflib_DefaultLogger) new rflib_DefaultLoggerFactory().createLogger('logger');
+        Test.stopTest();
+
+        Assert.areEqual(rflib_LogLevel.INFO, logger.generalLogLevel);
+        Assert.areEqual(rflib_LogLevel.WARN, logger.systemDebugLevel);
+        Assert.areEqual(rflib_LogLevel.ERROR, logger.reportingLogLevel);
+        Assert.areEqual(rflib_LogLevel.INFO, logger.flushLogStackLevel);
+        Assert.areEqual(rflib_LogLevel.INFO, logger.batchReportingLogLevel);
+        Assert.areEqual(rflib_LogLevel.WARN, logger.logAggregationLogLevel);
+        
+        Assert.areEqual(50, logger.logCacheSize);
+        Assert.areEqual(true, logger.isLogMaskingEnabled);
+    }}

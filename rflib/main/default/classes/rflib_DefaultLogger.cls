@@ -51,15 +51,15 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     private final rflib_DefaultLogger.DebugLogger debugLogger;
     private final List<String> logMessages;
 
-    private Integer logCacheSize = 100;
-    private Boolean isLogMaskingEnabled = false;
+    @TestVisible private Integer logCacheSize = 100;
+    @TestVisible private Boolean isLogMaskingEnabled = false;
 
-    private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
-    private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
-    private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
-    private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
-    private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
-    private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
+    @TestVisible private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
+    @TestVisible private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
+    @TestVisible private rflib_LogLevel reportingLogLevel = rflib_LogLevel.WARN;
+    @TestVisible private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
+    @TestVisible private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
+    @TestVisible private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
 
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
@@ -101,36 +101,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     public static rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsInBatch) {
         rflib_Logger logger = rflib_DefaultLogger.create(context, shouldPublishEventsInBatch);
 
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        if (settings.Log_Size__c != null) {
-            logger.setLogCacheSize(Integer.valueOf(settings.Log_Size__c));
-        }
-
-        if (String.isNotBlank(settings.General_Log_Level__c)) {
-            logger.setGeneralLogLevel(rflib_LogLevel.fromString(settings.General_Log_Level__c));
-        }
-
-        if (String.isNotBlank(settings.System_Debug_Log_Level__c)) {
-            logger.setSystemDebugLevel(rflib_LogLevel.fromString(settings.System_Debug_Log_Level__c));
-        }
-
-        if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
-            logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
-        }
-
-        if (String.isNotBlank(settings.Flush_Log_Cache_Level__c)) {
-            logger.setFlushLogCacheLevel(rflib_LogLevel.fromString(settings.Flush_Log_Cache_Level__c));
-        }
-
-        if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
-            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
-        }
-
-        if (String.isNotBlank(settings.Log_Aggregation_Log_Level__c)) {
-            logger.setLogAggregationLogLevel(rflib_LogLevel.fromString(settings.Log_Aggregation_Log_Level__c));
-        }
-
-        logger.setLogMaskingState(settings.Enable_Log_Masking__c);
+        rflib_LoggerUtil.setLoggerSettings(logger);
 
         return logger;
     }

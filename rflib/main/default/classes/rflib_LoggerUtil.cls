@@ -129,6 +129,42 @@ public with sharing class rflib_LoggerUtil {
         return (rflib_ApplicationEventLogger) handlerType.newInstance();
     }
 
+    /**
+     * Sets the `rflib_Logger`'s configuration using the values from the `Logger_Settings__c` custom setting for the current user. 
+     */
+    public static void setLoggerSettings(rflib_Logger logger) {
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
+        if (settings.Log_Size__c != null) {
+            logger.setLogCacheSize(Integer.valueOf(settings.Log_Size__c));
+        }
+
+        if (String.isNotBlank(settings.General_Log_Level__c)) {
+            logger.setGeneralLogLevel(rflib_LogLevel.fromString(settings.General_Log_Level__c));
+        }
+
+        if (String.isNotBlank(settings.System_Debug_Log_Level__c)) {
+            logger.setSystemDebugLevel(rflib_LogLevel.fromString(settings.System_Debug_Log_Level__c));
+        }
+
+        if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
+            logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
+        }
+
+        if (String.isNotBlank(settings.Flush_Log_Cache_Level__c)) {
+            logger.setFlushLogCacheLevel(rflib_LogLevel.fromString(settings.Flush_Log_Cache_Level__c));
+        }
+
+        if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
+            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
+        }
+
+        if (String.isNotBlank(settings.Log_Aggregation_Log_Level__c)) {
+            logger.setLogAggregationLogLevel(rflib_LogLevel.fromString(settings.Log_Aggregation_Log_Level__c));
+        }
+
+        logger.setLogMaskingState(settings.Enable_Log_Masking__c);
+    }
+
     
     private rflib_LoggerUtil() { }
 }

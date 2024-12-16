@@ -29,51 +29,25 @@
 
 /**
  * @group Logger
- * @description `rflib_LoggerFactory` implementation to create a `rflib_DefaultLogger` instance configured based on the `rflib_Logger_Settings__c`. 
- */ 
+ * @description `rflib_LoggerFactory` implementation to create a `rflib_DefaultLogger` instance configured based on the `rflib_Logger_Settings__c`.
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_DefaultLoggerFactory implements rflib_LoggerFactory  {
-    
+public with sharing class rflib_DefaultLoggerFactory implements rflib_LoggerFactory {
     public rflib_Logger createLogger(String context) {
         return createFromCustomSettings(context, false);
     }
-    
+
     public rflib_Logger createBatchedLogger(String context) {
         return createFromCustomSettings(context, true);
     }
 
     private rflib_Logger createFromCustomSettings(String context, Boolean shouldPublishEventsInBatch) {
-        rflib_Logger logger = shouldPublishEventsInBatch ? 
-            rflib_DefaultLogger.createBatchedLogger(context) :
-            rflib_DefaultLogger.create(context);
-    
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
-        if (settings.Log_Size__c != null) {
-            logger.setLogCacheSize(Integer.valueOf(settings.Log_Size__c));
-        }
-    
-        if (String.isNotBlank(settings.General_Log_Level__c)) {
-            logger.setGeneralLogLevel(rflib_LogLevel.fromString(settings.General_Log_Level__c));
-        }
-    
-        if (String.isNotBlank(settings.System_Debug_Log_Level__c)) {
-            logger.setSystemDebugLevel(rflib_LogLevel.fromString(settings.System_Debug_Log_Level__c));
-        }
-    
-        if (String.isNotBlank(settings.Log_Event_Reporting_Level__c)) {
-            logger.setReportingLogLevel(rflib_LogLevel.fromString(settings.Log_Event_Reporting_Level__c));
-        }
+        rflib_Logger logger = shouldPublishEventsInBatch
+            ? rflib_DefaultLogger.createBatchedLogger(context)
+            : rflib_DefaultLogger.create(context);
 
-        if (String.isNotBlank(settings.Flush_Log_Cache_Level__c)) {
-            logger.setFlushLogCacheLevel(rflib_LogLevel.fromString(settings.Flush_Log_Cache_Level__c));
-          }
-    
-        if (String.isNotBlank(settings.Batched_Log_Event_Reporting_Level__c)) {
-            logger.setBatchReportingLogLevel(rflib_LogLevel.fromString(settings.Batched_Log_Event_Reporting_Level__c));
-        }
-    
+        rflib_LoggerUtil.setLoggerSettings(logger);
+
         return logger;
     }
-    
-    
 }

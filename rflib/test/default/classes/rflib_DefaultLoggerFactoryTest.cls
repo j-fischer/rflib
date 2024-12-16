@@ -35,25 +35,45 @@ private class rflib_DefaultLoggerFactoryTest {
     static void makeData(){
         insert new rflib_Logger_Settings__c(
             Log_Size__c = 50,
+            Enable_Log_Masking__c = true,
             System_Debug_Log_Level__c = 'WARN',
             Log_Event_Reporting_Level__c = 'ERROR',
+            Log_Aggregation_Log_Level__c = 'WARN',
+            Flush_Log_Cache_Level__c = 'INFO',
             General_Log_Level__c = 'INFO',
             Org_Wide_Email_Sender_Address__c = 'foo@email.com',
-            Batched_Log_Event_Reporting_Level__c = 'NONE'
+            Batched_Log_Event_Reporting_Level__c = 'INFO'
         );
     }
 
     @isTest
     public static void testCreateLogger() {
         Test.startTest();
-        System.assert(new rflib_DefaultLoggerFactory().createLogger('logger') != null);
+        Assert.isNotNull(new rflib_DefaultLoggerFactory().createLogger('logger'));
         Test.stopTest();
     }
 
     @isTest
     public static void testCreateBatchedLogger() {
         Test.startTest();
-        System.assert(new rflib_DefaultLoggerFactory().createBatchedLogger('logger') != null);
+        Assert.isNotNull(new rflib_DefaultLoggerFactory().createBatchedLogger('logger'));
         Test.stopTest();
+    }
+
+    @IsTest
+    public static void testLoggerSettings() {
+        Test.startTest();
+        rflib_DefaultLogger logger = (rflib_DefaultLogger) new rflib_DefaultLoggerFactory().createLogger('logger');
+        Test.stopTest();
+
+        Assert.areEqual(rflib_LogLevel.INFO, logger.generalLogLevel);
+        Assert.areEqual(rflib_LogLevel.WARN, logger.systemDebugLevel);
+        Assert.areEqual(rflib_LogLevel.ERROR, logger.reportingLogLevel);
+        Assert.areEqual(rflib_LogLevel.INFO, logger.flushLogStackLevel);
+        Assert.areEqual(rflib_LogLevel.INFO, logger.batchReportingLogLevel);
+        Assert.areEqual(rflib_LogLevel.WARN, logger.logAggregationLogLevel);
+        
+        Assert.areEqual(50, logger.logCacheSize);
+        Assert.areEqual(true, logger.isLogMaskingEnabled);
     }
 }
