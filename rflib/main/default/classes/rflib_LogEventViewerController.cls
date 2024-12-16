@@ -37,7 +37,7 @@ public with sharing class rflib_LogEventViewerController {
     @AuraEnabled(cacheable=true)
     public static List<ApexLogInfo> getApexLogsForRequestId(String requestId) {
         try {
-            LOGGER.debug('getApexLogsForRequestId() invoked for request ID: ' + requestId);
+            LOGGER.info('getApexLogsForRequestId() invoked for request ID: ' + requestId);
 
             List<ApexLogInfo> result = new List<ApexLogInfo>();
             Integer index = 1;
@@ -63,7 +63,7 @@ public with sharing class rflib_LogEventViewerController {
                 ));
             }
 
-            LOGGER.debug('Found {0} ApexLog records for request ID {1}', new Object[] { result.size(), requestId });
+            LOGGER.info('Found {0} ApexLog records for request ID {1}', new Object[] { result.size(), requestId });
             return result;
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve Apex Logs', ex);

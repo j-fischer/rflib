@@ -90,8 +90,11 @@ export default class LogEventViewer extends LightningElement {
     }
 
     loadApexLogs() {
+        const requestId = this.logEvent.Request_ID__c;
+        LOGGER.debug('loadApexLogs completed for id={0}', requestId);
+
         this.isLoadingLogs = true;
-        getApexLogsForRequestId({ requestId: this.logEvent.Request_ID__c })
+        getApexLogsForRequestId({ requestId: requestId })
             .then((result) => {
                 LOGGER.debug('Retrieved Apex logs: ' + JSON.stringify(result));
                 this.apexLogs = result;
@@ -112,7 +115,9 @@ export default class LogEventViewer extends LightningElement {
     }
 
     get hasApexLogs() {
-        return this.apexLogs && this.apexLogs.length > 0;
+        const result = this.apexLogs && this.apexLogs.length > 0;
+        LOGGER.debug('hasApexLogs result={0}', result);
+        return result;
     }
 
     handleDownloadMenuSelect(event) {
@@ -127,6 +132,8 @@ export default class LogEventViewer extends LightningElement {
     }
 
     downloadRflibLog() {
+        LOGGER.debug('Downloading RFLIB log file');
+
         let element = document.createElement('a');
         element.setAttribute(
             'href',
