@@ -105,12 +105,12 @@ export default class RflibApexJobScheduler extends LightningElement {
         scheduleJob({ jobName: this.jobName, className: this.className, cronExpression: this.cronExpressionInput })
             .then((result) => {
                 logger.info('Job scheduled successfully: {0}', JSON.stringify(result));
-                this.showToast('Success', result, 'success');
+                this.showToast('Job scheduled successfully', result, 'success');
                 return refreshApex(this.wiredJobResult);
             })
             .catch((error) => {
                 logger.error('Error scheduling job: {0}', JSON.stringify(error));
-                this.showToast('Error', error.body?.message || 'An unknown error occurred.', 'error');
+                this.showToast('Error scheduling job', error.body?.message || 'An unknown error occurred.', 'error');
             })
             .finally(() => {
                 this.isLoading = false;
@@ -119,6 +119,22 @@ export default class RflibApexJobScheduler extends LightningElement {
 
     handleDeleteClick() {
         this.showDeleteConfirmation = true;
+    }
+
+    handleRefresh() {
+        return refreshApex(this.wiredJobResult)
+            .then(() => {
+                logger.info('Data refreshed successfully.');
+                this.showToast('Data refreshed successfully', null, 'success');
+            })
+            .catch((error) => {
+                logger.error('Error refreshing data: ', error);
+                this.showToast(
+                    'Error refreshing data',
+                    error.body?.message || 'An unknown error occurred while deleting the job.',
+                    'error'
+                );
+            });
     }
 
     get deleteConfirmationMessage() {
@@ -139,7 +155,7 @@ export default class RflibApexJobScheduler extends LightningElement {
                 .catch((error) => {
                     logger.error('Error deleting job: {0}', JSON.stringify(error));
                     this.showToast(
-                        'Error',
+                        'Error deleting job',
                         error.body?.message || 'An unknown error occurred while deleting the job.',
                         'error'
                     );
