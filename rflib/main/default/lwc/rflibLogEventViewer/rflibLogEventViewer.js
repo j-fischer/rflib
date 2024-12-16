@@ -29,6 +29,8 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { createLogger } from 'c/rflibLogger';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import getApexLogsForRequestId from '@salesforce/apex/rflib_LogEventViewerController.getApexLogsForRequestId';
 
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import PHONE_FIELD from '@salesforce/schema/User.Phone';
@@ -37,13 +39,31 @@ import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 
 const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
-const LOGGER = createLogger('LogEventViewer');
+const APEX_LOG_DOWNLOAD_URL = '/one/one.app#/alohaRedirect/servlet/servlet.FileDownload?file={0}&isdtp=p1';
+
+const LOGGER = createLogger('rflibLogEventViewer');
 
 export default class LogEventViewer extends LightningElement {
     @api userId;
-    @api logEvent;
+
+    _logEvent;
+    apexLogs = [];
+    isLoadingLogs = false;
 
     @track user = {};
+
+    @api
+    get logEvent() {
+        return this._logEvent;
+    }
+    set logEvent(value) {
+        this._logEvent = value;
+        if (this._logEvent?.Request_ID__c) {
+            this.loadApexLogs();
+        } else {
+            this.apexLogs = [];
+        }
+    }
 
     @wire(getRecord, { recordId: '$userId', fields: FIELDS })
     wiredRecord({ error, data }) {
@@ -61,6 +81,108 @@ export default class LogEventViewer extends LightningElement {
 
             this.user = data;
         }
+    }
+
+    connectedCallback() {
+        if (this.logEvent?.Request_ID__c) {
+            this.loadApexLogs();
+        }
+    }
+
+    loadApexLogs() {
+        const requestId = this.logEvent.Request_ID__c;
+        LOGGER.debug('loadApexLogs completed for id={0}', requestId);
+
+        this.isLoadingLogs = true;
+        getApexLogsForRequestId({ requestId: requestId })
+            .then((result) => {
+                LOGGER.debug('Retrieved Apex logs: ' + JSON.stringify(result));
+                this.apexLogs = result;
+            })
+            .catch((error) => {
+                LOGGER.error('Failed to retrieve Apex logs: ' + JSON.stringify(error));
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error Loading Debug Logs',
+                        message: error.body?.message || 'Unknown error occurred while loading debug logs',
+                        variant: 'error'
+                    })
+                );
+            })
+            .finally(() => {
+                this.isLoadingLogs = false;
+            });
+    }
+
+    get hasApexLogs() {
+        const result = this.apexLogs && this.apexLogs.length > 0;
+        LOGGER.debug('hasApexLogs result={0}', result);
+        return result;
+    }
+
+    handleDownloadMenuSelect(event) {
+        const selectedValue = event.detail.value;
+
+        if (selectedValue === 'rflib-log') {
+            this.downloadRflibLog();
+        } else if (selectedValue !== 'no-logs') {
+            // selectedValue contains the log Id for individual Apex logs
+            this.downloadApexLog(selectedValue);
+        }
+    }
+
+    downloadRflibLog() {
+        LOGGER.debug('Downloading RFLIB log file');
+
+        let element = document.createElement('a');
+        element.setAttribute(
+            'href',
+            'data:text/plain;charset=utf-8,' +
+                encodeURIComponent(
+                    this.logEvent.Log_Messages__c +
+                        '\n\n>>> Platform Info:\n' +
+                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
+                )
+        );
+        element.setAttribute(
+            'download',
+            this.createdBy +
+                '_' +
+                this.createdDate +
+                '_' +
+                this.logEvent.Request_ID__c +
+                '_' +
+                this.logEvent.Context__c +
+                '.txt'
+        );
+
+        element.style.display = 'none';
+        this.simulateDownload(element);
+    }
+
+    downloadApexLog(logId) {
+        LOGGER.debug('Downloading Apex log: ' + logId);
+
+        let element = document.createElement('a');
+        element.setAttribute('href', APEX_LOG_DOWNLOAD_URL.replace('{0}', logId));
+        element.setAttribute('target', '_blank');
+        element.style.display = 'none';
+        this.simulateDownload(element);
+
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Download Started',
+                message: 'Debug log downloading. You may close the download tab once completed.',
+                variant: 'success'
+            })
+        );
+    }
+
+    simulateDownload(element) {
+        const downloadContainer = this.template.querySelector('.download-container');
+        downloadContainer.appendChild(element);
+        element.click();
+        downloadContainer.removeChild(element);
     }
 
     get createdBy() {
@@ -111,38 +233,5 @@ export default class LogEventViewer extends LightningElement {
         });
         LOGGER.debug('platformInfo: ' + JSON.stringify(result));
         return result;
-    }
-
-    downloadLog() {
-        let element = document.createElement('a');
-        element.setAttribute(
-            'href',
-            'data:text/plain;charset=utf-8,' +
-                encodeURIComponent(
-                    this.logEvent.Log_Messages__c +
-                        '\n\n>>> Platform Info:\n' +
-                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
-                )
-        );
-        element.setAttribute(
-            'download',
-            this.createdBy +
-                '_' +
-                this.createdDate +
-                '_' +
-                this.logEvent.Request_ID__c +
-                '_' +
-                this.logEvent.Context__c +
-                '.txt'
-        );
-
-        element.style.display = 'none';
-
-        let downloadContainer = this.template.querySelector('.download-container');
-        downloadContainer.appendChild(element);
-
-        element.click();
-
-        downloadContainer.removeChild(element);
     }
 }

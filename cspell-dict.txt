@@ -85,3 +85,5 @@ onsave
 Createable
 Nillable
 slds
+servlet
+isdtp
