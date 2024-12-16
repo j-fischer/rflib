@@ -28,15 +28,9 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApexJobSchedulerController {
-    // Instantiate the RFLIB Logger with a context-specific identifier
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApexJobScheduler');
 
-    /**
-     * Method to get job details by class name.
-     *
-     * @param className The name of the Apex class to monitor.
-     * @return ScheduledJobDetails containing job status and schedule information.
-     */
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApexJobSchedulerController');
+
     @AuraEnabled(cacheable=true)
     public static ScheduledJobDetails getJobDetails(String jobName) {
         LOGGER.info('getJobDetails called with jobName: ' + jobName);
@@ -76,13 +70,6 @@ public with sharing class rflib_ApexJobSchedulerController {
         return details;
     }
 
-    /**
-     * Method to schedule a job.
-     *
-     * @param className The name of the Apex class to schedule.
-     * @param cronExpression The CRON expression defining the schedule.
-     * @return A success message upon successful scheduling.
-     */
     @AuraEnabled
     public static String scheduleJob(String jobName, String className, String cronExpression) {
         LOGGER.info(
