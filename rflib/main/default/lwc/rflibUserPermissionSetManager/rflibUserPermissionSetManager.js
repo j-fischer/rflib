@@ -38,7 +38,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import { createLogger } from 'c/rflibLogger';
 
-const logger = createLogger('UserPermissionSetManager');
+const logger = createLogger('rflibUserPermissionSetManager');
 
 export default class RflibUserPermissionSetManager extends LightningElement {
     _wireUserPermissionResult;
