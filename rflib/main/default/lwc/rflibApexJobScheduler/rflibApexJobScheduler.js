@@ -83,9 +83,10 @@ export default class RflibApexJobScheduler extends LightningElement {
             return;
         }
 
-        const cronRegex =
-            /^(\*|[0-5]?\d)\s+(\*|[0-5]?\d)\s+(\*|[01]?\d|2[0-3])\s+(\*|\?|\d+)\s+(\*|[1-9]|1[0-2]|\bJAN\b|\bFEB\b|\bMAR\b|\bAPR\b|\bMAY\b|\bJUN\b|\bJUL\b|\bAUG\b|\bSEP\b|\bOCT\b|\bNOV\b|\bDEC\b)\s+(\*|[0-7](?:#[1-5])?)$/i;
-        if (!cronRegex.test(this.cronExpressionInput)) {
+        const salesforceCronRegex =
+            /^(\*|[0-5]?\d)\s+(\*|[0-5]?\d)\s+(\*|[01]?\d|2[0-3])\s+(\*|\?|L|W|[1-9]|[12]\d|3[01])\s+(\*|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+(\*|\?|L|[1-7]|SUN|MON|TUE|WED|THU|FRI|SAT)(\s+(\*|[12]\d{3}))?$/i;
+
+        if (!salesforceCronRegex.test(this.cronExpressionInput)) {
             logger.warn('CRON expression validation failed - invalid format: {0}', this.cronExpressionInput);
             this.showToast('Validation Error', 'Invalid CRON expression format.', 'error');
             return;
