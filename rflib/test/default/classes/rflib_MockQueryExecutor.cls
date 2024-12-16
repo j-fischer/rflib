@@ -32,21 +32,33 @@ public class rflib_MockQueryExecutor implements rflib_QueryExecutor {
     
     private final Integer countResult;
     private final List<SObject> queryResult;
+    private final Exception exceptionToThrow;
 
     public rflib_MockQueryExecutor(Integer countResult, List<SObject> queryResult) {
         this.countResult = countResult;
         this.queryResult = queryResult;
     }
 
+    public rflib_MockQueryExecutor(Exception ex) {
+        this.exceptionToThrow = ex;
+    }
+
     public Integer countQuery(String query) {
+        throwExceptionIfAvailable();
+
         return countResult;
     }
 
     public List<SObject> query(String query) {
+        throwExceptionIfAvailable();
+
         return queryResult;
     }
 
     public rflib_DatabaseCursorQueryResult fetch(String query, Integer position, Integer count) {
+        throwExceptionIfAvailable();
+
+
         if (position < 0 || position >= queryResult.size()) {
             return new rflib_DatabaseCursorQueryResult(new List<SObject>(), position, queryResult.size());
         }
@@ -59,5 +71,11 @@ public class rflib_MockQueryExecutor implements rflib_QueryExecutor {
         }
 
         return new rflib_DatabaseCursorQueryResult(result, position, queryResult.size());
+    }
+    
+    private void throwExceptionIfAvailable() {
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
     }
 }

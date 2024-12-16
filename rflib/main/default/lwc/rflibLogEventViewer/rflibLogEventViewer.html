@@ -31,8 +31,34 @@
         <div class="download-container" lwc:dom="manual"></div>
 
         <div slot="actions">
-            <button class="slds-button slds-button_neutral" onclick={downloadLog}>Download</button>
+            <lightning-button-menu
+                icon-name="utility:download"
+                alternative-text="Download"
+                menu-alignment="right"
+                onselect={handleDownloadMenuSelect}
+                loading={isLoadingLogs}
+            >
+                <lightning-menu-item value="rflib-log" label="RFLIB Log File"> </lightning-menu-item>
+                <template if:true={hasApexLogs}>
+                    <lightning-menu-divider></lightning-menu-divider>
+                    <template for:each={apexLogs} for:item="log">
+                        <lightning-menu-item key={log.id} value={log.id} label={log.menuLabel} title={log.menuTitle}>
+                        </lightning-menu-item>
+                    </template>
+                </template>
+                <template if:false={hasApexLogs}>
+                    <lightning-menu-divider></lightning-menu-divider>
+                    <lightning-menu-item
+                        value="no-logs"
+                        label="No Debug Logs Available"
+                        disabled
+                        title="No debug logs available for this Request ID"
+                    >
+                    </lightning-menu-item>
+                </template>
+            </lightning-button-menu>
         </div>
+
         <lightning-tabset>
             <lightning-tab label="Log Event">
                 <div class="slds-m-around_medium">
