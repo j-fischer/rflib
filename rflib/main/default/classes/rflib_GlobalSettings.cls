@@ -50,19 +50,22 @@ public class rflib_GlobalSettings {
     private static final String TRACE_ID_HEADER_NAME_DEFAULT_VALUE = 'X-Trace-ID';
     
     @TestVisible
-    private static final String TRACE_ID_VALUE_FORMAT = 'USER18_REQUEST_ID'; 
+    private static final String TRACE_ID_VALUE_FORMAT_DEFAULT_VALUE = 'USER18_REQUEST_ID'; 
     
     @TestVisible
     private static final Boolean USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE = false;    
     
     @TestVisible
-    private static final Boolean HTTP_REQUEST_MOCKING_ENABLED = false;    
+    private static final Boolean HTTP_REQUEST_MOCKING_ENABLED_DEFAULT_VALUE = false;    
     
     @TestVisible
-    private static final Boolean HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION = false;    
+    private static final Boolean HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION_DEFAULT_VALUE = false;    
     
     @TestVisible
-    private static final Boolean HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND = false; 
+    private static final Boolean HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND_DEFAULT_VALUE = false; 
+    
+    @TestVisible
+    private static final Boolean RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE = false; 
 
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
@@ -102,7 +105,7 @@ public class rflib_GlobalSettings {
     public static String traceIdValueFormatOrDefault {
         get {
             String val = getSetting('Trace_ID_Value_Format');
-            return String.isBlank(val) ? TRACE_ID_VALUE_FORMAT : val;
+            return String.isBlank(val) ? TRACE_ID_VALUE_FORMAT_DEFAULT_VALUE : val;
         }
     }
     
@@ -116,21 +119,28 @@ public class rflib_GlobalSettings {
     public static Boolean httpRequestMockingEnabledOrDefault {
         get {
             String val = getSetting('Http_Mocking_Enabled');
-            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ENABLED : Boolean.valueOf(val);
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
     
     public static Boolean httpRequestMockingAllowInProductionOrDefault {
         get {
             String val = getSetting('Http_Mocking_Allow_In_Production');
-            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION : Boolean.valueOf(val);
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
     
     public static Boolean httpRequestMockingThrowErrorIfNotMockNotFoundOrDefault {
         get {
             String val = getSetting('Http_Mocking_Throw_Error_If_Not_Found');
-            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND : Boolean.valueOf(val);
+            return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Boolean isDevelopmentModeEnabled {
+        get {
+            String val = getSetting('RFLIB_Development_Mode_Enabled');
+            return String.isBlank(val) ? RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
 

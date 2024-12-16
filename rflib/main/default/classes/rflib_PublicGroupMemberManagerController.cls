@@ -5,12 +5,12 @@ public without sharing class rflib_PublicGroupMemberManagerController {
     @AuraEnabled(cacheable=true)
     public static Boolean canUserModifyGroupMemberships() {
         try {
-            LOGGER.info('canUserModifyGroupMemberships() invoked');
+            rflib_LoggerUtil.logInternal(LOGGER, 'canUserModifyGroupMemberships() invoked');
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             Schema.SObjectType groupMemberType = schemaMap.get('GroupMember');
             Boolean isCreateable = groupMemberType.getDescribe().isCreateable();
             
-            LOGGER.info('GroupMember is isCreateable: {0}', new List<Object>{ isCreateable });
+            rflib_LoggerUtil.logInternal(LOGGER, 'GroupMember is isCreateable: {0}', new List<Object>{ isCreateable });
             return isCreateable;
         } catch (Exception ex) {
             LOGGER.error('Error in canUserModifyGroupMemberships: {0}', new List<Object>{ ex.getMessage() });
@@ -20,7 +20,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
 
     @AuraEnabled
     public static List<User> getGroupMembers(String groupApiName) {
-        LOGGER.info('Fetching group members for group: ' + groupApiName);
+        rflib_LoggerUtil.logInternal(LOGGER, 'Fetching group members for group: ' + groupApiName);
         try {
             Group targetGroup = [SELECT Id FROM Group WHERE DeveloperName = :groupApiName AND Type = 'Regular' LIMIT 1];
 
@@ -34,7 +34,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
                 )
             ];
             
-            LOGGER.info('Group members fetched successfully: ' + JSON.serialize(users));
+            rflib_LoggerUtil.logInternal(LOGGER, 'Group members fetched successfully: ' + JSON.serialize(users));
             return users;
         } catch (Exception ex) {
             LOGGER.error('Error fetching group members: ' + ex.getMessage(), ex);
@@ -44,7 +44,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
 
     @AuraEnabled
     public static void addUserToGroup(String groupApiName, Id userId) {
-        LOGGER.info('Adding user ' + userId + ' to group: ' + groupApiName);
+        rflib_LoggerUtil.logInternal(LOGGER, 'Adding user ' + userId + ' to group: ' + groupApiName);
         try {
             Group targetGroup = [SELECT Id FROM Group WHERE DeveloperName = :groupApiName AND Type = 'Regular' LIMIT 1];
             Integer existingMembers = [
@@ -55,7 +55,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
             if (existingMembers == 0) {
                 GroupMember gm = new GroupMember(GroupId = targetGroup.Id, UserOrGroupId = userId);
                 insert gm;
-                LOGGER.info('User ' + userId + ' added to group successfully.');
+                rflib_LoggerUtil.logInternal(LOGGER, 'User ' + userId + ' added to group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is already a member of the group.');
                 throw rflib_ControllerUtil.createAuraHandledException('User is already a member of the group.');
@@ -68,7 +68,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
 
     @AuraEnabled
     public static void removeUserFromGroup(String groupApiName, Id userId) {
-        LOGGER.info('Removing user ' + userId + ' from group: ' + groupApiName);
+        rflib_LoggerUtil.logInternal(LOGGER, 'Removing user ' + userId + ' from group: ' + groupApiName);
         try {
             Group targetGroup = [SELECT Id FROM Group WHERE DeveloperName = :groupApiName AND Type = 'Regular' LIMIT 1];
             List<GroupMember> membersToDelete = [
@@ -78,7 +78,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
             ];
             if (!membersToDelete.isEmpty()) {
                 delete membersToDelete;
-                LOGGER.info('User ' + userId + ' removed from group successfully.');
+                rflib_LoggerUtil.logInternal(LOGGER, 'User ' + userId + ' removed from group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is not a member of the group.');
                 throw rflib_ControllerUtil.createAuraHandledException('User is not a member of the group.');

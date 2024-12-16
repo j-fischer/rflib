@@ -34,7 +34,7 @@ public with sharing class rflib_UserPermSetManagerController {
     @AuraEnabled(cacheable=true)
     public static List<PermissionSetDTO> getAssignedPermissionSets(String alias) {
         try {
-            LOGGER.info('getPermissionSets({0}) invoked', new Object[]{alias});
+            rflib_LoggerUtil.logInternal(LOGGER, 'getPermissionSets({0}) invoked', new Object[]{alias});
             List<PermissionSetAssignment> psaList = [
                 SELECT Id, PermissionSet.Name, PermissionSet.Label
                 FROM PermissionSetAssignment
@@ -57,7 +57,7 @@ public with sharing class rflib_UserPermSetManagerController {
     @AuraEnabled(cacheable=true)
     public static List<PermissionSet> getAllPermissionSets() {
         try {
-            LOGGER.info('getAllPermissionSets() invoked');
+            rflib_LoggerUtil.logInternal(LOGGER, 'getAllPermissionSets() invoked');
             return [SELECT Id, Name, Label FROM PermissionSet WHERE IsOwnedByProfile = false ORDER BY Label];
         } catch (Exception ex) {
             LOGGER.error('Error in getAllPermissionSets method', ex);

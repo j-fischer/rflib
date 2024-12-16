@@ -29,10 +29,12 @@
 @isTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_GlobalSettingsTest {
-
     @IsTest
     static void testTraceIdHeaderNameOrDefault() {
-        String expectedValue = getConfiguredStringValueOrDefault('Trace_ID_Header_Name', rflib_GlobalSettings.TRACE_ID_HEADER_NAME_DEFAULT_VALUE);
+        String expectedValue = getConfiguredStringValueOrDefault(
+            'Trace_ID_Header_Name',
+            rflib_GlobalSettings.TRACE_ID_HEADER_NAME_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdHeaderNameOrDefault);
@@ -41,7 +43,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testPublishingLimitOrDefault() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Publish_Platform_Event_Transaction_Limit',
+            rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
@@ -50,7 +55,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testOverridePublishingLimitOrDefault_Success() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Publish_Platform_Event_Transaction_Limit',
+            rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         rflib_GlobalSettings.overridePublishingLimitOrDefault(5);
@@ -58,15 +66,17 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
-
     @IsTest
     static void testOverridePublishingLimitOrDefault_NullValue() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Publish_Platform_Event_Transaction_Limit',
+            rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         rflib_GlobalSettings.overridePublishingLimitOrDefault(0);
         System.assertEquals(0, rflib_GlobalSettings.publishingLimitOrDefault);
-        
+
         rflib_GlobalSettings.overridePublishingLimitOrDefault(null);
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
         Test.stopTest();
@@ -74,11 +84,14 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testOverridePublishingLimitOrDefault_ValueExceedsLimit() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Publish_Platform_Event_Transaction_Limit', rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Publish_Platform_Event_Transaction_Limit',
+            rflib_GlobalSettings.PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.publishingLimitOrDefault);
-        
+
         try {
             rflib_GlobalSettings.overridePublishingLimitOrDefault(Limits.getLimitPublishImmediateDML() + 1);
             System.assert(false, 'Expected rflib_InvalidArgumentException has not been thrown');
@@ -90,7 +103,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testDaysToRetainApplicationEvents() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Application_Event_Retain_X_Days', rflib_GlobalSettings.APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Application_Event_Retain_X_Days',
+            rflib_GlobalSettings.APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault);
@@ -99,7 +115,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testArchiveLogQueryLimit() {
-        Integer expectedValue = getConfiguredIntegerValueOrDefault('Archive_Log_Query_Limit', rflib_GlobalSettings.ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE);
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Archive_Log_Query_Limit',
+            rflib_GlobalSettings.ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.archiveLogQueryLimitOrDefault);
@@ -108,7 +127,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testUseRestQueryModeForPermissionRetrieval() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Permissions_Explorer_REST_API_Enabled', rflib_GlobalSettings.PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'Permissions_Explorer_REST_API_Enabled',
+            rflib_GlobalSettings.PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.useRestQueryModeForPermissionRetrievalOrDefault);
@@ -117,7 +139,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testUseDefaultWorkflowUserForLogEvents() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Use_Default_Workflow_User_for_Log_Events', rflib_GlobalSettings.USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'Use_Default_Workflow_User_for_Log_Events',
+            rflib_GlobalSettings.USE_DEFAULT_WORKFLOW_USER_FOR_LOG_EVENTS_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.useDefaultWorkflowUserForLogEventsOrDefault);
@@ -126,7 +151,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testHttpRequestMockingEnabledOrDefault() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Enabled', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ENABLED);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'Http_Mocking_Enabled',
+            rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ENABLED_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingEnabledOrDefault);
@@ -135,7 +163,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testHttpRequestMockingAllowInProductionOrDefault() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Allow_In_Production', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'Http_Mocking_Allow_In_Production',
+            rflib_GlobalSettings.HTTP_REQUEST_MOCKING_ALLOW_IN_PRODUCTION_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingAllowInProductionOrDefault);
@@ -144,7 +175,10 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testHttpRequestMockingThrowErrorIfNotMockNotFoundOrDefault() {
-        Boolean expectedValue = getConfiguredBooleanValueOrDefault('Http_Mocking_Throw_Error_If_Not_Found', rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND);
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'Http_Mocking_Throw_Error_If_Not_Found',
+            rflib_GlobalSettings.HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.httpRequestMockingThrowErrorIfNotMockNotFoundOrDefault);
@@ -153,10 +187,29 @@ private class rflib_GlobalSettingsTest {
 
     @IsTest
     static void testTraceIdModeOrDefault() {
-        String expectedValue = getConfiguredStringValueOrDefault('Trace_ID_Value_Format', rflib_GlobalSettings.TRACE_ID_VALUE_FORMAT);
+        String expectedValue = getConfiguredStringValueOrDefault(
+            'Trace_ID_Value_Format',
+            rflib_GlobalSettings.TRACE_ID_VALUE_FORMAT_DEFAULT_VALUE
+        );
 
         Test.startTest();
         System.assertEquals(expectedValue, rflib_GlobalSettings.traceIdValueFormatOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testIsDevelopmentModeEnabledOrDefault() {
+        Boolean expectedValue = getConfiguredBooleanValueOrDefault(
+            'RFLIB_Development_Mode_Enabled',
+            rflib_GlobalSettings.RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(
+            expectedValue,
+            rflib_GlobalSettings.isDevelopmentModeEnabled,
+            'Expected default value of RFLIB_Development_Mode_Enabled to be FALSE.'
+        );
         Test.stopTest();
     }
 
