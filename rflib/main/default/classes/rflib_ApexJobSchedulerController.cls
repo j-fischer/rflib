@@ -52,7 +52,7 @@ public with sharing class rflib_ApexJobSchedulerController {
                 details.cronExpression = ct.CronExpression;
 
                 rflib_LoggerUtil.logInternal(
-                    logger,
+                    LOGGER,
                     'Job is scheduled. Status: ' +
                         ct.State +
                         ', Next Run: ' +
@@ -74,7 +74,7 @@ public with sharing class rflib_ApexJobSchedulerController {
     @AuraEnabled
     public static String scheduleJob(String jobName, String className, String cronExpression) {
         rflib_LoggerUtil.logInternal(
-            logger,
+            LOGGER,
             'scheduleJob called with jobName={0}, className={1}, CRON={2} ',
             new List<Object>{ jobName, className, cronExpression }
         );
