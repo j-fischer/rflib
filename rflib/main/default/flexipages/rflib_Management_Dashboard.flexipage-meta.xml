@@ -44,12 +44,12 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
-                    <name>title</name>
-                    <value>Ops Center Public Group Manager</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
                     <name>groupApiName</name>
                     <value>rflib_Ops_Center_Members</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Ops Center Public Group Manager</value>
                 </componentInstanceProperties>
                 <componentName>rflibPublicGroupMemberManager</componentName>
                 <identifier>c_rflibPublicGroupMemberManager</identifier>
@@ -73,6 +73,20 @@
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_ApplicationEventArchiver</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Application Event Archiver</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler</identifier>
+            </componentInstance>
+        </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>

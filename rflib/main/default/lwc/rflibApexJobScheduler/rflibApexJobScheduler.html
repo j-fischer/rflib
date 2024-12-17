@@ -1,0 +1,99 @@
+<!--
+ * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <lightning-card title={title} icon-name="standard:apex">
+        <div class="slds-p-around_medium">
+            <!-- Loading Spinner -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center">
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Content When Not Loading -->
+            <template if:false={isLoading}>
+                <!-- If Job is Scheduled -->
+                <template if:true={isScheduled}>
+                    <div class="slds-box slds-box_xx-small slds-m-bottom_small">
+                        <p><strong>Status:</strong> {status}</p>
+                        <p><strong>Next Run:</strong> {formattedNextRunTime}</p>
+                        <p><strong>CRON Expression:</strong> {cronExpressionInput}</p>
+                        <p><strong>Class Name:</strong> {className}</p>
+                    </div>
+                    <div class="slds-grid slds-grid_align-end">
+                        <lightning-button label="Refresh" onclick={handleRefresh} variant="brand"></lightning-button>
+                        <lightning-button
+                            label="Delete Job"
+                            variant="destructive"
+                            onclick={handleDeleteClick}
+                            class="slds-m-left_x-small"
+                        ></lightning-button>
+                    </div>
+                </template>
+
+                <!-- If Job is Not Scheduled -->
+                <template if:false={isScheduled}>
+                    <!-- Informational Message -->
+                    <div class="slds-m-bottom_small">
+                        <p>No job is currently scheduled. Please provide a CRON expression to schedule one.</p>
+                        <p>Class Name: <strong>{className}</strong></p>
+                    </div>
+                    <!-- CRON Expression Input -->
+                    <lightning-input
+                        label="CRON Expression"
+                        value={cronExpressionInput}
+                        onchange={handleCronChange}
+                        placeholder="e.g., 0 0 3 ? * 0#2"
+                        class="slds-m-bottom_small"
+                    >
+                    </lightning-input>
+                    <!-- Schedule Button -->
+                    <lightning-button
+                        label="Schedule Job"
+                        variant="brand"
+                        onclick={handleSchedule}
+                        class="slds-m-top_small"
+                    >
+                    </lightning-button>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+
+    <!-- Confirmation Dialog for Deletion -->
+    <c-rflib-confirmation-dialog
+        visible={showDeleteConfirmation}
+        title="Confirm Job Deletion"
+        message={deleteConfirmationMessage}
+        confirm-label="Delete"
+        cancel-label="Cancel"
+        onmodalaction={handleDeleteConfirmation}
+    >
+    </c-rflib-confirmation-dialog>
+</template>
