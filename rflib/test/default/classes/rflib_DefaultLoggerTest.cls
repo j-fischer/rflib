@@ -559,7 +559,7 @@ public class rflib_DefaultLoggerTest {
 
         rflib_Application_Event_Occurred_Event__e event = loggerFactory.eventCapture.getAppEvent();
         Assert.areEqual(
-            'rflib-warn-testLogAggregationLogEventCreation',
+            'log-warn-testLogAggregationLogEventCreation',
             event.Event_Name__c,
             'Event name should be correctly formatted.'
         );
@@ -593,7 +593,7 @@ public class rflib_DefaultLoggerTest {
 
         rflib_Application_Event_Occurred_Event__e event = loggerFactory.eventCapture.getAppEvent();
         Assert.areEqual(
-            'rflib-warn-testLogAggregationLogEventCreation',
+            'log-warn-testLogAggregationLogEventCreation',
             event.Event_Name__c,
             'Event name should be correctly formatted.'
         );
