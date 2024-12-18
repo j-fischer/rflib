@@ -5,5 +5,5 @@
     <eventType>HighVolume</eventType>
     <label>Application Event Occurred Event</label>
     <pluralLabel>Application Event Occurred Events</pluralLabel>
-    <publishBehavior>PublishAfterCommit</publishBehavior>
+    <publishBehavior>PublishImmediately</publishBehavior>
 </CustomObject>
