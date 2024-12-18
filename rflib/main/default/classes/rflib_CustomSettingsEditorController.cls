@@ -47,7 +47,7 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled(cacheable=true)
     public static Boolean canUserModifyCustomSettings(String customSettingsApiName) {
         try {
-            LOGGER.info('canUserModifyCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
+            rflib_LoggerUtil.logInternal(LOGGER, 'canUserModifyCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
                 LOGGER.error(
@@ -61,7 +61,7 @@ public with sharing class rflib_CustomSettingsEditorController {
 
             Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
             Boolean isUpdateable = customSettingType.getDescribe().isUpdateable();
-            LOGGER.info('Custom Setting is updateable: {0}', new List<Object>{ isUpdateable });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Custom Setting is updateable: {0}', new List<Object>{ isUpdateable });
 
             return isUpdateable;
         } catch (Exception ex) {
@@ -73,7 +73,7 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled
     public static List<CustomSettingWrapper> getCustomSettings(String customSettingsApiName) {
         try {
-            LOGGER.info('getCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getCustomSettings({0}) invoked', new List<Object>{ customSettingsApiName });
 
             if (String.isBlank(customSettingsApiName)) {
                 LOGGER.error('Custom Settings API Name cannot be empty.');
@@ -93,7 +93,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             }
 
             Map<Id, Profile> profileMap = getProfileMap();
-            LOGGER.info('Profile Map: ' + JSON.serialize(profileMap));
+            rflib_LoggerUtil.logInternal(LOGGER, 'Profile Map: ' + JSON.serialize(profileMap));
 
             Schema.SObjectType customSettingType = schemaMap.get(customSettingsApiName);
             DescribeSObjectResult describeResult = customSettingType.getDescribe();
@@ -118,7 +118,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             // Append field names to the query string
             query += String.join(fieldNames, ', ') + ' FROM ' + customSettingsApiName;
 
-            LOGGER.info('Executing query: {0}', new List<Object>{ query });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Executing query: {0}', new List<Object>{ query });
             List<SObject> customSettingRecords = Database.query(query);
 
             // Create wrappers for each custom setting record
@@ -174,7 +174,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 wrapperList.add(wrapper);
             }
 
-            LOGGER.info('Total custom settings retrieved: {0}\n{1}', new List<Object>{ wrapperList.size(), JSON.serialize(wrapperList) });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Total custom settings retrieved: {0}\n{1}', new List<Object>{ wrapperList.size(), JSON.serialize(wrapperList) });
             return wrapperList;
         } catch (Exception ex) {
             LOGGER.error('Error in getCustomSettings', ex);
@@ -185,7 +185,7 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled(cacheable=true)
     public static List<FieldInfoWrapper> getCustomSettingFields(String customSettingsApiName) {
         try {
-            LOGGER.info('getCustomSettingFields({0}) invoked', new List<Object>{ customSettingsApiName });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getCustomSettingFields({0}) invoked', new List<Object>{ customSettingsApiName });
 
             Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
             if (!schemaMap.containsKey(customSettingsApiName)) {
@@ -233,7 +233,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 }
             }
 
-            LOGGER.info('getCustomSettingFields() result={0}', new List<Object>{ JSON.serialize(fields) });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getCustomSettingFields() result={0}', new List<Object>{ JSON.serialize(fields) });
 
             return fields;
         } catch (Exception ex) {
@@ -289,7 +289,7 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled
     public static void deleteCustomSettingRecord(String customSettingsApiName, String recordId) {
         try {
-            LOGGER.info(
+            rflib_LoggerUtil.logInternal(LOGGER, 
                 'deleteCustomSettingRecord({0}, {1}) invoked',
                 new List<Object>{ customSettingsApiName, recordId }
             );
@@ -313,7 +313,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             record.put('Id', recordId);
 
             delete record;
-            LOGGER.info('Record deleted successfully. Record ID: {0}', new List<Object>{ recordId });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Record deleted successfully. Record ID: {0}', new List<Object>{ recordId });
         } catch (Exception ex) {
             LOGGER.error('Error in deleteCustomSettingRecord: {0}', new List<Object>{ ex.getMessage() });
             throw rflib_ControllerUtil.createAuraHandledException(
@@ -325,7 +325,7 @@ public with sharing class rflib_CustomSettingsEditorController {
     @AuraEnabled
     public static void saveCustomSetting(SObject customSettingRecord) {
         try {
-            LOGGER.info('saveCustomSetting invoked for record: {0}', new List<Object>{ customSettingRecord });
+            rflib_LoggerUtil.logInternal(LOGGER, 'saveCustomSetting invoked for record: {0}', new List<Object>{ customSettingRecord });
             if (customSettingRecord == null) {
                 LOGGER.error('Custom Setting record cannot be null.');
                 throw rflib_ControllerUtil.createAuraHandledException('Custom Setting record cannot be null.');
@@ -334,7 +334,7 @@ public with sharing class rflib_CustomSettingsEditorController {
             if (customSettingRecord.Id == null) {
                 // Insert new record
                 insert customSettingRecord;
-                LOGGER.info(
+                rflib_LoggerUtil.logInternal(LOGGER, 
                     'Custom Setting inserted successfully. Record ID: {0}',
                     new List<Object>{ customSettingRecord.Id }
                 );
@@ -354,7 +354,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                 }
 
                 update updateRecord;
-                LOGGER.info(
+                rflib_LoggerUtil.logInternal(LOGGER, 
                     'Custom Setting updated successfully. Record ID: {0}',
                     new List<Object>{ customSettingRecord.Id }
                 );

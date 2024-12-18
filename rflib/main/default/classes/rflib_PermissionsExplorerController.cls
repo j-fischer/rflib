@@ -63,7 +63,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllProfiles(String servicePath, Integer position){
         try {
-            LOGGER.info('getFieldLevelSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getFieldLevelSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
                 queryPermissionsApex(FLS_SEARCH_TYPE, PROFILE_QUERY_CONDITION, position);
@@ -76,7 +76,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllPermissionSets(String servicePath, Integer position) {
         try {
-            LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getFieldLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION, position);
@@ -89,7 +89,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getFieldLevelSecurityForAllPermissionSetGroups(String servicePath, Integer position) {
         try {
-            LOGGER.info('getFieldLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getFieldLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
                 queryPermissionsApex(FLS_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION, position);
@@ -102,7 +102,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getObjectLevelSecurityForAllProfiles(String servicePath, Integer position){
         try {
-            LOGGER.info('getObjectLevelSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getObjectLevelSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION) : 
                 queryPermissionsApex(OBJ_SEARCH_TYPE, PROFILE_QUERY_CONDITION, position);
@@ -115,7 +115,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getObjectLevelSecurityForAllPermissionSets(String servicePath, Integer position){
         try {
-            LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getObjectLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION) : 
                 queryPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION, position);
@@ -128,7 +128,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getObjectLevelSecurityForAllPermissionSetGroups(String servicePath, Integer position){
         try {
-            LOGGER.info('getObjectLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getObjectLevelSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION) : 
                 queryPermissionsApex(OBJ_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION, position);
@@ -141,7 +141,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getApexSecurityForAllProfiles(String servicePath, Integer position){
         try {
-            LOGGER.info('getApexSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getApexSecurityForAllProfiles: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, APEX_SEARCH_TYPE, PROFILE_QUERY_CONDITION + APEX_CONDITIONS) : 
                 queryPermissionsApex(APEX_SEARCH_TYPE, PROFILE_QUERY_CONDITION + APEX_CONDITIONS, position);
@@ -154,7 +154,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getApexSecurityForAllPermissionSets(String servicePath, Integer position) {
         try {
-            LOGGER.info('getApexSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getApexSecurityForAllPermissionSets: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, APEX_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION + APEX_CONDITIONS) : 
                 queryPermissionsApex(APEX_SEARCH_TYPE, PERMISSION_SET_QUERY_CONDITION + APEX_CONDITIONS, position);
@@ -167,7 +167,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled(cacheable = true)
     public static QueryResult getApexSecurityForAllPermissionSetGroups(String servicePath, Integer position) {
         try {
-            LOGGER.info('getApexSecurityForAllPermissionSetGroups: servicePath={0}, position={1}', new Object[] { servicePath, position });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getApexSecurityForAllPermissionSetGroups: servicePath={0}, position={1}', new Object[] { servicePath, position });
             return shouldUseRestQueryModel() ? 
                 queryPermissionsRest(servicePath, position, APEX_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION + APEX_CONDITIONS) : 
                 queryPermissionsApex(APEX_SEARCH_TYPE, PERMISSION_SET_GROUP_QUERY_CONDITION + APEX_CONDITIONS, position);
@@ -180,7 +180,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled
     public static QueryResult getObjectLevelSecurityForUser(String servicePath, Integer position, String userId){
         try {
-            LOGGER.info('getObjectLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
+            rflib_LoggerUtil.logInternal(LOGGER, 'getObjectLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
             return shouldUseRestQueryModel() ? 
@@ -195,7 +195,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled
     public static QueryResult getFieldLevelSecurityForUser(String servicePath, Integer position, String userId){
         try {
-            LOGGER.info('getFieldLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
+            rflib_LoggerUtil.logInternal(LOGGER, 'getFieldLevelSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
             return shouldUseRestQueryModel() ? 
@@ -210,7 +210,7 @@ public with sharing class rflib_PermissionsExplorerController {
     @AuraEnabled
     public static QueryResult getApexSecurityForUser(String servicePath, Integer position, String userId){
         try {
-            LOGGER.info('getApexSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
+            rflib_LoggerUtil.logInternal(LOGGER, 'getApexSecurityForUser: servicePath={0}, userId={1}', new Object[] { servicePath, userId});
             UserPermissionsDetails userPermissionDetails = getUserPermissionsDetails(userId);
 
             return shouldUseRestQueryModel() ? 
@@ -261,7 +261,7 @@ public with sharing class rflib_PermissionsExplorerController {
         
     private static Boolean shouldUseRestQueryModel() {
         Boolean result = rflib_GlobalSettings.useRestQueryModeForPermissionRetrievalOrDefault;
-        LOGGER.info('REST API Enabled: {0}', new Object[] { result } );
+        rflib_LoggerUtil.logInternal(LOGGER, 'REST API Enabled: {0}', new Object[] { result } );
         return result;
     }
 
@@ -357,7 +357,7 @@ public with sharing class rflib_PermissionsExplorerController {
         Integer totalNumOfRecords = queryExecutor.countQuery(COUNT + tableName + condition);
         
         if (totalNumOfRecords <= APEX_QUERY_RECORD_LIMIT) {
-            LOGGER.info('Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Expect {0} of records returned, using Apex query instead of REST', new Object[] { totalNumOfRecords });
             return queryPermissionsApex(searchType, condition, position);
         }
         
@@ -377,7 +377,7 @@ public with sharing class rflib_PermissionsExplorerController {
         }
             
         QueryResult result = (QueryResult) JSON.deserialize(res.getBody(), QueryResult.class);
-        LOGGER.info('REST results received: size=' + result.records.size());
+        rflib_LoggerUtil.logInternal(LOGGER, 'REST results received: size=' + result.records.size());
         result.totalNumOfRecords = totalNumOfRecords;
 
         if (searchType == FLS_SEARCH_TYPE) {
@@ -401,7 +401,7 @@ public with sharing class rflib_PermissionsExplorerController {
         for (FieldPermissions fp : fieldPermissionsList) {
             result.records.add(new PermissionInfo(fp));
         }
-        LOGGER.info('Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
+        rflib_LoggerUtil.logInternal(LOGGER, 'Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
         return result;
     }
 
@@ -413,7 +413,7 @@ public with sharing class rflib_PermissionsExplorerController {
         for (ObjectPermissions op : objectPermissionsList) {
             result.records.add(new PermissionInfo(op));
         }
-        LOGGER.info('Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
+        rflib_LoggerUtil.logInternal(LOGGER, 'Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
         return result;
     }
     
@@ -427,7 +427,7 @@ public with sharing class rflib_PermissionsExplorerController {
         for (SetupEntityAccess ap : apexPermissionsList) {
             result.records.add(new PermissionInfo(ap, entityInfo));
         }
-        LOGGER.info('Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
+        rflib_LoggerUtil.logInternal(LOGGER, 'Result recordsSize={0}, totalNumOfRecords={1}, nextRecordsUrl={2}, nextPosition={3}', new Object[] {result.records.size(), result.totalNumOfRecords, result.nextRecordsUrl, result.nextPosition} );
         return result;
     }
 
@@ -471,7 +471,7 @@ public with sharing class rflib_PermissionsExplorerController {
             result.put(ap.Id, new ApexInfo(ap.NamespacePrefix, ap.Name));
         }
 
-        LOGGER.info('EntityInfo=' + result);
+        rflib_LoggerUtil.logInternal(LOGGER, 'EntityInfo=' + result);
 
         return result;
     }

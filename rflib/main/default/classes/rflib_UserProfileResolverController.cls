@@ -29,8 +29,11 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_UserProfileResolverController {
 
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_UserProfileResolverController');
+
     @AuraEnabled
     public static User getUserByUserId(Id userId) {
+        rflib_LoggerUtil.logInternal(LOGGER, 'getUserByUserId({0}) invoked', new Object[]{userId});
         return [SELECT Profile.Name FROM User WHERE Id = :userId];
     }
 }

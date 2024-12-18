@@ -28,12 +28,12 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_ApexJobSchedulerController {
-
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApexJobSchedulerController');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory()
+        .createLogger('rflib_ApexJobSchedulerController');
 
     @AuraEnabled(cacheable=true)
     public static ScheduledJobDetails getJobDetails(String jobName) {
-        LOGGER.info('getJobDetails called with jobName: ' + jobName);
+        rflib_LoggerUtil.logInternal(LOGGER, 'getJobDetails called with jobName: ' + jobName);
         ScheduledJobDetails details = new ScheduledJobDetails();
         try {
             List<CronTrigger> cronTriggers = [
@@ -51,7 +51,8 @@ public with sharing class rflib_ApexJobSchedulerController {
                 details.nextRunTime = ct.NextFireTime;
                 details.cronExpression = ct.CronExpression;
 
-                LOGGER.info(
+                rflib_LoggerUtil.logInternal(
+                    LOGGER,
                     'Job is scheduled. Status: ' +
                         ct.State +
                         ', Next Run: ' +
@@ -61,7 +62,7 @@ public with sharing class rflib_ApexJobSchedulerController {
                 );
             } else {
                 details.isScheduled = false;
-                LOGGER.info('Job is not scheduled for className: ' + jobName);
+                rflib_LoggerUtil.logInternal(LOGGER, 'Job is not scheduled for className: ' + jobName);
             }
         } catch (Exception e) {
             LOGGER.error('Error in getJobDetails for className: ' + jobName, e);
@@ -72,7 +73,8 @@ public with sharing class rflib_ApexJobSchedulerController {
 
     @AuraEnabled
     public static String scheduleJob(String jobName, String className, String cronExpression) {
-        LOGGER.info(
+        rflib_LoggerUtil.logInternal(
+            LOGGER,
             'scheduleJob called with jobName={0}, className={1}, CRON={2} ',
             new List<Object>{ jobName, className, cronExpression }
         );
@@ -85,10 +87,12 @@ public with sharing class rflib_ApexJobSchedulerController {
             // Correct usage without casting
             if (!Schedulable.class.isAssignableFrom(jobType)) {
                 LOGGER.error('Class does not implement Schedulable: ' + className);
-                throw rflib_ControllerUtil.createAuraHandledException('The specified class does not implement Schedulable.');
+                throw rflib_ControllerUtil.createAuraHandledException(
+                    'The specified class does not implement Schedulable.'
+                );
             }
             System.schedule(jobName, cronExpression, (Schedulable) jobType.newInstance());
-            LOGGER.info('Job scheduled successfully: ' + jobName);
+            rflib_LoggerUtil.logInternal(LOGGER, 'Job scheduled successfully: ' + jobName);
             return 'Job scheduled successfully.';
         } catch (AuraHandledException ahe) {
             // Specific AuraHandledExceptions are already logged and handled
@@ -101,7 +105,7 @@ public with sharing class rflib_ApexJobSchedulerController {
 
     @AuraEnabled
     public static void deleteScheduledJob(String jobName) {
-        LOGGER.info('deleteScheduledJob called with jobName: ' + jobName);
+        rflib_LoggerUtil.logInternal(LOGGER, 'deleteScheduledJob called with jobName: ' + jobName);
         try {
             List<CronTrigger> cronTriggers = [
                 SELECT Id
@@ -112,10 +116,12 @@ public with sharing class rflib_ApexJobSchedulerController {
 
             if (!cronTriggers.isEmpty()) {
                 System.abortJob(cronTriggers[0].Id);
-                LOGGER.info('Job deleted successfully: ' + jobName);
+                rflib_LoggerUtil.logInternal(LOGGER, 'Job deleted successfully: ' + jobName);
             } else {
                 LOGGER.error('No job found with name: ' + jobName);
-                throw rflib_ControllerUtil.createAuraHandledException('No scheduled job found with the specified name.');
+                throw rflib_ControllerUtil.createAuraHandledException(
+                    'No scheduled job found with the specified name.'
+                );
             }
         } catch (Exception e) {
             LOGGER.error('Error deleting scheduled job for jobName: ' + jobName, e);

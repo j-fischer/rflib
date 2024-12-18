@@ -34,7 +34,7 @@ public with sharing class rflib_UserPermAssignmentController {
     @AuraEnabled
     public static List<UserPermissionAssignmentInfo> getUserPermissionAssignments(String permSetApiName, Boolean shouldBeAssigned){
         try {
-            LOGGER.debug('getUserPermissionAssignments invoked: permSetApiName={0}, shouldBeAssigned={1}', new Object[] { permSetApiName, shouldBeAssigned });
+            rflib_LoggerUtil.logInternal(LOGGER, 'getUserPermissionAssignments invoked: permSetApiName={0}, shouldBeAssigned={1}', new Object[] { permSetApiName, shouldBeAssigned });
             Set<Id> assignedUserIds = getAssignedUserIds(permSetApiName);
             
             return getUserPermissionAssignmentInfo(assignedUserIds, shouldBeAssigned);
@@ -49,7 +49,7 @@ public with sharing class rflib_UserPermAssignmentController {
             ? [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id IN :assignedUserIds ORDER BY Name]
             : [SELECT Name, Email, Phone, Profile.Name FROM User WHERE IsActive = TRUE AND Id NOT IN :assignedUserIds ORDER BY Name];
 
-        LOGGER.debug('userRecords=' + userRecords);
+        rflib_LoggerUtil.logInternal(LOGGER, 'userRecords=' + userRecords);
 
         List<UserPermissionAssignmentInfo> result = new List<UserPermissionAssignmentInfo>();
         for (User u : userRecords) {
@@ -66,7 +66,7 @@ public with sharing class rflib_UserPermAssignmentController {
     
     private static Set<Id> getAssignedUserIds(String permSetApiName) {
         List<PermissionSetAssignment> permSetAssignments = [SELECT Id, AssigneeId FROM PermissionSetAssignment WHERE PermissionSet.Name = :permSetApiName];
-        LOGGER.debug('permSetAssignments=' + permSetAssignments);
+        rflib_LoggerUtil.logInternal(LOGGER, 'permSetAssignments=' + permSetAssignments);
         
         Set<Id> result = new Set<Id>();
         for (PermissionSetAssignment psa : permSetAssignments) {

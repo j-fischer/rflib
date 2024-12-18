@@ -139,4 +139,90 @@ private class rflib_LoggerUtilTest {
         
         Assert.areEqual(50, logger.logCacheSize);
         Assert.areEqual(true, logger.isLogMaskingEnabled);
-    }}
+    }
+
+    @IsTest
+    static void testLogInternal_DevelopmentModeEnabled() {
+        // Simulate enabling Development Mode
+        rflib_GlobalSettings.SETTINGS.put(
+            'RFLIB_Development_Mode_Enabled',
+            'true'
+        );
+
+        rflib_MockLogger logger = new rflib_MockLogger();
+
+        Test.startTest();
+        rflib_LoggerUtil.logInternal(logger, 'Development mode enabled test log.');
+        Test.stopTest();
+
+        Assert.areEqual(
+            'INFO',
+            logger.logDetails[0].logLevel.toString(),
+            'Expected log level to be INFO when RFLIB_Development_Mode_Enabled is TRUE.'
+        );
+        Assert.areEqual(
+            'Development mode enabled test log.',
+            logger.logDetails[0].message,
+            'Log message content does not match.'
+        );
+    }
+
+    @IsTest
+    static void testLogInternal_DevelopmentModeDisabled() {
+        // Simulate disabling Development Mode
+        rflib_GlobalSettings.SETTINGS.put(
+            'RFLIB_Development_Mode_Enabled',
+            'false'
+        );
+
+        rflib_MockLogger logger = new rflib_MockLogger();
+
+        Test.startTest();
+        rflib_LoggerUtil.logInternal(logger, 'Development mode disabled test log.');
+        Test.stopTest();
+
+        Assert.areEqual(
+            'DEBUG',
+            logger.logDetails[0].logLevel.toString(),
+            'Expected log level to be DEBUG when RFLIB_Development_Mode_Enabled is FALSE.'
+        );
+        Assert.areEqual(
+            'Development mode disabled test log.',
+            logger.logDetails[0].message,
+            'Log message content does not match.'
+        );
+    }
+
+    @IsTest
+    static void testLogInternal_WithArguments() {
+        // Simulate enabling Development Mode
+        rflib_GlobalSettings.SETTINGS.put(
+            'RFLIB_Development_Mode_Enabled',
+            'true'
+        );
+
+        rflib_MockLogger logger = new rflib_MockLogger();
+        Object[] args = new Object[] { 'arg1', 'arg2' };
+
+        Test.startTest();
+        rflib_LoggerUtil.logInternal(logger, 'Development mode test log with arguments: {0}, {1}', args);
+        Test.stopTest();
+
+        Assert.areEqual(
+            'INFO',
+            logger.logDetails[0].logLevel.toString(),
+            'Expected log level to be INFO when RFLIB_Development_Mode_Enabled is TRUE.'
+        );
+        Assert.areEqual(
+            'Development mode test log with arguments: {0}, {1}',
+            logger.logDetails[0].message,
+            'Log message with arguments does not match.'
+        );
+        Assert.areEqual(
+            args,
+            logger.logDetails[0].args,
+            'Log message with arguments does not match.'
+        );
+    }
+
+}

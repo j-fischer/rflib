@@ -33,7 +33,7 @@ public with sharing class rflib_OrgLimitsController {
 
     @AuraEnabled
     public static Map<String, SerializableOrgLimit> getOrgLimits() {
-        LOGGER.info('getOrgLimits invoked');
+        rflib_LoggerUtil.logInternal(LOGGER, 'getOrgLimits invoked');
         try {
             Map<String, SerializableOrgLimit> result = new Map<String, SerializableOrgLimit>();
             for (OrgLimit ol : OrgLimits.getAll()) {
