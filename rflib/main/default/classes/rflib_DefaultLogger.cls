@@ -42,7 +42,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     @TestVisible
     private static String PLATFORM_INFO = null;
 
-    private static final String APPLICATION_EVENT_NAME_PATTERN = 'rflib-{0}-{1}';
+    private static final String APPLICATION_EVENT_NAME_PATTERN = 'log-{0}-{1}';
 
     private static rflib_DefaultLogger.BatchLogEventExecutor BATCH_EXECUTOR = new rflib_DefaultLogger.BatchLogEventExecutor();
 

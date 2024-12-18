@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>61.0</apiVersion>
+    <apiVersion>62.0</apiVersion>
     <assignments>
         <description>Sets the record name to a concatenated string of the event name and the date of occurrence.</description>
         <name>Assign_Record_Name</name>

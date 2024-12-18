@@ -46,7 +46,7 @@
             </value>
         </inputParameters>
     </actionCalls>
-    <apiVersion>61.0</apiVersion>
+    <apiVersion>62.0</apiVersion>
     <description>Handles the occurrence of an Application Event Platform Event to store it in the Custom Object.</description>
     <environments>Default</environments>
     <interviewLabel>RFLIB Application Event {!$Flow.CurrentDateTime}</interviewLabel>
