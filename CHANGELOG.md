@@ -1,3 +1,16 @@
+### RFLIB 8.0.0
+
+Package ID: 04tKY000000xBemYAE
+Package Alias: RFLIB@8.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xBemYAE
+
+-   [PR #93](https://github.com/j-fischer/rflib/pull/93) Added new search box for Request ID and more dynamic UI for search fields in Log Monitor.
+-   [PR #94](https://github.com/j-fischer/rflib/pull/94) Enhanced RFLIB's DefaultLogger with advanced log aggregation, integrating logging with application events for improved observability and actionability. Logs meeting the configured log level are converted into Application Events, enabling traceability, diagnostics, and actionable insights via the Application Events Dashboard, while ensuring efficient batch processing and compliance with platform limits.
+-   [PR #95](https://github.com/j-fischer/rflib/pull/95) Added button allowing users to download Apex Debug Logs directly from the Monitor page. Only debug logs matching the Request Id of the Log Event will be offered for download if available. 
+-   [PR #96](https://github.com/j-fischer/rflib/pull/96) Added new Apex Job Scheduler LWC component enables management of scheduled Apex jobs from App pages. Added the component to the Management Console to manage RFLIB Application Event Archiver job. 
+-   [PR #97](https://github.com/j-fischer/rflib/pull/97) Introducing a new Development Mode feature that adjusts the logging behavior of RFLIB's internal UI components, specifically those used in the Ops Center. The feature is controlled via a new global configuration setting, RFLIB_Development_Mode_Enabled.
+-   Upgraded API version (`<apiVersion>`) to v62.0
+
 ### RFLIB 7.4.1
 
 Package ID: 04tKY000000xAFfYAM
