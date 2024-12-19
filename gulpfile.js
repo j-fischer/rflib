@@ -35,6 +35,7 @@ const confirm = require('gulp-confirm');
 const _ = require('lodash');
 const semver = require('semver');
 const fs = require('fs');
+const gutil = require('gulp-util');
 
 require('time-require');
 
@@ -84,18 +85,39 @@ function bumpVersion() {
     fs.writeFileSync('sfdx-project.json', JSON.stringify(config.projectFile, null, 2));
 }
 
-// Add utility function to read package versions
-function getPackageVersionIds() {
+// Add utility function to get actual package IDs
+function getLatestPackageVersionIds() {
     const projectConfig = JSON.parse(fs.readFileSync('sfdx-project.json', 'utf8'));
-    const packages = {};
+    const aliases = projectConfig.packageAliases;
     
-    projectConfig.packageDirectories.forEach(dir => {
-        if (dir.package && dir.versionNumber) {
-            packages[dir.package] = dir.versionNumber;
+    // Group by package name (strip version)
+    const packageGroups = Object.keys(aliases).reduce((acc, alias) => {
+        const id = aliases[alias];
+        const match = alias.match(/(.*?)@/);
+        if (match) {
+            const pkgName = match[1];
+            if (!acc[pkgName]) acc[pkgName] = [];
+            acc[pkgName].push({ alias, id });
         }
-    });
-    
-    return packages;
+        return acc;
+    }, {});
+
+    // Get latest version for each package
+    return Object.keys(packageGroups).reduce((acc, pkg) => {
+        const versions = packageGroups[pkg];
+        const latestVersion = versions.sort((a, b) => {
+            const vA = a.alias.split('@')[1].split('.');
+            const vB = b.alias.split('@')[1].split('.');
+            for (let i = 0; i < vA.length; i++) {
+                if (parseInt(vA[i], 10) !== parseInt(vB[i], 10)) {
+                    return parseInt(vB[i], 10) - parseInt(vA[i], 10);
+                }
+            }
+            return 0;
+        })[0];
+        acc[pkg] = latestVersion.id;
+        return acc;
+    }, {});
 }
 
 // Confirm deletion of org
@@ -112,7 +134,7 @@ gulp.task('confirm-deleteOrg', function () {
 gulp.task('prompt-alias', function (done) {
     if (process.argv.includes('--alias')) {
         config.alias = process.argv[process.argv.indexOf('--alias') + 1];
-        console.log('Alias already selected: ' + config.alias);
+        gutil.log(gutil.colors.blue('Alias already selected: ' + config.alias));
         done();
     } else {
         gulp.src('*').pipe(
@@ -151,7 +173,7 @@ gulp.task('prompt-selectPackage', function (done) {
                 config.packageIndex = res.packageIndex;
 
                 if (config.packageIndex === null) {
-                    console.error('Failed to set package details');
+                    gutil.log(gutil.colors.red('Failed to set package details'));
                     process.exit(1);
                 }
 
@@ -175,7 +197,7 @@ gulp.task('prompt-selectPackage', function (done) {
 // Prompt to confirm version
 gulp.task('prompt-confirmVersion', function (done) {
     if (!config.package.latestVersionAlias) {
-        console.error('Latest version alias is missing');
+        gutil.log(gutil.colors.red('Latest version alias is missing'));
         process.exit(1);
     }
 
@@ -192,7 +214,7 @@ gulp.task('prompt-confirmVersion', function (done) {
             },
             function (res) {
                 if (!res.latestVersionConfirmed) {
-                    console.error('Version was not confirmed');
+                    gutil.log(gutil.colors.red('Version was not confirmed'));
                     process.exit(1);
                 }
                 done();
@@ -293,7 +315,7 @@ gulp.task('updateDependencies', function (done) {
     config.projectFile = JSON.parse(fs.readFileSync('sfdx-project.json'));
 
     if (!config.version.updateDependencies) {
-        console.log('No need to update dependencies');
+        gutil.log(gutil.colors.blue('No need to update dependencies'));
         done();
         return;
     }
@@ -691,7 +713,7 @@ gulp.task(
     )
 );
 
-// Install all packages task
+// Update existing test-install-all-packages task
 gulp.task(
     'test-install-all-packages',
     gulp.series(
@@ -705,16 +727,14 @@ gulp.task(
             }
         },
         shellTask(function() {
-            const packages = getPackageVersionIds();
-            const commands = Object.entries(packages)
-                .map(([pkg, version]) => 
-                    `sf package install --package ${pkg}@${version} -o ${config.alias} -w 10`
+            const packages = getLatestPackageVersionIds();
+            const commands = Object.keys(packages)
+                .map(pkg => 
+                    `sf package install --package ${packages[pkg]} -o ${config.alias} -w 10`
                 )
                 .join(' && ');
             
-            return commands + 
-                ` && sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} &&` +
-                ` sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
+            return commands;
         }),
         'shell-force-configure-settings',
         'shell-force-create-log-event',
