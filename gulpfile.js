@@ -84,6 +84,20 @@ function bumpVersion() {
     fs.writeFileSync('sfdx-project.json', JSON.stringify(config.projectFile, null, 2));
 }
 
+// Add utility function to read package versions
+function getPackageVersionIds() {
+    const projectConfig = JSON.parse(fs.readFileSync('sfdx-project.json', 'utf8'));
+    const packages = {};
+    
+    projectConfig.packageDirectories.forEach(dir => {
+        if (dir.package && dir.versionNumber) {
+            packages[dir.package] = dir.versionNumber;
+        }
+    });
+    
+    return packages;
+}
+
 // Confirm deletion of org
 gulp.task('confirm-deleteOrg', function () {
     return gulp.src('*').pipe(
@@ -674,6 +688,38 @@ gulp.task(
         'shell-force-test',
         'confirm-deleteOrg',
         'shell-force-delete-org'
+    )
+);
+
+// Install all packages task
+gulp.task(
+    'test-install-all-packages',
+    gulp.series(
+        'prompt-alias',
+        function createScratchOrg(done) {
+            const skipCreation = process.argv.includes('--skip-creation');
+            if (!skipCreation) {
+                gulp.series('shell-force-create-org')(done);
+            } else {
+                done();
+            }
+        },
+        shellTask(function() {
+            const packages = getPackageVersionIds();
+            const commands = Object.entries(packages)
+                .map(([pkg, version]) => 
+                    `sf package install --package ${pkg}@${version} -o ${config.alias} -w 10`
+                )
+                .join(' && ');
+            
+            return commands + 
+                ` && sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} &&` +
+                ` sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
+        }),
+        'shell-force-configure-settings',
+        'shell-force-create-log-event',
+        'shell-force-create-application-event',
+        'shell-force-open'
     )
 );
 
