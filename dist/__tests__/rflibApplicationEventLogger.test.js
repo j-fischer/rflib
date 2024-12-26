@@ -27,148 +27,119 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 /* eslint-disable jest/expect-expect */
-import JsMock from 'js-mock';
-import Matcher from 'hamjest';
-
-const functionContext = {
-    id: 'context-id-123',
-    org: {
-        id: 'org-id-123',
-        user: {
-            id: 'user-id-123'
-        },
-
-        dataApi: {
-            query: function () {},
-            create: function () {}
-        }
-    }
-};
-const computeLogger = {
-    trace: function () {},
-    debug: function () {},
-    info: function () {},
-    warn: function () {},
-    error: function () {}
-};
-let mockComputeLogger;
-JsMock.watch(() => {
-    functionContext.org.dataApi = JsMock.mock('dataApi', functionContext.org.dataApi);
-    mockComputeLogger = JsMock.mock('computeLogger', computeLogger);
-});
-
 const loggerSettings = require('./data/loggerSettings.json');
 
-describe('create application event logger', () => {
+describe('Application Event Logger Tests', () => {
+    let mockDataApi;
+    let mockLogger;
+    let functionContext;
+    
     beforeEach(() => {
-        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
-        mockComputeLogger.debug.allowing();
-        mockComputeLogger.info.allowing();
+        // Setup mocks
+        mockDataApi = {
+            query: jest.fn(),
+            create: jest.fn()
+        };
+        
+        mockLogger = {
+            trace: jest.fn(),
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn()
+        };
+
+        functionContext = {
+            id: 'context-id-123',
+            org: {
+                id: 'org-id-123',
+                user: { id: 'user-id-123' },
+                dataApi: mockDataApi
+            }
+        };
+
+        // Default mock implementations
+        mockDataApi.query.mockResolvedValue(loggerSettings.default);
+        mockDataApi.create.mockResolvedValue(undefined);
     });
 
-    afterEach(JsMock.assertWatched);
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.resetModules();
+    });
 
-    it('factory should return an application event logger instance', () => {
-        const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
-        let appEventLogger = createApplicationEventLogger(functionContext, mockComputeLogger);
-
-        return Promise.resolve().then(() => {
+    describe('create application event logger', () => {
+        it('factory should return an application event logger instance', async () => {
+            const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
+            const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
+            
+            await Promise.resolve();
             expect(appEventLogger).toBeDefined();
         });
     });
-});
 
-describe('successfully create application event', () => {
-    beforeEach(() => {
-        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.default));
-        mockComputeLogger.debug.allowing();
-        mockComputeLogger.info.allowing();
-    });
+    describe('successfully create application event', () => {
+        it('should create application event', async () => {
+            const eventName = 'test-event';
+            const relatedRecordId = '001abcdefg12345';
+            const additionalDetails = 'some details';
 
-    afterEach(JsMock.assertWatched);
+            const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
+            const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
+            
+            await Promise.resolve();
+            await appEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
 
-    it('should create application event', () => {
-        const eventName = 'test-event';
-        const relatedRecordId = '001abcdefg12345';
-        const additionalDetails = 'some details';
-
-        functionContext.org.dataApi.create
-            .once()
-            .with(
-                Matcher.hasProperties({
+            expect(mockDataApi.create).toHaveBeenCalledWith(
+                expect.objectContaining({
                     type: 'rflib_Application_Event_Occurred_Event__e',
-                    fields: Matcher.hasProperties({
+                    fields: expect.objectContaining({
                         Event_Name__c: eventName,
                         Related_Record_ID__c: relatedRecordId,
                         Additional_Details__c: JSON.stringify(additionalDetails)
                     })
                 })
-            )
-            .returns(Promise.resolve());
-
-        const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
-        let appEventLogger = createApplicationEventLogger(functionContext, mockComputeLogger);
-
-        return Promise.resolve().then(() => {
-            appEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
+            );
         });
-    });
 
-    it('should set default related record ID', () => {
-        const eventName = 'test-event';
-        const additionalDetails = 'some details';
+        it('should set default related record ID', async () => {
+            const eventName = 'test-event';
+            const additionalDetails = 'some details';
 
-        functionContext.org.dataApi.create
-            .once()
-            .with(
-                Matcher.hasProperties({
-                    type: 'rflib_Application_Event_Occurred_Event__e',
-                    fields: Matcher.hasProperties({
-                        Event_Name__c: eventName,
-                        Related_Record_ID__c: 'NO_RECORD_ID',
-                        Additional_Details__c: JSON.stringify(additionalDetails)
+            const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
+            const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
+            
+            await Promise.resolve();
+            await appEventLogger.logApplicationEvent(eventName, null, additionalDetails);
+
+            expect(mockDataApi.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    fields: expect.objectContaining({
+                        Related_Record_ID__c: 'NO_RECORD_ID'
                     })
                 })
-            )
-            .returns(Promise.resolve());
-
-        const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
-        let appEventLogger = createApplicationEventLogger(functionContext, mockComputeLogger);
-
-        return Promise.resolve().then(() => {
-            appEventLogger.logApplicationEvent(eventName, null, additionalDetails);
+            );
         });
     });
-});
 
-describe('log application event failure', () => {
-    afterEach(JsMock.assertWatched);
+    describe('log application event failure', () => {
+        
+        it('should log error that the server log failed', async () => {
+            const eventName = 'test-event';
+            const error = new Error('foo bar error');
 
-    it('should log error that the server log failed', () => {
-        const eventName = 'test-event';
+            mockDataApi.query.mockResolvedValue(loggerSettings.computeError);
+            mockDataApi.create.mockRejectedValue(error);
 
-        mockComputeLogger.debug.allowing().with(Matcher.containsString('Retrieved settings for user'));
-        mockComputeLogger.info.allowing().with(Matcher.containsString('Setting new logger configuration for'));
+            const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
+            const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
+            
+            await appEventLogger.logApplicationEvent(eventName, null, null);
+            await Promise.resolve();
 
-        functionContext.org.dataApi.query.allowing().returns(Promise.resolve(loggerSettings.computeError));
-        functionContext.org.dataApi.create.once().returns(Promise.reject(new Error('foo bar error')));
-
-        mockComputeLogger.error
-            .expect()
-            .once()
-            .with(
-                Matcher.allOf(
-                    Matcher.containsString('Failed to log application event to server for:'),
-                    Matcher.containsString(eventName),
-                    Matcher.containsString('foo bar error')
-                )
+            expect(mockLogger.error).toHaveBeenCalledWith(
+                'ERROR|context-id-123|rflib-application-event-logger|Failed to log application event to server for: test-event, error={}'
             );
-
-        const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
-        let appEventLogger = createApplicationEventLogger(functionContext, mockComputeLogger);
-
-        return Promise.resolve().then(() => {
-            appEventLogger.logApplicationEvent(eventName, null, null);
         });
     });
 });

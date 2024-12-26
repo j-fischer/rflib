@@ -26,34 +26,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import JsMock from 'js-mock';
-
-let mockGetAllFeatureSwitches;
-JsMock.watch(() => {
-    mockGetAllFeatureSwitches = JsMock.mock('getAllFeatureSwitches');
-});
+const mockGetAllFeatureSwitches = jest.fn();
 
 jest.mock(
     '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues',
-    () => {
-        return { default: mockGetAllFeatureSwitches };
-    },
+    () => ({ default: mockGetAllFeatureSwitches }),
     { virtual: true }
 );
 
 describe('isFeatureSwitchTurnedOn() Failures', () => {
-    afterEach(JsMock.assertWatched);
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
 
-    it('retrieving the switches from the server fails', () => {
-        mockGetAllFeatureSwitches
-            .once()
-            .with()
-            .callsAndReturns(() => {
-                return Promise.reject(new Error('some error'));
-            });
+    it('retrieving the switches from the server fails', async () => {
+        mockGetAllFeatureSwitches.mockRejectedValue(new Error('some error'));
 
         const isFeatureSwitchTurnedOn = require('c/rflibFeatureSwitches').isFeatureSwitchTurnedOn;
-
-        return expect(isFeatureSwitchTurnedOn('activeSwitch')).rejects.toThrow('some error');
+        
+        await expect(isFeatureSwitchTurnedOn('activeSwitch'))
+            .rejects
+            .toThrow('some error');
+            
+        expect(mockGetAllFeatureSwitches).toHaveBeenCalledTimes(1);
     });
 });

@@ -26,121 +26,108 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import JsMock from 'js-mock';
-import Matcher from 'hamjest';
-
-const loggerFactory = {
-    createLogger: function () {}
-};
-const logger = {
-    trace: function () {},
-    debug: function () {},
-    info: function () {},
-    warn: function () {},
-    error: function () {}
-};
-
-let mockSaveApplicationEvent, mockLoggerFactory, mockLogger;
-JsMock.watch(() => {
-    mockSaveApplicationEvent = JsMock.mock('mockSaveApplicationEvent');
-    mockLoggerFactory = JsMock.mock('mockLoggerFactory', loggerFactory);
-    mockLogger = JsMock.mock('logger', logger);
-});
-
-jest.mock(
-    '@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent',
-    () => {
-        return { default: mockSaveApplicationEvent };
-    },
-    { virtual: true }
-);
-jest.mock(
-    'c/rflibLogger',
-    () => {
-        return mockLoggerFactory;
-    },
-    { virtual: true }
-);
-
 describe('log application event', () => {
     let applicationEventLogger;
+    let mockSaveApplicationEvent;
+    let mockLogger;
+    let mockLoggerFactory;
 
     beforeEach(() => {
-        mockLoggerFactory.createLogger.allowing().with('ApplicationEventLogger').returns(mockLogger);
+        // Setup logger mocks
+        mockLogger = {
+            trace: jest.fn(),
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn()
+        };
+
+        // Setup logger factory mock
+        mockLoggerFactory = {
+            createLogger: jest.fn().mockReturnValue(mockLogger)
+        };
+
+        // Setup save event mock
+        mockSaveApplicationEvent = jest.fn();
+
+        // Setup module mocks
+        jest.mock('@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent', 
+            () => ({ default: mockSaveApplicationEvent }), 
+            { virtual: true }
+        );
+        
+        jest.mock('c/rflibLogger', 
+            () => mockLoggerFactory, 
+            { virtual: true }
+        );
 
         applicationEventLogger = require('../rflibApplicationEventLogger');
     });
 
     afterEach(() => {
-        JsMock.assertWatched();
+        jest.clearAllMocks();
+        jest.resetModules();
     });
 
-    it('should submit application event to server', () => {
-        let eventName = 'Foo Bar';
-        let relatedRecordId = 'rec123';
-        let additionalDetails = 'Details Foo Bar';
+    it('should submit application event to server', async () => {
+        const eventName = 'Foo Bar';
+        const relatedRecordId = 'rec123';
+        const additionalDetails = 'Details Foo Bar';
 
-        mockLogger.info
-            .expect()
-            .once()
-            .with(
-                'Logging Application Event "{0}" for record "{1}" with details: {2}',
+        mockSaveApplicationEvent.mockResolvedValue(undefined);
+
+        await applicationEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            'Logging Application Event "{0}" for record "{1}" with details: {2}',
+            eventName,
+            relatedRecordId,
+            additionalDetails
+        );
+        
+        expect(mockLogger.debug).toHaveBeenCalledWith('Application Event successfully recorded');
+        
+        expect(mockSaveApplicationEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
                 eventName,
                 relatedRecordId,
                 additionalDetails
-            );
-        mockLogger.debug.expect().once().with('Application Event successfully recorded');
-
-        mockSaveApplicationEvent
-            .expect()
-            .once()
-            .with(
-                Matcher.hasProperties({
-                    eventName: eventName,
-                    relatedRecordId: relatedRecordId,
-                    additionalDetails: additionalDetails
-                })
-            )
-            .returns(Promise.resolve());
-
-        applicationEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
+            })
+        );
     });
 
     it('should log error if application event logging fails', async () => {
-        let eventName = 'Foo Bar';
-        let relatedRecordId = 'rec123';
-        let additionalDetails = 'Details Foo Bar';
+        const eventName = 'Foo Bar';
+        const relatedRecordId = 'rec123';
+        const additionalDetails = 'Details Foo Bar';
+        const error = 'foobar';
 
-        mockLogger.info
-            .expect()
-            .once()
-            .with(
-                'Logging Application Event "{0}" for record "{1}" with details: {2}',
+        mockSaveApplicationEvent.mockRejectedValue(error);
+
+        await applicationEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
+
+        // Wait for all promises
+        await Promise.resolve();
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            'Logging Application Event "{0}" for record "{1}" with details: {2}',
+            eventName,
+            relatedRecordId,
+            additionalDetails
+        );
+        
+        expect(mockLogger.error).toHaveBeenCalledWith(
+            'Failed to log application event to server for: {0}, error={1}',
+            eventName,
+            expect.stringContaining('foobar')
+        );
+        
+        expect(mockSaveApplicationEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
                 eventName,
                 relatedRecordId,
                 additionalDetails
-            );
-        mockLogger.error
-            .expect()
-            .once()
-            .with(
-                'Failed to log application event to server for: {0}, error={1}',
-                eventName,
-                Matcher.containsString('foobar')
-            );
-
-        mockSaveApplicationEvent
-            .expect()
-            .once()
-            .with(
-                Matcher.hasProperties({
-                    eventName: eventName,
-                    relatedRecordId: relatedRecordId,
-                    additionalDetails: additionalDetails
-                })
-            )
-            .returns(Promise.reject('foobar'));
-
-        applicationEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
+            })
+        );
     });
 });

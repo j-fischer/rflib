@@ -26,49 +26,45 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import JsMock from 'js-mock';
-
-let mockGetAllFeatureSwitches;
-JsMock.watch(() => {
-    mockGetAllFeatureSwitches = JsMock.mock('getAllFeatureSwitches');
-});
-
-jest.mock(
-    '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues',
-    () => {
-        return { default: mockGetAllFeatureSwitches };
-    },
-    { virtual: true }
-);
 
 const featureSwitches = require('./data/featureSwitches.json');
+
+// Mock Apex controller
+const mockGetAllFeatureSwitches = jest.fn();
+jest.mock(
+    '@salesforce/apex/rflib_FeatureSwitchesController.getAllSwitchValues',
+    () => ({ default: mockGetAllFeatureSwitches }),
+    { virtual: true }
+);
 
 describe('isFeatureSwitchTurnedOn()', () => {
     let isFeatureSwitchTurnedOn;
 
     beforeEach(() => {
-        mockGetAllFeatureSwitches.allowing().with().returns(Promise.resolve(featureSwitches.default));
-
+        mockGetAllFeatureSwitches.mockResolvedValue(featureSwitches.default);
         isFeatureSwitchTurnedOn = require('c/rflibFeatureSwitches').isFeatureSwitchTurnedOn;
     });
 
-    afterEach(JsMock.assertWatched);
-
-    it('feature switch is set to true', () => {
-        return isFeatureSwitchTurnedOn('activeSwitch').then((switchValue) => {
-            expect(switchValue).toBeTruthy();
-        });
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.resetModules();
     });
 
-    it('feature switch is set to false', () => {
-        return isFeatureSwitchTurnedOn('inactiveSwitch').then((switchValue) => {
-            expect(switchValue).toBeFalsy();
-        });
+    it('feature switch is set to true', async () => {
+        const switchValue = await isFeatureSwitchTurnedOn('activeSwitch');
+        expect(switchValue).toBeTruthy();
+        expect(mockGetAllFeatureSwitches).toHaveBeenCalled();
     });
 
-    it('feature switch does not exist', () => {
-        return isFeatureSwitchTurnedOn('unknownSwitch').then((switchValue) => {
-            expect(switchValue).toBeFalsy();
-        });
+    it('feature switch is set to false', async () => {
+        const switchValue = await isFeatureSwitchTurnedOn('inactiveSwitch');
+        expect(switchValue).toBeFalsy();
+        expect(mockGetAllFeatureSwitches).toHaveBeenCalled();
+    });
+
+    it('feature switch does not exist', async () => {
+        const switchValue = await isFeatureSwitchTurnedOn('unknownSwitch');
+        expect(switchValue).toBeFalsy();
+        expect(mockGetAllFeatureSwitches).toHaveBeenCalled();
     });
 });
