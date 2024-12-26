@@ -220,7 +220,7 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
                 );
             }
         } else {
-            logger.trace('{0} took a total of {1}ms (threshold={2}ms)', timerName, duration, threshold);
+            logger.trace('{0} took a total of {1}ms (threshold={2}ms).', timerName, duration, threshold);
         }
     };
 

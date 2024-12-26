@@ -303,6 +303,20 @@ describe('log timer', () => {
         consoleSpy.mockRestore();
     });
 
+    it('should log TRACE if threshold is not exceeded', () => {
+        logger.setConfig({
+            consoleLogLevel: 'TRACE'
+        });
+        
+        const timerName = 'Foo Bar';
+        const logTimer = logFactory.startLogTimer(logger, 10, timerName);
+        logTimer.done();
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/^TRACE\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\.$/)
+        );
+    });
+
     it('should log with default log level', () => {
         logger.setConfig({
             consoleLogLevel: 'INFO'
