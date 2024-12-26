@@ -29,69 +29,88 @@
 /* eslint-disable jest/expect-expect */
 /* eslint-disable compat/compat */
 import _ from 'lodash';
-import JsMock from 'js-mock';
-import Matcher from 'hamjest';
 
-let mockGetSettings, mockLogMessageToServer, mockConsoleLog;
-JsMock.watch(() => {
-    mockGetSettings = JsMock.mock('getSettings');
-    mockLogMessageToServer = JsMock.mock('logMessageToServer');
-    mockConsoleLog = JsMock.mockGlobal('console.log');
-});
+const loggerSettings = require('./data/loggerSettings.json');
 
+// Mock Salesforce Apex calls
 jest.mock(
     '@salesforce/apex/rflib_LoggerController.getSettings',
-    () => {
-        return { default: mockGetSettings };
-    },
+    () => ({
+        default: jest.fn()
+    }),
     { virtual: true }
 );
 
 jest.mock(
     '@salesforce/apex/rflib_LoggerController.log',
-    () => {
-        return { default: mockLogMessageToServer };
-    },
+    () => ({
+        default: jest.fn()
+    }),
     { virtual: true }
 );
 
-const loggerSettings = require('./data/loggerSettings.json');
-
 describe('create logger', () => {
-    beforeEach(mockConsoleLog.activate);
+    let consoleSpy;
+    let getSettingsMock;
 
-    afterEach(JsMock.assertWatched);
+    beforeEach(() => {
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
+        getSettingsMock.mockResolvedValue(loggerSettings.default);
+    });
 
-    it('factory should return a logger instance', () => {
-        mockConsoleLog.expect().once().with(Matcher.containsString('Retrieved settings for user'));
+    afterEach(() => {
+        consoleSpy.mockRestore();
+        jest.clearAllMocks();
+    });
 
-        mockGetSettings.once().with().returns(Promise.resolve(loggerSettings.default));
-
+    it('factory should return a logger instance', async () => {
         const createLogger = require('c/rflibLogger').createLogger;
+        const logger = createLogger('factory');
 
-        let logger = createLogger('factory');
-        return Promise.resolve().then(() => {
-            expect(logger).toBeDefined();
-        });
+        await Promise.resolve();
+
+        expect(logger).toBeDefined();
+        await expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Retrieved settings for user')
+        );
     });
 });
 
 describe('console logger', () => {
     let logger;
-    beforeEach(() => {
-        mockConsoleLog.activate();
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+    let consoleSpy;
+    let getSettingsMock;
 
+    beforeEach(() => {
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
+        getSettingsMock.mockResolvedValue(loggerSettings.default);
         logger = require('c/rflibLogger').createLogger('console');
+        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: "NONE" });
     });
 
     afterEach(() => {
-        JsMock.assertWatched();
-
-        logger.setConfig({
-            consoleLogLevel: 'NONE'
-        });
+        consoleSpy.mockRestore();
+        jest.clearAllMocks();
+        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: "NONE" });
     });
+
+    function executeConsoleLogLevelTest(validLogLevels) {
+        const logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
+
+        validLogLevels.forEach(logLevel => {
+            logger[logLevel.toLowerCase()]('SHOULD LOG to console');
+            expect(consoleSpy).toHaveBeenCalledWith(`${logLevel}|console|SHOULD LOG to console`)
+        });
+
+        _.pullAll(logLevels, validLogLevels).forEach(logLevel => {
+            logger[logLevel.toLowerCase()]('should not log to console');
+            expect(consoleSpy).not.toHaveBeenCalledWith(
+                expect.stringContaining(`${logLevel}|console|should not log to console`)
+            );
+        });
+    }
 
     it('should not log when setting is set to NONE', () => {
         executeConsoleLogLevelTest([]);
@@ -144,204 +163,194 @@ describe('console logger', () => {
 
         executeConsoleLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE']);
     });
-
-    function executeConsoleLogLevelTest(validLogLevels) {
-        let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
-
-        _.each(validLogLevels, (logLevel) => {
-            mockConsoleLog.expect().once().with(Matcher.containsStrings('console', logLevel, 'SHOULD LOG'));
-
-            logger[logLevel.toLowerCase()]('SHOULD LOG to console');
-        });
-
-        _.each(_.pullAll(logLevels, validLogLevels), (logLevel) => {
-            logger[logLevel.toLowerCase()]('should not log to console');
-        });
-    }
 });
 
 describe('server logger', () => {
-    beforeEach(() => {
-        mockConsoleLog.restore();
+    let logger;
+    let logToServerMock;
+    let getSettingsMock;
 
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+    beforeEach(async () => {
+        jest.isolateModules(() => {
+            // Setup mocks
+            getSettingsMock = jest.fn().mockResolvedValue(loggerSettings.default);
+            require('@salesforce/apex/rflib_LoggerController.getSettings').default = getSettingsMock;
+            
+            logToServerMock = jest.fn().mockResolvedValue(undefined);
+            require('@salesforce/apex/rflib_LoggerController.log').default = logToServerMock;
+            
+            // Create logger instance
+            const loggerModule = require('c/rflibLogger');
+            logger = loggerModule.createLogger('test');
+        });
+        
+        // Wait for initialization
+        await Promise.resolve();
     });
 
-    afterEach(JsMock.assertWatched);
+    afterEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
+
+    async function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
+        // Set config
+        logger.setConfig({ serverLogLevel });
+        
+        // Execute logs
+        for (const level of validLogLevels) {
+            logger[level.toLowerCase()]('test message');
+        }
+        
+        // Wait for all promises
+        await Promise.resolve();
+        
+        // Verify
+        expect(logToServerMock).toHaveBeenCalledTimes(validLogLevels.length);
+        validLogLevels.forEach(level => {
+            expect(logToServerMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    level,
+                    message: expect.stringContaining(`${level}|test|test message`)
+                })
+            );
+        });
+    }
 
     it('should not log when setting is set to NONE', () => {
-        return executeServerLogLevelTest('NONE', []);
+        executeServerLogLevelTest('NONE', []);
     });
 
     it('should log FATAL when setting is set to FATAL', () => {
-        return executeServerLogLevelTest('FATAL', ['FATAL']);
+        executeServerLogLevelTest('FATAL', ['FATAL']);
     });
 
     it('should log ERROR when setting is set to ERROR', () => {
-        return executeServerLogLevelTest('ERROR', ['FATAL', 'ERROR']);
+        executeServerLogLevelTest('ERROR', ['FATAL', 'ERROR']);
     });
 
     it('should log WARN when setting is set to WARN', () => {
-        return executeServerLogLevelTest('WARN', ['FATAL', 'ERROR', 'WARN']);
+        executeServerLogLevelTest('WARN', ['FATAL', 'ERROR', 'WARN']);
     });
 
     it('should log INFO when setting is set to INFO', () => {
-        return executeServerLogLevelTest('INFO', ['FATAL', 'ERROR', 'WARN', 'INFO']);
+        executeServerLogLevelTest('INFO', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     it('should not log DEBUG when setting is set to DEBUG', () => {
-        return executeServerLogLevelTest('DEBUG', ['FATAL', 'ERROR', 'WARN', 'INFO']);
+        executeServerLogLevelTest('DEBUG', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
 
     it('should not log TRACE when setting is set to TRACE', () => {
-        return executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO']);
+        executeServerLogLevelTest('TRACE', ['FATAL', 'ERROR', 'WARN', 'INFO']);
     });
-
-    function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
-        let logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
-
-        const expectedServerLogInvocations = validLogLevels.length;
-
-        mockLogMessageToServer.exactly(expectedServerLogInvocations);
-        let index = 1;
-
-        _.each(validLogLevels, (logLevel) => {
-            mockLogMessageToServer
-                .onCall(index++)
-                .with(
-                    Matcher.hasProperties({
-                        level: logLevel,
-                        context: 'server',
-                        message: Matcher.allOf(
-                            Matcher.endsWith('SHOULD LOG to server'),
-                            Matcher.containsString('should not log to server')
-                        )
-                    })
-                )
-                .returns(Promise.resolve());
-        });
-
-        let logger = require('c/rflibLogger').createLogger('server');
-
-        return Promise.resolve().then(() => {
-            logger.setConfig({
-                serverLogLevel: serverLogLevel
-            });
-
-            _.each(_.pullAll(logLevels, validLogLevels), (logLevel) => {
-                logger[logLevel.toLowerCase()]('should not log to server');
-            });
-
-            _.each(validLogLevels, (logLevel) => {
-                logger[logLevel.toLowerCase()]('SHOULD LOG to server');
-            });
-        });
-    }
 });
 
 describe('server logger failure', () => {
+    let consoleSpy;
+    let getSettingsMock;
+    let logToServerMock;
+
     beforeEach(() => {
-        mockConsoleLog.activate();
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
+        logToServerMock = require('@salesforce/apex/rflib_LoggerController.log').default;
+        getSettingsMock.mockResolvedValue(loggerSettings.default);
     });
 
-    afterEach(JsMock.assertWatched);
+    afterEach(() => {
+        consoleSpy.mockRestore();
+        jest.clearAllMocks();
+    });
 
-    it('should log to the console that the server log failed', () => {
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+    it('should log to the console that the server log failed', async () => {
+        logToServerMock.mockRejectedValue(new Error('foo bar error'));
 
-        mockLogMessageToServer.once().returns(Promise.reject(new Error('foo bar error')));
-
-        mockConsoleLog
-            .expect()
-            .once()
-            .with(
-                Matcher.allOf(
-                    Matcher.containsString('Failed to log message to server for'),
-                    Matcher.containsString('foo bar error')
-                )
-            );
-
-        let logger = require('c/rflibLogger').createLogger('server');
-
-        return Promise.resolve().then(() => {
-            logger.setConfig({
-                serverLogLevel: 'FATAL'
-            });
-
+        const logger = require('c/rflibLogger').createLogger('server');
+        
+        await Promise.resolve().then(() => {
+            logger.setConfig({ serverLogLevel: 'FATAL' });
             logger.fatal('some message');
         });
+
+        await new Promise(process.nextTick);
+
+        await expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Failed to log message to server for')
+        );
     });
 });
 
 describe('log timer', () => {
-    let logFactory;
     let logger;
+    let consoleSpy;
+    let logFactory;    
+    let getSettingsMock;
 
     beforeEach(() => {
-        mockConsoleLog.activate();
-        mockGetSettings.allowing().with().returns(Promise.resolve(loggerSettings.default));
+        jest.useFakeTimers();
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
+        getSettingsMock.mockResolvedValue(loggerSettings.default);
 
+        logger = require('c/rflibLogger').createLogger('timer');
         logFactory = require('c/rflibLogger');
-        logger = logFactory.createLogger('console');
     });
 
     afterEach(() => {
-        JsMock.assertWatched();
+        jest.useRealTimers();
+        jest.clearAllMocks();
+        consoleSpy.mockRestore();
+    });
 
+    it('should log with default log level', () => {
         logger.setConfig({
-            consoleLogLevel: 'TRACE'
+            consoleLogLevel: 'INFO'
         });
+        
+        const timerName = 'Foo Bar';
+        const logTimer = logFactory.startLogTimer(logger, 10, timerName);
+
+        jest.advanceTimersByTime(11);
+        logTimer.done();
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/^WARN\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\.$/)
+        );
     });
 
-    it('should log TRACE statement if threshold was not exceeded', () => {
+    it('should log with custom log level if provided', () => {
         logger.setConfig({
-            consoleLogLevel: 'TRACE'
+            consoleLogLevel: 'INFO'
         });
 
-        let timerName = 'Foo Bar';
+        const timerName = 'Foo Bar';
+        const logLevel = 'ERROR';
+        const logTimer = logFactory.startLogTimer(logger, 10, timerName, logLevel);
 
-        mockConsoleLog
-            .expect()
-            .once()
-            .with(Matcher.containsStrings('console', 'TRACE', timerName, 'took a total of', 'threshold'));
-
-        let logTimer = logFactory.startLogTimer(logger, 10, timerName);
-
+        jest.advanceTimersByTime(11);
         logTimer.done();
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/^ERROR\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\.$/)
+        );
     });
 
-    it('should log if threshold is exceeded', async () => {
-        let timerName = 'Foo Bar';
-        let logLevel = 'WARN';
+    it('should log warning if invalid level is provided', () => {
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
 
-        mockConsoleLog
-            .expect()
-            .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
+        const timerName = 'Foo Bar';
+        const logLevel = 'INVALID';
+        const logTimer = logFactory.startLogTimer(logger, 10, timerName, logLevel);
 
-        let logTimer = logFactory.startLogTimer(logger, 10, timerName);
-
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((resolve) => setTimeout(resolve, 20));
-
+        jest.advanceTimersByTime(11);
         logTimer.done();
-    });
 
-    it('should log with custom log level if provided', async () => {
-        let timerName = 'Foo Bar';
-        let logLevel = 'ERROR';
-
-        mockConsoleLog
-            .expect()
-            .once()
-            .with(Matcher.containsStrings('console', logLevel, timerName, 'took a total of', 'threshold'));
-
-        let logTimer = logFactory.startLogTimer(logger, 10, timerName, logLevel);
-
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((resolve) => setTimeout(resolve, 11));
-
-        logTimer.done();
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/^WARN\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\. NOTE: Invalid log Level provided$/)
+        );
     });
 });
 
@@ -352,7 +361,8 @@ describe('format string tests', () => {
     beforeEach(() => {
         consoleSpy = jest.spyOn(console, 'log').mockImplementation();
         
-        mockGetSettings.once().with().returns(Promise.resolve(loggerSettings.default));
+        const getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
+        getSettingsMock.mockResolvedValue(loggerSettings.default);
         logger = require('c/rflibLogger').createLogger('TestLogger');
     });
 
@@ -466,6 +476,69 @@ describe('format string tests', () => {
 
         expect(consoleSpy).toHaveBeenCalledWith(
             expect.stringContaining('Mixed array: [42,"string",{"obj":"value"},[1,2],null,null]')
+        );
+    });
+});
+
+describe('change stack size', () => {
+    let logger;
+    let logToServerMock;
+    let getSettingsMock;
+
+    beforeEach(async () => {
+        jest.isolateModules(() => {
+            // Setup mocks
+            getSettingsMock = jest.fn().mockResolvedValue(loggerSettings.default);
+            require('@salesforce/apex/rflib_LoggerController.getSettings').default = getSettingsMock;
+            
+            logToServerMock = jest.fn().mockResolvedValue(undefined);
+            require('@salesforce/apex/rflib_LoggerController.log').default = logToServerMock;
+            
+            // Create logger instance
+            const loggerModule = require('c/rflibLogger');
+            logger = loggerModule.createLogger('test');
+        });
+        
+        // Wait for initialization
+        await Promise.resolve();
+    });
+
+    afterEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
+
+    it('should shift log stack when capacity is reached', async () => {
+        // Set config
+        logger.setConfig({ serverLogLevel: 'INFO', stackSize: 2 });
+        
+        logger.debug('debug message 1');
+        logger.info('info message 1');
+        
+        // Wait for all promises
+        await Promise.resolve();
+        
+        // Verify
+        expect(logToServerMock).toHaveBeenNthCalledWith(
+            1, 
+            expect.objectContaining({
+                level: 'INFO',
+                message: expect.stringContaining(`DEBUG|test|debug message 1`)
+            })
+        );
+
+        // The info message should drop the debug message from the stack
+        logger.info('info message 2');
+        
+        // Wait for all promises
+        await Promise.resolve();
+
+        expect(logToServerMock).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                level: 'INFO',
+                message: expect.not.stringContaining(`DEBUG|test|debug message 1`)
+            })
         );
     });
 });

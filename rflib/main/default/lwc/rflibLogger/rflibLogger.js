@@ -210,17 +210,17 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
             if (typeof logger[logMethodName] === 'function') {
                 logger[logMethodName].apply(logger, [
                     '{0} took a total of {1}ms (threshold={2}ms).',
-                    [timerName, duration, threshold]
+                    timerName, duration, threshold
                 ]);
             } else {
-                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', [
+                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', 
                     timerName,
                     duration,
                     threshold
-                ]);
+                );
             }
         } else {
-            logger.trace('{0} took a total of {1}ms (threshold={2}ms)', [timerName, duration, threshold]);
+            logger.trace('{0} took a total of {1}ms (threshold={2}ms)', timerName, duration, threshold);
         }
     };
 
