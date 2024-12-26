@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 /* eslint-disable jest/expect-expect */
+/* eslint-disable compat/compat */
 import _ from 'lodash';
 import JsMock from 'js-mock';
 import Matcher from 'hamjest';
@@ -341,5 +342,130 @@ describe('log timer', () => {
         await new Promise((resolve) => setTimeout(resolve, 11));
 
         logTimer.done();
+    });
+});
+
+describe('format string tests', () => {
+    let logger;
+    let consoleSpy;
+
+    beforeEach(() => {
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        
+        mockGetSettings.once().with().returns(Promise.resolve(loggerSettings.default));
+        logger = require('c/rflibLogger').createLogger('TestLogger');
+    });
+
+    afterEach(() => {
+        consoleSpy.mockRestore();
+        jest.clearAllMocks();
+    });
+
+    it('should format primitive types correctly', () => {
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Types: {0}, {1}, {2}, {3}, {4}', 
+            undefined, 
+            null, 
+            'string', 
+            42, 
+            true
+        );
+
+        expect(consoleSpy).toHaveBeenCalledWith( 
+            expect.stringContaining('Types: undefined, null, string, 42, true')
+        );
+    });
+
+    it('should format complex types correctly', () => {
+        const testObj = { name: 'test' };
+        const testArr = [1, 2, 3];
+        const testFn = () => {};
+        const testSymbol = Symbol('test');
+        // eslint-disable-next-line no-undef
+        const testBigInt = BigInt(9007199254740991);
+
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Complex: {0}, {1}, {2}, {3}, {4}', 
+            testObj,
+            testArr,
+            testFn,
+            testSymbol,
+            testBigInt
+        );
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Complex: {"name":"test"}, [1,2,3], function, Symbol(test), 9007199254740991')
+        );
+    });
+
+    it('should handle circular references', () => {
+        const circular = {};
+        circular.self = circular;
+
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Circular: {0}', circular);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Circular: [Circular Object]')
+        );
+    });
+
+    it('should handle missing arguments', () => {
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Missing: {0}, {1}', 'exists');
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Missing: exists, undefined')
+        );
+    });
+
+    it('should handle nested objects and arrays', () => {
+        const complex = {
+            arr: [1, { nested: 'value' }, [3, 4]],
+            obj: { deep: { deeper: 'content' } }
+        };
+
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Nested: {0}', complex);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Nested: {"arr":[1,{"nested":"value"},[3,4]],"obj":{"deep":{"deeper":"content"}}}')
+        );
+    });
+
+    it('should handle array with mixed types', () => {
+        const mixedArray = [
+            42,
+            'string',
+            { obj: 'value' },
+            [1, 2],
+            null,
+            undefined
+        ];
+
+        logger.setConfig({
+            consoleLogLevel: 'INFO'
+        });
+
+        logger.info('Mixed array: {0}', mixedArray);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Mixed array: [42,"string",{"obj":"value"},[1,2],null,null]')
+        );
     });
 });

@@ -49,9 +49,33 @@ const state = {
     messages: []
 };
 
+const convertToString = (arg) => {
+    if (arg === undefined) return 'undefined';
+    if (arg === null) return 'null';
+    
+    switch (typeof arg) {
+        case 'object':
+            try {
+                return JSON.stringify(arg);
+            } catch (error) {
+                return '[Circular Object]';
+            }
+        case 'function':
+            return 'function';
+        case 'symbol':
+            return arg.toString();
+        case 'bigint':
+            return arg.toString();
+        default:
+            return String(arg);
+    }
+};
+
 const format = (strToFormat, ...args) => {
     return strToFormat.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined' ? args[number] : 'undefined';
+        return typeof args[number] !== 'undefined' 
+            ? convertToString(args[number])
+            : 'undefined';
     });
 };
 
