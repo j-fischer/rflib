@@ -39,7 +39,7 @@ import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 
 const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
-const APEX_LOG_DOWNLOAD_URL = '/one/one.app#/alohaRedirect/servlet/servlet.FileDownload?file={0}&isdtp=p1';
+const APEX_LOG_DOWNLOAD_URL = '/servlet/servlet.FileDownload';
 
 const LOGGER = createLogger('rflibLogEventViewer');
 
@@ -134,55 +134,48 @@ export default class LogEventViewer extends LightningElement {
     downloadRflibLog() {
         LOGGER.debug('Downloading RFLIB log file');
 
-        let element = document.createElement('a');
-        element.setAttribute(
-            'href',
-            'data:text/plain;charset=utf-8,' +
-                encodeURIComponent(
-                    this.logEvent.Log_Messages__c +
-                        '\n\n>>> Platform Info:\n' +
-                        JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2)
-                )
-        );
-        element.setAttribute(
-            'download',
+        const rflibLogFilename =
             this.createdBy +
-                '_' +
-                this.createdDate +
-                '_' +
-                this.logEvent.Request_ID__c +
-                '_' +
-                this.logEvent.Context__c +
-                '.txt'
-        );
+            '_' +
+            this.createdDate +
+            '_' +
+            this.logEvent.Request_ID__c +
+            '_' +
+            this.logEvent.Context__c +
+            '.log';
+        const rflibLogText =
+            this.logEvent.Log_Messages__c +
+            '\n\n>>> Platform Info:\n' +
+            JSON.stringify(JSON.parse(this.logEvent.Platform_Info__c), null, 2);
 
-        element.style.display = 'none';
-        this.simulateDownload(element);
+        this.simulateDownload(rflibLogFilename, rflibLogText);
     }
 
     downloadApexLog(logId) {
         LOGGER.debug('Downloading Apex log: ' + logId);
 
-        let element = document.createElement('a');
-        element.setAttribute('href', APEX_LOG_DOWNLOAD_URL.replace('{0}', logId));
-        element.setAttribute('target', '_blank');
-        element.style.display = 'none';
-        this.simulateDownload(element);
-
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Download Started',
-                message: 'Debug log downloading. You may close the download tab once completed.',
-                variant: 'success'
+        // Fetch is not supported in op_mini all, IE Mobile 11, IE 11, bb 10,
+        /* eslint-disable-next-line compat/compat */
+        fetch(`${APEX_LOG_DOWNLOAD_URL}?file=${logId}`)
+            .then((response) => response?.text())
+            .then((apexLogText) => {
+                const apexLogFilename = `apex-${logId}.log`;
+                this.simulateDownload(apexLogFilename, apexLogText);
             })
-        );
+            .catch((error) => {
+                LOGGER.error('There was a problem retrieving the ApexLog file contents:', error);
+            });
     }
 
-    simulateDownload(element) {
-        const downloadContainer = this.template.querySelector('.download-container');
-        downloadContainer.appendChild(element);
-        element.click();
-        downloadContainer.removeChild(element);
+    simulateDownload(outputFilename, outputText) {
+        const downloadLogLink = window.document.createElement('a');
+        downloadLogLink.download = outputFilename;
+        downloadLogLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(outputText);
+
+        const downloadLogLinkContainer = this.template.querySelector('.download-container');
+        downloadLogLinkContainer.appendChild(downloadLogLink);
+        downloadLogLink.click();
+        downloadLogLinkContainer.removeChild(downloadLogLink);
     }
 
     get createdBy() {
