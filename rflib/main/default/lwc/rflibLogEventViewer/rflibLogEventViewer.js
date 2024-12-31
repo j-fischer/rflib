@@ -43,7 +43,7 @@ const APEX_LOG_DOWNLOAD_URL = '/servlet/servlet.FileDownload';
 
 const LOGGER = createLogger('rflibLogEventViewer');
 
-export default class LogEventViewer extends LightningElement {
+export default class RflibLogEventViewer extends LightningElement {
     @api userId;
 
     _logEvent;
@@ -226,5 +226,13 @@ export default class LogEventViewer extends LightningElement {
         });
         LOGGER.debug('platformInfo: ' + JSON.stringify(result));
         return result;
+    }
+
+    get apexLogCount() {
+        return this.apexLogs ? this.apexLogs.length : 0;
+    }
+
+    get downloadButtonLabel() {
+        return this.apexLogs?.length > 0 ? `(${this.apexLogs.length})` : '';
     }
 }
