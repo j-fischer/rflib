@@ -16,32 +16,31 @@ The following lists describe some of the key features of rflib.
 
 #### Logging Framework (package RFLIB):
 
--   [Logger for LWC and Aura](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging), which publishes logs the same way as Apex
--   [Configuration through Custom Settings](https://github.com/j-fischer/rflib/wiki/Logger-Settings) allowing for different log configurations between users
--   Aggregation of log statements when reporting
--   Using Platform Events for reporting of log statements
--   [Masking](https://github.com/j-fischer/rflib/wiki/Masking-Log-Messages) of content in Log Messages
--   Log Archive using Big Objects
--   Automatically [time and log](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Log-Timer) execution duration
--   Dashboard for all Object, Field, and Apex/VF Page permissions for Profiles, Permission Sets, and Permission Set Groups
--   Supports [Salesforce Functions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) (NodeJS only)
--   Supports logging in Flow and Process Builder
--   Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
--   Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
--   [HTTP Request mocking framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) to speed up integration development
+- [Logger for LWC and Aura](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging), which publishes logs the same way as Apex
+- [Configuration through Custom Settings](https://github.com/j-fischer/rflib/wiki/Logger-Settings) allowing for different log configurations between users
+- Aggregation of log statements when reporting
+- Using Platform Events for reporting of log statements
+- [Masking](https://github.com/j-fischer/rflib/wiki/Masking-Log-Messages) of content in Log Messages
+- Log Archive using Big Objects
+- Automatically [time and log](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Log-Timer) execution duration
+- Dashboard for all Object, Field, and Apex/VF Page permissions for Profiles, Permission Sets, and Permission Set Groups
+- Supports logging in Flow and Process Builder
+- Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
+- Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
+- [HTTP Request mocking framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) to speed up integration development
 
 #### Feature Switches (package RFLIB-FS):
 
--   [Fully configured](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Feature-Switches) using Custom Metadata
--   Supports hierarchical structure (similar to Custom Settings) to override settings at the profile or user level
--   Fully supported in Flow Builder through Get Records or Apex Action
+- [Fully configured](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Feature-Switches) using Custom Metadata
+- Supports hierarchical structure (similar to Custom Settings) to override settings at the profile or user level
+- Fully supported in Flow Builder through Get Records or Apex Action
 
 #### Trigger Framework (package RFLIB-TF):
 
--   Fully decoupled [framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Trigger-Framework), trigger handlers work in isolation
--   Recursion tracking to allow for easy prevention of multiple executions
--   Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
--   [Framework for Retryable Actions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Retryable-Actions) using Platform Events for asynchronous actions with automatic retries
+- Fully decoupled [framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Trigger-Framework), trigger handlers work in isolation
+- Recursion tracking to allow for easy prevention of multiple executions
+- Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
+- [Framework for Retryable Actions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Retryable-Actions) using Platform Events for asynchronous actions with automatic retries
 
 ## Deploy
 
@@ -65,8 +64,8 @@ sf package install --package <Package ID> --target-org <your org alias>
 Here are the commands for the latest versions:
 
 ```
-rem RFLIB 8.0.0
-sf package install --package 04tKY000000xBemYAE --target-org <your org alias>
+rem RFLIB 8.1.0
+sf package install --package 04tKY000000xBvXYAU --target-org <your org alias>
 
 rem RFLIB-FS 3.0.1
 sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
@@ -134,20 +133,20 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 
 ## Credits
 
--   Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
--   Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
--   "Bypass All Trigger" Custom Permission was inspired by: https://github.com/appero-com/MyTriggers
--   The unlocked packaged was created with the help of Andrew Fawcett: https://andyinthecloud.com/2018/06/16/salesforce-dx-packages-and-open-source/
--   Logo was created with: https://www.freelogodesign.org/
--   Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin
--   Thanks to René Winkelmeyer for his SFDX CLI Plugin: https://github.com/muenzpraeger/sfdx-plugin
--   Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
--   Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader
--   Thanks to Salesforce Labs for the Streaming Monitor package: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FYEEWUA5
--   Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
--   Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
--   Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
+- Table Pagination was inspired by: https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
+- Log Monitor Component was inspired by: https://github.com/rsoesemann/apex-unified-logging
+- "Bypass All Trigger" Custom Permission was inspired by: https://github.com/appero-com/MyTriggers
+- The unlocked packaged was created with the help of Andrew Fawcett: https://andyinthecloud.com/2018/06/16/salesforce-dx-packages-and-open-source/
+- Logo was created with: https://www.freelogodesign.org/
+- Thanks to Fabien Taillon for his SFDX CLI Plugin: https://github.com/texei/texei-sfdx-plugin
+- Thanks to René Winkelmeyer for his SFDX CLI Plugin: https://github.com/muenzpraeger/sfdx-plugin
+- Thanks to Shane McLaughlin for his SFDX CLI Plugin: https://github.com/mshanemc/shane-sfdx-plugins
+- Thanks to Simon Akbar for his amazing blog post: https://www.machinereadablepeople.net/home/2020/4/4/exporting-salesforce-field-level-security-and-object-access-with-the-data-loader
+- Thanks to Salesforce Labs for the Streaming Monitor package: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FYEEWUA5
+- Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
+- Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
+- Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
 
 ## Attribution
 
--   Application Event Logger Action icon (SVG) provided by [yogiaprelliyanto](https://www.svgrepo.com/author/yogiaprelliyanto/) under the [CC Attribution License](https://www.svgrepo.com/page/licensing#CC%20Attribution)
+- Application Event Logger Action icon (SVG) provided by [yogiaprelliyanto](https://www.svgrepo.com/author/yogiaprelliyanto/) under the [CC Attribution License](https://www.svgrepo.com/page/licensing#CC%20Attribution)
