@@ -146,6 +146,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 - Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
 - Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
 - Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
+- Thanks to [Jonathan Gillespie](https://github.com/jongpie) for the ongoing support and PR contributions
 
 ## Attribution
 
