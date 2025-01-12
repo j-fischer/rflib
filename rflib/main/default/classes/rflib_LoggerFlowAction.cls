@@ -77,19 +77,42 @@ public with sharing class rflib_LoggerFlowAction {
 
     public class LogMessageInfo {
 
-        @InvocableVariable(label='Context' description='The context of your log message, i.e. Flow/Process name' required=true)
+        @InvocableVariable(
+            label='Context' 
+            description='The context of your log message, i.e. Flow/Process name' 
+            required=true
+            placeholderText='40 chars max, consider using the name of flow'
+        )
         public String context;
         
-        @InvocableVariable(label='Log Level' description='The log level for the message: TRACE, DEBUG, INFO, WARN, ERROR, FATAL' required=true)
+        @InvocableVariable(
+            label='Log Level' 
+            description='The log level for the message: TRACE, DEBUG, INFO, WARN, ERROR, FATAL' 
+            required=true
+            placeholderText='INFO, WARN, ERROR, or FATAL'
+        )
         public String logLevel;
         
-        @InvocableVariable(label='Message' description='The actual log message' required=true)
+        @InvocableVariable(
+            label='Message' 
+            description='The actual log message' 
+            required=true
+            placeholderText='Any text, supports expressions'
+        )
         public String message;
 
-        @InvocableVariable(label='Use Batch Reporting' description='Will configure the logger to always use batch reporting for the given message' required=false)
+        @InvocableVariable(
+            label='Use Batch Reporting' 
+            description='Will configure the logger to always use batch reporting for the given message' 
+            required=false
+        )
         public Boolean useBatchReporting = false;
         
-        @InvocableVariable(label='Message Arguments' description='The arguments to be inserted into the message. Arguments must be of type string' required=false)
+        @InvocableVariable(
+            label='Message Arguments' 
+            description='The arguments to be inserted into the message. Arguments must be of type string' 
+            required=false
+        )
         public List<String> args;
     }
 }
