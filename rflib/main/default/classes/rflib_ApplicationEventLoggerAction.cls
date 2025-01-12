@@ -43,13 +43,28 @@ public with sharing class rflib_ApplicationEventLoggerAction {
     }
 
     public class ApplicationEventInfo {
-        @InvocableVariable(label='Event Name' description='The name of the Application Event' required=true)
+        @InvocableVariable(
+            label='Event Name' 
+            description='The name of the Application Event' 
+            required=true
+            placeholderText='50 chars max, e.g. Record_Created or Status_Changed'
+        )
         public String eventName;
         
-        @InvocableVariable(label='Related Record ID' description='The ID of the record associated with the Application Event' required=false)
+        @InvocableVariable(
+            label='Related Record ID' 
+            description='The ID of the record associated with the Application Event' 
+            required=false
+            placeholderText='15 or 18 char Salesforce ID'
+        )
         public String relatedRecordId;
         
-        @InvocableVariable(label='Additional Details' description='Additional Details associated with the event. Can be in any format' required=false)
+        @InvocableVariable(
+            label='Additional Details' 
+            description='Additional Details associated with the event. Can be in any format' 
+            required=false
+            placeholderText='Any text or JSON format data'
+        )
         public String additionalDetails;
     }
 
