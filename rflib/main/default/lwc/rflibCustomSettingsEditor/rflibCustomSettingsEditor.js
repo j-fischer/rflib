@@ -80,7 +80,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     };
 
     connectedCallback() {
-        logger.info('Connected callback invoked. Checking user permissions and loading custom settings.');
+        logger.debug('Connected callback invoked. Checking user permissions and loading custom settings.');
         this.isLoading = true;
         this.setTitle();
         this.checkUserPermissions() // checkUserPermissions must complete before the settings are loaded to make sure the correct actions are set.
@@ -91,7 +91,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         getCustomSettingLabel({ customSettingsApiName: this.customSettingsApiName })
             .then((label) => {
                 this.title = `${label} Editor`;
-                logger.info('Title set to: {0}', this.title);
+                logger.debug('Title set to: {0}', this.title);
             })
             .catch((error) => {
                 this.title = 'Custom Settings Editor';
@@ -103,11 +103,11 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     checkUserPermissions() {
-        logger.info('Checking if the user can modify custom settings.');
+        logger.debug('Checking if the user can modify custom settings.');
         return canUserModifyCustomSettings({ customSettingsApiName: this.customSettingsApiName })
             .then((result) => {
                 this.canModifySettings = result;
-                logger.info('User permission check result: {0}', result);
+                logger.debug('User permission check result: {0}', result);
             })
             .catch((error) => {
                 const errorMessage = 'Failed to check user permissions: ' + (error?.body?.message || 'Unknown reason');
@@ -118,7 +118,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
 
     loadCustomSettings() {
         this.isLoading = true;
-        logger.info('Loading custom settings for API name: {0}', this.customSettingsApiName);
+        logger.debug('Loading custom settings for API name: {0}', this.customSettingsApiName);
         getCustomSettings({ customSettingsApiName: this.customSettingsApiName })
             .then((result) => {
                 this.customSettingsData = result.map((setting) => {
@@ -139,7 +139,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                 this.columns = this.createColumns(result[0]?.fieldLabels || {});
 
                 this.isLoading = false;
-                logger.info('Custom settings loaded successfully.');
+                logger.debug('Custom settings loaded successfully.');
             })
             .catch((error) => {
                 const errorMessage = 'Failed to load custom settings: ' + (error?.body?.message || 'Unknown reason');
@@ -150,7 +150,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     createColumns(fieldLabels) {
-        logger.info('Creating columns for datatable. Fields to display: {0}', this.fieldsToDisplay);
+        logger.debug('Creating columns for datatable. Fields to display: {0}', this.fieldsToDisplay);
         const columns = [
             { label: 'Setup Owner Type', fieldName: 'setupOwnerType', type: 'text' },
             { label: 'Setup Owner Name', fieldName: 'setupOwnerName', type: 'text' }
@@ -173,7 +173,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             });
         }
 
-        logger.info('Columns created: {0}', JSON.stringify(columns));
+        logger.debug('Columns created: {0}', JSON.stringify(columns));
         return columns;
     }
 
@@ -185,7 +185,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             actions.push({ label: 'Delete', name: 'delete' });
         }
 
-        logger.info('Getting row actions for row: {0}, actions: {1}', JSON.stringify(row), JSON.stringify(actions));
+        logger.debug('Getting row actions for row: {0}, actions: {1}', JSON.stringify(row), JSON.stringify(actions));
         doneCallback(actions);
     }
 
@@ -193,7 +193,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
         this.recordId = row.id;
-        logger.info('Handling row action. Action: {0}, Record ID: {1}', actionName, this.recordId);
+        logger.debug('Handling row action. Action: {0}, Record ID: {1}', actionName, this.recordId);
         switch (actionName) {
             case 'edit':
                 this.handleEditRecord(row);
@@ -207,7 +207,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     handleNewRecord() {
-        logger.info('Handling new record creation.');
+        logger.debug('Handling new record creation.');
         this.isNewModal = true;
         this.modalHeader = 'New Custom Setting';
         this.recordId = null;
@@ -225,7 +225,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     handleEditRecord(row) {
-        logger.info('Handling edit record. Record ID: {0}', row.id);
+        logger.debug('Handling edit record. Record ID: {0}', row.id);
 
         this.isNewModal = false;
         this.modalHeader = 'Edit Custom Setting for ' + row.setupOwnerName;
@@ -260,7 +260,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                         value: value
                     };
                 });
-                logger.info('Field infos loaded: ' + JSON.stringify(this.fieldInfos));
+                logger.debug('Field infos loaded: ' + JSON.stringify(this.fieldInfos));
             })
             .catch((error) => {
                 logger.error('Failed to get custom setting fields: {0}', JSON.stringify(error));
@@ -272,7 +272,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         const fieldName = event.target.dataset.fieldName;
         let value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
 
-        logger.info('Field changed: {0} = {1}', fieldName, value);
+        logger.debug('Field changed: {0} = {1}', fieldName, value);
         this.recordValues[fieldName] = value;
 
         const fieldInfo = this.fieldInfos.find((field) => field.apiName === fieldName);
@@ -290,12 +290,12 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     closeModal() {
-        logger.info('Closing modal dialog.');
+        logger.debug('Closing modal dialog.');
         this.showModal = false;
     }
 
     handleModalSave() {
-        logger.info('Saving custom setting.');
+        logger.debug('Saving custom setting.');
         const customSettingRecord = {
             sobjectType: this.customSettingsApiName
         };
@@ -314,10 +314,10 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             }
         });
 
-        logger.info('Custom setting record to save: {0}', JSON.stringify(customSettingRecord));
+        logger.debug('Custom setting record to save: {0}', JSON.stringify(customSettingRecord));
         saveCustomSetting({ customSettingRecord })
             .then(() => {
-                logger.info('Custom setting saved successfully.');
+                logger.debug('Custom setting saved successfully.');
                 this.showToast('Success', 'Record saved successfully.', 'success');
                 this.loadCustomSettings();
                 this.showModal = false;
@@ -330,7 +330,7 @@ export default class RflibCustomSettingsEditor extends LightningElement {
     }
 
     handleDeleteRecord() {
-        logger.info('Preparing to delete record. Record ID: {0}', this.recordId);
+        logger.debug('Preparing to delete record. Record ID: {0}', this.recordId);
         this.showDeleteConfirmation = true;
     }
 
@@ -338,13 +338,13 @@ export default class RflibCustomSettingsEditor extends LightningElement {
         const status = event.detail.status;
         this.showDeleteConfirmation = false;
         if (status === 'confirm') {
-            logger.info('User confirmed deletion.');
+            logger.debug('User confirmed deletion.');
             deleteCustomSettingRecord({
                 customSettingsApiName: this.customSettingsApiName,
                 recordId: this.recordId
             })
                 .then(() => {
-                    logger.info('Record deleted successfully. Record ID: {0}', this.recordId);
+                    logger.debug('Record deleted successfully. Record ID: {0}', this.recordId);
                     this.showToast('Success', 'Record deleted successfully.', 'success');
                     this.loadCustomSettings();
                 })
@@ -354,17 +354,17 @@ export default class RflibCustomSettingsEditor extends LightningElement {
                     this.showToast('Error', errorMessage, 'error');
                 });
         } else {
-            logger.info('User cancelled deletion.');
+            logger.debug('User cancelled deletion.');
         }
     }
 
     handleRefresh() {
-        logger.info('Handling refresh action.');
+        logger.debug('Handling refresh action.');
         this.loadCustomSettings();
     }
 
     showToast(title, message, variant) {
-        logger.info('Showing toast message. Title: {0}, Message: {1}, Variant: {2}', title, message, variant);
+        logger.debug('Showing toast message. Title: {0}, Message: {1}, Variant: {2}', title, message, variant);
         const evt = new ShowToastEvent({
             title: title,
             message: message,

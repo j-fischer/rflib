@@ -55,7 +55,7 @@ export default class RflibApexJobScheduler extends LightningElement {
         logger.debug('wiredJob() invoked', JSON.stringify(result));
         this.wiredJobResult = result;
         if (result.data) {
-            logger.info('Job details fetched successfully: {0}', JSON.stringify(result.data));
+            logger.debug('Job details fetched successfully: {0}', JSON.stringify(result.data));
             this.jobDetails = result.data;
             this.isScheduled = result.data.isScheduled;
             if (this.isScheduled) {
@@ -93,7 +93,7 @@ export default class RflibApexJobScheduler extends LightningElement {
         }
 
         this.isLoading = true;
-        logger.info(
+        logger.debug(
             'Scheduling job with details: {0}',
             JSON.stringify({
                 jobName: this.jobName,
@@ -104,7 +104,7 @@ export default class RflibApexJobScheduler extends LightningElement {
 
         scheduleJob({ jobName: this.jobName, className: this.className, cronExpression: this.cronExpressionInput })
             .then((result) => {
-                logger.info('Job scheduled successfully: {0}', JSON.stringify(result));
+                logger.debug('Job scheduled successfully: {0}', JSON.stringify(result));
                 this.showToast('Job scheduled successfully', result, 'success');
                 return refreshApex(this.wiredJobResult);
             })
@@ -124,7 +124,7 @@ export default class RflibApexJobScheduler extends LightningElement {
     handleRefresh() {
         return refreshApex(this.wiredJobResult)
             .then(() => {
-                logger.info('Data refreshed successfully.');
+                logger.debug('Data refreshed successfully.');
                 this.showToast('Data refreshed successfully', null, 'success');
             })
             .catch((error) => {
@@ -144,11 +144,11 @@ export default class RflibApexJobScheduler extends LightningElement {
     handleDeleteConfirmation(event) {
         if (event.detail.status === 'confirm') {
             this.isLoading = true;
-            logger.info('Deleting job: {0}', this.jobName);
+            logger.debug('Deleting job: {0}', this.jobName);
 
             deleteScheduledJob({ jobName: this.jobName })
                 .then(() => {
-                    logger.info('Job deleted successfully: {0}', this.jobName);
+                    logger.debug('Job deleted successfully: {0}', this.jobName);
                     this.showToast('Success', 'Job deleted successfully', 'success');
                     return refreshApex(this.wiredJobResult);
                 })

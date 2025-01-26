@@ -73,7 +73,7 @@ export default class RflibUserPermissionSetManager extends LightningElement {
         this._wireUserPermissionResult = wireResult;
         const { data, error } = wireResult;
         if (data) {
-            logger.info('Loaded user permission set for alias "{0}": {1}', this.userAlias, JSON.stringify(data));
+            logger.debug('Loaded user permission set for alias "{0}": {1}', this.userAlias, JSON.stringify(data));
             this.userPermissionSets = data;
         } else if (error) {
             logger.error('Failed to load user permission set: ' + JSON.stringify(error));
@@ -84,7 +84,7 @@ export default class RflibUserPermissionSetManager extends LightningElement {
     @wire(getAllPermissionSets)
     wiredAllPermissionSets({ error, data }) {
         if (data) {
-            logger.info('Loaded all permission sets: ' + JSON.stringify(data));
+            logger.debug('Loaded all permission sets: ' + JSON.stringify(data));
             this.permissionSetOptions = data.map((ps) => ({ label: ps.Label + ' (' + ps.Name + ')', value: ps.Id }));
         } else if (error) {
             logger.error('Failed to load all permission sets: ' + JSON.stringify(error));
