@@ -159,15 +159,25 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     disconnectedCallback() {
+        this.unsubscribeConnection();
+    }
+
+    unsubscribeConnection() {
         const _this = this;
-        if (_this.subscription) {
-            logger.debug('disconnecting current connection: ' + _this.currentConnectionMode.value);
-            return unsubscribe(_this.subscription, (response) => {
-                logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
-                _this.subscription = null;
-            });
-        }
-        return Promise.resolve();
+
+        return new Promise((resolve) => {
+            if (_this.subscription) {
+                logger.debug('Unsubscribing current connection: ' + _this.currentConnectionMode.value);
+                unsubscribe(_this.subscription, (response) => {
+                    logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
+                    _this.subscription = null;
+                    resolve();
+                });
+            } else {
+                logger.debug('No current subscription');
+                resolve();
+            }
+        });
     }
 
     changeConnectionMode(event) {
@@ -179,8 +189,8 @@ export default class LogEventMonitor extends LightningElement {
             _this.currentConnectionMode.value
         );
 
-        if (newConnectionMode > 0) {
-            _this.disconnectedCallback();
+        if (newConnectionMode >= 0) {
+            _this.unsubscribeConnection();
 
             _this.dispatchEvent(
                 new ShowToastEvent({
@@ -189,6 +199,12 @@ export default class LogEventMonitor extends LightningElement {
                     variant: 'warn'
                 })
             );
+
+            if (newConnectionMode === CONNECTION_MODE.DISCONNECTED.value) {
+                logger.debug('Disconnecting from event channel; no further action required');
+                _this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
+                return;
+            }
 
             const args = {
                 startDate: this.startDate,
@@ -269,9 +285,7 @@ export default class LogEventMonitor extends LightningElement {
 
         if (this.subscription) {
             logger.debug('Unsubscribing from current subscription');
-            this.disconnectedCallback().then(() => {
-                connectToServer();
-            });
+            this.unsubscribeConnection().then(connectToServer);
         } else {
             logger.debug('No current subscription');
             connectToServer();
