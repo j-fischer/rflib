@@ -57,6 +57,7 @@ public inherited sharing class rflib_ApplicationEventArchiver implements Schedul
                 SELECT Id, Created_By_ID__c, Occurred_On__c, Event_Name__c, Related_Record_ID__c, Additional_Details__c
                 FROM rflib_Application_Event__c
                 WHERE Occurred_On__c < :threshold
+                LIMIT :rflib_GlobalSettings.archiveAppEventQueryLimitOrDefault
             ];
 
             APPLICATION_EVENT_SERVICE.archiveEvents(applicationEvents);

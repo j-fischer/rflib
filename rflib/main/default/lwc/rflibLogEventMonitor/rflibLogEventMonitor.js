@@ -29,7 +29,7 @@
 import { LightningElement, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
-import { subscribe, unsubscribe, onError, setDebugFlag } from 'lightning/empApi';
+import { subscribe, unsubscribe, onError, setDebugFlag, isEmpEnabled } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
 
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
@@ -79,8 +79,6 @@ export default class LogEventMonitor extends LightningElement {
 
     subscription = null;
 
-    messageCallback = null;
-
     get isArchiveMode() {
         return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
     }
@@ -120,7 +118,9 @@ export default class LogEventMonitor extends LightningElement {
     connectedCallback() {
         let _this = this;
 
-        this.messageCallback = function (msg) {
+        this.registerErrorListener();
+
+        const messageCallback = function (msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
             _this.numTotalRecords = _this.capturedEvents.length;
@@ -132,24 +132,52 @@ export default class LogEventMonitor extends LightningElement {
             });
         }
 
-        subscribe(CHANNEL, this.currentConnectionMode.value, this.messageCallback).then(() => {
-            _this.createSubscriptionResponseHandler(this);
-            const evt = new ShowToastEvent({
-                title: 'Connection Mode Changed',
-                message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
-                variant: 'success'
+        isEmpEnabled()
+            .then((result) => {
+                logger.debug('isEmpEnabled? ' + result);
+                if (result === false) {
+                    const evt = new ShowToastEvent({
+                        title: 'EMP API not enabled',
+                        message: 'Log Monitor will not work without EMP API enabled.',
+                        variant: 'error'
+                    });
+                    _this.dispatchEvent(evt);
+                }
+
+                return subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback);
+            })
+            .then((response) => {
+                logger.debug('Successfully subscribed to: ' + response.channel);
+                _this.subscription = response;
+                const evt = new ShowToastEvent({
+                    title: 'Connection Mode Changed',
+                    message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
+                    variant: 'success'
+                });
+                _this.dispatchEvent(evt);
             });
-            _this.dispatchEvent(evt);
-        });
     }
 
     disconnectedCallback() {
-        if (this.subscription) {
-            unsubscribe(this.subscription, () => {
-                logger.debug('unsubscribe() successful');
-                this.subscription = null;
-            });
-        }
+        this.unsubscribeConnection();
+    }
+
+    unsubscribeConnection() {
+        const _this = this;
+
+        return new Promise((resolve) => {
+            if (_this.subscription) {
+                logger.debug('Unsubscribing current connection: ' + _this.currentConnectionMode.value);
+                unsubscribe(_this.subscription, (response) => {
+                    logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
+                    _this.subscription = null;
+                    resolve();
+                });
+            } else {
+                logger.debug('No current subscription');
+                resolve();
+            }
+        });
     }
 
     changeConnectionMode(event) {
@@ -161,8 +189,8 @@ export default class LogEventMonitor extends LightningElement {
             _this.currentConnectionMode.value
         );
 
-        if (newConnectionMode > 0) {
-            _this.disconnectedCallback();
+        if (newConnectionMode >= 0) {
+            _this.unsubscribeConnection();
 
             _this.dispatchEvent(
                 new ShowToastEvent({
@@ -171,6 +199,12 @@ export default class LogEventMonitor extends LightningElement {
                     variant: 'warn'
                 })
             );
+
+            if (newConnectionMode === CONNECTION_MODE.DISCONNECTED.value) {
+                logger.debug('Disconnecting from event channel; no further action required');
+                _this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
+                return;
+            }
 
             const args = {
                 startDate: this.startDate,
@@ -219,9 +253,17 @@ export default class LogEventMonitor extends LightningElement {
                     _this.clearLogs();
                 }
 
+                const messageCallback = function (msg) {
+                    logger.debug('New message received: ' + JSON.stringify(msg));
+                    _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
+                    _this.numTotalRecords = _this.capturedEvents.length;
+                };
+
                 logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
-                subscribe(CHANNEL, _this.currentConnectionMode.value, _this.messageCallback).then(() => {
-                    _this.createSubscriptionResponseHandler(_this);
+                subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback).then((response) => {
+                    logger.debug('Successfully subscribed to: ' + response.channel);
+                    _this.subscription = response;
+
                     const evt = new ShowToastEvent({
                         title: 'Connection Mode Changed',
                         message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
@@ -242,13 +284,10 @@ export default class LogEventMonitor extends LightningElement {
         };
 
         if (this.subscription) {
-            unsubscribe(this.subscription, () => {
-                logger.debug('unsubscribe() successful');
-                this.subscription = null;
-
-                connectToServer();
-            });
+            logger.debug('Unsubscribing from current subscription');
+            this.unsubscribeConnection().then(connectToServer);
         } else {
+            logger.debug('No current subscription');
             connectToServer();
         }
     }
@@ -331,13 +370,6 @@ export default class LogEventMonitor extends LightningElement {
                 });
                 this.dispatchEvent(evt);
             });
-    }
-
-    createSubscriptionResponseHandler(component) {
-        return function (response) {
-            logger.debug('Successfully subscribed to: ' + response.channel);
-            component.subscription = response;
-        };
     }
 
     registerErrorListener() {

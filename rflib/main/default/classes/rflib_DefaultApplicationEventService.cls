@@ -119,13 +119,12 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
     public void archiveEvents(List<rflib_Application_Event__c> events) {
         LOGGER.debug('archiveEvents({0})', new Object[] { events });
         
-        List<rflib_Application_Event_Archive__b> archivedRecords = new List<rflib_Application_Event_Archive__b>();
-        
         if (events.isEmpty()) {
             LOGGER.debug('No events found, cancelling');
             return;
         }
-
+        
+        List<rflib_Application_Event_Archive__b> archivedRecords = new List<rflib_Application_Event_Archive__b>();
         for (rflib_Application_Event__c evt : events) {
             archivedRecords.add(convert(evt));
         }

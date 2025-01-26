@@ -56,17 +56,17 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     columns = [];
 
     connectedCallback() {
-        logger.info('Component initialized with groupApiName: {0}', this.groupApiName);
+        logger.debug('Component initialized with groupApiName: {0}', this.groupApiName);
         this.checkUserPermissions().finally(this.loadGroupMembers());
     }
 
     checkUserPermissions() {
-        logger.info('Checking if the user can modify custom settings.');
+        logger.debug('Checking if the user can modify custom settings.');
         return canUserModifyGroupMemberships()
             .then((result) => {
                 this.canModifyGroups = result;
                 this.columns = this.createColumns();
-                logger.info('User permission check result: {0}', result);
+                logger.debug('User permission check result: {0}', result);
             })
             .catch((error) => {
                 logger.error('Error occurred while checking user permissions: {0}', JSON.stringify(error));
@@ -75,10 +75,10 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     }
 
     loadGroupMembers() {
-        logger.info('Loading group members for groupApiName: {0}', this.groupApiName);
+        logger.debug('Loading group members for groupApiName: {0}', this.groupApiName);
         getGroupMembers({ groupApiName: this.groupApiName })
             .then((data) => {
-                logger.info('Group members retrieved successfully: {0}', JSON.stringify(data));
+                logger.debug('Group members retrieved successfully: {0}', JSON.stringify(data));
                 this.groupMembers = data;
             })
             .catch((error) => {
@@ -91,7 +91,7 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     }
 
     createColumns() {
-        logger.info('addColumnActionsIfApplicable() invoked: canModifyGroups=' + this.canModifyGroups);
+        logger.debug('addColumnActionsIfApplicable() invoked: canModifyGroups=' + this.canModifyGroups);
         const cols = [
             {
                 label: 'Name',
@@ -121,18 +121,18 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
         this.selectedUserId = event.detail.recordId;
         if (this.selectedUserId) {
             this.isAddButtonDisabled = false;
-            logger.info('User selected for addition: {0}', this.selectedUserId);
+            logger.debug('User selected for addition: {0}', this.selectedUserId);
         } else {
             this.isAddButtonDisabled = true;
-            logger.info('No user selected.');
+            logger.debug('No user selected.');
         }
     }
 
     handleAddUser() {
-        logger.info('Adding user to group:', this.selectedUserId);
+        logger.debug('Adding user to group:', this.selectedUserId);
         addUserToGroup({ groupApiName: this.groupApiName, userId: this.selectedUserId })
             .then(() => {
-                logger.info('User added to group successfully: {0}', this.selectedUserId);
+                logger.debug('User added to group successfully: {0}', this.selectedUserId);
                 this.showToast('Success', 'User added to the group.', 'success');
                 this.selectedUserId = null;
                 this.isAddButtonDisabled = true;
@@ -147,7 +147,7 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     handleRowAction(event) {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
-        logger.info("Row action '{0}' triggered for user: {1}", actionName, row.Id);
+        logger.debug("Row action '{0}' triggered for user: {1}", actionName, row.Id);
         if (actionName === 'remove') {
             this.userToRemoveId = row.Id;
             this.showDeleteConfirmation = true;
@@ -156,7 +156,7 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
 
     handleModalAction(event) {
         const action = event.detail.status;
-        logger.info(`Modal action received: ${action}`);
+        logger.debug(`Modal action received: ${action}`);
         if (action === 'confirm') {
             this.confirmDelete();
         }
@@ -165,10 +165,10 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     }
 
     confirmDelete() {
-        logger.info('Removing user from group: {0}', this.userToRemoveId);
+        logger.debug('Removing user from group: {0}', this.userToRemoveId);
         removeUserFromGroup({ groupApiName: this.groupApiName, userId: this.userToRemoveId })
             .then(() => {
-                logger.info('User removed from group successfully: {0}', this.userToRemoveId);
+                logger.debug('User removed from group successfully: {0}', this.userToRemoveId);
                 this.showToast('Success', 'User removed from the group.', 'success');
                 this.loadGroupMembers();
             })
@@ -179,7 +179,7 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
     }
 
     showToast(title, message, variant) {
-        logger.info(`Showing toast - Title: ${title}, Message: ${message}, Variant: ${variant}`);
+        logger.debug(`Showing toast - Title: ${title}, Message: ${message}, Variant: ${variant}`);
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 }

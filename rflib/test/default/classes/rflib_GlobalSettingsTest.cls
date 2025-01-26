@@ -126,6 +126,18 @@ private class rflib_GlobalSettingsTest {
     }
 
     @IsTest
+    static void testArchiveAppEventQueryLimit() {
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Archive_App_Event_Query_Limit',
+            rflib_GlobalSettings.ARCHIVE_APP_EVENT_QUERY_LIMIT_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.archiveAppEventQueryLimitOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testUseRestQueryModeForPermissionRetrieval() {
         Boolean expectedValue = getConfiguredBooleanValueOrDefault(
             'Permissions_Explorer_REST_API_Enabled',

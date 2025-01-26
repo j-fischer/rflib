@@ -41,6 +41,9 @@ public class rflib_GlobalSettings {
     private static final Integer ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE = 50000;
     
     @TestVisible
+    private static final Integer ARCHIVE_APP_EVENT_QUERY_LIMIT_DEFAULT_VALUE = 10000;
+    
+    @TestVisible
     private static final Boolean PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE = false;
     
     @TestVisible
@@ -78,6 +81,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Archive_Log_Query_Limit');
             return String.isBlank(val) ? ARCHIVE_LOG_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer archiveAppEventQueryLimitOrDefault {
+        get {
+            String val = getSetting('Archive_App_Event_Query_Limit');
+            return String.isBlank(val) ? ARCHIVE_APP_EVENT_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 
