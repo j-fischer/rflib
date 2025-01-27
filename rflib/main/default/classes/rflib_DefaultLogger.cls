@@ -53,6 +53,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
     @TestVisible private Integer logCacheSize = 100;
     @TestVisible private Boolean isLogMaskingEnabled = false;
+    @TestVisible private Boolean isMonitoredContext = false;
 
     @TestVisible private rflib_LogLevel generalLogLevel = rflib_LogLevel.DEBUG;
     @TestVisible private rflib_LogLevel systemDebugLevel = rflib_LogLevel.DEBUG;
@@ -241,6 +242,20 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             : rflib_LogLevel.WARN;
     }
 
+    public void setMonitoredContexts(String contextsToMonitor) {
+        isMonitoredContext = false;
+        if (String.isBlank(contextsToMonitor)) {
+            return;
+        }
+    
+        for (String monitoredContext : contextsToMonitor.split(',')) {
+            if (context.toLowerCase().equals(monitoredContext.trim().toLowerCase())) {
+                isMonitoredContext = true;
+                return;
+            }
+        }
+    }
+
     public void setPlatformInfo(String platformInfo) {
         PLATFORM_INFO = platformInfo;
     }
@@ -426,7 +441,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
         logMessages.add(messageToLog);
 
-        if (reportingLogLevel.encompasses(logLevel)) {
+        if (reportingLogLevel.encompasses(logLevel) || (isMonitoredContext && rflib_LogLevel.INFO.encompasses(logLevel))) {
             reportLogs(logLevel);
         }
     }

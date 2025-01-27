@@ -165,6 +165,10 @@ public with sharing class rflib_LoggerUtil {
             logger.setLogAggregationLogLevel(rflib_LogLevel.fromString(settings.Log_Aggregation_Log_Level__c));
         }
 
+        if (String.isNotBlank(settings.Apex_Contexts_to_Monitor__c)) {
+            logger.setMonitoredContexts(settings.Apex_Contexts_to_Monitor__c);
+        }
+
         logger.setLogMaskingState(settings.Enable_Log_Masking__c);
     }
 

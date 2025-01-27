@@ -123,7 +123,8 @@ private class rflib_LoggerUtilTest {
             Flush_Log_Cache_Level__c = 'INFO',
             General_Log_Level__c = 'INFO',
             Org_Wide_Email_Sender_Address__c = 'foo@email.com',
-            Batched_Log_Event_Reporting_Level__c = 'INFO'
+            Batched_Log_Event_Reporting_Level__c = 'INFO',
+            Apex_Contexts_to_Monitor__c = 'logger'
         );
         
         Test.startTest();
@@ -139,6 +140,7 @@ private class rflib_LoggerUtilTest {
         
         Assert.areEqual(50, logger.logCacheSize);
         Assert.areEqual(true, logger.isLogMaskingEnabled);
+        Assert.areEqual(true, logger.isMonitoredContext);
     }
 
     @IsTest

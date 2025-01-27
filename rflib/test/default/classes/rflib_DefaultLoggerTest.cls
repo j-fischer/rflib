@@ -681,6 +681,54 @@ public class rflib_DefaultLoggerTest {
         Test.stopTest();
     }
 
+    @isTest
+    public static void testContextMonitoring_DefaultOff() {
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+        rflib_DefaultLogger logger = (rflib_DefaultLogger) loggerFactory.createLogger('testContextMonitoring_DefaultOff');
+
+        System.assert(logger.isMonitoredContext == false);
+
+        logger.setGeneralLogLevel(rflib_LogLevel.DEBUG);
+        logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+
+        logger.warn('This statement should not be logged');
+        System.assert(loggerFactory.eventCapture.eventHasNotBeenPublished());
+    }
+
+    @isTest
+    public static void testContextMonitoring_InfoEventSentWhenMonitored() {
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+        rflib_Logger logger = loggerFactory.createLogger('testContextMonitoring_InfoEvent');
+
+        logger.setGeneralLogLevel(rflib_LogLevel.DEBUG);
+        logger.setReportingLogLevel(rflib_LogLevel.ERROR);
+        logger.setMonitoredContexts('someContext, testContextMonitoring_InfoEvent, another_context');
+
+
+        logger.info('This statement should be logged');
+        System.assert(loggerFactory.eventCapture.eventHasBeenPublished());
+
+        System.assert(loggerFactory.eventCapture.containsInAnyMessage('This statement should be logged'));
+        System.assert(loggerFactory.eventCapture.doesNotContainInAnyMessage('This statement should NOT be logged'));
+    }
+
+    @isTest
+    public static void testContextMonitoring_NullValue() {
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+        rflib_DefaultLogger logger = (rflib_DefaultLogger) loggerFactory.createLogger('testContextMonitoring_NullValue');
+
+        System.assert(logger.isMonitoredContext == false);
+
+        logger.setMonitoredContexts('testContextMonitoring_NullValue');
+        System.assert(logger.isMonitoredContext == true);
+
+        logger.setMonitoredContexts(null);
+        System.assert(logger.isMonitoredContext == false);
+    }
+
     private static void createLogStatements(rflib_MockLoggerFactory loggerFactory, rflib_Logger logger) {
         logger.trace('trace statement to ignore');
         logger.info('first info statement');

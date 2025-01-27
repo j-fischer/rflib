@@ -43,6 +43,7 @@ public class rflib_MockLogger implements rflib_Logger {
     public Boolean logsPrinted = false;
     public Boolean logEventsPublished = false;
     public Boolean batchedEventsPublished = false;
+    public Boolean isMonitoredContext = false;
 
     public final List<LogDetails> logDetails = new List<LogDetails>();
 
@@ -56,6 +57,10 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public void setLogAggregationLogLevel(rflib_LogLevel newLevel) {
         this.logAggregationLogLevel = newLevel;
+    }
+
+    public void setMonitoredContexts(String contextsToMonitor) {
+        this.isMonitoredContext = String.isNotBlank(contextsToMonitor);
     }
 
     public void setFlushLogCacheLevel(rflib_LogLevel newLevel) {

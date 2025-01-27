@@ -123,6 +123,15 @@ public interface rflib_Logger {
     * @param  newLevel The new log level to be used for observability. 
     */
   void setLogAggregationLogLevel(rflib_LogLevel newLevel);
+
+  /**
+    * Any context provided in this list will be monitored by the logger. This means that the logger will
+    * automatically create a rflib_Log_Event__c Platform Event for any log statement that is logged by
+    * this logger instance if the context matches one of the monitored contexts. The match will be case-insensitive.
+    *
+    * @param  contextsToMonitor Comma separated list of context names to monitor.
+    */
+  void setMonitoredContexts(String contextsToMonitor);
   
   /**
    * Override the platform information to be sent with any log event for this transaction. 

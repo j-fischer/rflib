@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Apex_Contexts_to_Monitor__c</fullName>
+    <description>Comma-separated list of Apex context names to monitor. Logs from these contexts with level INFO or higher will be published regardless of the Publishing Log Event Level.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Comma-separated list of Apex context names to monitor. Logs from these contexts with level INFO or higher will be published regardless of the Publishing Log Event Level.</inlineHelpText>
+    <label>Apex Contexts to Monitor</label>
+    <length>255</length>
+    <type>Text</type>
+</CustomField>
