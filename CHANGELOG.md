@@ -1,3 +1,12 @@
+### RFLIB 9.0.0
+
+Package ID: 04tKY000000xD5aYAE
+Package Alias: RFLIB@9.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xD5aYAE
+
+- [PR #100](https://github.com/j-fischer/rflib/pull/100) Fixed issues with Log Monitor's empAPI connection handling ([Issue 99](https://github.com/j-fischer/rflib/issues/99)).
+- Added new Logger Setting Apex Contects to Monitor which allows for a comma sparated list of context names to be provided that will always publish log messages of INFO level or higher.
+
 ### RFLIB 8.1.0
 
 Package ID: 04tKY000000xBvXYAU
