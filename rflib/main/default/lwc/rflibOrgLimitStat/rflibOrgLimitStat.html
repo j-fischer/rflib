@@ -8,7 +8,9 @@
             slot="actions"
             onclick={refresh}
         ></lightning-button-icon>
-        <p class="slds-p-horizontal_small">Using <b>{currentValue}</b> out of <b>{totalLimit}</b></p>
+        <p class="slds-p-horizontal_small slds-p-bottom_xx-small">
+            Using <b>{currentValue}</b> out of <b>{totalLimit}</b>
+        </p>
         <p class="slds-p-horizontal_small">
             <lightning-progress-bar variant="circular" value={limitProgression} size="large"></lightning-progress-bar>
         </p>
