@@ -93,10 +93,10 @@ private class rflib_LogArchiveControllerTest {
     }    
     
     @IsTest
-    private static void testDefaultLogArchiveQueryLocator_getOldestRecords() {
+    private static void testDefaultLogArchiveQueryLocator_getRecordsOlderThan() {
         // This test is for code coverage purposes only
         Test.startTest();
-        List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getOldestRecords();
+        List<rflib_Logs_Archive__b> result = new rflib_LogArchiveController.DefaultLogArchiveQueryLocator().getRecordsOlderThan(Datetime.now());
         System.assertNotEquals(null, result);
         Test.stopTest();
     }   
@@ -128,7 +128,7 @@ private class rflib_LogArchiveControllerTest {
             return result;
         }
 
-        public List<rflib_Logs_Archive__b> getOldestRecords() {
+        public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
             if (ex != null) {
                 throw ex;
             }
