@@ -42,7 +42,6 @@ const SEARCH_FIELDS = {
 export default class RflibLogEventList extends LightningElement {
     @api pageSize;
     @track _currentPage = 1; // Changed to internal tracked property
-    @api permissionRecords;
 
     @track allRecords = [];
     @track filteredRecordCount;
@@ -284,10 +283,7 @@ export default class RflibLogEventList extends LightningElement {
     set currentPage(value) {
         this._currentPage = value;
         this.currentPageIndex = value - 1;
-        if (this.isConnected) {
-            // Only refresh if component is connected
-            this.refreshEventList();
-        }
+        this.refreshEventList();
     }
 
     handleLogSelected(event) {
