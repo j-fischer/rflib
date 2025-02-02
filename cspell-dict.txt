@@ -88,3 +88,4 @@ slds
 servlet
 isdtp
 René
+Batchable
