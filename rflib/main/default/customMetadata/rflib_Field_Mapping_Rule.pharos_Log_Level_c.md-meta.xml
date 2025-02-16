@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>pharos__Log_Level__c</label>
+    <protected>false</protected>
+    <values>
+        <field>Source_Field__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Target_Field__c</field>
+        <value xsi:type="xsd:string">Log_Level__c</value>
+    </values>
+    <values>
+        <field>Target_Object__c</field>
+        <value xsi:type="xsd:string">pharos_Log__c</value>
+    </values>
+    <values>
+        <field>Transformation_Formula__c</field>
+        <value xsi:type="xsd:string">CASE(
+    UPPER(Log_Level__c),
+    &quot;FATAL&quot;, &quot;ERROR&quot;,
+    &quot;ERROR&quot;, &quot;ERROR&quot;,
+    &quot;WARN&quot;, &quot;WARNING&quot;,
+    &quot;INFO&quot;, &quot;INFO&quot;,
+    &quot;DEBUG&quot;, &quot;DEBUG&quot;,
+    &quot;TRACE&quot;, &quot;FINE&quot;,
+    &quot;NONE&quot;, &quot;ERROR&quot;,
+    &quot;ERROR&quot;</value>
+    </values>
+</CustomMetadata>

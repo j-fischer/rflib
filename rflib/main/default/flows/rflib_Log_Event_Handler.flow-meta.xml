@@ -9,7 +9,7 @@
         <actionName>rflib_ArchiveLogAction</actionName>
         <actionType>apex</actionType>
         <connector>
-            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+            <targetReference>Log_to_Pharos</targetReference>
         </connector>
         <faultConnector>
             <isGoTo>true</isGoTo>
@@ -23,7 +23,7 @@
             </value>
         </inputParameters>
         <nameSegment>rflib_ArchiveLogAction</nameSegment>
-        <versionSegment>1</versionSegment>
+        <offset>0</offset>
     </actionCalls>
     <actionCalls>
         <description>Sends the Log Event to a remote HTTP endpoint, i.e. AWS API Gateway. 
@@ -49,14 +49,39 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
             </value>
         </inputParameters>
         <nameSegment>rflib_HttpCalloutLogAction</nameSegment>
-        <versionSegment>1</versionSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
+        <description>If Pharos is installed in the org, log events can be published to the Pharos application for enhanced diagnostics and workflows.</description>
+        <name>Log_to_Pharos</name>
+        <label>Log to Pharos</label>
+        <locationX>176</locationX>
+        <locationY>386</locationY>
+        <actionName>rflib_PharosLogAction</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+        </connector>
+        <faultConnector>
+            <isGoTo>true</isGoTo>
+            <targetReference>rflib_Send_Log_Event_Emails</targetReference>
+        </faultConnector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>logEvents</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_PharosLogAction</nameSegment>
+        <offset>0</offset>
     </actionCalls>
     <actionCalls>
         <description>Sends out the log event to the Apex Exception Email recipient list if the Log Event fulfills the condition configured in the Logger Settings</description>
         <name>rflib_Send_Log_Event_Emails</name>
         <label>Send Log Event Emails</label>
         <locationX>176</locationX>
-        <locationY>386</locationY>
+        <locationY>494</locationY>
         <actionName>rflib_SendLogEventEmailAction</actionName>
         <actionType>apex</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
@@ -67,7 +92,7 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
             </value>
         </inputParameters>
         <nameSegment>rflib_SendLogEventEmailAction</nameSegment>
-        <versionSegment>1</versionSegment>
+        <offset>0</offset>
     </actionCalls>
     <apiVersion>62.0</apiVersion>
     <description>Flow to execute when an RFLIB Log Event has been dispatched. The handler currently invokes the Send Log Event Email action, but can be extended to, for example, persist log information in a Custom Object.</description>
