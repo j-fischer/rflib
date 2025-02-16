@@ -3,8 +3,8 @@
     <label>pharos__Log_Level__c</label>
     <protected>false</protected>
     <values>
-        <field>Source_Field__c</field>
-        <value xsi:nil="true"/>
+        <field>Simple_Field_Copy__c</field>
+        <value xsi:type="xsd:boolean">false</value>
     </values>
     <values>
         <field>Target_Field__c</field>
@@ -24,7 +24,6 @@
     &quot;INFO&quot;, &quot;INFO&quot;,
     &quot;DEBUG&quot;, &quot;DEBUG&quot;,
     &quot;TRACE&quot;, &quot;FINE&quot;,
-    &quot;NONE&quot;, &quot;ERROR&quot;,
     &quot;ERROR&quot;</value>
     </values>
 </CustomMetadata>
