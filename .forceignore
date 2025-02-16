@@ -30,3 +30,7 @@ package-lock.json
 **/tsconfig.json
 
 **/*.ts
+
+# PHAROS
+rflib\main\default\emailservices\ErrorEmailHandler.xml-meta.xml
+rflib\main\default\PlatformEventSubscriberConfigs\PharosOrderEventTriggerConfig.platformEventSubscriberConfig-meta.xml
