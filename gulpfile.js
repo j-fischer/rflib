@@ -506,7 +506,7 @@ gulp.task(
 );
 
 gulp.task(
-    'shell-force-install-pharos-tritan',
+    'shell-force-install-pharos-triton',
     shellTask(function () {
         return `sf package install --package 04tbm0000005QbN -o ${config.alias} -w 10`;
     })
@@ -647,6 +647,16 @@ gulp.task(
         function installOmniStudio(done) {
             if (process.argv.includes('--omni')) {
                 gulp.series('shell-force-install-omnistudio')(done);
+            } else {
+                done();
+            }
+        },
+        function installOmniStudio(done) {
+            if (process.argv.includes('--pharos')) {
+                gulp.series(
+                    'shell-force-install-pharos', 
+                    'shell-force-install-pharos-triton'
+                )(done);
             } else {
                 done();
             }
