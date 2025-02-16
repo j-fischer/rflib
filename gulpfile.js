@@ -506,6 +506,13 @@ gulp.task(
 );
 
 gulp.task(
+    'shell-force-install-pharos-tritan',
+    shellTask(function () {
+        return `sf package install --package 04tbm0000005QbN -o ${config.alias} -w 10`;
+    })
+);
+
+gulp.task(
     'shell-force-install-omnistudio',
     shellTask(function () {
         return `sf package install --package 04t4W000000YWaz -o ${config.alias} -w 10 --no-prompt && sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o ${config.alias} && sf org assign permset --name OmniStudioUser --name BRERuntime -o ${config.alias}`;
