@@ -131,7 +131,7 @@ RFLIB log messages for more details.
 
 See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md) for versions, install links and package IDs.
 
-## Third party sources
+## Third Party Sources
 
 - Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
 - Thanks to the Beyond The Cloud team for their SOQL library, which is licensed under the MIT license: https://github.com/beyond-the-cloud-dev/soql-lib/blob/main/LICENSE)
