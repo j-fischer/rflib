@@ -171,7 +171,7 @@ private class rflib_LogArchiveControllerTest {
             return result;
         }
 
-        public List<rflib_Logs_Archive__b> getOldestRecords() {
+        public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
             if (ex != null) {
                 throw ex;
             }

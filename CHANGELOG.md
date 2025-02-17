@@ -1,3 +1,12 @@
+### RFLIB 9.0.1
+
+Package ID: 04tKY0000011MDJYA2
+Package Alias: RFLIB@9.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000011MDJYA2
+
+- [Issue #101] (https://github.com/j-fischer/rflib/issues/101) Fixed regression introduced in version 8.0 that prevented the page navigation from switching pages.
+- Org Limit Stat Component: Fixed progressbar not displaying the proper state based on the limits retrieved from the server. Also improved UI.
+
 ### RFLIB 9.0.0
 
 Package ID: 04tKY000000xD5aYAE

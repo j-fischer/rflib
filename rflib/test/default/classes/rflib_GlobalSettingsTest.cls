@@ -114,6 +114,18 @@ private class rflib_GlobalSettingsTest {
     }
 
     @IsTest
+    static void testDaysToRetainArchivedLogsOrDefault() {
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Log_Archive_Retain_X_Days',
+            rflib_GlobalSettings.LOG_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testArchiveLogQueryLimit() {
         Integer expectedValue = getConfiguredIntegerValueOrDefault(
             'Archive_Log_Query_Limit',

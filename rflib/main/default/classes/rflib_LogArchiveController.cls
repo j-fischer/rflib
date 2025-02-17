@@ -57,13 +57,21 @@ public with sharing class rflib_LogArchiveController {
     }
     
     @AuraEnabled
-    public static void clearArchive() {
+    public static Integer clearArchive() {
         try {
             LOGGER.debug('clearArchive()');
-            List<rflib_Logs_Archive__b> records = new List<rflib_Logs_Archive__b>();
-            records.addAll(QUERY_LOCATOR.getOldestRecords());
+
+            Datetime referenceDate = Datetime.now().addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
             
-            DML_EXECUTOR.deleteImmediate(records);
+            List<rflib_Logs_Archive__b> records = QUERY_LOCATOR.getRecordsOlderThan(referenceDate);
+            
+            List<Database.DeleteResult> result = DML_EXECUTOR.deleteImmediate(records);
+            
+            Integer count = 0;
+            for (Database.DeleteResult dr : result) {
+                if (dr.isSuccess()) count++;
+            }
+            return count;
         } catch (Exception ex) {
             LOGGER.error('Failed to clear rflib_Logs_Archive__b', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -72,7 +80,7 @@ public with sharing class rflib_LogArchiveController {
 
     public interface ILogArchiveQueryLocator {
         List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate);
-        List<rflib_Logs_Archive__b> getOldestRecords();
+        List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate);
     }
 
     public class ArchiveQueryResult {
@@ -107,13 +115,15 @@ public with sharing class rflib_LogArchiveController {
                 .toList();
         }
 
-        public List<rflib_Logs_Archive__b> getOldestRecords() {
+        public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
             return (List<rflib_Logs_Archive__b>) SOQL.of(rflib_Logs_Archive__b.SObjectType)
                 .with(rflib_Logs_Archive__b.CreatedDate__c)
                 .with(rflib_Logs_Archive__b.Context__c)
                 .with(rflib_Logs_Archive__b.Log_Level__c)
                 .with(rflib_Logs_Archive__b.Request_ID__c)
                 .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
+                .whereAre(SOQL.Filter
+                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate))
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
                 .mockId('DefaultLogArchiveQueryLocator.getOldestRecords')
                 .toList();
