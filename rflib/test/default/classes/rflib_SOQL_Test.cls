@@ -7,16 +7,16 @@
  * - CognitiveComplexity: It is a library and we tried to put everything into ONE class
  * - ApexDoc: Variable names are self-documented.
 **/
-@SuppressWarnings('PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.ApexDoc')
+@SuppressWarnings('PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.ApexDoc, PMD.ClassNamingConventions')
 @IsTest
-private class SOQL_Test {
+private class rflib_SOQL_Test {
     @SuppressWarnings('PMD.AvoidHardcodingId')
     private static final Id FAKE_ACCOUNT_ID = '0013V00000WNCwCQAX';
 
     @IsTest
     static void ofSObjectType() {
         // Test
-        String soql = SOQL.of(Account.SObjectType).toString();
+        String soql = rflib_SOQL.of(Account.SObjectType).toString();
 
         // Verify
         Assert.areEqual('SELECT Id FROM Account', soql);
@@ -25,7 +25,7 @@ private class SOQL_Test {
     @IsTest
     static void ofString() {
         // Test
-        String soql = SOQL.of('Account').toString();
+        String soql = rflib_SOQL.of('Account').toString();
 
         // Verify
         Assert.areEqual('SELECT Id FROM Account', soql);
@@ -34,7 +34,7 @@ private class SOQL_Test {
     @IsTest
     static void count() {
         // Test
-        String soql = SOQL.of(Account.SObjectType).count().toString();
+        String soql = rflib_SOQL.of(Account.SObjectType).count().toString();
 
         // Verify
         Assert.areEqual('SELECT COUNT() FROM Account', soql);
@@ -43,7 +43,7 @@ private class SOQL_Test {
     @IsTest
     static void countWithDefaultFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id, Account.Name)
             .count()
             .toString();
@@ -55,7 +55,7 @@ private class SOQL_Test {
     @IsTest
     static void countSObjectField() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .count(Opportunity.Id)
             .count(Opportunity.CampaignId)
             .toString();
@@ -67,7 +67,7 @@ private class SOQL_Test {
     @IsTest
     static void countSObjectFieldWithDefaultFields() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .with(Opportunity.LeadSource)
             .count(Opportunity.Id)
             .count(Opportunity.CampaignId)
@@ -80,7 +80,7 @@ private class SOQL_Test {
     @IsTest
     static void countWithAlias() {
         // Test
-        String soql = SOQL.of(Account.SObjectType).count(Account.Name, 'names').toString();
+        String soql = rflib_SOQL.of(Account.SObjectType).count(Account.Name, 'names').toString();
 
         // Verify
         Assert.areEqual('SELECT COUNT(Name) names FROM Account', soql);
@@ -89,7 +89,7 @@ private class SOQL_Test {
     @IsTest
     static void countRelated() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .count('Account', Account.Name)
             .toString();
 
@@ -100,7 +100,7 @@ private class SOQL_Test {
     @IsTest
     static void countRelatedWithAlias() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .count('Account', Account.Name, 'names')
             .toString();
 
@@ -111,7 +111,7 @@ private class SOQL_Test {
     @IsTest
     static void avg() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .with(Opportunity.CampaignId)
             .avg(Opportunity.Amount)
             .groupBy(Opportunity.CampaignId)
@@ -124,7 +124,7 @@ private class SOQL_Test {
     @IsTest
     static void avgWithAlias() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .with(Opportunity.CampaignId)
             .avg(Opportunity.Amount, 'amount')
             .groupBy(Opportunity.CampaignId)
@@ -137,7 +137,7 @@ private class SOQL_Test {
     @IsTest
     static void avgRelated() {
         // Test
-        String soql = SOQL.of(OpportunityLineItem.SObjectType)
+        String soql = rflib_SOQL.of(OpportunityLineItem.SObjectType)
             .avg('Opportunity', Opportunity.Amount)
             .toString();
 
@@ -148,7 +148,7 @@ private class SOQL_Test {
     @IsTest
     static void avgRelatedWithAlias() {
         // Test
-        String soql = SOQL.of(OpportunityLineItem.SObjectType)
+        String soql = rflib_SOQL.of(OpportunityLineItem.SObjectType)
             .avg('Opportunity', Opportunity.Amount, 'amount')
             .toString();
 
@@ -159,7 +159,7 @@ private class SOQL_Test {
     @IsTest
     static void countDistinct() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType).countDistinct(Lead.Company).toString();
+        String soql = rflib_SOQL.of(Lead.SObjectType).countDistinct(Lead.Company).toString();
 
         // Verify
         Assert.areEqual('SELECT COUNT_DISTINCT(Company) FROM Lead', soql);
@@ -168,7 +168,7 @@ private class SOQL_Test {
     @IsTest
     static void countDistinctWithAlias() {
         // Test
-        String soql = SOQL.of(CampaignMember.SObjectType)
+        String soql = rflib_SOQL.of(CampaignMember.SObjectType)
             .countDistinct('Lead', Lead.Company)
             .toString();
 
@@ -179,7 +179,7 @@ private class SOQL_Test {
     @IsTest
     static void countDistinctRelated() {
         // Test
-        String soql = SOQL.of(CampaignMember.SObjectType)
+        String soql = rflib_SOQL.of(CampaignMember.SObjectType)
             .countDistinct('Lead', Lead.Company, 'company')
             .toString();
 
@@ -190,7 +190,7 @@ private class SOQL_Test {
     @IsTest
     static void countDistinctRelatedWithAlias() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType).countDistinct(Lead.Company, 'company').toString();
+        String soql = rflib_SOQL.of(Lead.SObjectType).countDistinct(Lead.Company, 'company').toString();
 
         // Verify
         Assert.areEqual('SELECT COUNT_DISTINCT(Company) company FROM Lead', soql);
@@ -199,7 +199,7 @@ private class SOQL_Test {
     @IsTest
     static void min() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .with(Contact.FirstName, Contact.LastName)
             .min(Contact.CreatedDate)
             .groupBy(Contact.FirstName)
@@ -213,7 +213,7 @@ private class SOQL_Test {
     @IsTest
     static void minWithAlias() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .with(Contact.FirstName, Contact.LastName)
             .min(Contact.CreatedDate, 'createdDate')
             .groupBy(Contact.FirstName)
@@ -227,7 +227,7 @@ private class SOQL_Test {
     @IsTest
     static void minRelated() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .min('Account', Account.CreatedDate)
             .toString();
 
@@ -238,7 +238,7 @@ private class SOQL_Test {
     @IsTest
     static void minRelatedWithAlias() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .min('Account', Account.CreatedDate, 'createdDate')
             .toString();
 
@@ -249,7 +249,7 @@ private class SOQL_Test {
     @IsTest
     static void max() {
         // Test
-        String soql = SOQL.of(Campaign.SObjectType)
+        String soql = rflib_SOQL.of(Campaign.SObjectType)
             .with(Campaign.Name)
             .max(Campaign.BudgetedCost)
             .groupBy(Campaign.Name)
@@ -262,7 +262,7 @@ private class SOQL_Test {
     @IsTest
     static void maxWithAlias() {
         // Test
-        String soql = SOQL.of(Campaign.SObjectType)
+        String soql = rflib_SOQL.of(Campaign.SObjectType)
             .with(Campaign.Name)
             .max(Campaign.BudgetedCost, 'budgetedCost')
             .groupBy(Campaign.Name)
@@ -275,7 +275,7 @@ private class SOQL_Test {
     @IsTest
     static void maxRelated() {
         // Test
-        String soql = SOQL.of(CampaignMember.SObjectType)
+        String soql = rflib_SOQL.of(CampaignMember.SObjectType)
             .max('Campaign', Campaign.BudgetedCost)
             .toString();
 
@@ -286,7 +286,7 @@ private class SOQL_Test {
     @IsTest
     static void maxRelatedhAlias() {
         // Test
-        String soql = SOQL.of(CampaignMember.SObjectType)
+        String soql = rflib_SOQL.of(CampaignMember.SObjectType)
             .max('Campaign', Campaign.BudgetedCost, 'budgetedCost')
             .toString();
 
@@ -297,7 +297,7 @@ private class SOQL_Test {
     @IsTest
     static void sum() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType).sum(Opportunity.Amount).toString();
+        String soql = rflib_SOQL.of(Opportunity.SObjectType).sum(Opportunity.Amount).toString();
 
         // Verify
         Assert.areEqual('SELECT SUM(Amount) FROM Opportunity', soql);
@@ -306,7 +306,7 @@ private class SOQL_Test {
     @IsTest
     static void sumWithAlias() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType).sum(Opportunity.Amount, 'amount').toString();
+        String soql = rflib_SOQL.of(Opportunity.SObjectType).sum(Opportunity.Amount, 'amount').toString();
 
         // Verify
         Assert.areEqual('SELECT SUM(Amount) amount FROM Opportunity', soql);
@@ -315,7 +315,7 @@ private class SOQL_Test {
     @IsTest
     static void sumRelated() {
         // Test
-        String soql = SOQL.of(OpportunityLineItem.SObjectType)
+        String soql = rflib_SOQL.of(OpportunityLineItem.SObjectType)
             .sum('Opportunity', Opportunity.Amount)
             .toString();
 
@@ -326,7 +326,7 @@ private class SOQL_Test {
     @IsTest
     static void sumRelatedWithAlias() {
         // Test
-        String soql = SOQL.of(OpportunityLineItem.SObjectType)
+        String soql = rflib_SOQL.of(OpportunityLineItem.SObjectType)
             .sum('Opportunity', Opportunity.Amount, 'amount')
             .toString();
 
@@ -337,7 +337,7 @@ private class SOQL_Test {
     @IsTest
     static void grouping() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource, Lead.Rating)
             .grouping(Lead.LeadSource, 'grpLS')
             .grouping(Lead.Rating, 'grpRating')
@@ -353,7 +353,7 @@ private class SOQL_Test {
     @IsTest
     static void toLabelWithSObjectField() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.Company)
             .toLabel(Lead.Status)
             .toString();
@@ -365,7 +365,7 @@ private class SOQL_Test {
     @IsTest
     static void toLabelWithStringField() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.Company)
             .toLabel('Recordtype.Name')
             .toString();
@@ -377,7 +377,7 @@ private class SOQL_Test {
     @IsTest
     static void formatWithSObjectField() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .format(Opportunity.Amount)
             .toString();
 
@@ -388,7 +388,7 @@ private class SOQL_Test {
     @IsTest
     static void formatWithAlias() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .format(Opportunity.Amount, 'amt')
             .toString();
 
@@ -399,7 +399,7 @@ private class SOQL_Test {
     @IsTest
     static void withSObjectField() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
             .with(Account.BillingCity)
             .toString();
@@ -411,7 +411,7 @@ private class SOQL_Test {
     @IsTest
     static void withTwoSObjectFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .toString();
 
@@ -422,7 +422,7 @@ private class SOQL_Test {
     @IsTest
     static void withThreeSObjectFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id, Account.Name, Account.BillingCity)
             .toString();
 
@@ -433,7 +433,7 @@ private class SOQL_Test {
     @IsTest
     static void withFourSObjectFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id, Account.Name, Account.BillingCity, Account.AccountNumber)
             .toString();
 
@@ -444,7 +444,7 @@ private class SOQL_Test {
     @IsTest
     static void withFiveSObjectFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id, Account.Name, Account.BillingCity, Account.AccountNumber, Account.AccountSource)
             .toString();
 
@@ -455,7 +455,7 @@ private class SOQL_Test {
     @IsTest
     static void withListOfSObjectFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(new List<SObjectField>{
                 Account.Id,
                 Account.Name,
@@ -472,7 +472,7 @@ private class SOQL_Test {
     @IsTest
     static void withListOfStringFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(new List<String>{
                 'Id',
                 'Name',
@@ -489,7 +489,7 @@ private class SOQL_Test {
     @IsTest
     static void withStringFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with('Id, Name, BillingCity')
             .toString();
 
@@ -500,7 +500,7 @@ private class SOQL_Test {
     @IsTest
     static void withStringAggregationAndGroupingFields() {
         // Test
-        String soql = SOQL.of(Opportunity.SObjectType)
+        String soql = rflib_SOQL.of(Opportunity.SObjectType)
             .with('CampaignId campaign, AVG(Amount) amount')
             .groupBy(Opportunity.CampaignId)
             .toString();
@@ -512,7 +512,7 @@ private class SOQL_Test {
     @IsTest
     static void withFieldAlias() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, 'myAlias')
             .groupBy(Account.Name)
             .toString();
@@ -524,7 +524,7 @@ private class SOQL_Test {
     @IsTest
     static void withDuplicatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with('Id, Name, BillingCity')
             .with(Account.Id, Account.Name)
             .toString();
@@ -536,7 +536,7 @@ private class SOQL_Test {
     @IsTest
     static void withRelatedField() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', User.Name)
             .toString();
@@ -548,7 +548,7 @@ private class SOQL_Test {
     @IsTest
     static void withTwoRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', User.Id, User.Name)
             .toString();
@@ -560,7 +560,7 @@ private class SOQL_Test {
     @IsTest
     static void withThreeRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', User.Id, User.Name, User.Alias)
             .toString();
@@ -572,7 +572,7 @@ private class SOQL_Test {
     @IsTest
     static void withFourRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', User.Id, User.Name, User.Alias, User.City)
             .toString();
@@ -584,7 +584,7 @@ private class SOQL_Test {
     @IsTest
     static void withFiveRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', User.Id, User.Name, User.Alias, User.City, User.CompanyName)
             .toString();
@@ -596,7 +596,7 @@ private class SOQL_Test {
     @IsTest
     static void withRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
             .with('CreatedBy', new List<SObjectField>{
                 User.Id, User.Name
@@ -609,9 +609,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryField() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id)
             ).toString();
 
@@ -626,7 +626,7 @@ private class SOQL_Test {
 
          // Test
          try {
-            String soql = SOQL.of(Account.SObjectType)
+            String soql = rflib_SOQL.of(Account.SObjectType)
                 .withFieldSet('FieldSetName')
                 .toString();
          } catch(Exception e) {
@@ -640,9 +640,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryTwoFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
             ).toString();
 
@@ -653,9 +653,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryThreeFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name, Contact.AccountId)
             ).toString();
 
@@ -666,9 +666,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryFourFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name, Contact.AccountId, Contact.Email)
             ).toString();
 
@@ -679,9 +679,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryFiveFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name, Contact.AccountId, Contact.Email, Contact.Phone)
             ).toString();
 
@@ -692,9 +692,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(new List<SObjectField>{
                     Contact.Id, Contact.Name
                 })
@@ -707,9 +707,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryRelatedFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .with('CreatedBy', new List<SObjectField>{
                     User.Id, User.Name
@@ -723,11 +723,11 @@ private class SOQL_Test {
     @IsTest
     static void subQueryTwoLevels() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.LastName)
-                .with(SOQL.SubQuery.of('Assets').with(Asset.AssetLevel))
+                .with(rflib_SOQL.SubQuery.of('Assets').with(Asset.AssetLevel))
             )
             .toString();
 
@@ -738,12 +738,12 @@ private class SOQL_Test {
     @IsTest
     static void subQueryWhereFilterGroup() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
-                .whereAre(SOQL.FilterGroup
-                    .add(SOQL.Filter.with(Contact.LastName).equal('Doe'))
+                .whereAre(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(Contact.LastName).equal('Doe'))
                 )
             ).toString();
 
@@ -754,11 +754,11 @@ private class SOQL_Test {
     @IsTest
     static void subQueryWhereFilter() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
-                .whereAre(SOQL.Filter.with(Contact.LastName).equal('Doe'))
+                .whereAre(rflib_SOQL.Filter.with(Contact.LastName).equal('Doe'))
             ).toString();
 
         // Verify
@@ -768,9 +768,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryOrderBy() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .orderBy(Contact.Name)
                 .sortDesc()
@@ -784,9 +784,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryOrderByRelated() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .orderBy('CreatedBy', User.Name)
                 .sortDesc()
@@ -800,9 +800,9 @@ private class SOQL_Test {
     @IsTest
     static void subQuerySetLimit() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .setLimit(10)
             ).toString();
@@ -814,9 +814,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryOffset() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .offset(100)
             ).toString();
@@ -828,9 +828,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryForReference() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .forReference()
             ).toString();
@@ -842,9 +842,9 @@ private class SOQL_Test {
     @IsTest
     static void subQueryForView() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name)
-            .with(SOQL.SubQuery.of('Contacts')
+            .with(rflib_SOQL.SubQuery.of('Contacts')
                 .with(Contact.Id, Contact.Name)
                 .forView()
             ).toString();
@@ -861,23 +861,23 @@ private class SOQL_Test {
         Date toDate = Date.newInstance(2024, 1, 30);
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(
-                SOQL.SubQuery.of('Contacts')
+                rflib_SOQL.SubQuery.of('Contacts')
                     .with(Contact.Id)
-                    .whereAre(SOQL.FilterGroup
-                        .add(SOQL.Filter.with(Contact.CreatedDate).lessOrEqual(fromDate))
-                        .add(SOQL.Filter.with(Contact.CreatedDate).isNull())
-                        .add(SOQL.Filter.with(Contact.CreatedDate).greaterOrEqual(toDate))
+                    .whereAre(rflib_SOQL.FilterGroup
+                        .add(rflib_SOQL.Filter.with(Contact.CreatedDate).lessOrEqual(fromDate))
+                        .add(rflib_SOQL.Filter.with(Contact.CreatedDate).isNull())
+                        .add(rflib_SOQL.Filter.with(Contact.CreatedDate).greaterOrEqual(toDate))
                         .conditionLogic('1 AND (2 OR 3)')
                     )
             )
             .with(
-                SOQL.SubQuery.of('Opportunities')
+                rflib_SOQL.SubQuery.of('Opportunities')
                     .with(Opportunity.Id)
-                    .whereAre(SOQL.FilterGroup
-                        .add(SOQL.Filter.with(Opportunity.LeadSource).equal(leadSource))
-                        .add(SOQL.Filter.with(Contact.CreatedDate).equal(fromDate))
+                    .whereAre(rflib_SOQL.FilterGroup
+                        .add(rflib_SOQL.Filter.with(Opportunity.LeadSource).equal(leadSource))
+                        .add(rflib_SOQL.Filter.with(Contact.CreatedDate).equal(fromDate))
                     )
             )
             .setLimit(1);
@@ -899,7 +899,7 @@ private class SOQL_Test {
     @IsTest
     static void delegatedScope() {
         // Test
-        String soql = SOQL.of(Task.SObjectType)
+        String soql = rflib_SOQL.of(Task.SObjectType)
             .delegatedScope()
             .toString();
 
@@ -910,7 +910,7 @@ private class SOQL_Test {
     @IsTest
     static void mineScope() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .mineScope()
             .toString();
 
@@ -921,7 +921,7 @@ private class SOQL_Test {
     @IsTest
     static void mineAndMyGroupsScope() {
         // Test
-        String soql = SOQL.of(ProcessInstanceWorkItem.SObjectType)
+        String soql = rflib_SOQL.of(ProcessInstanceWorkItem.SObjectType)
             .mineAndMyGroupsScope()
             .toString();
 
@@ -932,7 +932,7 @@ private class SOQL_Test {
     @IsTest
     static void myTerritoryScope() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .myTerritoryScope()
             .toString();
 
@@ -943,7 +943,7 @@ private class SOQL_Test {
     @IsTest
     static void myTeamTerritoryScope() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .myTeamTerritoryScope()
             .toString();
 
@@ -954,7 +954,7 @@ private class SOQL_Test {
     @IsTest
     static void teamScope() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .teamScope()
             .toString();
 
@@ -965,8 +965,8 @@ private class SOQL_Test {
     @IsTest
     static void filterId() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.id().isNotNull());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.id().isNotNull());
 
         // Verify
         String soql = builder.toString();
@@ -979,8 +979,8 @@ private class SOQL_Test {
     @IsTest
     static void filterRecordType() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.recordType().isNotNull());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.recordType().isNotNull());
 
         // Verify
         String soql = builder.toString();
@@ -993,8 +993,8 @@ private class SOQL_Test {
     @IsTest
     static void filterName() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.name().isNotNull());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.name().isNotNull());
 
         // Verify
         String soql = builder.toString();
@@ -1007,8 +1007,8 @@ private class SOQL_Test {
     @IsTest
     static void filterWithRelatedField() {
         // Test
-        SOQL builder = SOQL.of(Contact.SObjectType)
-            .whereAre(SOQL.Filter.with('Account', Account.Name).equal('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Contact.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with('Account', Account.Name).equal('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1021,8 +1021,8 @@ private class SOQL_Test {
     @IsTest
     static void filterEqualString() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).equal('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).equal('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1035,8 +1035,8 @@ private class SOQL_Test {
     @IsTest
     static void filterNotEqualString() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notEqual('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notEqual('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1049,8 +1049,8 @@ private class SOQL_Test {
     @IsTest
     static void filterLessThan() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.NumberOfEmployees).lessThan(10));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.NumberOfEmployees).lessThan(10));
 
         // Verify
         String soql = builder.toString();
@@ -1063,8 +1063,8 @@ private class SOQL_Test {
     @IsTest
     static void filterGreaterThan() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.NumberOfEmployees).greaterThan(10));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.NumberOfEmployees).greaterThan(10));
 
         // Verify
         String soql = builder.toString();
@@ -1077,8 +1077,8 @@ private class SOQL_Test {
     @IsTest
     static void filterLessOrEqual() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.NumberOfEmployees).lessOrEqual(10));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.NumberOfEmployees).lessOrEqual(10));
 
         // Verify
         String soql = builder.toString();
@@ -1091,8 +1091,8 @@ private class SOQL_Test {
     @IsTest
     static void filterGreaterOrEqual() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.NumberOfEmployees).greaterOrEqual(10));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.NumberOfEmployees).greaterOrEqual(10));
 
         // Verify
         String soql = builder.toString();
@@ -1105,8 +1105,8 @@ private class SOQL_Test {
     @IsTest
     static void filterContains() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).contains('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).contains('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1119,8 +1119,8 @@ private class SOQL_Test {
     @IsTest
     static void filterContainsNull() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).contains(null));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).contains(null));
 
         // Verify
         String soql = builder.toString();
@@ -1133,8 +1133,8 @@ private class SOQL_Test {
     @IsTest
     static void filterNotContains() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notContains('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notContains('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1150,8 +1150,8 @@ private class SOQL_Test {
         List<String> names = new List<String>{ 'Acc', 'My' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).containsSome(names));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).containsSome(names));
 
         // Verify
         String soql = builder.toString();
@@ -1164,8 +1164,8 @@ private class SOQL_Test {
     @IsTest
     static void filterEndsWith() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).endsWith('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).endsWith('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1178,8 +1178,8 @@ private class SOQL_Test {
     @IsTest
     static void filterNotEndsWith() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notEndsWith('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notEndsWith('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1192,8 +1192,8 @@ private class SOQL_Test {
     @IsTest
     static void filterStartsWith() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).startsWith('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).startsWith('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1206,8 +1206,8 @@ private class SOQL_Test {
     @IsTest
     static void filterNotStartsWith() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notStartsWith('Test'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notStartsWith('Test'));
 
         // Verify
         String soql = builder.toString();
@@ -1220,8 +1220,8 @@ private class SOQL_Test {
     @IsTest
     static void filterCustomContains() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).contains('_', 'Test', '%'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).contains('_', 'Test', '%'));
 
         // Verify
         String soql = builder.toString();
@@ -1234,8 +1234,8 @@ private class SOQL_Test {
     @IsTest
     static void filterCustomNotContains() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notContains('_', 'Test', '%'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notContains('_', 'Test', '%'));
 
         // Verify
         String soql = builder.toString();
@@ -1251,8 +1251,8 @@ private class SOQL_Test {
         Set<String> names = new Set<String>{ 'Test 1', 'Test 2' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).isIn(names));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).isIn(names));
 
         // Verify
         String soql = builder.toString();
@@ -1268,8 +1268,8 @@ private class SOQL_Test {
         List<String> names = new List<String>{ 'Test 1', 'Test 2' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).isIn(names));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).isIn(names));
 
         // Verify
         String soql = builder.toString();
@@ -1285,8 +1285,8 @@ private class SOQL_Test {
         Set<String> names = new Set<String>{ 'Test 1', 'Test 2' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).notIn(names));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notIn(names));
 
         // Verify
         String soql = builder.toString();
@@ -1302,9 +1302,9 @@ private class SOQL_Test {
         List<String> names = new List<String>{ 'Test 1', 'Test 2' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Name, Account.BillingCity)
-            .whereAre(SOQL.Filter.with(Account.Name).notIn(names));
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).notIn(names));
 
         // Verify
         String soql = builder.toString();
@@ -1320,9 +1320,9 @@ private class SOQL_Test {
         List<String> ratings = new List<String>{ 'Hot', 'Warm' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id)
-            .whereAre(SOQL.Filter.with(Account.Rating).includesAll(ratings));
+            .whereAre(rflib_SOQL.Filter.with(Account.Rating).includesAll(ratings));
 
         // Verify
         String soql = builder.toString();
@@ -1335,9 +1335,9 @@ private class SOQL_Test {
         List<String> ratings = new List<String>{ 'Hot', 'Warm' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id)
-            .whereAre(SOQL.Filter.with(Account.Rating).includesSome(ratings));
+            .whereAre(rflib_SOQL.Filter.with(Account.Rating).includesSome(ratings));
 
         // Verify
         String soql = builder.toString();
@@ -1350,9 +1350,9 @@ private class SOQL_Test {
         List<String> ratings = new List<String>{ 'Hot', 'Warm' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id)
-            .whereAre(SOQL.Filter.with(Account.Rating).excludesAll(ratings));
+            .whereAre(rflib_SOQL.Filter.with(Account.Rating).excludesAll(ratings));
 
         // Verify
         String soql = builder.toString();
@@ -1365,9 +1365,9 @@ private class SOQL_Test {
         List<String> ratings = new List<String>{ 'Hot', 'Warm' };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id)
-            .whereAre(SOQL.Filter.with(Account.Rating).excludesSome(ratings));
+            .whereAre(rflib_SOQL.Filter.with(Account.Rating).excludesSome(ratings));
 
         // Verify
         String soql = builder.toString();
@@ -1377,8 +1377,8 @@ private class SOQL_Test {
     @IsTest
     static void filterIsNull() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).isNull());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).isNull());
 
         // Verify
         String soql = builder.toString();
@@ -1391,8 +1391,8 @@ private class SOQL_Test {
     @IsTest
     static void filterIsNotNull() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).isNotNull());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).isNotNull());
 
         // Verify
         String soql = builder.toString();
@@ -1405,8 +1405,8 @@ private class SOQL_Test {
     @IsTest
     static void filterIsTrue() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.IsDeleted).isTrue());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.IsDeleted).isTrue());
 
         // Verify
         String soql = builder.toString();
@@ -1419,8 +1419,8 @@ private class SOQL_Test {
     @IsTest
     static void filterIsFalse() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.IsDeleted).isFalse());
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.IsDeleted).isFalse());
 
         // Verify
         String soql = builder.toString();
@@ -1433,8 +1433,8 @@ private class SOQL_Test {
     @IsTest
     static void filterDateLiteral() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.CreatedDate).greaterThan('LAST_N_QUARTERS:2').asDateLiteral())
+        String soql = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.CreatedDate).greaterThan('LAST_N_QUARTERS:2').asDateLiteral())
             .toString();
 
         // Verify
@@ -1444,10 +1444,10 @@ private class SOQL_Test {
     @IsTest
     static void filtersGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
             );
 
         // Verify
@@ -1462,8 +1462,8 @@ private class SOQL_Test {
     @IsTest
     static void emptyFiltersGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup);
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup);
 
         // Verify
         String soql = builder.toString();
@@ -1473,13 +1473,13 @@ private class SOQL_Test {
     @IsTest
     static void dynamicFiltersGroup() {
         // Setup
-        SOQL.FilterGroup filterGroup = SOQL.FilterGroup;
+        rflib_SOQL.FilterGroup filterGroup = rflib_SOQL.FilterGroup;
 
-        filterGroup.add(SOQL.Filter.with(Account.Name).equal('Test'));
-        filterGroup.add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'));
+        filterGroup.add(rflib_SOQL.Filter.with(Account.Name).equal('Test'));
+        filterGroup.add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'));
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
             .whereAre(filterGroup);
 
         // Verify
@@ -1494,15 +1494,15 @@ private class SOQL_Test {
     @IsTest
     static void dynamicFiltersGroupOnSoqlInstance() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Industry).equal('IT'));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Industry).equal('IT'));
 
         Assert.areEqual('SELECT Id FROM Account WHERE Industry = :v1', builder.toString());
 
         builder.whereAre(
-            SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+            rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
         );
 
         // Verify
@@ -1517,18 +1517,18 @@ private class SOQL_Test {
     @IsTest
     static void multipleFilterGroups() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('1')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('2')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('3')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('4')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('5')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('6')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('7')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('8')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('9')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('10')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('11')));
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('1')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('2')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('3')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('4')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('5')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('6')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('7')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('8')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('9')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('10')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('11')));
 
         // Verify
         String soql = builder.toString();
@@ -1554,18 +1554,18 @@ private class SOQL_Test {
     @IsTest
     static void duplicatedConditionsInConditionOrder() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('1')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('2')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('3')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('4')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('5')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('6')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('7')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('8')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('9')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('10')))
-            .whereAre(SOQL.FilterGroup.add(SOQL.Filter.with(Account.Name).contains('11')))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('1')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('2')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('3')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('4')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('5')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('6')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('7')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('8')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('9')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('10')))
+            .whereAre(rflib_SOQL.FilterGroup.add(rflib_SOQL.Filter.with(Account.Name).contains('11')))
             .conditionLogic('(1 AND 2 AND 3 AND 4 AND 5 AND 5 AND 7 AND 8 AND 9 AND 10 AND 11) OR (11 AND 1 AND 10)');
 
         // Verify
@@ -1592,10 +1592,10 @@ private class SOQL_Test {
     @IsTest
     static void anyConditionMatchingForInnerGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
                 .anyConditionMatching()
             );
 
@@ -1611,9 +1611,9 @@ private class SOQL_Test {
     @IsTest
     static void anyConditionMatchingForMainGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).equal('Test'))
-            .whereAre(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+            .whereAre(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
             .anyConditionMatching();
 
         // Verify
@@ -1628,9 +1628,9 @@ private class SOQL_Test {
     @IsTest
     static void conditionLogicForMainGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Name).equal('Test'))
-            .whereAre(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+            .whereAre(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
             .conditionLogic('1 OR 2');
 
         // Verify
@@ -1645,13 +1645,13 @@ private class SOQL_Test {
     @IsTest
     static void nestedFiltersGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
-                .add(SOQL.FilterGroup
-                    .add(SOQL.Filter.with(Account.Name).equal('Test 2'))
-                    .add(SOQL.Filter.with(Account.BillingCity).equal('Warsaw'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+                .add(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(Account.Name).equal('Test 2'))
+                    .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Warsaw'))
                     .conditionLogic('1 OR 2')
                 )
             );
@@ -1670,12 +1670,12 @@ private class SOQL_Test {
     @IsTest
     static void innerJoinWithFilterGroup() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Id).isIn(
-                SOQL.InnerJoin.of(Contact.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Id).isIn(
+                rflib_SOQL.InnerJoin.of(Contact.SObjectType)
                     .with(Contact.AccountId)
-                    .whereAre(SOQL.FilterGroup
-                        .add(SOQL.Filter.with(Contact.Name).equal('My Contact'))
+                    .whereAre(rflib_SOQL.FilterGroup
+                        .add(rflib_SOQL.Filter.with(Contact.Name).equal('My Contact'))
                     )
             ));
 
@@ -1690,11 +1690,11 @@ private class SOQL_Test {
     @IsTest
     static void inInnerJoin() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Id).isIn(
-                SOQL.InnerJoin.of(Contact.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Id).isIn(
+                rflib_SOQL.InnerJoin.of(Contact.SObjectType)
                     .with(Contact.AccountId)
-                    .whereAre(SOQL.Filter.with(Contact.Name).equal('My Contact'))
+                    .whereAre(rflib_SOQL.Filter.with(Contact.Name).equal('My Contact'))
             ));
 
         // Verify
@@ -1708,11 +1708,11 @@ private class SOQL_Test {
     @IsTest
     static void isNotInInnerJoin() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.with(Account.Id).notIn(
-                SOQL.InnerJoin.of(Contact.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.with(Account.Id).notIn(
+                rflib_SOQL.InnerJoin.of(Contact.SObjectType)
                     .with(Contact.AccountId)
-                    .whereAre(SOQL.Filter.name().equal('My Contact'))
+                    .whereAre(rflib_SOQL.Filter.name().equal('My Contact'))
             ));
 
         // Verify
@@ -1726,7 +1726,7 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringConditions() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .whereAre('NumberOfEmployees >= 10 AND NumberOfEmployees <= 20')
             .toString();
 
@@ -1737,7 +1737,7 @@ private class SOQL_Test {
     @IsTest
     static void evaluateEmptyConditions() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .whereAre('')
             .toString();
 
@@ -1748,9 +1748,9 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringConditionsAndGroup() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .whereAre('NumberOfEmployees >= 10 AND NumberOfEmployees <= 20')
-            .whereAre(SOQL.Filter.name().equal('My Contact'))
+            .whereAre(rflib_SOQL.Filter.name().equal('My Contact'))
             .toString();
 
         // Verify
@@ -1760,11 +1760,11 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringAndFilterInFilterGroup() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .whereAre(
-                SOQL.FilterGroup
+                rflib_SOQL.FilterGroup
                     .add('NumberOfEmployees >= 10 AND NumberOfEmployees <= 20')
-                    .add(SOQL.Filter.name().equal('My Contact'))
+                    .add(rflib_SOQL.Filter.name().equal('My Contact'))
             )
             .toString();
 
@@ -1778,10 +1778,10 @@ private class SOQL_Test {
         String accountName = '';
 
         // Test
-        String soql = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
-                .add(SOQL.Filter.name().contains(accountName).ignoreWhen(String.isEmpty(accountName)))
+        String soql = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+                .add(rflib_SOQL.Filter.name().contains(accountName).ignoreWhen(String.isEmpty(accountName)))
             )
             .toString();
 
@@ -1795,17 +1795,17 @@ private class SOQL_Test {
         Boolean isPartnerUser = false;
 
         // Test
-        String soql = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.FilterGroup
-                    .add(SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
-                        .add(SOQL.Filter.with(Account.BillingCity).equal('Warsaw'))
+        String soql = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Krakow'))
+                        .add(rflib_SOQL.Filter.with(Account.BillingCity).equal('Warsaw'))
                         .anyConditionMatching()
                         .ignoreWhen(!isPartnerUser)
                 )
-                .add(SOQL.FilterGroup
-                    .add(SOQL.Filter.with(Account.Industry).equal('IT'))
-                    .add(SOQL.Filter.name().contains('MyAcccount'))
+                .add(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(Account.Industry).equal('IT'))
+                    .add(rflib_SOQL.Filter.name().contains('MyAcccount'))
                 )
             )
             .toString();
@@ -1817,7 +1817,7 @@ private class SOQL_Test {
     @IsTest
     static void groupBy() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .groupBy(Lead.LeadSource)
             .toString();
@@ -1829,7 +1829,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByRelated() {
         // Test
-        String soql = SOQL.of(OpportunityLineItem.SObjectType)
+        String soql = rflib_SOQL.of(OpportunityLineItem.SObjectType)
             .count(OpportunityLineItem.Name, 'count')
             .groupBy('OpportunityLineItem.Opportunity.Account', Account.Id)
             .toString();
@@ -1844,7 +1844,7 @@ private class SOQL_Test {
         insertAccounts();
 
         // Test
-        List<AggregateResult> results = SOQL.of(Account.SObjectType)
+        List<AggregateResult> results = rflib_SOQL.of(Account.SObjectType)
             .count(Account.Name, 'names')
             .groupBy('Account.CreatedBy', User.Id)
             .toAggregated();
@@ -1856,7 +1856,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByRollup() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name, 'cnt')
             .with(Lead.LeadSource)
             .groupByRollup(Lead.LeadSource)
@@ -1869,7 +1869,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByRollupManyFields() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name, 'cnt')
             .with(Lead.Status, Lead.LeadSource)
             .groupByRollup(Lead.Status)
@@ -1883,7 +1883,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByRollupRelated() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name, 'cnt')
             .groupByRollup('ConvertedOpportunity', Opportunity.StageName)
             .toString();
@@ -1895,7 +1895,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByCube() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Type)
             .groupByCube(Account.Type)
             .toString();
@@ -1907,7 +1907,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByCubeManyFields() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Type, Account.BillingCountry)
             .groupByCube(Account.Type)
             .groupByCube(Account.BillingCountry)
@@ -1920,7 +1920,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByCubeRelated() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name, 'cnt')
             .groupByCube('ConvertedOpportunity', Opportunity.StageName)
             .toString();
@@ -1936,7 +1936,7 @@ private class SOQL_Test {
 
         // Test
         try {
-           String soql = SOQL.of(Account.SObjectType)
+           String soql = rflib_SOQL.of(Account.SObjectType)
                 .with(Account.Type)
                 .groupBy(Account.Type)
                 .groupByCube(Account.Type)
@@ -1955,7 +1955,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByWithDefaultFields() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.FirstName, Lead.LastName, Lead.Email)
             .with(Lead.LeadSource)
             .groupBy(Lead.LeadSource)
@@ -1968,7 +1968,7 @@ private class SOQL_Test {
     @IsTest
     static void groupByWithDefaultFieldsAndAggregateFunction() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.FirstName, Lead.LastName, Lead.Email)
             .count(Lead.Name)
             .with(Lead.LeadSource)
@@ -1982,10 +1982,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterWithSObjectField() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
             .toString();
 
         // Verify
@@ -1995,10 +1995,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterWithStringField() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with('City').startsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with('City').startsWith('San'))
             .toString();
 
         // Verify
@@ -2008,11 +2008,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterCount() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
             .toString();
 
         // Verify
@@ -2022,11 +2022,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterAvg() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .avg(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.avg(Lead.Name).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.avg(Lead.Name).greaterThan(100))
             .toString();
 
         // Verify
@@ -2036,11 +2036,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterCountDistinct() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .countDistinct(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.countDistinct(Lead.Name).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.countDistinct(Lead.Name).greaterThan(100))
             .toString();
 
         // Verify
@@ -2050,11 +2050,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterMin() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .min(Lead.NumberOfEmployees)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.min(Lead.NumberOfEmployees).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.min(Lead.NumberOfEmployees).greaterThan(100))
             .toString();
 
         // Verify
@@ -2064,11 +2064,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterMax() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .max(Lead.NumberOfEmployees)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.max(Lead.NumberOfEmployees).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.max(Lead.NumberOfEmployees).greaterThan(100))
             .toString();
 
         // Verify
@@ -2078,11 +2078,11 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterSum() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterThan(100))
             .toString();
 
         // Verify
@@ -2092,10 +2092,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsNull() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.with(Lead.LeadSource).isNull())
+            .have(rflib_SOQL.HavingFilter.with(Lead.LeadSource).isNull())
             .toString();
 
         // Verify
@@ -2105,10 +2105,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsNotNull() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.with(Lead.LeadSource).isNotNull())
+            .have(rflib_SOQL.HavingFilter.with(Lead.LeadSource).isNotNull())
             .toString();
 
         // Verify
@@ -2118,10 +2118,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsTrue() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.IsConverted)
-            .have(SOQL.HavingFilter.with(Lead.IsConverted).isTrue())
+            .have(rflib_SOQL.HavingFilter.with(Lead.IsConverted).isTrue())
             .toString();
 
         // Verify
@@ -2131,10 +2131,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsFalse() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.IsConverted)
-            .have(SOQL.HavingFilter.with(Lead.IsConverted).isFalse())
+            .have(rflib_SOQL.HavingFilter.with(Lead.IsConverted).isFalse())
             .toString();
 
         // Verify
@@ -2144,10 +2144,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterEqualString() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.with(Lead.LeadSource).equal('Web'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.LeadSource).equal('Web'))
             .toString();
 
         // Verify
@@ -2157,10 +2157,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterEqualInteger() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).equal(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).equal(10000))
             .toString();
 
         // Verify
@@ -2170,10 +2170,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterNotEqualString() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.with(Lead.LeadSource).notEqual('Web'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.LeadSource).notEqual('Web'))
             .toString();
 
         // Verify
@@ -2183,10 +2183,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterNotEqualInteger() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).notEqual(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).notEqual(10000))
             .toString();
 
         // Verify
@@ -2196,10 +2196,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterLessThan() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).lessThan(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).lessThan(10000))
             .toString();
 
         // Verify
@@ -2209,10 +2209,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterGreaterThan() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterThan(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterThan(10000))
             .toString();
 
         // Verify
@@ -2222,10 +2222,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterLessOrEqual() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).lessOrEqual(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).lessOrEqual(10000))
             .toString();
 
         // Verify
@@ -2235,10 +2235,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterGreaterOrEqual() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterOrEqual(10000))
+            .have(rflib_SOQL.HavingFilter.sum(Lead.AnnualRevenue).greaterOrEqual(10000))
             .toString();
 
         // Verify
@@ -2248,10 +2248,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterContains() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).contains('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).contains('San'))
             .toString();
 
         // Verify
@@ -2261,10 +2261,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterCustomContains() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).contains('_', 'San', '%'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).contains('_', 'San', '%'))
             .toString();
 
         // Verify
@@ -2274,10 +2274,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterNotContains() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notContains('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notContains('San'))
             .toString();
 
         // Verify
@@ -2287,10 +2287,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterCustomNotContains() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notContains('_', 'San', '%'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notContains('_', 'San', '%'))
             .toString();
 
         // Verify
@@ -2300,10 +2300,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterStartsWith() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
             .toString();
 
         // Verify
@@ -2313,10 +2313,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterNotStartsWith() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notStartsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notStartsWith('San'))
             .toString();
 
         // Verify
@@ -2326,10 +2326,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterEndsWith() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).endsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).endsWith('San'))
             .toString();
 
         // Verify
@@ -2339,10 +2339,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterNotEndsWith() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notEndsWith('San'))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notEndsWith('San'))
             .toString();
 
         // Verify
@@ -2352,10 +2352,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsInSet() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).isIn(new Set<String>{ 'San Francisco', 'Los Angeles' }))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).isIn(new Set<String>{ 'San Francisco', 'Los Angeles' }))
             .toString();
 
         // Verify
@@ -2365,10 +2365,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsInList() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).isIn(new List<String>{ 'San Francisco', 'Los Angeles' }))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).isIn(new List<String>{ 'San Francisco', 'Los Angeles' }))
             .toString();
 
         // Verify
@@ -2378,10 +2378,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsNotInSet() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notIn(new Set<String>{ 'San Francisco', 'Los Angeles' }))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notIn(new Set<String>{ 'San Francisco', 'Los Angeles' }))
             .toString();
 
         // Verify
@@ -2391,10 +2391,10 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterIsNotInList() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .sum(Lead.AnnualRevenue)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.with(Lead.City).notIn(new List<String>{ 'San Francisco', 'Los Angeles' }))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).notIn(new List<String>{ 'San Francisco', 'Los Angeles' }))
             .toString();
 
         // Verify
@@ -2404,14 +2404,14 @@ private class SOQL_Test {
     @IsTest
     static void havingFilterGroup() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilterGroup
-                .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-                .add(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilterGroup
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+                .add(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
             ).toString();
 
         // Verify
@@ -2421,13 +2421,13 @@ private class SOQL_Test {
     @IsTest
     static void dynamicHavingFilterGroup() {
         // Setup
-        SOQL.HavingFilterGroup havingFilterGroup = SOQL.HavingFilterGroup;
+        rflib_SOQL.HavingFilterGroup havingFilterGroup = rflib_SOQL.HavingFilterGroup;
 
-        havingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(100));
-        havingFilterGroup.add(SOQL.HavingFilter.with(Lead.City).startsWith('San'));
+        havingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100));
+        havingFilterGroup.add(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'));
 
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
@@ -2442,19 +2442,19 @@ private class SOQL_Test {
     @IsTest
     static void dynamicHavingFilterGroupOnSoqlInstance() {
         // Test
-        SOQL builder = SOQL.of(Lead.SObjectType)
+        rflib_SOQL builder = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.WITH(Lead.LeadSource).equal('Web'));
+            .have(rflib_SOQL.HavingFilter.WITH(Lead.LeadSource).equal('Web'));
 
         Assert.areEqual('SELECT LeadSource, COUNT(Name) FROM Lead GROUP BY LeadSource, City HAVING LeadSource = \'Web\'', builder.toString());
 
         builder.have(
-            SOQL.HavingFilterGroup
-                .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-                .add(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            rflib_SOQL.HavingFilterGroup
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+                .add(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
         );
 
         // Verify
@@ -2464,22 +2464,22 @@ private class SOQL_Test {
     @IsTest
     static void multipleHavingFilterGroups() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(1)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(2)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(3)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(4)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(5)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(6)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(7)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(8)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(9)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(10)))
-            .have(SOQL.HavingFilterGroup.add(SOQL.HavingFilter.count(Lead.Name).greaterThan(11)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(1)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(2)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(3)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(4)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(5)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(6)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(7)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(8)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(9)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(10)))
+            .have(rflib_SOQL.HavingFilterGroup.add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(11)))
             .anyHavingConditionMatching()
             .toString();
 
@@ -2490,14 +2490,14 @@ private class SOQL_Test {
     @IsTest
     static void anyConditionMatchingForInnerHavingFilterGroups() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilterGroup
-                .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-                .add(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilterGroup
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+                .add(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
                 .anyConditionMatching()
             ).toString();
 
@@ -2508,13 +2508,13 @@ private class SOQL_Test {
     @IsTest
     static void anyonditionMatchingForMainHavingFilterGroup() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-            .have(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
             .anyHavingConditionMatching()
             .toString();
 
@@ -2525,13 +2525,13 @@ private class SOQL_Test {
     @IsTest
     static void conditionLogicForMainHavingFilterGroup() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .groupBy(Lead.City)
-            .have(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-            .have(SOQL.HavingFilter.with(Lead.City).startsWith('San'))
+            .have(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+            .have(rflib_SOQL.HavingFilter.with(Lead.City).startsWith('San'))
             .havingConditionLogic('1 OR 2')
             .toString();
 
@@ -2542,18 +2542,18 @@ private class SOQL_Test {
     @IsTest
     static void nestedHavingFilterGroups() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilterGroup
-                .add(SOQL.HavingFilterGroup
-                    .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
-                    .add(SOQL.HavingFilter.count(Lead.Name).lessThan(200))
+            .have(rflib_SOQL.HavingFilterGroup
+                .add(rflib_SOQL.HavingFilterGroup
+                    .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(100))
+                    .add(rflib_SOQL.HavingFilter.count(Lead.Name).lessThan(200))
                 )
-                .add(SOQL.HavingFilterGroup
-                    .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(400))
-                    .add(SOQL.HavingFilter.count(Lead.Name).lessThan(500))
+                .add(rflib_SOQL.HavingFilterGroup
+                    .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(400))
+                    .add(rflib_SOQL.HavingFilter.count(Lead.Name).lessThan(500))
                 )
             ).toString();
 
@@ -2564,7 +2564,7 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringHavingCondition() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
@@ -2578,14 +2578,14 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringHavingConditionAndHavingFilterGroup() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
             .have('(COUNT(Name) > 100 AND COUNT(Name) < 200)')
-            .have(SOQL.HavingFilterGroup
-                .add(SOQL.HavingFilter.count(Lead.Name).greaterThan(400))
-                .add(SOQL.HavingFilter.count(Lead.Name).lessThan(500))
+            .have(rflib_SOQL.HavingFilterGroup
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).greaterThan(400))
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).lessThan(500))
             ).toString();
 
         // Verify
@@ -2595,13 +2595,13 @@ private class SOQL_Test {
     @IsTest
     static void evaluateStringInHavingFilterGroupAndHavingFilter() {
         // Test
-        String soql = SOQL.of(Lead.SObjectType)
+        String soql = rflib_SOQL.of(Lead.SObjectType)
             .with(Lead.LeadSource)
             .count(Lead.Name)
             .groupBy(Lead.LeadSource)
-            .have(SOQL.HavingFilterGroup
+            .have(rflib_SOQL.HavingFilterGroup
                 .add('(COUNT(Name) > 100 AND COUNT(Name) < 200)')
-                .add(SOQL.HavingFilter.count(Lead.Name).lessThan(500))
+                .add(rflib_SOQL.HavingFilter.count(Lead.Name).lessThan(500))
             ).toString();
 
         // Verify
@@ -2611,7 +2611,7 @@ private class SOQL_Test {
     @IsTest
     static void orderByString() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .orderBy('Industry').sortDesc().nullsLast()
             .orderBy('Id')
             .toString();
@@ -2623,7 +2623,7 @@ private class SOQL_Test {
     @IsTest
     static void orderByDynamic() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .orderBy('Industry', 'ASC')
             .toString();
 
@@ -2634,7 +2634,7 @@ private class SOQL_Test {
     @IsTest
     static void orderBy() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .orderBy(Account.Industry).sortDesc().nullsLast()
             .orderBy(Account.Id)
             .toString();
@@ -2646,7 +2646,7 @@ private class SOQL_Test {
     @IsTest
     static void orderByRelated() {
         // Test
-        String soql = SOQL.of(Contact.SObjectType)
+        String soql = rflib_SOQL.of(Contact.SObjectType)
             .orderBy('Account', Account.Name)
             .toString();
 
@@ -2658,7 +2658,7 @@ private class SOQL_Test {
     @IsTest
     static void setLimit() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .setLimit(100)
             .toString();
 
@@ -2669,7 +2669,7 @@ private class SOQL_Test {
     @IsTest
     static void offset() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .offset(100)
             .toString();
 
@@ -2680,7 +2680,7 @@ private class SOQL_Test {
     @IsTest
     static void forReference() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .forReference()
             .toString();
 
@@ -2691,7 +2691,7 @@ private class SOQL_Test {
     @IsTest
     static void forView() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .forView()
             .toString();
 
@@ -2702,7 +2702,7 @@ private class SOQL_Test {
     @IsTest
     static void forUpdate() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .forUpdate()
             .toString();
 
@@ -2713,7 +2713,7 @@ private class SOQL_Test {
     @IsTest
     static void allRows() {
         // Test
-        String soql = SOQL.of(Account.SObjectType)
+        String soql = rflib_SOQL.of(Account.SObjectType)
             .allRows()
             .toString();
 
@@ -2724,7 +2724,7 @@ private class SOQL_Test {
     @IsTest
     static void byId() {
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType).byId(FAKE_ACCOUNT_ID);
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType).byId(FAKE_ACCOUNT_ID);
 
         // Verify
         String soql = builder.toString();
@@ -2740,7 +2740,7 @@ private class SOQL_Test {
         List<Case> cases = insertCases();
 
         // Test
-        SOQL builder = SOQL.of(Case.SObjectType).byId(cases[0]);
+        rflib_SOQL builder = rflib_SOQL.of(Case.SObjectType).byId(cases[0]);
 
         // Verify
         String soql = builder.toString();
@@ -2754,7 +2754,7 @@ private class SOQL_Test {
     static void byIdsSet() {
         Set<Id> accountIds = new Set<Id>{ FAKE_ACCOUNT_ID };
 
-        SOQL builder = SOQL.of(Account.SObjectType).byIds(accountIds);
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType).byIds(accountIds);
 
         // Verify
         String soql = builder.toString();
@@ -2770,7 +2770,7 @@ private class SOQL_Test {
         List<Id> accountIds = new List<Id>{ FAKE_ACCOUNT_ID };
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType).byIds(accountIds);
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType).byIds(accountIds);
 
         // Verify
         String soql = builder.toString();
@@ -2786,7 +2786,7 @@ private class SOQL_Test {
         List<Case> cases = insertCases();
 
         // Test
-        SOQL builder = SOQL.of(Case.SObjectType).byIds(cases);
+        rflib_SOQL builder = rflib_SOQL.of(Case.SObjectType).byIds(cases);
 
         // Verify
         String soql = builder.toString();
@@ -2802,7 +2802,7 @@ private class SOQL_Test {
         String recordTypeDeveloperName = 'Partner';
 
         // Test
-        SOQL builder = SOQL.of(Account.SObjectType).byRecordType(recordTypeDeveloperName);
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType).byRecordType(recordTypeDeveloperName);
 
         // Verify
         String soql = builder.toString();
@@ -2820,7 +2820,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Case resultCase = (Case) SOQL.of(Case.SObjectType).systemMode().withoutSharing().toObject();
+            Case resultCase = (Case) rflib_SOQL.of(Case.SObjectType).systemMode().withoutSharing().toObject();
 
             // Verify
             Assert.areEqual(testCase.Id, resultCase.Id);
@@ -2834,7 +2834,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            List<Case> cases = SOQL.of(Case.SObjectType).systemMode().withoutSharing().toList();
+            List<Case> cases = rflib_SOQL.of(Case.SObjectType).systemMode().withoutSharing().toList();
 
             // Verify
             Assert.areEqual(2, cases.size());
@@ -2848,7 +2848,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Integer casesAmount = SOQL.of(Case.SObjectType).count().systemMode().withoutSharing().toInteger();
+            Integer casesAmount = rflib_SOQL.of(Case.SObjectType).count().systemMode().withoutSharing().toInteger();
 
             // Verify
             Assert.areEqual(2, casesAmount);
@@ -2862,7 +2862,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Task resultTask = (Task) SOQL.of(Task.SObjectType).systemMode().withSharing().toObject();
+            Task resultTask = (Task) rflib_SOQL.of(Task.SObjectType).systemMode().withSharing().toObject();
 
             // Verify
             Assert.isNull(resultTask);
@@ -2876,7 +2876,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            List<Task> tasks = SOQL.of(Task.SObjectType).systemMode().withSharing().toList();
+            List<Task> tasks = rflib_SOQL.of(Task.SObjectType).systemMode().withSharing().toList();
 
             // Verify
             Assert.areEqual(0, tasks.size());
@@ -2889,7 +2889,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Integer tasksAmount = SOQL.of(Task.SObjectType).count().systemMode().withSharing().toInteger();
+            Integer tasksAmount = rflib_SOQL.of(Task.SObjectType).count().systemMode().withSharing().toInteger();
 
             // Verify
             Assert.areEqual(0, tasksAmount);
@@ -2906,7 +2906,7 @@ private class SOQL_Test {
             Exception queryException = null;
 
             try {
-                Task task = (Task) SOQL.of(Task.SObjectType)
+                Task task = (Task) rflib_SOQL.of(Task.SObjectType)
                     .with(Task.Type)
                     .userMode()
                     .toObject();
@@ -2926,7 +2926,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Task task = (Task) SOQL.of(Task.SObjectType)
+            Task task = (Task) rflib_SOQL.of(Task.SObjectType)
                 .with(Task.Type)
                 .systemMode()
                 .stripInaccessible()
@@ -2958,7 +2958,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            List<Task> tasks = SOQL.of(Task.SObjectType)
+            List<Task> tasks = rflib_SOQL.of(Task.SObjectType)
                 .with(Task.Type)
                 .systemMode()
                 .stripInaccessible()
@@ -2992,8 +2992,8 @@ private class SOQL_Test {
         };
 
         // Test
-        SOQL.setMock('mockingQuery', accounts);
-        List<Account> result = SOQL.of(Account.SObjectType).mockId('mockingQuery').toList();
+        rflib_SOQL.setMock('mockingQuery', accounts);
+        List<Account> result = rflib_SOQL.of(Account.SObjectType).mockId('mockingQuery').toList();
 
         // Verify
         Assert.areEqual(accounts, result);
@@ -3005,8 +3005,8 @@ private class SOQL_Test {
         Account testAccount = new Account(Name = 'Test 1');
 
         // Test
-        SOQL.setMock('mockingQuery', testAccount);
-        Account result = (Account) SOQL.of(Account.sObjectType).mockId('mockingQuery').toObject();
+        rflib_SOQL.setMock('mockingQuery', testAccount);
+        Account result = (Account) rflib_SOQL.of(Account.sObjectType).mockId('mockingQuery').toObject();
 
         // Verify
         Assert.areEqual(testAccount, result);
@@ -3015,8 +3015,8 @@ private class SOQL_Test {
     @IsTest
     static void mockingCount() {
         // Test
-        SOQL.setCountMock('mockingQuery', 2);
-        Integer result = SOQL.of(Account.sObjectType).count().mockId('mockingQuery').toInteger();
+        rflib_SOQL.setCountMock('mockingQuery', 2);
+        Integer result = rflib_SOQL.of(Account.sObjectType).count().mockId('mockingQuery').toInteger();
 
         // Verify
         Assert.areEqual(2, result);
@@ -3029,7 +3029,7 @@ private class SOQL_Test {
         insert acc;
 
         // Test
-        Id accountId = SOQL.of(Account.SObjectType).byId(acc).toId();
+        Id accountId = rflib_SOQL.of(Account.SObjectType).byId(acc).toId();
 
         // Verify
         Assert.areEqual(acc.Id, accountId);
@@ -3042,7 +3042,7 @@ private class SOQL_Test {
         insert acc;
 
         // Test
-        Boolean isRecordExist = SOQL.of(Account.SObjectType).byId(acc).doExist();
+        Boolean isRecordExist = rflib_SOQL.of(Account.SObjectType).byId(acc).doExist();
 
         // Verify
         Assert.isTrue(isRecordExist);
@@ -3053,10 +3053,10 @@ private class SOQL_Test {
         // Setup
         Exception soqlException = null;
 
-        SOQL builder = SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.Industry).equal('IT'))
+        rflib_SOQL builder = rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.Industry).equal('IT'))
             );
 
         // Test
@@ -3086,7 +3086,7 @@ private class SOQL_Test {
         insert acc;
 
         // Test
-        String resultAccName = (String) SOQL.of(Account.SObjectType).byId(acc).toValueOf(Account.Name);
+        String resultAccName = (String) rflib_SOQL.of(Account.SObjectType).byId(acc).toValueOf(Account.Name);
 
         // Verify
         Assert.areEqual('Test 1', resultAccName);
@@ -3098,7 +3098,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Set<String> accountNames = SOQL.of(Account.SObjectType).byIds(accounts).toValuesOf(Account.Name);
+        Set<String> accountNames = rflib_SOQL.of(Account.SObjectType).byIds(accounts).toValuesOf(Account.Name);
 
         // Verify
         Assert.areEqual(2, accountNames.size());
@@ -3110,7 +3110,7 @@ private class SOQL_Test {
         insertAccounts(); // Industry is empty
 
         // Test
-        Set<String> accountNames = SOQL.of(Account.SObjectType).toValuesOf(Account.Industry);
+        Set<String> accountNames = rflib_SOQL.of(Account.SObjectType).toValuesOf(Account.Industry);
 
         // Verify
         Assert.areEqual(0, accountNames.size());
@@ -3122,7 +3122,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Set<String> accountNames = SOQL.of(Account.SObjectType)
+        Set<String> accountNames = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Industry)
             .byIds(accounts)
             .toValuesOf(Account.Name);
@@ -3134,8 +3134,8 @@ private class SOQL_Test {
     @IsTest
     static void toValueOfWhenRecordNotExist() {
         // Test
-        String accountIndustry = (String) SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.Filter.name().equal('Test'))
+        String accountIndustry = (String) rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.Filter.name().equal('Test'))
             .toValueOf(Account.Industry);
 
         // Verify
@@ -3149,7 +3149,7 @@ private class SOQL_Test {
         insert acc;
 
         // Test
-        Account result = (Account) SOQL.of(Account.SObjectType).toObject();
+        Account result = (Account) rflib_SOQL.of(Account.SObjectType).toObject();
 
         // Verify
         Assert.areEqual(acc.Id, result.Id);
@@ -3163,7 +3163,7 @@ private class SOQL_Test {
 
         // Test
         try {
-            Account result = (Account) SOQL.of(Account.SObjectType).toObject();
+            Account result = (Account) rflib_SOQL.of(Account.SObjectType).toObject();
         } catch (Exception e) {
             queryException = e; // List has more than 1 row for assignment to SObject
         }
@@ -3176,7 +3176,7 @@ private class SOQL_Test {
     static void toObjectWithoutRows() {
         // Test
         // When List has no rows for assignment to SObject null will be returned
-        Account account = (Account) SOQL.of(Account.SObjectType).toObject();
+        Account account = (Account) rflib_SOQL.of(Account.SObjectType).toObject();
 
         // Verify
         Assert.isNull(account);
@@ -3188,7 +3188,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        List<Account> result = SOQL.of(Account.SObjectType).toList();
+        List<Account> result = rflib_SOQL.of(Account.SObjectType).toList();
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3200,7 +3200,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        List<AggregateResult> result = SOQL.of(Account.SObjectType).count(Account.Name, 'names').toAggregated();
+        List<AggregateResult> result = rflib_SOQL.of(Account.SObjectType).count(Account.Name, 'names').toAggregated();
 
         // Verify
         Assert.areEqual(accounts.size(), result[0].get('names'));
@@ -3212,7 +3212,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Integer result = SOQL.of(Account.SObjectType).toInteger();
+        Integer result = rflib_SOQL.of(Account.SObjectType).toInteger();
 
         // Verify
         Assert.areEqual(accounts.size(), result);
@@ -3224,7 +3224,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Integer result = SOQL.of(Account.SObjectType).count().toInteger();
+        Integer result = rflib_SOQL.of(Account.SObjectType).count().toInteger();
 
         // Verify
         Assert.areEqual(accounts.size(), result);
@@ -3236,7 +3236,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Map<Id, Account> result = (Map<Id, Account>) SOQL.of(Account.SObjectType).toMap();
+        Map<Id, Account> result = (Map<Id, Account>) rflib_SOQL.of(Account.SObjectType).toMap();
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3252,7 +3252,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Map<String, Account> result = (Map<String, Account>) SOQL.of(Account.SObjectType).toMap(Account.Name);
+        Map<String, Account> result = (Map<String, Account>) rflib_SOQL.of(Account.SObjectType).toMap(Account.Name);
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3268,7 +3268,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Map<String, String> result = SOQL.of(Account.SObjectType).toMap(Account.Name, Account.Id);
+        Map<String, String> result = rflib_SOQL.of(Account.SObjectType).toMap(Account.Name, Account.Id);
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3284,7 +3284,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Map<String, List<Account>> result = SOQL.of(Account.SObjectType).toAggregatedMap(Account.Name);
+        Map<String, List<Account>> result = rflib_SOQL.of(Account.SObjectType).toAggregatedMap(Account.Name);
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3300,7 +3300,7 @@ private class SOQL_Test {
         insertAccounts();
 
         // Test
-        Map<String, List<Account>> result = SOQL.of(Account.SObjectType).toAggregatedMap(Account.Industry);
+        Map<String, List<Account>> result = rflib_SOQL.of(Account.SObjectType).toAggregatedMap(Account.Industry);
 
         // Verify
         Assert.areEqual(1, result.size()); // grouped by empty Industry
@@ -3312,7 +3312,7 @@ private class SOQL_Test {
         List<Account> accounts = insertAccounts();
 
         // Test
-        Map<String, List<String>> result = SOQL.of(Account.SObjectType).toAggregatedMap(Account.Name, Account.Id);
+        Map<String, List<String>> result = rflib_SOQL.of(Account.SObjectType).toAggregatedMap(Account.Name, Account.Id);
 
         // Verify
         Assert.areEqual(accounts.size(), result.size());
@@ -3325,7 +3325,7 @@ private class SOQL_Test {
     @IsTest
     static void toQueryLocator() {
         // Test
-        Database.QueryLocator queryLocator = SOQL.of(Account.SObjectType)
+        Database.QueryLocator queryLocator = rflib_SOQL.of(Account.SObjectType)
             .with(Account.Id)
             .with(Account.Name)
             .toQueryLocator();
@@ -3341,7 +3341,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Database.QueryLocator queryLocator = SOQL.of(Task.SObjectType).systemMode().withSharing().toQueryLocator();
+            Database.QueryLocator queryLocator = rflib_SOQL.of(Task.SObjectType).systemMode().withSharing().toQueryLocator();
 
             // Verify
             Assert.isFalse(queryLocator.iterator().hasNext());
@@ -3355,7 +3355,7 @@ private class SOQL_Test {
 
         System.runAs(minimumAccessUser()) {
             // Test
-            Database.QueryLocator queryLocator = SOQL.of(Task.SObjectType).systemMode().withoutSharing().toQueryLocator();
+            Database.QueryLocator queryLocator = rflib_SOQL.of(Task.SObjectType).systemMode().withoutSharing().toQueryLocator();
 
             // Verify
             Assert.isTrue(queryLocator.iterator().hasNext());
@@ -3405,17 +3405,17 @@ private class SOQL_Test {
     @IsTest
     static void preview() {
         // Test
-        SOQL.of(Account.SObjectType).preview().toList();
+        rflib_SOQL.of(Account.SObjectType).preview().toList();
     }
 
     @SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts')
     @IsTest
     static void previewWithConditions() {
         // Test
-        SOQL.of(Account.SObjectType)
-            .whereAre(SOQL.FilterGroup
-                .add(SOQL.Filter.with(Account.Name).equal('Test'))
-                .add(SOQL.Filter.with(Account.Industry).equal('IT'))
+        rflib_SOQL.of(Account.SObjectType)
+            .whereAre(rflib_SOQL.FilterGroup
+                .add(rflib_SOQL.Filter.with(Account.Name).equal('Test'))
+                .add(rflib_SOQL.Filter.with(Account.Industry).equal('IT'))
             )
             .preview()
             .toList();
@@ -3425,6 +3425,6 @@ private class SOQL_Test {
     @IsTest
     static void previewCount() {
         // Test
-        SOQL.of(Account.SObjectType).count().preview().toInteger();
+        rflib_SOQL.of(Account.SObjectType).count().preview().toInteger();
     }
 }

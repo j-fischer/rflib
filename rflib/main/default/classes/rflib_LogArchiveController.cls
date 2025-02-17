@@ -99,7 +99,7 @@ public with sharing class rflib_LogArchiveController {
     public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
-            return (List<rflib_Logs_Archive__b>) SOQL.of(rflib_Logs_Archive__b.SObjectType)
+            return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
                 .with(rflib_Logs_Archive__b.CreatedDate__c)
                 .with(rflib_Logs_Archive__b.CreatedById__c)
                 .with(rflib_Logs_Archive__b.Context__c)
@@ -107,7 +107,7 @@ public with sharing class rflib_LogArchiveController {
                 .with(rflib_Logs_Archive__b.Request_ID__c)
                 .with(rflib_Logs_Archive__b.Log_Messages__c)
                 .with(rflib_Logs_Archive__b.Platform_Info__c)
-                .whereAre(SOQL.Filter
+                .whereAre(rflib_SOQL.Filter
                     .with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate)
                     .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
@@ -116,13 +116,13 @@ public with sharing class rflib_LogArchiveController {
         }
 
         public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
-            return (List<rflib_Logs_Archive__b>) SOQL.of(rflib_Logs_Archive__b.SObjectType)
+            return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
                 .with(rflib_Logs_Archive__b.CreatedDate__c)
                 .with(rflib_Logs_Archive__b.Context__c)
                 .with(rflib_Logs_Archive__b.Log_Level__c)
                 .with(rflib_Logs_Archive__b.Request_ID__c)
                 .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
-                .whereAre(SOQL.Filter
+                .whereAre(rflib_SOQL.Filter
                     .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate))
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
                 .mockId('DefaultLogArchiveQueryLocator.getOldestRecords')

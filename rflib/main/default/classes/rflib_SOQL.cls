@@ -10,10 +10,10 @@
  * - PropertyNamingConventions: It was intentional to make the lib more fluent and readable
  * - FieldDeclarationsShouldBeAtStart: Developer who uses lib should see what's important at start
  * - ApexDoc: Variable names are self-documented.
- * - ExcessiveParameterList - Make methods similar to native SOQL
+ * - ExcessiveParameterList - Make methods similar to native rflib_SOQL
 **/
-@SuppressWarnings('PMD.ExcessivePublicCount, PMD.ExcessiveClassLength, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.PropertyNamingConventions, PMD.FieldDeclarationsShouldBeAtStart, PMD.ApexDoc, PMD.ExcessiveParameterList')
-public virtual inherited sharing class SOQL implements Queryable {
+@SuppressWarnings('PMD.ExcessivePublicCount, PMD.ExcessiveClassLength, PMD.CyclomaticComplexity, PMD.CognitiveComplexity, PMD.PropertyNamingConventions, PMD.FieldDeclarationsShouldBeAtStart, PMD.ApexDoc, PMD.ExcessiveParameterList, PMD.ClassNamingConventions')
+public virtual inherited sharing class rflib_SOQL implements Queryable {
     public interface Selector {
         Queryable query();
     }
@@ -333,447 +333,447 @@ public virtual inherited sharing class SOQL implements Queryable {
     private SoqlBuilder builder;
     private Executor executor;
 
-    public static SOQL of(SObjectType ofObject) {
-        return new SOQL(ofObject);
+    public static rflib_SOQL of(SObjectType ofObject) {
+        return new rflib_SOQL(ofObject);
     }
 
-    public static SOQL of(String ofObject) {
-        return new SOQL(ofObject);
+    public static rflib_SOQL of(String ofObject) {
+        return new rflib_SOQL(ofObject);
     }
 
-    public SOQL(SObjectType ofObject) {
+    public rflib_SOQL(SObjectType ofObject) {
         this(ofObject.getDescribe().getName());
     }
 
-    public SOQL(String ofObject) {
+    public rflib_SOQL(String ofObject) {
         builder = new SoqlBuilder(ofObject);
         executor = new Executor(ofObject, builder);
     }
 
-    public SOQL with(SObjectField field) {
+    public rflib_SOQL with(SObjectField field) {
         builder.fields.with(field);
         return this;
     }
 
-    public SOQL with(SObjectField field1, SObjectField field2) {
+    public rflib_SOQL with(SObjectField field1, SObjectField field2) {
         return with(field1).with(field2);
     }
 
-    public SOQL with(SObjectField field1, SObjectField field2, SObjectField field3) {
+    public rflib_SOQL with(SObjectField field1, SObjectField field2, SObjectField field3) {
         return with(field1, field2).with(field3);
     }
 
-    public SOQL with(SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4) {
+    public rflib_SOQL with(SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4) {
         return with(field1, field2, field3).with(field4);
     }
 
-    public SOQL with(SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4, SObjectField field5) {
+    public rflib_SOQL with(SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4, SObjectField field5) {
         return with(field1, field2, field3, field4).with(field5);
     }
 
-    public SOQL with(List<SObjectField> fields) {
+    public rflib_SOQL with(List<SObjectField> fields) {
         builder.fields.with(fields);
         return this;
     }
 
-    public SOQL with(Iterable<String> fields) {
+    public rflib_SOQL with(Iterable<String> fields) {
         return with(String.join(fields, ','));
     }
 
-    public SOQL withFieldSet(String fieldSetName) {
+    public rflib_SOQL withFieldSet(String fieldSetName) {
         builder.fields.withFieldSet(fieldSetName);
         return this;
     }
 
-    public SOQL with(String fields) {
+    public rflib_SOQL with(String fields) {
         builder.fields.with(fields);
         return this;
     }
 
-    public SOQL with(SObjectField field, String alias) {
+    public rflib_SOQL with(SObjectField field, String alias) {
         builder.fields.with(field, alias);
         return this;
     }
 
-    public SOQL with(String relationshipName, SObjectField field) {
+    public rflib_SOQL with(String relationshipName, SObjectField field) {
         return with(relationshipName, new List<SObjectField>{ field });
     }
 
-    public SOQL with(String relationshipName, SObjectField field1, SObjectField field2) {
+    public rflib_SOQL with(String relationshipName, SObjectField field1, SObjectField field2) {
         return with(relationshipName, new List<SObjectField>{ field1, field2 });
     }
 
-    public SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3) {
+    public rflib_SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3) {
         return with(relationshipName, new List<SObjectField>{ field1, field2, field3 });
     }
 
-    public SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4) {
+    public rflib_SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4) {
         return with(relationshipName, new List<SObjectField>{ field1, field2, field3, field4 });
     }
 
-    public SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4, SObjectField field5) {
+    public rflib_SOQL with(String relationshipName, SObjectField field1, SObjectField field2, SObjectField field3, SObjectField field4, SObjectField field5) {
         return with(relationshipName, new List<SObjectField>{ field1, field2, field3, field4, field5 });
     }
 
-    public SOQL with(String relationshipName, Iterable<SObjectField> fields) {
+    public rflib_SOQL with(String relationshipName, Iterable<SObjectField> fields) {
         builder.fields.with(relationshipName, fields);
         return this;
     }
 
-    public SOQL with(SubQuery subQuery) {
+    public rflib_SOQL with(SubQuery subQuery) {
         builder.subQueries.add(subQuery);
         return this;
     }
 
-    public SOQL count() {
+    public rflib_SOQL count() {
         builder.fields.count();
         return this;
     }
 
-    public SOQL count(SObjectField field) {
+    public rflib_SOQL count(SObjectField field) {
         return count(field, '');
     }
 
-    public SOQL count(SObjectField field, String alias) {
+    public rflib_SOQL count(SObjectField field, String alias) {
         builder.fields.count(field, alias);
         return this;
     }
 
-    public SOQL count(String relationshipName, SObjectField field) {
+    public rflib_SOQL count(String relationshipName, SObjectField field) {
         return count(relationshipName, field, '');
     }
 
-    public SOQL count(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL count(String relationshipName, SObjectField field, String alias) {
         builder.fields.count(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL avg(SObjectField field) {
+    public rflib_SOQL avg(SObjectField field) {
         return avg(field, '');
     }
 
-    public SOQL avg(SObjectField field, String alias) {
+    public rflib_SOQL avg(SObjectField field, String alias) {
         builder.fields.avg(field, alias);
         return this;
     }
 
-    public SOQL avg(String relationshipName, SObjectField field) {
+    public rflib_SOQL avg(String relationshipName, SObjectField field) {
         return avg(relationshipName, field, '');
     }
 
-    public SOQL avg(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL avg(String relationshipName, SObjectField field, String alias) {
         builder.fields.avg(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL countDistinct(SObjectField field) {
+    public rflib_SOQL countDistinct(SObjectField field) {
         return countDistinct(field, '');
     }
 
-    public SOQL countDistinct(SObjectField field, String alias) {
+    public rflib_SOQL countDistinct(SObjectField field, String alias) {
         builder.fields.countDistinct(field, alias);
         return this;
     }
 
-    public SOQL countDistinct(String relationshipName, SObjectField field) {
+    public rflib_SOQL countDistinct(String relationshipName, SObjectField field) {
         return countDistinct(relationshipName, field, '');
     }
 
-    public SOQL countDistinct(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL countDistinct(String relationshipName, SObjectField field, String alias) {
         builder.fields.countDistinct(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL min(SObjectField field) {
+    public rflib_SOQL min(SObjectField field) {
         return min(field, '');
     }
 
-    public SOQL min(SObjectField field, String alias) {
+    public rflib_SOQL min(SObjectField field, String alias) {
         builder.fields.min(field, alias);
         return this;
     }
 
-    public SOQL min(String relationshipName, SObjectField field) {
+    public rflib_SOQL min(String relationshipName, SObjectField field) {
         return min(relationshipName, field, '');
     }
 
-    public SOQL min(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL min(String relationshipName, SObjectField field, String alias) {
         builder.fields.min(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL max(SObjectField field) {
+    public rflib_SOQL max(SObjectField field) {
         return max(field, '');
     }
 
-    public SOQL max(SObjectField field, String alias) {
+    public rflib_SOQL max(SObjectField field, String alias) {
         builder.fields.max(field, alias);
         return this;
     }
 
-    public SOQL max(String relationshipName, SObjectField field) {
+    public rflib_SOQL max(String relationshipName, SObjectField field) {
         return max(relationshipName, field, '');
     }
 
-    public SOQL max(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL max(String relationshipName, SObjectField field, String alias) {
         builder.fields.max(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL sum(SObjectField field) {
+    public rflib_SOQL sum(SObjectField field) {
         return sum(field, '');
     }
 
-    public SOQL sum(SObjectField field, String alias) {
+    public rflib_SOQL sum(SObjectField field, String alias) {
         builder.fields.sum(field, alias);
         return this;
     }
 
-    public SOQL sum(String relationshipName, SObjectField field) {
+    public rflib_SOQL sum(String relationshipName, SObjectField field) {
         return sum(relationshipName, field, '');
     }
 
-    public SOQL sum(String relationshipName, SObjectField field, String alias) {
+    public rflib_SOQL sum(String relationshipName, SObjectField field, String alias) {
         builder.fields.sum(relationshipName, field, alias);
         return this;
     }
 
-    public SOQL grouping(SObjectField field, String alias) {
+    public rflib_SOQL grouping(SObjectField field, String alias) {
         builder.fields.grouping(field, alias);
         return this;
     }
 
-    public SOQL toLabel(SObjectField field) {
+    public rflib_SOQL toLabel(SObjectField field) {
         return toLabel(field.getDescribe().getName());
     }
 
-    public SOQL toLabel(String field) {
+    public rflib_SOQL toLabel(String field) {
         builder.fields.toLabel(field);
         return this;
     }
 
-    public SOQL format(SObjectField field) {
+    public rflib_SOQL format(SObjectField field) {
         return format(field, '');
     }
 
-    public SOQL format(SObjectField field, String alias) {
+    public rflib_SOQL format(SObjectField field, String alias) {
         builder.fields.format(field, alias);
         return this;
     }
 
-    public SOQL delegatedScope() {
+    public rflib_SOQL delegatedScope() {
         builder.scope.delegated();
         return this;
     }
 
-    public SOQL mineScope() {
+    public rflib_SOQL mineScope() {
         builder.scope.mine();
         return this;
     }
 
-    public SOQL mineAndMyGroupsScope() {
+    public rflib_SOQL mineAndMyGroupsScope() {
         builder.scope.mineAndMyGroups();
         return this;
     }
 
-    public SOQL myTerritoryScope() {
+    public rflib_SOQL myTerritoryScope() {
         builder.scope.myTerritory();
         return this;
     }
 
-    public SOQL myTeamTerritoryScope() {
+    public rflib_SOQL myTeamTerritoryScope() {
         builder.scope.myTeamTerritory();
         return this;
     }
 
-    public SOQL teamScope() {
+    public rflib_SOQL teamScope() {
         builder.scope.team();
         return this;
     }
 
-    public SOQL whereAre(FilterGroup filterGroup) {
+    public rflib_SOQL whereAre(FilterGroup filterGroup) {
         builder.conditions.add(filterGroup);
         return this;
     }
 
-    public SOQL whereAre(Filter filter) {
+    public rflib_SOQL whereAre(Filter filter) {
         builder.conditions.add(filter);
         return this;
     }
 
-    public SOQL whereAre(String conditions) {
+    public rflib_SOQL whereAre(String conditions) {
         builder.conditions.add(conditions);
         return this;
     }
 
-    public SOQL conditionLogic(String conditionLogic) {
+    public rflib_SOQL conditionLogic(String conditionLogic) {
         builder.conditions.conditionLogic(conditionLogic);
         return this;
     }
 
-    public SOQL anyConditionMatching() {
+    public rflib_SOQL anyConditionMatching() {
         builder.conditions.anyConditionMatching();
         return this;
     }
 
-    public SOQL groupBy(SObjectField field) {
+    public rflib_SOQL groupBy(SObjectField field) {
         builder.groupBy.with(field);
         builder.fields.withGroupedField(field);
         return this;
     }
 
-    public SOQL groupBy(String relationshipName, SObjectField field) {
+    public rflib_SOQL groupBy(String relationshipName, SObjectField field) {
         builder.groupBy.with(relationshipName, field);
         builder.fields.withGroupedField(relationshipName, field);
         return this;
     }
 
-    public SOQL groupByRollup(SObjectField field) {
+    public rflib_SOQL groupByRollup(SObjectField field) {
         builder.groupBy.rollup(field);
         builder.fields.withGroupedField(field);
         return this;
     }
 
-    public SOQL groupByRollup(String relationshipName, SObjectField field) {
+    public rflib_SOQL groupByRollup(String relationshipName, SObjectField field) {
         builder.groupBy.rollup(relationshipName, field);
         builder.fields.withGroupedField(relationshipName, field);
         return this;
     }
 
-    public SOQL groupByCube(SObjectField field) {
+    public rflib_SOQL groupByCube(SObjectField field) {
         builder.groupBy.cube(field);
         builder.fields.withGroupedField(field);
         return this;
     }
 
-    public SOQL groupByCube(String relationshipName, SObjectField field) {
+    public rflib_SOQL groupByCube(String relationshipName, SObjectField field) {
         builder.groupBy.cube(relationshipName, field);
         builder.fields.withGroupedField(relationshipName, field);
         return this;
     }
 
-    public SOQL have(HavingFilterGroup havingFilterGroup) {
+    public rflib_SOQL have(HavingFilterGroup havingFilterGroup) {
         builder.havingClause.add(havingFilterGroup);
         return this;
     }
 
-    public SOQL have(HavingFilter havingFilter) {
+    public rflib_SOQL have(HavingFilter havingFilter) {
         builder.havingClause.add(havingFilter);
         return this;
     }
 
-    public SOQL have(String havingConditions) {
+    public rflib_SOQL have(String havingConditions) {
         builder.havingClause.add(havingConditions);
         return this;
     }
 
-    public SOQL havingConditionLogic(String havingConditionsOrder) {
+    public rflib_SOQL havingConditionLogic(String havingConditionsOrder) {
         builder.havingClause.conditionLogic(havingConditionsOrder);
         return this;
     }
 
-    public SOQL anyHavingConditionMatching() {
+    public rflib_SOQL anyHavingConditionMatching() {
         builder.havingClause.anyConditionMatching();
         return this;
     }
 
-    public SOQL orderBy(String field) {
+    public rflib_SOQL orderBy(String field) {
         builder.orderBys.newOrderBy().with(field);
         return this;
     }
 
-    public SOQL orderBy(String field, String direction) {
+    public rflib_SOQL orderBy(String field, String direction) {
         builder.orderBys.newOrderBy().with(field).sortingOrder(direction);
         return this;
     }
 
-    public SOQL orderBy(SObjectField field) {
+    public rflib_SOQL orderBy(SObjectField field) {
         builder.orderBys.newOrderBy().with(field);
         return this;
     }
 
-    public SOQL orderBy(String relationshipName, SObjectField field) {
+    public rflib_SOQL orderBy(String relationshipName, SObjectField field) {
         builder.orderBys.newOrderBy().with(relationshipName, field);
         return this;
     }
 
-    public SOQL sortDesc() {
+    public rflib_SOQL sortDesc() {
         builder.latestOrderBy.sortDesc();
         return this;
     }
 
-    public SOQL nullsLast() {
+    public rflib_SOQL nullsLast() {
         builder.latestOrderBy.nullsLast();
         return this;
     }
 
-    public SOQL setLimit(Integer amount) {
+    public rflib_SOQL setLimit(Integer amount) {
         builder.soqlLimit.max(amount);
         return this;
     }
 
-    public SOQL offset(Integer startingRow) {
+    public rflib_SOQL offset(Integer startingRow) {
         builder.soqlOffset.offset(startingRow);
         return this;
     }
 
-    public SOQL forReference() {
+    public rflib_SOQL forReference() {
         builder.soqlFor.forReference();
         return this;
     }
 
-    public SOQL forView() {
+    public rflib_SOQL forView() {
         builder.soqlFor.forView();
         return this;
     }
 
-    public SOQL forUpdate() {
+    public rflib_SOQL forUpdate() {
         builder.soqlFor.forUpdate();
         return this;
     }
 
-    public SOQL allRows() {
+    public rflib_SOQL allRows() {
         builder.soqlFor.allRows();
         return this;
     }
 
-    public SOQL userMode() {
+    public rflib_SOQL userMode() {
         executor.userMode();
         return this;
     }
 
-    public SOQL systemMode() {
+    public rflib_SOQL systemMode() {
         executor.systemMode();
         return this;
     }
 
-    public SOQL stripInaccessible() {
+    public rflib_SOQL stripInaccessible() {
         return stripInaccessible(AccessType.READABLE);
     }
 
-    public SOQL stripInaccessible(AccessType accessType) {
+    public rflib_SOQL stripInaccessible(AccessType accessType) {
         executor.stripInaccessible(accessType);
         return this;
     }
 
-    public SOQL withSharing() {
+    public rflib_SOQL withSharing() {
         executor.withSharing();
         return this;
     }
 
-    public SOQL withoutSharing() {
+    public rflib_SOQL withoutSharing() {
         executor.withoutSharing();
         return this;
     }
 
-    public SOQL mockId(String queryIdentifier) {
+    public rflib_SOQL mockId(String queryIdentifier) {
         executor.mockId(queryIdentifier);
         return this;
     }
 
-    public SOQL preview() {
-        System.debug(LoggingLevel.ERROR, '\n\n============ SOQL Preview ============\n' + toString() + '\n=======================================\n');
-        System.debug(LoggingLevel.ERROR, '\n\n============ SOQL Binding ============\n' + JSON.serializePretty(binding()) + '\n=======================================\n');
+    public rflib_SOQL preview() {
+        System.debug(LoggingLevel.ERROR, '\n\n============ rflib_SOQL Preview ============\n' + toString() + '\n=======================================\n');
+        System.debug(LoggingLevel.ERROR, '\n\n============ rflib_SOQL Binding ============\n' + JSON.serializePretty(binding()) + '\n=======================================\n');
         return this;
     }
 
@@ -858,23 +858,23 @@ public virtual inherited sharing class SOQL implements Queryable {
         return executor.toQueryLocator();
     }
 
-    public SOQL byId(SObject record) {
+    public rflib_SOQL byId(SObject record) {
         return byId(record.Id);
     }
 
-    public SOQL byId(Id recordId) {
+    public rflib_SOQL byId(Id recordId) {
         return whereAre(Filter.id().equal(recordId));
     }
 
-    public SOQL byIds(Iterable<Id> recordIds) {
+    public rflib_SOQL byIds(Iterable<Id> recordIds) {
         return whereAre(Filter.id().isIn(recordIds));
     }
 
-    public SOQL byIds(List<SObject> records) {
+    public rflib_SOQL byIds(List<SObject> records) {
         return whereAre(Filter.id().isIn(records));
     }
 
-    public SOQL byRecordType(String recordTypeDeveloperName) {
+    public rflib_SOQL byRecordType(String recordTypeDeveloperName) {
         return whereAre(Filter.recordType().equal(recordTypeDeveloperName));
     }
 

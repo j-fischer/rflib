@@ -67,7 +67,7 @@ private class rflib_LogArchiveControllerTest {
     static void testClearArchive_Success() {
         // Given
         rflib_Logs_Archive__b oldLog = createLogRecord(Datetime.now().addDays(-10));
-        SOQL.setMock(GET_OLDEST_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ oldLog });
+        rflib_SOQL.setMock(GET_OLDEST_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ oldLog });
         
         rflib_MockDmlExecutor dmlExecutor = new rflib_MockDmlExecutor(new List<Database.DeleteResult> {
             createSuccessDeleteResult()
@@ -104,7 +104,7 @@ private class rflib_LogArchiveControllerTest {
         Datetime endDate = Datetime.now();
         
         rflib_Logs_Archive__b logRecord = createLogRecord(startDate.addHours(1));
-        SOQL.setMock(GET_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ logRecord });
+        rflib_SOQL.setMock(GET_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ logRecord });
 
         // When
         rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(startDate, endDate);
@@ -123,7 +123,7 @@ private class rflib_LogArchiveControllerTest {
         List<rflib_Logs_Archive__b> expectedRecords = new List<rflib_Logs_Archive__b>{
             createLogRecord(Datetime.now())
         };
-        SOQL.setMock(GET_RECORDS_MOCK_ID, expectedRecords);
+        rflib_SOQL.setMock(GET_RECORDS_MOCK_ID, expectedRecords);
 
         // When
         rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(null, null);

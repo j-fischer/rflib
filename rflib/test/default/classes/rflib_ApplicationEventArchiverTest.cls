@@ -45,7 +45,7 @@ private class rflib_ApplicationEventArchiverTest {
             createEvent(TODAY.addDays(-29), 'Event2')
         };
 
-        SOQL.setMock(QUERY_MOCK_ID, events);
+        rflib_SOQL.setMock(QUERY_MOCK_ID, events);
 
         // WHEN
         Test.startTest();
@@ -64,7 +64,7 @@ private class rflib_ApplicationEventArchiverTest {
         rflib_ApplicationEventArchiver.APPLICATION_EVENT_SERVICE = mockService;
         rflib_ApplicationEventArchiver.TODAY = TODAY;
 
-        SOQL.setMock(QUERY_MOCK_ID, new List<rflib_Application_Event__c>());
+        rflib_SOQL.setMock(QUERY_MOCK_ID, new List<rflib_Application_Event__c>());
 
         // WHEN
         Test.startTest();
@@ -142,7 +142,7 @@ private class rflib_ApplicationEventArchiverTest {
             createEvent(TODAY.addDays(-31), 'Event1')
         };
 
-        SOQL.setMock('rflib_ApplicationEventArchiver.execute', events);
+        rflib_SOQL.setMock('rflib_ApplicationEventArchiver.execute', events);
 
         // WHEN
         Test.startTest();
