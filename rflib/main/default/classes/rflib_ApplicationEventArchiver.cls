@@ -54,16 +54,18 @@ public inherited sharing class rflib_ApplicationEventArchiver implements Schedul
             Date threshold = TODAY.addDays(rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault * (-1));
     
             List<rflib_Application_Event__c> applicationEvents = rflib_SOQL.of(rflib_Application_Event__c.SObjectType)
-                .with(rflib_Application_Event__c.Id)
-                .with(rflib_Application_Event__c.Created_By_ID__c)
-                .with(rflib_Application_Event__c.Occurred_On__c)
-                .with(rflib_Application_Event__c.Event_Name__c)
-                .with(rflib_Application_Event__c.Related_Record_ID__c)
-                .with(rflib_Application_Event__c.Additional_Details__c)
+                .with(
+                    rflib_Application_Event__c.Created_By_ID__c,
+                    rflib_Application_Event__c.Occurred_On__c,
+                    rflib_Application_Event__c.Event_Name__c,
+                    rflib_Application_Event__c.Related_Record_ID__c,
+                    rflib_Application_Event__c.Additional_Details__c
+                )
                 .whereAre(rflib_SOQL.Filter
                     .with(rflib_Application_Event__c.Occurred_On__c)
                     .lessThan(threshold))
                 .setLimit(rflib_GlobalSettings.archiveAppEventQueryLimitOrDefault)
+                .systemMode()
                 .mockId('rflib_ApplicationEventArchiver.execute')
                 .toList();
     

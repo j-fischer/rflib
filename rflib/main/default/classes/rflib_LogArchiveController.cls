@@ -100,31 +100,39 @@ public with sharing class rflib_LogArchiveController {
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
             return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
-                .with(rflib_Logs_Archive__b.CreatedDate__c)
-                .with(rflib_Logs_Archive__b.CreatedById__c)
-                .with(rflib_Logs_Archive__b.Context__c)
-                .with(rflib_Logs_Archive__b.Log_Level__c)
-                .with(rflib_Logs_Archive__b.Request_ID__c)
-                .with(rflib_Logs_Archive__b.Log_Messages__c)
-                .with(rflib_Logs_Archive__b.Platform_Info__c)
-                .whereAre(rflib_SOQL.Filter
-                    .with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate)
-                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
+                .with(new List<SObjectField>{
+                    rflib_Logs_Archive__b.CreatedDate__c,
+                    rflib_Logs_Archive__b.CreatedById__c,
+                    rflib_Logs_Archive__b.Context__c,
+                    rflib_Logs_Archive__b.Log_Level__c,
+                    rflib_Logs_Archive__b.Request_ID__c,
+                    rflib_Logs_Archive__b.Log_Messages__c,
+                    rflib_Logs_Archive__b.Platform_Info__c
+                })
+                .whereAre(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
+                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
+                )
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
+                .systemMode()
                 .mockId('DefaultLogArchiveQueryLocator.getRecords')
                 .toList();
         }
 
         public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
             return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
-                .with(rflib_Logs_Archive__b.CreatedDate__c)
-                .with(rflib_Logs_Archive__b.Context__c)
-                .with(rflib_Logs_Archive__b.Log_Level__c)
-                .with(rflib_Logs_Archive__b.Request_ID__c)
+                .with(
+                    rflib_Logs_Archive__b.CreatedDate__c,
+                    rflib_Logs_Archive__b.Context__c,
+                    rflib_Logs_Archive__b.Log_Level__c,
+                    rflib_Logs_Archive__b.Request_ID__c
+                )
                 .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
                 .whereAre(rflib_SOQL.Filter
-                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate))
+                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate)
+                )
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
+                .systemMode()
                 .mockId('DefaultLogArchiveQueryLocator.getOldestRecords')
                 .toList();
         }
