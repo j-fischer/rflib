@@ -41,6 +41,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
     @TestVisible
     private static String PLATFORM_INFO = null;
+    @TestVisible 
+    private static String STACKTRACE = null;
 
     private static final String APPLICATION_EVENT_NAME_PATTERN = 'log-{0}-{1}';
 
@@ -260,6 +262,10 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         PLATFORM_INFO = platformInfo;
     }
 
+    public void setStacktrace(String stacktrace) {
+        STACKTRACE = stacktrace;
+    }
+
     public void trace(String message) {
         trace(message, null);
     }
@@ -372,7 +378,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             Log_Level__c = logLevel.toString(),
             Context__c = context.substring(0, Math.min(context.length(), 40)),
             Platform_Info__c = getPlatformInformation(),
-            Log_Messages__c = logMessageToPublish
+            Log_Messages__c = logMessageToPublish,
+            Stacktrace__c = STACKTRACE != null ? STACKTRACE : new DmlException().getStackTraceString()
         );
 
         platformEventsToLog.add(eventToLog);
