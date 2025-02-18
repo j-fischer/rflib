@@ -36,7 +36,7 @@ public with sharing class rflib_PermissionsExplorerController {
     private static final String APEX_SEARCH_TYPE = 'APX';
     
     @TestVisible private static final Integer APEX_CURSOR_RESULT_SIZE = 2000;
-    @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 49995;
+    @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 24995;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
