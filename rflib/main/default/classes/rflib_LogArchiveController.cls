@@ -99,23 +99,42 @@ public with sharing class rflib_LogArchiveController {
     public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
-            return [
-                SELECT CreatedDate__c, CreatedById__c, Context__c, Log_Level__c, Request_ID__c, Log_Messages__c, Platform_Info__c 
-                FROM rflib_Logs_Archive__b
-                WHERE CreatedDate__c > :startDate
-                AND CreatedDate__c < :endDate
-                LIMIT :ARCHIVE_LOG_QUERY_LIMIT
-            ];
+            return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
+                .with(new List<SObjectField>{
+                    rflib_Logs_Archive__b.CreatedDate__c,
+                    rflib_Logs_Archive__b.CreatedById__c,
+                    rflib_Logs_Archive__b.Context__c,
+                    rflib_Logs_Archive__b.Log_Level__c,
+                    rflib_Logs_Archive__b.Request_ID__c,
+                    rflib_Logs_Archive__b.Log_Messages__c,
+                    rflib_Logs_Archive__b.Platform_Info__c
+                })
+                .whereAre(rflib_SOQL.FilterGroup
+                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
+                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
+                )
+                .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
+                .systemMode()
+                .mockId('DefaultLogArchiveQueryLocator.getRecords')
+                .toList();
         }
 
         public List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate) {
-            return [
-                SELECT CreatedDate__c, Context__c, Log_Level__c, Request_ID__c 
-                FROM rflib_Logs_Archive__b 
-                WHERE CreatedDate__c < :referenceDate
-                ORDER BY CreatedDate__c ASC
-                LIMIT 50000
-            ];
+            return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
+                .with(
+                    rflib_Logs_Archive__b.CreatedDate__c,
+                    rflib_Logs_Archive__b.Context__c,
+                    rflib_Logs_Archive__b.Log_Level__c,
+                    rflib_Logs_Archive__b.Request_ID__c
+                )
+                .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
+                .whereAre(rflib_SOQL.Filter
+                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate)
+                )
+                .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
+                .systemMode()
+                .mockId('DefaultLogArchiveQueryLocator.getOldestRecords')
+                .toList();
         }
     }
 }

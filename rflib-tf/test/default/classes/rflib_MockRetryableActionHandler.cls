@@ -26,8 +26,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public virtual class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
+public class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
     
     private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockRetryableActionHandler');
 

@@ -50,16 +50,25 @@ public inherited sharing class rflib_ApplicationEventArchiver implements Schedul
     public void execute(SchedulableContext ctx) {
         try {
             LOGGER.info('execute() invoked');
-
+    
             Date threshold = TODAY.addDays(rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault * (-1));
-
-            List<rflib_Application_Event__c> applicationEvents = [
-                SELECT Id, Created_By_ID__c, Occurred_On__c, Event_Name__c, Related_Record_ID__c, Additional_Details__c
-                FROM rflib_Application_Event__c
-                WHERE Occurred_On__c < :threshold
-                LIMIT :rflib_GlobalSettings.archiveAppEventQueryLimitOrDefault
-            ];
-
+    
+            List<rflib_Application_Event__c> applicationEvents = rflib_SOQL.of(rflib_Application_Event__c.SObjectType)
+                .with(
+                    rflib_Application_Event__c.Created_By_ID__c,
+                    rflib_Application_Event__c.Occurred_On__c,
+                    rflib_Application_Event__c.Event_Name__c,
+                    rflib_Application_Event__c.Related_Record_ID__c,
+                    rflib_Application_Event__c.Additional_Details__c
+                )
+                .whereAre(rflib_SOQL.Filter
+                    .with(rflib_Application_Event__c.Occurred_On__c)
+                    .lessThan(threshold))
+                .setLimit(rflib_GlobalSettings.archiveAppEventQueryLimitOrDefault)
+                .systemMode()
+                .mockId('rflib_ApplicationEventArchiver.execute')
+                .toList();
+    
             APPLICATION_EVENT_SERVICE.archiveEvents(applicationEvents);
         } catch (Exception ex) {
             LOGGER.fatal('Failed to archive application events', ex);
