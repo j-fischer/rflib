@@ -16,6 +16,12 @@
     </values>
     <values>
         <field>Transformation_Formula__c</field>
-        <value xsi:type="xsd:string">FALSE</value>
+        <value xsi:type="xsd:string">CASE(
+UPPER(Log_Level__c),
+&quot;FATAL&quot;, FALSE,
+&quot;ERROR&quot;, FALSE,
+&quot;WARN&quot;,TRUE,
+TRUE
+)</value>
     </values>
 </CustomMetadata>
