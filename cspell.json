@@ -24,7 +24,7 @@
         "**/{cspell.*,cSpell.*,.cspell.*,cspell.config.*}",
         "*.{png,jpg,pdf}",
         "*.{report,dashboard,flexipage}*",
-        "**/classes/SOQL*",
+        "**/classes/rflib_SOQL*",
         "**/*.snap",
         "**/*.trie",
         "**/coverage/**",
