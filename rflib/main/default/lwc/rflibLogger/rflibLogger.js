@@ -52,7 +52,7 @@ const state = {
 const convertToString = (arg) => {
     if (arg === undefined) return 'undefined';
     if (arg === null) return 'null';
-    
+
     switch (typeof arg) {
         case 'object':
             try {
@@ -73,9 +73,7 @@ const convertToString = (arg) => {
 
 const format = (strToFormat, ...args) => {
     return strToFormat.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] !== 'undefined' 
-            ? convertToString(args[number])
-            : 'undefined';
+        return typeof args[number] !== 'undefined' ? convertToString(args[number]) : 'undefined';
     });
 };
 
@@ -86,6 +84,16 @@ const addMessage = (message) => {
 
     const fullMessage = new Date().toISOString() + '|' + message;
     state.messages.push(fullMessage);
+};
+
+const getFilteredStacktrace = () => {
+    try {
+        const error = new Error();
+        const stackLines = error.stack.split('\n');
+        return stackLines.filter((line) => !line.toLowerCase().includes('rflib')).join('\n');
+    } catch (error) {
+        return '[Unable to generate stacktrace]';
+    }
 };
 
 const log = (level, component, message) => {
@@ -105,7 +113,8 @@ const log = (level, component, message) => {
                 platformInfo: JSON.stringify(platformInfo),
                 level: level.label,
                 context: component,
-                message: state.messages.join('\n')
+                message: state.messages.join('\n'),
+                stacktrace: getFilteredStacktrace()
             }).catch((error) => {
                 window.console.log('>>> Failed to log message to server for: ' + JSON.stringify(error));
             });
@@ -210,10 +219,13 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
             if (typeof logger[logMethodName] === 'function') {
                 logger[logMethodName].apply(logger, [
                     '{0} took a total of {1}ms (threshold={2}ms).',
-                    timerName, duration, threshold
+                    timerName,
+                    duration,
+                    threshold
                 ]);
             } else {
-                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', 
+                logger.warn(
+                    '{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided',
                     timerName,
                     duration,
                     threshold

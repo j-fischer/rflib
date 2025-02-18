@@ -39,6 +39,7 @@ public class rflib_MockLogger implements rflib_Logger {
     public rflib_LogLevel generalLogLevel;
     public rflib_LogLevel logAggregationLogLevel;
     public String platformInfo;
+    public String stacktrace;
 
     public Boolean logsPrinted = false;
     public Boolean logEventsPublished = false;
@@ -85,6 +86,10 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public void setPlatformInfo(String platformInfo) {
         this.platformInfo = platformInfo;
+    }
+
+    public void setStacktrace(String stacktrace) {
+        this.stacktrace = stacktrace;
     }
 
     public void trace(String message) {

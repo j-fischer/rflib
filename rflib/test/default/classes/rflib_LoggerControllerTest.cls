@@ -108,10 +108,11 @@ private class rflib_LoggerControllerTest {
         String context = 'someContext';
         String message = 'some message';
         String platformInfo = '{"key": "some random platform info 123"}';
+        String stacktrace = 'some stacktrace';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo);
+        rflib_LoggerController.log(level, context, message, platformInfo, stacktrace);
         
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
     }
@@ -120,10 +121,11 @@ private class rflib_LoggerControllerTest {
         String context = 'someContext';
         String message = 'some message';
         String platformInfo = '{"key": "some random platform info 123"}';
+        String stacktrace = 'some stacktrace';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo);
+        rflib_LoggerController.log(level, context, message, platformInfo, stacktrace);
 
         System.assertEquals(1, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
@@ -133,5 +135,6 @@ private class rflib_LoggerControllerTest {
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(message), 'Message should be part of the log statement');
         
         System.assertEquals(platformInfo, rflib_DefaultLogger.PLATFORM_INFO);
+        System.assertEquals(stacktrace, rflib_DefaultLogger.STACKTRACE);
     }
 }

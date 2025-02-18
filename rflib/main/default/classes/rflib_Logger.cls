@@ -143,6 +143,15 @@ public interface rflib_Logger {
   void setPlatformInfo(String platformInfo);
 
   /**
+   * Override the stacktrace to be sent with any log event for this transaction. 
+   *
+   * By default, rflib_DefaultLogger will provide the stacktrace of the current execution context.
+   *
+   * @param  stacktrace The string representation of the stacktrace.
+   */
+  void setStacktrace(String stracktrace);
+
+  /**
    * Write a TRACE log statement. 
    * @param  message The message to be logged. 
    */
