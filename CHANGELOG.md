@@ -1,7 +1,17 @@
+### RFLIB 9.1.0
+
+Package ID: 04tKY0000011MQLYA2
+Package Alias: RFLIB@9.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000011MQLYA2
+
+- [PR #103](https://github.com/j-fischer/rflib/pull/103) Adoption of a SOQL library to standardize and improve our query construction across the codebase. The library provides a type-safe, fluent interface for building SOQL queries, reducing the risk of runtime errors and improving code maintainability.
+- [PR #102](https://github.com/j-fischer/rflib/pull/102) Improved the logic for the cleanup of archived log records to ensure retention for at least a specified number of days, with the default being 180 days.
+- Fixed bug that prevented the retrieval of Apex permissions in larger orgs from succeeding.
+
 ### RFLIB 9.0.1
 
 Package ID: 04tKY0000011MDJYA2
-Package Alias: RFLIB@9.0.0-1
+Package Alias: RFLIB@9.0.1-1
 Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000011MDJYA2
 
 - [Issue #101] (https://github.com/j-fischer/rflib/issues/101) Fixed regression introduced in version 8.0 that prevented the page navigation from switching pages.
