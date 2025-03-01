@@ -138,7 +138,7 @@ private class rflib_BigObjectCounterTest {
             counter.finish(null);
             System.assert(false, 'Expected exception was not thrown');
         } catch (rflib_BigObjectCounter.rflib_BigObjectCounterException ex) {
-            System.assert(ex.getMessage().contains('No target record found'));
+            System.assert(ex.getMessage().contains('No target record found'), 'Error did not match expectation: ' + ex.getMessage());
         }
         Test.stopTest();
     }

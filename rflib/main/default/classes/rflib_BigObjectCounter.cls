@@ -116,16 +116,15 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      */
     public void finish(Database.BatchableContext bc) {
         try {
-            String query = 'SELECT Id, ' + targetCounterFieldApiName + ', ' + 
-                targetLastUpdatedFieldApiName + ' FROM ' + targetObjectApiName + 
+            String query = 'SELECT Id, ' + targetCounterFieldApiName + 
+                ' FROM ' + targetObjectApiName + 
                 ' WHERE Name = :bigObjectType LIMIT 1';
             
             List<SObject> records = Database.query(query);
             if (records.isEmpty()) {
-                LOGGER.error('No target record found for Big Object type: {0}', 
-                    new Object[] { bigObjectType });
-                throw new rflib_BigObjectCounterException(
-                    'No target record found for Big Object type: ' + bigObjectType);
+                String errorMessage = 'No target record found for Big Object type: ' + bigObjectType;
+                LOGGER.error(errorMessage);
+                throw new rflib_BigObjectCounterException(errorMessage);
             }
 
             SObject record = records[0];
@@ -135,6 +134,9 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
 
             LOGGER.info('Successfully updated count for {0}. Final count: {1}', 
                 new Object[] { bigObjectType, currentCount });
+        } catch (rflib_BigObjectCounterException ex) {
+            // Re-throw our custom exceptions without wrapping
+            throw ex;
         } catch (Exception ex) {
             LOGGER.error('Failed to update target record', ex);
             throw new rflib_BigObjectCounterException('Failed to update target record: ' + ex.getMessage());
