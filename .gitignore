@@ -41,3 +41,7 @@ assets/key_iv.txt
 
 #AI Digest tool to help with AI assisted development
 .aidigest*
+
+#SFDX Hardis
+tmp/**
+config/user/.sfdx-hardis*

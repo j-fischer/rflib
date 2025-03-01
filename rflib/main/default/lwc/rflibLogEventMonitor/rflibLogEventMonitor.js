@@ -315,8 +315,14 @@ export default class LogEventMonitor extends LightningElement {
                 this.selectedLogEventCreatedById = null;
 
                 clearArchive()
-                    .then(() => {
-                        logger.debug('Archive cleared');
+                    .then((result) => {
+                        logger.debug('Archive cleared, count = ' + result);
+                        const evt = new ShowToastEvent({
+                            title: 'Request successful',
+                            message: 'Cleared ' + result + ' archived records.',
+                            variant: 'info'
+                        });
+                        this.dispatchEvent(evt);
                     })
                     .catch((ex) => {
                         logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
