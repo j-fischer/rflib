@@ -30,15 +30,89 @@ public with sharing class rflib_BigObjectStatController {
 
             String query = 'SELECT Id FROM ' + bigObjectName;
             Database.executeBatch(new rflib_BigObjectCounter(
-                query,
                 bigObjectName,
                 'rflib_Big_Object_Stat__c',
                 'Record_Count__c',
-                0
+                0,
+                null,
+                null,
+                50000,
+                new String[]{'CreatedDate__c','Context__c','Log_Level__c','Request_ID__c'}
             ));
         } catch (Exception ex) {
             LOGGER.error('Failed to refresh stats for ' + bigObjectName, ex);
             throw new AuraHandledException(ex.getMessage());
+        }
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static List<FieldMetadata> getFieldMetadata(String fields) {
+        try {
+            LOGGER.debug('Getting field metadata for fields: {0}', new Object[] { fields });
+            
+            List<FieldMetadata> metadata = new List<FieldMetadata>();
+            SObjectType statType = rflib_Big_Object_Stat__c.SObjectType;
+            Map<String, Schema.SObjectField> fieldMap = statType.getDescribe().fields.getMap();
+            
+            metadata.add(new FieldMetadata('Name', 'Name', 'Big Object Name', 'text'));
+            
+            for (String field : fields.split(',')) {
+                field = field.trim();
+                Schema.DescribeFieldResult describe = fieldMap.get(field).getDescribe();
+                
+                String fieldType = mapFieldType(describe);
+                metadata.add(new FieldMetadata(
+                    describe.getName(),
+                    describe.getName(),
+                    describe.getLabel(),
+                    fieldType
+                ));
+            }
+            
+            return metadata;
+        } catch (Exception ex) {
+            LOGGER.error('Failed to get field metadata', ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
+    
+    private static String mapFieldType(Schema.DescribeFieldResult field) {
+        switch on field.getType() {
+            when CURRENCY {
+                return 'currency';
+            }
+            when DATETIME {
+                return 'date';
+            }
+            when PERCENT {
+                return 'percent';
+            }
+            when PHONE {
+                return 'phone';
+            }
+            when URL {
+                return 'url';
+            }
+            when INTEGER, DOUBLE, LONG {
+                return 'number';
+            }
+            when else {
+                return 'text';
+            }
+        }
+    }
+    
+    public class FieldMetadata {
+        @AuraEnabled public String fieldName;
+        @AuraEnabled public String apiName;
+        @AuraEnabled public String label;
+        @AuraEnabled public String type;
+        
+        public FieldMetadata(String fieldName, String apiName, String label, String type) {
+            this.fieldName = fieldName;
+            this.apiName = apiName;
+            this.label = label;
+            this.type = type;
         }
     }
 }

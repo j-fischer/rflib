@@ -1,9 +1,11 @@
 <template>
     <lightning-card title="Big Object Statistics">
-        <div slot="actions">
-            <lightning-button label="Refresh All" onclick={refreshAllBigObjects} disabled={isRefreshing}>
-            </lightning-button>
-        </div>
+        <template if:false={hasStats}>
+            <div slot="actions">
+                <lightning-button label="Refresh All" onclick={refreshAllBigObjects} disabled={isRefreshing}>
+                </lightning-button>
+            </div>
+        </template>
 
         <template if:true={error}>
             <div class="slds-p-around_medium">
@@ -13,22 +15,14 @@
 
         <template if:true={hasStats}>
             <div class="slds-p-around_medium">
-                <lightning-datatable key-field="Id" data={wiredStatsResult.data} columns={columns} hide-checkbox-column>
+                <lightning-datatable
+                    key-field="Id"
+                    data={wiredStatsResult.data}
+                    columns={columns}
+                    hide-checkbox-column
+                    onrowaction={handleRowAction}
+                >
                 </lightning-datatable>
-            </div>
-
-            <div class="slds-p-around_medium">
-                <template for:each={wiredStatsResult.data} for:item="stat">
-                    <lightning-button
-                        key={stat.Id}
-                        label="Refresh"
-                        data-name={stat.Name}
-                        onclick={refreshBigObject}
-                        class="slds-m-right_x-small"
-                        disabled={isRefreshing}
-                    >
-                    </lightning-button>
-                </template>
             </div>
         </template>
 

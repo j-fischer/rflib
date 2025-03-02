@@ -5,8 +5,11 @@ import { createLogger } from 'c/rflibLogger';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getStats from '@salesforce/apex/rflib_BigObjectStatController.getStats';
 import refreshStats from '@salesforce/apex/rflib_BigObjectStatController.refreshStats';
+import getFieldMetadata from '@salesforce/apex/rflib_BigObjectStatController.getFieldMetadata';
 
 const logger = createLogger('rflibBigObjectStat');
+
+const ACTIONS = [{ label: 'Refresh', name: 'refresh' }];
 
 export default class RflibBigObjectStat extends LightningElement {
     @api bigObjects;
@@ -17,6 +20,7 @@ export default class RflibBigObjectStat extends LightningElement {
     error;
     displayFields = [];
     isRefreshing = false;
+    columns = [];
 
     get hasStats() {
         return this.wiredStatsResult?.data?.length > 0;
@@ -29,8 +33,40 @@ export default class RflibBigObjectStat extends LightningElement {
             logger.debug('Received stats data: {0}', JSON.stringify(result.data));
             this.error = undefined;
         } else if (result.error) {
-            logger.error('Failed to retrieve stats', result.error);
+            logger.error('Failed to retrieve stats: ' + result.error);
             this.handleError('Error Loading Stats', 'Failed to retrieve Big Object statistics');
+        }
+    }
+
+    @wire(getFieldMetadata, { fields: '$fieldsToDisplay' })
+    wiredFieldMetadata({ error, data }) {
+        if (data) {
+            logger.debug('Received field metadata: {0}', JSON.stringify(data));
+            this.columns = [
+                ...data.map((field) => ({
+                    label: field.label,
+                    fieldName: field.fieldName,
+                    type: field.type,
+                    cellAttributes: { alignment: 'left' },
+                    ...(field.type === 'date' && {
+                        typeAttributes: {
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            timeZoneName: 'short'
+                        }
+                    })
+                })),
+                {
+                    type: 'action',
+                    typeAttributes: { rowActions: ACTIONS }
+                }
+            ];
+        } else if (error) {
+            logger.error('Failed to get field metadata', error);
+            this.handleError('Configuration Error', 'Failed to configure columns for display');
         }
     }
 
@@ -45,10 +81,9 @@ export default class RflibBigObjectStat extends LightningElement {
         this.unsubscribeFromStatEvents();
     }
 
-    async refreshBigObject(event) {
+    async refreshBigObject(bigObjectName) {
         try {
             this.isRefreshing = true;
-            const bigObjectName = event.target.dataset.name;
             logger.info('Refreshing stats for big object: {0}', bigObjectName);
             await refreshStats({ bigObjectName });
         } catch (error) {
@@ -114,6 +149,19 @@ export default class RflibBigObjectStat extends LightningElement {
         } catch (error) {
             logger.error('Failed to unsubscribe from Big Object Stat events', error);
             this.handleError('Unsubscribe Error', 'Failed to unsubscribe from Big Object stat updates');
+        }
+    }
+
+    handleRowAction(event) {
+        const actionName = event.detail.action.name;
+        const row = event.detail.row;
+
+        switch (actionName) {
+            case 'refresh':
+                this.refreshBigObject(row.Name);
+                break;
+            default:
+                logger.warn('Unknown action: {0}', actionName);
         }
     }
 
