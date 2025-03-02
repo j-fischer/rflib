@@ -200,7 +200,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
             } else {
                 record = records[0];
                 record.put(targetCounterFieldApiName, currentCount);
-                update record;
+                update record; // This will trigger CDC event automatically
                 
                 LOGGER.info('Updated count for {0}. Final count: {1}', 
                     new Object[] { bigObjectType, currentCount });

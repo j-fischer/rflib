@@ -105,7 +105,7 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>bigObjectConfigs</name>
-                    <value>[{&quot;name&quot;:&quot;rflib_Logs_Archive__b&quot;,&quot;indexFields&quot;:[&quot;CreatedDate__c&quot;,&quot;Context__c&quot;,&quot;Log_Level__c&quot;,&quot;Request_ID__c&quot;]},{&quot;name&quot;:&quot;rflib_Application_Event_archive__b&quot;,&quot;indexFields&quot;:[&quot;Occurred_On__c&quot;,&quot;Event_Name__c&quot;,&quot;Related_Record_ID__c&quot;,&quot;Created_By_ID__c&quot;]}]</value>
+                    <value>[{&quot;name&quot;:&quot;rflib_Logs_Archive__b&quot;,&quot;indexFields&quot;:[&quot;CreatedDate__c&quot;,&quot;Context__c&quot;,&quot;Log_Level__c&quot;,&quot;Request_ID__c&quot;], &quot;orderBy&quot;: &quot;ASC&quot;},{&quot;name&quot;:&quot;rflib_Application_Event_archive__b&quot;,&quot;indexFields&quot;:[&quot;Occurred_On__c&quot;,&quot;Event_Name__c&quot;,&quot;Related_Record_ID__c&quot;,&quot;Created_By_ID__c&quot;], &quot;orderBy&quot;: &quot;DESC&quot;}]</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>fieldsToDisplay</name>

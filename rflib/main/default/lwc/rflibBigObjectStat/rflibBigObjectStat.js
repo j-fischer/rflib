@@ -8,6 +8,7 @@ import refreshStats from '@salesforce/apex/rflib_BigObjectStatController.refresh
 import getFieldMetadata from '@salesforce/apex/rflib_BigObjectStatController.getFieldMetadata';
 
 const logger = createLogger('rflibBigObjectStat');
+const CDC_CHANNEL = '/data/rflib_Big_Object_Stat__ChangeEvent';
 
 const ACTIONS = [{ label: 'Refresh', name: 'refresh' }];
 
@@ -163,25 +164,37 @@ export default class RflibBigObjectStat extends LightningElement {
 
     async subscribeToStatEvents() {
         try {
-            logger.debug('Subscribing to Big Object Stat Updated events');
-            this.subscription = await subscribe('/event/rflib_Big_Object_Stat_Updated__e', -1, (event) => {
-                logger.debug('Received stat update event: {0}', JSON.stringify(event));
-                refreshApex(this.wiredStatsResult);
+            logger.debug('Subscribing to Big Object Stat CDC events');
+            this.subscription = await subscribe(CDC_CHANNEL, -1, (event) => {
+                logger.debug('Received CDC event: {0}', JSON.stringify(event));
+
+                const changeType = event.data.changeType;
+                const changedFields = event.data.changedFields;
+
+                if (changeType === 'UPDATE' || changeType === 'CREATE') {
+                    logger.debug(
+                        'Processing {0} event. Changed fields: {1}',
+                        changeType,
+                        JSON.stringify(changedFields)
+                    );
+                    refreshApex(this.wiredStatsResult);
+                }
             });
-            logger.info('Successfully subscribed to Big Object Stat events');
+
+            logger.info('Successfully subscribed to Big Object Stat CDC events');
         } catch (error) {
-            logger.error('Failed to subscribe to Big Object Stat events', error);
+            logger.error('Failed to subscribe to Big Object Stat CDC events', error);
             this.handleError('Subscription Error', 'Failed to subscribe to Big Object stat updates');
         }
     }
 
     async unsubscribeFromStatEvents() {
         try {
-            logger.debug('Unsubscribing from Big Object Stat Updated events');
+            logger.debug('Unsubscribing from Big Object Stat CDC events');
             await unsubscribe(this.subscription);
-            logger.info('Successfully unsubscribed from Big Object Stat events');
+            logger.info('Successfully unsubscribed from Big Object Stat CDC events');
         } catch (error) {
-            logger.error('Failed to unsubscribe from Big Object Stat events', error);
+            logger.error('Failed to unsubscribe from Big Object Stat CDC events', error);
             this.handleError('Unsubscribe Error', 'Failed to unsubscribe from Big Object stat updates');
         }
     }
