@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>decorate</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>richTextValue</name>
+                    <value>&lt;p&gt;Read up on the latest features in the &lt;a href=&quot;https://github.com/j-fischer/rflib/wiki&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;RFLIB Wiki&lt;/a&gt; and speed up your logging adoption using the &lt;a href=&quot;https://github.com/j-fischer/rflib-plugin&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;RFLIB SFDX Plugin&lt;/a&gt; (beta). For new features and support, create an &lt;a href=&quot;https://github.com/j-fischer/rflib/issues&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Issue on Github&lt;/a&gt;. (RFLIB Version {!$Label.RFLIB_Version})&lt;/p&gt;</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:richText</componentName>
+                <identifier>flexipage_richText</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
@@ -85,6 +99,20 @@
                 </componentInstanceProperties>
                 <componentName>rflibApexJobScheduler</componentName>
                 <identifier>c_rflibApexJobScheduler</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>bigObjects</name>
+                    <value>rflib_Logs_Archive__b,rflib_Application_Event_Archive__b</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldsToDisplay</name>
+                    <value>Record_Count__c,LastModifiedDate</value>
+                </componentInstanceProperties>
+                <componentName>rflibBigObjectStat</componentName>
+                <identifier>c_rflibBigObjectStat</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
