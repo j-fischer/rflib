@@ -27,12 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.EmptyCatchBlock')
-public with sharing class rflib_BigObjectCounter implements Database.Batchable<SObject> {
+public with sharing class rflib_BigObjectCounter implements Database.Batchable<SObject>, Database.Stateful {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_BigObjectCounter');
-
-    @TestVisible
-    private final String query;
     
     @TestVisible
     private final String bigObjectType;
@@ -48,101 +45,187 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     @TestVisible
     private Integer currentCount;
-
+    
+    // Record count at the start of this batch job (used to determine page size)
+    private Integer startingCount;
+    
+    // Pagination parameters: the last primary index field value processed and a set of compound keys for that value.
+    private String lastIndex1Value;
+    private Set<String> lastCompoundKeys;
+    
+    // Flag to indicate whether this is the initial batch (i.e. no pagination parameters yet)
+    private final Boolean isInitialBatch;
+    
+    // The page size and index fields are now passed into the constructor.
+    private final Integer pageSize;
+    private final List<String> indexFields;
+    
     /**
      * Constructor to initialize the batch job with required parameters.
      * 
-     * @param query                      The SOQL query string to execute against the Big Object
      * @param bigObjectType              The API name of the Big Object to count
      * @param targetObjectApiName        The API name of the object where the count will be stored
      * @param targetCounterFieldApiName  The API name of the field to store the count
-     * @param targetLastUpdatedFieldApiName The API name of the field to store the last updated timestamp
      * @param currentCount               The current count of records (used for chaining batch jobs)
+     * @param lastIndex1Value            The last primary index field value processed (null for initial batch)
+     * @param lastCompoundKeys           The compound keys corresponding to lastIndex1Value (null for initial batch)
+     * @param pageSize                   The number of records to query per batch page
+     * @param indexFields                The list of index fields that form the compound key (first element is primary)
      */
     public rflib_BigObjectCounter(
-        String query,
         String bigObjectType,
         String targetObjectApiName,
         String targetCounterFieldApiName,
-        Integer currentCount
+        Integer currentCount,
+        String lastIndex1Value,
+        Set<String> lastCompoundKeys,
+        Integer pageSize,
+        List<String> indexFields
     ) {
-        this.query = query;
         this.bigObjectType = bigObjectType;
         this.targetObjectApiName = targetObjectApiName;
         this.targetCounterFieldApiName = targetCounterFieldApiName;
-        this.currentCount = currentCount;
-
-        LOGGER.info('Initializing Big Object Counter for {0} with current count {1}', 
-            new Object[] { bigObjectType, currentCount });
+        this.targetLastUpdatedFieldApiName = null;  // Not used in this sample but can be assigned as needed.
+        this.currentCount = currentCount ?? 0;
+        this.startingCount = currentCount ?? 0;
+        this.lastIndex1Value = lastIndex1Value;
+        this.lastCompoundKeys = lastCompoundKeys ?? new Set<String>();
+        this.pageSize = pageSize ?? 50000;
+        this.indexFields = indexFields;
+        this.isInitialBatch = (lastIndex1Value == null);
+        
+        LOGGER.info('Initializing Big Object Counter for {0} with current count {1}. LastIndex1Value: {2}', 
+            new Object[] { bigObjectType, currentCount, lastIndex1Value });
     }
-
+    
     /**
-     * Start method that returns the query locator for the batch execution.
-     * 
-     * @param bc The batch context
-     * @return   Database.QueryLocator The query locator for batch processing
+     * Builds the dynamic SOQL query for the Big Object based on pagination.
      */
-    public Database.QueryLocator start(Database.BatchableContext bc) {
-        try {
-            LOGGER.info('Starting batch job with query: {0}', new Object[] { query });
-            return Database.getQueryLocator(query);
-        } catch (Exception ex) {
-            LOGGER.error('Failed to create query locator', ex);
-            throw new rflib_BigObjectCounterException('Failed to create query locator: ' + ex.getMessage());
+    private String buildQuery() {
+        String baseQuery = 'SELECT ';
+        // Add all index fields used to build the compound key.
+        baseQuery += String.join(indexFields, ', ');
+        baseQuery += ' FROM ' + bigObjectType;
+        
+        // For chained batches, filter on the primary index field.
+        if (!isInitialBatch) {
+            baseQuery += ' WHERE ' + indexFields[0] + ' >= \'' + String.escapeSingleQuotes(lastIndex1Value) + '\'';
         }
+        
+        baseQuery += ' ORDER BY ' + indexFields[0] + ' ASC';
+        baseQuery += ' LIMIT ' + pageSize;
+        
+        return baseQuery;
     }
-
+    
     /**
-     * Execute method that processes each batch of records.
-     * 
-     * @param bc    The batch context
-     * @param scope The list of SObject records to process
+     * Creates a compound key string from the record's index fields.
+     */
+    private String buildCompoundKey(SObject record) {
+        List<String> keyParts = new List<String>();
+        for (String field : indexFields) {
+            keyParts.add(String.valueOf(record.get(field)));
+        }
+        return String.join(keyParts, '||');
+    }
+    
+    /**
+     * Start method that returns an Iterable for processing a subset of Big Object records.
+     */
+    public Iterable<SObject> start(Database.BatchableContext bc) {
+        String query = buildQuery();
+
+        LOGGER.info('Starting batch job with query: {0}', new Object[] { query });
+        return Database.query(query);
+    }
+    
+    /**
+     * Execute method that processes each batch (chunk) of records.
      */
     public void execute(Database.BatchableContext bc, List<SObject> scope) {
         try {
             currentCount += scope.size();
-            LOGGER.debug('Processed batch of {0} records. Current count: {1}', 
+            // Iterate through each record to update pagination tracking.
+            for (SObject rec : scope) {
+                String currentIndex = String.valueOf(rec.get(indexFields[0]));
+                // When a new primary index value is encountered, reset the compound key tracker.
+                if (lastIndex1Value == null || currentIndex.compareTo(lastIndex1Value) > 0) {
+                    lastIndex1Value = currentIndex;
+                    lastCompoundKeys = new Set<String>();
+                }
+                // For records matching the current last primary index value, add their compound key.
+                if (String.valueOf(rec.get(indexFields[0])) == lastIndex1Value) {
+                    String compoundKey = buildCompoundKey(rec);
+                    lastCompoundKeys.add(compoundKey);
+                }
+            }
+            LOGGER.info('Processed batch of {0} records. Current count: {1}', 
                 new Object[] { scope.size(), currentCount });
         } catch (Exception ex) {
             LOGGER.error('Error processing batch', ex);
             throw new rflib_BigObjectCounterException('Error processing batch: ' + ex.getMessage());
         }
     }
-
+    
     /**
-     * Finish method that updates the target object with the final count and timestamp.
-     * 
-     * @param bc The batch context
+     * Finish method that updates the target record with the final count and chains the next batch job if needed.
      */
     public void finish(Database.BatchableContext bc) {
         try {
-            String query = 'SELECT Id, ' + targetCounterFieldApiName + 
+            LOGGER.info('Finishing batch job. Current count: {0}', new Object[] { currentCount });
+
+            // Update or create the target record with the final count.
+            String targetQuery = 'SELECT Id, ' + targetCounterFieldApiName + 
                 ' FROM ' + targetObjectApiName + 
-                ' WHERE Name = :bigObjectType LIMIT 1';
+                ' WHERE Name = \'' + String.escapeSingleQuotes(bigObjectType) + '\' LIMIT 1';
             
-            List<SObject> records = Database.query(query);
+            List<SObject> records = Database.query(targetQuery);
+            SObject record;
+            
             if (records.isEmpty()) {
-                String errorMessage = 'No target record found for Big Object type: ' + bigObjectType;
-                LOGGER.error(errorMessage);
-                throw new rflib_BigObjectCounterException(errorMessage);
+                record = Schema.getGlobalDescribe().get(targetObjectApiName).newSObject();
+                record.put('Name', bigObjectType);
+                record.put(targetCounterFieldApiName, currentCount);
+                insert record;
+                
+                LOGGER.info('Created new record for {0} with count: {1}', 
+                    new Object[] { bigObjectType, currentCount });
+            } else {
+                record = records[0];
+                record.put(targetCounterFieldApiName, currentCount);
+                update record;
+                
+                LOGGER.info('Updated count for {0}. Final count: {1}', 
+                    new Object[] { bigObjectType, currentCount });
             }
-
-            SObject record = records[0];
-            record.put(targetCounterFieldApiName, currentCount);
-
-            update record;
-
-            LOGGER.info('Successfully updated count for {0}. Final count: {1}', 
-                new Object[] { bigObjectType, currentCount });
-        } catch (rflib_BigObjectCounterException ex) {
-            // Re-throw our custom exceptions without wrapping
-            throw ex;
+            
+            // Determine the number of records processed in this batch page.
+            Integer pageCount = currentCount - startingCount;
+            // If we received a full page, schedule the next batch job.
+            if (pageCount == pageSize) {
+                LOGGER.info('Scheduling next batch job. Next query will start from primary index value: {0}', 
+                    new Object[] { lastIndex1Value });
+                Database.executeBatch(
+                    new rflib_BigObjectCounter(
+                        bigObjectType, 
+                        targetObjectApiName, 
+                        targetCounterFieldApiName, 
+                        currentCount,
+                        lastIndex1Value,
+                        lastCompoundKeys,
+                        pageSize,
+                        indexFields
+                    )
+                );
+            } else {
+                LOGGER.info('Batch processing complete. Total count: {0}', new Object[] { currentCount });
+            }
         } catch (Exception ex) {
-            LOGGER.error('Failed to update target record', ex);
-            throw new rflib_BigObjectCounterException('Failed to update target record: ' + ex.getMessage());
+            LOGGER.error('Failed to update target record or chain next batch', ex);
+            throw new rflib_BigObjectCounterException('Failed in finish: ' + ex.getMessage());
         }
     }
-
+    
     /**
      * Custom exception class for Big Object Counter specific errors.
      */
