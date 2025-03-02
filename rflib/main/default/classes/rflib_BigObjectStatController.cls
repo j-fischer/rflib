@@ -24,11 +24,11 @@ public with sharing class rflib_BigObjectStatController {
     }
     
     @AuraEnabled
-    public static void refreshStats(String bigObjectName) {
+    public static void refreshStats(String bigObjectName, List<String> indexFields, String orderBy) {
         try {
-            LOGGER.info('Refreshing stats for {0}', new Object[] { bigObjectName });
+            LOGGER.info('Refreshing stats for {0} with index fields {1}', 
+                new Object[] { bigObjectName, indexFields });
 
-            String query = 'SELECT Id FROM ' + bigObjectName;
             Database.executeBatch(new rflib_BigObjectCounter(
                 bigObjectName,
                 'rflib_Big_Object_Stat__c',
@@ -37,7 +37,8 @@ public with sharing class rflib_BigObjectStatController {
                 null,
                 null,
                 50000,
-                new String[]{'CreatedDate__c','Context__c','Log_Level__c','Request_ID__c'}
+                indexFields,
+                orderBy
             ));
         } catch (Exception ex) {
             LOGGER.error('Failed to refresh stats for ' + bigObjectName, ex);

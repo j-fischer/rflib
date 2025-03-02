@@ -8,8 +8,22 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__AppPage">
-            <property name="bigObjects" type="String" required="true" default="" label="Big Objects" description="Comma-separated list of Big Object API names"/>
-            <property name="fieldsToDisplay" type="String" required="true" default="Record_Count__c" label="Fields to Display" description="Comma-separated list of field API names to display"/>
+            <property 
+                name="bigObjectConfigs" 
+                type="String" 
+                required="true" 
+                default="" 
+                label="Big Object Configurations" 
+                description="JSON configuration for Big Objects. Format: [{'name':'ObjectName','indexFields':['Field1','Field2']}]"
+            />
+            <property 
+                name="fieldsToDisplay" 
+                type="String" 
+                required="true" 
+                default="Record_Count__c" 
+                label="Fields to Display" 
+                description="Comma-separated list of field API names to display"
+            />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

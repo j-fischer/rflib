@@ -1,11 +1,9 @@
 <template>
     <lightning-card title="Big Object Statistics">
-        <template if:false={hasStats}>
-            <div slot="actions">
-                <lightning-button label="Refresh All" onclick={refreshAllBigObjects} disabled={isRefreshing}>
-                </lightning-button>
-            </div>
-        </template>
+        <div slot="actions">
+            <lightning-button label="Count All" onclick={countAllBigObjects} disabled={isRefreshing}>
+            </lightning-button>
+        </div>
 
         <template if:true={error}>
             <div class="slds-p-around_medium">

@@ -50,7 +50,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     private Integer startingCount;
     
     // Pagination parameters: the last primary index field value processed and a set of compound keys for that value.
-    private String lastIndex1Value;
+    private Object lastIndex1Value;
     private Set<String> lastCompoundKeys;
     
     // Flag to indicate whether this is the initial batch (i.e. no pagination parameters yet)
@@ -59,7 +59,8 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     // The page size and index fields are now passed into the constructor.
     private final Integer pageSize;
     private final List<String> indexFields;
-    
+    private final String orderBy;
+
     /**
      * Constructor to initialize the batch job with required parameters.
      * 
@@ -71,16 +72,18 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      * @param lastCompoundKeys           The compound keys corresponding to lastIndex1Value (null for initial batch)
      * @param pageSize                   The number of records to query per batch page
      * @param indexFields                The list of index fields that form the compound key (first element is primary)
+     * @param orderBy                    Key word for ordering the query: either ASC or DESC
      */
     public rflib_BigObjectCounter(
         String bigObjectType,
         String targetObjectApiName,
         String targetCounterFieldApiName,
         Integer currentCount,
-        String lastIndex1Value,
+        Object lastIndex1Value,
         Set<String> lastCompoundKeys,
         Integer pageSize,
-        List<String> indexFields
+        List<String> indexFields,
+        String orderBy
     ) {
         this.bigObjectType = bigObjectType;
         this.targetObjectApiName = targetObjectApiName;
@@ -92,6 +95,8 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
         this.lastCompoundKeys = lastCompoundKeys ?? new Set<String>();
         this.pageSize = pageSize ?? 50000;
         this.indexFields = indexFields;
+        this.orderBy = orderBy;
+
         this.isInitialBatch = (lastIndex1Value == null);
         
         LOGGER.info('Initializing Big Object Counter for {0} with current count {1}. LastIndex1Value: {2}', 
@@ -99,23 +104,24 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     }
     
     /**
-     * Builds the dynamic SOQL query for the Big Object based on pagination.
+     * Builds the query for the Big Object using the rflib_SOQL library.
      */
-    private String buildQuery() {
-        String baseQuery = 'SELECT ';
-        // Add all index fields used to build the compound key.
-        baseQuery += String.join(indexFields, ', ');
-        baseQuery += ' FROM ' + bigObjectType;
+    private rflib_SOQL buildQuery() {
+        rflib_SOQL query = rflib_SOQL.of(bigObjectType).with(indexFields);
         
-        // For chained batches, filter on the primary index field.
         if (!isInitialBatch) {
-            baseQuery += ' WHERE ' + indexFields[0] + ' >= \'' + String.escapeSingleQuotes(lastIndex1Value) + '\'';
+            query.whereAre(
+                rflib_SOQL.Filter
+                    .with(indexFields[0])
+                    .greaterOrEqual(lastIndex1Value)
+            );
         }
         
-        baseQuery += ' ORDER BY ' + indexFields[0] + ' ASC';
-        baseQuery += ' LIMIT ' + pageSize;
-        
-        return baseQuery;
+        query.orderBy(indexFields[0], orderBy)
+            .setLimit(pageSize)
+            .systemMode();  // Big Objects require System Mode
+            
+        return query;
     }
     
     /**
@@ -133,10 +139,9 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      * Start method that returns an Iterable for processing a subset of Big Object records.
      */
     public Iterable<SObject> start(Database.BatchableContext bc) {
-        String query = buildQuery();
-
-        LOGGER.info('Starting batch job with query: {0}', new Object[] { query });
-        return Database.query(query);
+        rflib_SOQL query = buildQuery();
+        LOGGER.info('Starting batch job with query: {0}', new Object[] { query.toString() });
+        return query.toList();
     }
     
     /**
@@ -147,9 +152,9 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
             currentCount += scope.size();
             // Iterate through each record to update pagination tracking.
             for (SObject rec : scope) {
-                String currentIndex = String.valueOf(rec.get(indexFields[0]));
+                Object currentIndex = rec.get(indexFields[0]);
                 // When a new primary index value is encountered, reset the compound key tracker.
-                if (lastIndex1Value == null || currentIndex.compareTo(lastIndex1Value) > 0) {
+                if (lastIndex1Value == null || currentIndex != lastIndex1Value) {
                     lastIndex1Value = currentIndex;
                     lastCompoundKeys = new Set<String>();
                 }
@@ -174,12 +179,14 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
         try {
             LOGGER.info('Finishing batch job. Current count: {0}', new Object[] { currentCount });
 
-            // Update or create the target record with the final count.
-            String targetQuery = 'SELECT Id, ' + targetCounterFieldApiName + 
-                ' FROM ' + targetObjectApiName + 
-                ' WHERE Name = \'' + String.escapeSingleQuotes(bigObjectType) + '\' LIMIT 1';
-            
-            List<SObject> records = Database.query(targetQuery);
+            // Query for existing record using rflib_SOQL
+            List<SObject> records = rflib_SOQL.of(targetObjectApiName)
+                .with(new List<String>{ 'Id', targetCounterFieldApiName })
+                .whereAre(rflib_SOQL.Filter.with('Name').equal(bigObjectType))
+                .setLimit(1)
+                .systemMode()
+                .toList();
+
             SObject record;
             
             if (records.isEmpty()) {
@@ -214,7 +221,8 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
                         lastIndex1Value,
                         lastCompoundKeys,
                         pageSize,
-                        indexFields
+                        indexFields,
+                        orderBy
                     )
                 );
             } else {

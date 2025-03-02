@@ -12,15 +12,20 @@ const logger = createLogger('rflibBigObjectStat');
 const ACTIONS = [{ label: 'Refresh', name: 'refresh' }];
 
 export default class RflibBigObjectStat extends LightningElement {
-    @api bigObjects;
+    @api bigObjectConfigs;
     @api fieldsToDisplay;
 
+    parsedConfigs;
     subscription = {};
     wiredStatsResult;
     error;
     displayFields = [];
     isRefreshing = false;
     columns = [];
+
+    get bigObjects() {
+        return this.parsedConfigs?.map((config) => config.name).join(',');
+    }
 
     get hasStats() {
         return this.wiredStatsResult?.data?.length > 0;
@@ -33,7 +38,7 @@ export default class RflibBigObjectStat extends LightningElement {
             logger.debug('Received stats data: {0}', JSON.stringify(result.data));
             this.error = undefined;
         } else if (result.error) {
-            logger.error('Failed to retrieve stats: ' + result.error);
+            logger.error('Failed to retrieve stats: ' + JSON.stringify(result.error));
             this.handleError('Error Loading Stats', 'Failed to retrieve Big Object statistics');
         }
     }
@@ -71,6 +76,15 @@ export default class RflibBigObjectStat extends LightningElement {
     }
 
     connectedCallback() {
+        try {
+            this.parsedConfigs = JSON.parse(this.bigObjectConfigs);
+            logger.debug('Parsed configurations: {0}', JSON.stringify(this.parsedConfigs));
+        } catch (error) {
+            logger.error('Failed to parse big object configurations', error);
+            this.handleError('Configuration Error', 'Invalid Big Object configuration format. Expected JSON array.');
+            this.parsedConfigs = [];
+        }
+
         logger.debug('Initializing component with bigObjects={0}, fields={1}', this.bigObjects, this.fieldsToDisplay);
         this.displayFields = this.fieldsToDisplay.split(',').map((field) => field.trim());
         this.subscribeToStatEvents();
@@ -81,22 +95,40 @@ export default class RflibBigObjectStat extends LightningElement {
         this.unsubscribeFromStatEvents();
     }
 
+    getBigObjectConfig(objectName) {
+        return this.parsedConfigs?.find((config) => config.name === objectName);
+    }
+
     async refreshBigObject(bigObjectName) {
         try {
             this.isRefreshing = true;
-            logger.info('Refreshing stats for big object: {0}', bigObjectName);
-            await refreshStats({ bigObjectName });
+            const config = this.getBigObjectConfig(bigObjectName);
+
+            if (!config) {
+                throw new Error(`Configuration not found for ${bigObjectName}`);
+            }
+
+            logger.info(
+                'Refreshing stats for big object: {0} with index fields: {1}',
+                bigObjectName,
+                JSON.stringify(config.indexFields)
+            );
+
+            await refreshStats({
+                bigObjectName: config.name,
+                indexFields: config.indexFields
+            });
         } catch (error) {
             logger.error('Error refreshing big object stats', error);
-            this.handleError('Refresh Error', 'Failed to refresh Big Object statistics');
+            this.handleError('Refresh Error', 'Failed to refresh Big Object statistics: ' + error.message);
         } finally {
             this.isRefreshing = false;
         }
     }
 
-    async refreshAllBigObjects() {
+    async countAllBigObjects() {
         try {
-            if (!this.bigObjects) {
+            if (!this.parsedConfigs?.length) {
                 logger.warn('No Big Objects configured');
                 this.handleError('Configuration Error', 'No Big Objects configured for monitoring');
                 return;
@@ -105,11 +137,13 @@ export default class RflibBigObjectStat extends LightningElement {
             this.isRefreshing = true;
             logger.info('Refreshing all configured Big Objects');
 
-            const bigObjectList = this.bigObjects.split(',').map((obj) => obj.trim());
-
-            for (const bigObject of bigObjectList) {
-                logger.debug('Refreshing stats for {0}', bigObject);
-                refreshStats({ bigObjectName: bigObject });
+            for (const config of this.parsedConfigs) {
+                logger.debug('Refreshing stats for {0}', config.name);
+                refreshStats({
+                    bigObjectName: config.name,
+                    indexFields: config.indexFields,
+                    orderBy: config.orderBy
+                });
             }
 
             this.dispatchEvent(
