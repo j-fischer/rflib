@@ -28,14 +28,17 @@
  */
 
 const gulp = require('gulp');
-const prompt = require('gulp-prompt');
 const git = require('gulp-git');
+const gutil = require('gulp-util');
 const shell = require('gulp-shell');
+const prompt = require('gulp-prompt');
 const confirm = require('gulp-confirm');
+
+const fs = require('fs');
 const _ = require('lodash');
 const semver = require('semver');
-const fs = require('fs');
-const gutil = require('gulp-util');
+
+const customLabelPath = 'rflib/main/default/labels/CustomLabels.labels-meta.xml';
 
 require('time-require');
 
@@ -63,6 +66,12 @@ function bumpVersion() {
     if (config.package.package === 'RFLIB' && ['major'].includes(config.version.nextVersionType)) {
         config.packageFile.version = config.version.nextVersion;
         fs.writeFileSync('package.json', JSON.stringify(config.packageFile, null, 2));
+    }
+
+    if (config.package.package === 'RFLIB') {
+        let customLabel = fs.readFileSync(customLabelPath, 'utf8');
+        customLabel = customLabel.replace(/(<value>)([\d.]+)(<\/value>)/, `$1${config.version.nextVersion}$3`);
+        fs.writeFileSync(customLabelPath, customLabel);
     }
 
     config.projectFile.packageDirectories[config.packageIndex].versionName = 'ver ' + config.version.nextVersion;
@@ -343,7 +352,7 @@ gulp.task('updateDependencies', function (done) {
 
 // Git add version
 gulp.task('gitadd-version', function () {
-    return gulp.src(['package.json', 'sfdx-project.json']).pipe(git.add());
+    return gulp.src(['package.json', 'sfdx-project.json', customLabelPath]).pipe(git.add());
 });
 
 // Git commit version
