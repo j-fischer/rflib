@@ -18,10 +18,11 @@ export default class RflibBigObjectStat extends LightningElement {
 
     parsedConfigs;
     subscription = {};
-    wiredStatsResult;
     displayFields = [];
-    isRefreshing = false;
     columns = [];
+
+    wiredStatsResult;
+    isRefreshing = false;
 
     get bigObjects() {
         return this.parsedConfigs?.map((config) => config.name).join(',');
@@ -167,8 +168,8 @@ export default class RflibBigObjectStat extends LightningElement {
             this.subscription = await subscribe(CDC_CHANNEL, -1, (event) => {
                 logger.debug('Received CDC event: {0}', JSON.stringify(event));
 
-                const changeType = event.data.changeType;
-                const changedFields = event.data.changedFields;
+                const changeType = event.data?.payload?.ChangeEventHeader?.changeType;
+                const changedFields = event.data?.payload?.ChangeEventHeader?.changedFields;
 
                 if (changeType === 'UPDATE' || changeType === 'CREATE') {
                     logger.debug(
@@ -176,7 +177,13 @@ export default class RflibBigObjectStat extends LightningElement {
                         changeType,
                         JSON.stringify(changedFields)
                     );
-                    refreshApex(this.wiredStatsResult);
+                    refreshApex(this.wiredStatsResult)
+                        .then(() => {
+                            logger.debug('Successfully refreshed data after CDC event');
+                        })
+                        .catch((error) => {
+                            logger.error('Error refreshing data after CDC event', error);
+                        });
                 }
             });
 
