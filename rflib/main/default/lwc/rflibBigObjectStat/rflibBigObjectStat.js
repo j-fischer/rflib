@@ -19,7 +19,6 @@ export default class RflibBigObjectStat extends LightningElement {
     parsedConfigs;
     subscription = {};
     wiredStatsResult;
-    error;
     displayFields = [];
     isRefreshing = false;
     columns = [];
@@ -37,7 +36,6 @@ export default class RflibBigObjectStat extends LightningElement {
         this.wiredStatsResult = result;
         if (result.data) {
             logger.debug('Received stats data: {0}', JSON.stringify(result.data));
-            this.error = undefined;
         } else if (result.error) {
             logger.error('Failed to retrieve stats: ' + JSON.stringify(result.error));
             this.handleError('Error Loading Stats', 'Failed to retrieve Big Object statistics');
@@ -117,7 +115,8 @@ export default class RflibBigObjectStat extends LightningElement {
 
             await refreshStats({
                 bigObjectName: config.name,
-                indexFields: config.indexFields
+                indexFields: config.indexFields,
+                orderBy: config.orderBy
             });
         } catch (error) {
             logger.error('Error refreshing big object stats', error);
@@ -139,7 +138,7 @@ export default class RflibBigObjectStat extends LightningElement {
             logger.info('Refreshing all configured Big Objects');
 
             for (const config of this.parsedConfigs) {
-                logger.debug('Refreshing stats for {0}', config.name);
+                logger.debug('Refreshing stats for {0}', JSON.stringify(config));
                 refreshStats({
                     bigObjectName: config.name,
                     indexFields: config.indexFields,

@@ -31,19 +31,19 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_BigObjectCounter');
     
-    @TestVisible
     private final String bigObjectType;
-    
-    @TestVisible
     private final String targetObjectApiName;
-    
-    @TestVisible
     private final String targetCounterFieldApiName;
-    
-    @TestVisible
     private final String targetLastUpdatedFieldApiName;
+
+    // Flag to indicate whether this is the initial batch (i.e. no pagination parameters yet)
+    private final Boolean isInitialBatch;
+
+    // The page size and index fields are now passed into the constructor.
+    private final Integer pageSize;
+    private final List<String> indexFields;
+    private final String orderBy;
     
-    @TestVisible
     private Integer currentCount;
     
     // Record count at the start of this batch job (used to determine page size)
@@ -51,15 +51,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     // Pagination parameters: the last primary index field value processed and a set of compound keys for that value.
     private Object lastIndex1Value;
-    private Set<String> lastCompoundKeys;
-    
-    // Flag to indicate whether this is the initial batch (i.e. no pagination parameters yet)
-    private final Boolean isInitialBatch;
-    
-    // The page size and index fields are now passed into the constructor.
-    private final Integer pageSize;
-    private final List<String> indexFields;
-    private final String orderBy;
+    private String lastCompoundKeys;
 
     /**
      * Constructor to initialize the batch job with required parameters.
@@ -69,7 +61,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      * @param targetCounterFieldApiName  The API name of the field to store the count
      * @param currentCount               The current count of records (used for chaining batch jobs)
      * @param lastIndex1Value            The last primary index field value processed (null for initial batch)
-     * @param lastCompoundKeys           The compound keys corresponding to lastIndex1Value (null for initial batch)
+     * @param lastCompoundKeys           Comma separated list of compound keys for the last primary index value
      * @param pageSize                   The number of records to query per batch page
      * @param indexFields                The list of index fields that form the compound key (first element is primary)
      * @param orderBy                    Key word for ordering the query: either ASC or DESC
@@ -80,7 +72,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
         String targetCounterFieldApiName,
         Integer currentCount,
         Object lastIndex1Value,
-        Set<String> lastCompoundKeys,
+        String lastCompoundKeys,
         Integer pageSize,
         List<String> indexFields,
         String orderBy
@@ -92,7 +84,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
         this.currentCount = currentCount ?? 0;
         this.startingCount = currentCount ?? 0;
         this.lastIndex1Value = lastIndex1Value;
-        this.lastCompoundKeys = lastCompoundKeys ?? new Set<String>();
+        this.lastCompoundKeys = lastCompoundKeys ?? '';
         this.pageSize = pageSize ?? 50000;
         this.indexFields = indexFields;
         this.orderBy = orderBy;
@@ -128,9 +120,9 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      * Creates a compound key string from the record's index fields.
      */
     private String buildCompoundKey(SObject record) {
-        List<String> keyParts = new List<String>();
+        List<Integer> keyParts = new List<Integer>();
         for (String field : indexFields) {
-            keyParts.add(String.valueOf(record.get(field)));
+            keyParts.add(record.get(field).hashCode());
         }
         return String.join(keyParts, '||');
     }
@@ -140,7 +132,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      */
     public Iterable<SObject> start(Database.BatchableContext bc) {
         rflib_SOQL query = buildQuery();
-        LOGGER.info('Starting batch job with query: {0}', new Object[] { query.toString() });
+        rflib_LoggerUtil.logInternal(LOGGER, 'Starting batch job with query: {0}', new Object[] { query.toString() });
         return query.toList();
     }
     
@@ -149,22 +141,32 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      */
     public void execute(Database.BatchableContext bc, List<SObject> scope) {
         try {
-            currentCount += scope.size();
             // Iterate through each record to update pagination tracking.
+            LOGGER.debug('Processing batch of {0} records, existing compound keys: {1}', new Object[] { scope.size(), lastCompoundKeys });
+
             for (SObject rec : scope) {
-                Object currentIndex = rec.get(indexFields[0]);
-                // When a new primary index value is encountered, reset the compound key tracker.
-                if (lastIndex1Value == null || currentIndex != lastIndex1Value) {
-                    lastIndex1Value = currentIndex;
-                    lastCompoundKeys = new Set<String>();
+                Object currentIndex1Val = rec.get(indexFields[0]);
+                String compoundKey = buildCompoundKey(rec);
+
+                if (lastCompoundKeys.contains(compoundKey)) {
+                    LOGGER.trace('Skipping record with compound key: {0}', new Object[] { compoundKey });
+                    // Skip records that have already been counted in a previous batch.
+                    continue;
                 }
-                // For records matching the current last primary index value, add their compound key.
-                if (String.valueOf(rec.get(indexFields[0])) == lastIndex1Value) {
-                    String compoundKey = buildCompoundKey(rec);
-                    lastCompoundKeys.add(compoundKey);
+
+                currentCount++;
+
+                // When a new primary index value is encountered, reset the compound key tracker.
+                if (lastIndex1Value == null || currentIndex1Val != lastIndex1Value) {
+                    LOGGER.trace('{0} <> {1}', new Object[] { lastIndex1Value, currentIndex1Val });
+                    lastIndex1Value = currentIndex1Val;
+                    lastCompoundKeys = compoundKey;
+                } else {
+                    LOGGER.trace('Adding compound key: {0}', new Object[] { compoundKey });
+                    lastCompoundKeys += compoundKey + ';';
                 }
             }
-            LOGGER.info('Processed batch of {0} records. Current count: {1}', 
+            rflib_LoggerUtil.logInternal(LOGGER, 'Processed batch of {0} records. Current count: {1}', 
                 new Object[] { scope.size(), currentCount });
         } catch (Exception ex) {
             LOGGER.error('Error processing batch', ex);
@@ -177,7 +179,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
      */
     public void finish(Database.BatchableContext bc) {
         try {
-            LOGGER.info('Finishing batch job. Current count: {0}', new Object[] { currentCount });
+            LOGGER.debug('Finishing batch job. Current count: {0}', new Object[] { currentCount });
 
             // Query for existing record using rflib_SOQL
             List<SObject> records = rflib_SOQL.of(targetObjectApiName)
@@ -195,14 +197,14 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
                 record.put(targetCounterFieldApiName, currentCount);
                 insert record;
                 
-                LOGGER.info('Created new record for {0} with count: {1}', 
+                LOGGER.debug('Created new record for {0} with count: {1}', 
                     new Object[] { bigObjectType, currentCount });
             } else {
                 record = records[0];
                 record.put(targetCounterFieldApiName, currentCount);
                 update record; // This will trigger CDC event automatically
                 
-                LOGGER.info('Updated count for {0}. Final count: {1}', 
+                LOGGER.debug('Updated count for {0}. Final count: {1}', 
                     new Object[] { bigObjectType, currentCount });
             }
             
@@ -210,8 +212,8 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
             Integer pageCount = currentCount - startingCount;
             // If we received a full page, schedule the next batch job.
             if (pageCount == pageSize) {
-                LOGGER.info('Scheduling next batch job. Next query will start from primary index value: {0}', 
-                    new Object[] { lastIndex1Value });
+                rflib_LoggerUtil.logInternal(LOGGER, 'Scheduling next batch job. Next query will start from primary index value: {0}, lastCompoundKeys: {1}', 
+                    new Object[] { lastIndex1Value, lastCompoundKeys });
                 Database.executeBatch(
                     new rflib_BigObjectCounter(
                         bigObjectType, 
@@ -226,7 +228,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
                     )
                 );
             } else {
-                LOGGER.info('Batch processing complete. Total count: {0}', new Object[] { currentCount });
+                rflib_LoggerUtil.logInternal(LOGGER, 'Batch processing complete. Total count: {0}', new Object[] { currentCount });
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to update target record or chain next batch', ex);

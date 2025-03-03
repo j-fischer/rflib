@@ -5,7 +5,7 @@ public with sharing class rflib_BigObjectStatController {
     @AuraEnabled(cacheable=true)
     public static List<rflib_Big_Object_Stat__c> getStats(String bigObjects, String fields) {
         try {
-            LOGGER.info('Retrieving big object stats for {0}', new Object[] { bigObjects });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Retrieving big object stats for {0}', new Object[] { bigObjects });
 
             Set<String> bigObjectSet = new Set<String>(bigObjects.split(','));
             List<String> fieldList = new List<String>{ 'Id', 'Name' };
@@ -26,10 +26,10 @@ public with sharing class rflib_BigObjectStatController {
     @AuraEnabled
     public static void refreshStats(String bigObjectName, List<String> indexFields, String orderBy) {
         try {
-            LOGGER.info('Refreshing stats for {0} with index fields {1}', 
-                new Object[] { bigObjectName, indexFields });
+            LOGGER.debug('Refreshing stats for {0} with index fields {1} order by {2}', 
+                new Object[] { bigObjectName, indexFields, orderBy });
 
-            Database.executeBatch(new rflib_BigObjectCounter(
+            Id jobId = Database.executeBatch(new rflib_BigObjectCounter(
                 bigObjectName,
                 'rflib_Big_Object_Stat__c',
                 'Record_Count__c',
@@ -39,7 +39,9 @@ public with sharing class rflib_BigObjectStatController {
                 50000,
                 indexFields,
                 orderBy
-            ));
+            ), 2000);
+
+            rflib_LoggerUtil.logInternal(LOGGER, 'Job ID: {0}', new Object[] { jobId });
         } catch (Exception ex) {
             LOGGER.error('Failed to refresh stats for ' + bigObjectName, ex);
             throw new AuraHandledException(ex.getMessage());

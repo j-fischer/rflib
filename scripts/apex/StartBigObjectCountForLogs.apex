@@ -5,9 +5,9 @@ rflib_BigObjectCounter counter = new rflib_BigObjectCounter(
     0,
     null,
     null,
-    20,
+    100,
     new String[]{'CreatedDate__c','Context__c','Log_Level__c','Request_ID__c'},
     'ASC'
 );
 
-Database.executeBatch(counter, 10000);
+Database.executeBatch(counter, 50);
