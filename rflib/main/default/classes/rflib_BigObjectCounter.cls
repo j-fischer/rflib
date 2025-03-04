@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2025 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,12 +82,13 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     public Iterable<SObject> start(Database.BatchableContext bc) {
         rflib_SOQL query = this.buildQuery();
-        LOGGER.debug('Starting batch with query: {0}', new Object[] { query.toString() });
+        LOGGER.debug('Starting batch with jobId "{0}" and query: {1}', new Object[] { bc.getJobId(), query.toString() });
         return query.toList();
     }
     
     public void execute(Database.BatchableContext bc, List<SObject> scope) {
         try {
+            LOGGER.debug('Processing batch with jobId "{0}" and {1} records', new Object[] { bc.getJobId(), scope.size() });
             this.processRecords(scope);
         } catch (Exception ex) {
             LOGGER.error('Batch processing error', ex);
@@ -97,6 +98,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     public void finish(Database.BatchableContext bc) {
         try {
+            LOGGER.debug('Finishing batch with jobId "{0}"', new Object[] { bc.getJobId() });
             this.updateTargetRecord();
             this.chainNextBatchIfNeeded();
         } catch (Exception ex) {
