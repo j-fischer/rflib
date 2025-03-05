@@ -39,7 +39,7 @@ public class rflib_ControllerUtil {
      * @return         The `AuraHandledException` object with the given error message.
      */ 
     public static AuraHandledException createAuraHandledException(String message) {
-        AuraHandledException ex = new AuraHandledException(message);
+        AuraHandledException ex = new AuraHandledException(message ?? 'Unknown error');
         ex.setMessage(message);
         return ex;
     }
