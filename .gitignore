@@ -45,3 +45,6 @@ assets/key_iv.txt
 #SFDX Hardis
 tmp/**
 config/user/.sfdx-hardis*
+
+# Claude reference file
+CLAUDE.md
