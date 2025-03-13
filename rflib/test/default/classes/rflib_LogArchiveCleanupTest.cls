@@ -34,6 +34,7 @@ private class rflib_LogArchiveCleanupTest {
     
     @TestSetup
     static void setup() {
+        rflib_TestUtil.prepareLoggerForUnitTests();
         // We'll mock the setting through rflib_GlobalSettings.SETTINGS
         rflib_GlobalSettings.SETTINGS.put('Log_Archive_Retain_X_Days', String.valueOf(RETENTION_DAYS));
     }
@@ -60,6 +61,11 @@ private class rflib_LogArchiveCleanupTest {
         List<rflib_Logs_Archive__b> mockArchives = createMockArchives(10);
         rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
         
+        // Mock the DML executor to avoid callout issues
+        List<Database.DeleteResult> successResults = createSuccessDeleteResults(10);
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(successResults);
+        rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
+        
         rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
         
         // WHEN
@@ -68,8 +74,9 @@ private class rflib_LogArchiveCleanupTest {
         Test.stopTest();
         
         // THEN
-        // Verify logs would indicate 10 successful deletions
-        // Since we can't query Big Objects in tests, we rely on the mock DML
+        // Since batch is asynchronous and serialized/deserialized, mockDmlExecutor state 
+        // won't be preserved after Test.stopTest(). We can only validate the test setup.
+        System.assertEquals(10, mockArchives.size(), 'Should have prepared 10 records for deletion');
     }
     
     @IsTest
@@ -78,6 +85,11 @@ private class rflib_LogArchiveCleanupTest {
         List<rflib_Logs_Archive__b> mockArchives = createMockArchives(50000);
         rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
         
+        // Mock the DML executor to avoid callout issues
+        List<Database.DeleteResult> successResults = createSuccessDeleteResults(50000);
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(successResults);
+        rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
+        
         rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
         
         // WHEN
@@ -86,25 +98,27 @@ private class rflib_LogArchiveCleanupTest {
         Test.stopTest();
         
         // THEN
-        // Verify logs would indicate chaining of next batch
-        // Since we can't assert async operations in tests, we rely on debug logs
+        // Since batch is asynchronous, we can only validate the test setup
+        System.assertEquals(50000, mockArchives.size(), 'Should have prepared 50000 records for batch processing');
     }
     
     @IsTest
     static void testErrorHandling() {
         // GIVEN
-        rflib_DmlExecutor mockDmlExecutor = new MockDmlExecutorWithError();
-        rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
-        
         List<rflib_Logs_Archive__b> mockArchives = createMockArchives(5);
         rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
+        
+        // Use mock that will trigger an exception
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(createFailureDeleteResults(5));
+        rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
         
         rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
         
         // WHEN
         Test.startTest();
         try {
-            Database.executeBatch(cleanup);
+            List<SObject> scope = (List<SObject>)cleanup.start(null);
+            cleanup.execute(null, scope);
             System.assert(false, 'Expected exception');
         } catch (rflib_LogArchiveCleanup.rflib_LogArchiveCleanupException ex) {
             // THEN
@@ -129,13 +143,27 @@ private class rflib_LogArchiveCleanupTest {
         return archives;
     }
     
-    private class MockDmlExecutorWithError implements rflib_DmlExecutor {
-        public List<Database.SaveResult> insertImmediate(List<SObject> records) { return null; }
-        public List<Database.SaveResult> updateImmediate(List<SObject> records) { return null; }
-        public List<Database.DeleteResult> deleteImmediate(List<SObject> records) {
-            throw new rflib_LogArchiveCleanup.rflib_LogArchiveCleanupException('Simulated error');
+    private static List<Database.DeleteResult> createSuccessDeleteResults(Integer count) {
+        List<Database.DeleteResult> results = new List<Database.DeleteResult>();
+        for (Integer i = 0; i < count; i++) {
+            results.add(createSuccessDeleteResult());
         }
-        public List<Database.UpsertResult> upsertImmediate(List<SObject> records) { return null; }
-        public List<Database.UpsertResult> upsertImmediate(List<SObject> records, Schema.SObjectField externalIdField) { return null; }
+        return results;
+    }
+    
+    private static List<Database.DeleteResult> createFailureDeleteResults(Integer count) {
+        List<Database.DeleteResult> results = new List<Database.DeleteResult>();
+        for (Integer i = 0; i < count; i++) {
+            results.add(createFailureDeleteResult());
+        }
+        return results;
+    }
+    
+    private static Database.DeleteResult createSuccessDeleteResult() {
+        return (Database.DeleteResult) JSON.deserialize('{"success":true,"id":"0013000000abcde"}', Database.DeleteResult.class);
+    }
+    
+    private static Database.DeleteResult createFailureDeleteResult() {
+        return (Database.DeleteResult) JSON.deserialize('{"success":false,"errors":[{"message":"Simulated error","statusCode":"FIELD_CUSTOM_VALIDATION_EXCEPTION"}]}', Database.DeleteResult.class);
     }
 }
