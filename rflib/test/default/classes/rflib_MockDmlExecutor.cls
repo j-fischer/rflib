@@ -34,6 +34,7 @@ public class rflib_MockDmlExecutor implements rflib_DmlExecutor {
     private final List<List<Database.SaveResult>> expectedSaveResults = new List<List<Database.SaveResult>>();
     private final List<List<Object>> expectedDeleteResults = new List<List<Object>>();
     private Integer invocationCount = 0;
+    private Exception exceptionToThrow;
 
     public rflib_MockDmlExecutor(List<Database.SaveResult> saveResults) {
         this.expectedSaveResults.add(saveResults);
@@ -41,6 +42,10 @@ public class rflib_MockDmlExecutor implements rflib_DmlExecutor {
 
     public rflib_MockDmlExecutor(List<Database.DeleteResult> deleteResults) {
         this.expectedDeleteResults.add(deleteResults);
+    }
+
+    public rflib_MockDmlExecutor(Exception ex) {
+        this.exceptionToThrow = ex;
     }
     
     public void onConsecutiveCall(List<Database.SaveResult> saveResults) {
@@ -56,11 +61,17 @@ public class rflib_MockDmlExecutor implements rflib_DmlExecutor {
     }
 
     public List<Database.SaveResult> insertImmediate(List<SObject> sobjects) {
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
         this.capturedRecords = sobjects;
         return expectedSaveResults.get(invocationCount++);
     }
 
     public List<Database.DeleteResult> deleteImmediate(List<SObject> sobjects) {
+        if (exceptionToThrow != null) {
+            throw exceptionToThrow;
+        }
         this.capturedRecords = sobjects;
         return (List<Database.DeleteResult>) expectedDeleteResults.get(invocationCount++);
     }

@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_LogArchiveCleanup implements Schedulable, Database.Batchable<SObject>, Database.Stateful {
+public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable, Database.Batchable<SObject>, Database.Stateful {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveCleanup');
     
@@ -119,20 +119,23 @@ public with sharing class rflib_LogArchiveCleanup implements Schedulable, Databa
         }
     }
     
+    protected virtual void chainNextBatch(Integer batchSize, Datetime referenceDate, Integer totalProcessed) {
+        Database.executeBatch(
+            new rflib_LogArchiveCleanup(
+                referenceDate, 
+                totalProcessed
+            ), 
+            batchSize
+        );
+    }
+
     public void finish(Database.BatchableContext bc) {
         try {
             LOGGER.info('Finished batch processing. Total records processed: {0}', new Object[] { totalProcessed });
             
-            // If we processed exactly batchSize records, there might be more to process
             if (totalProcessed > 0 && Math.mod(totalProcessed, batchSize) == 0) {
                 LOGGER.info('Chaining next batch as batch size limit was hit');
-                Database.executeBatch(
-                    new rflib_LogArchiveCleanup(
-                        referenceDate, 
-                        totalProcessed
-                    ), 
-                    batchSize
-                );
+                chainNextBatch(batchSize, referenceDate, totalProcessed);
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to finish batch', ex);

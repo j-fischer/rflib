@@ -78,7 +78,7 @@ private class rflib_LogArchiveCleanupTest {
         // won't be preserved after Test.stopTest(). We can only validate the test setup.
         System.assertEquals(10, mockArchives.size(), 'Should have prepared 10 records for deletion');
     }
-    
+
     @IsTest
     static void testBatchChaining() {
         // GIVEN
@@ -90,16 +90,21 @@ private class rflib_LogArchiveCleanupTest {
         rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(successResults);
         rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
         
-        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+        TestableLogArchiveCleanup cleanup = new TestableLogArchiveCleanup();
         
         // WHEN
         Test.startTest();
-        Database.executeBatch(cleanup);
+        Database.BatchableContext bc = new rflib_MockBatchContext();
+        List<SObject> scope = (List<SObject>)cleanup.start(bc);
+        cleanup.execute(bc, scope);
+        cleanup.finish(bc);
         Test.stopTest();
-        
+
         // THEN
-        // Since batch is asynchronous, we can only validate the test setup
-        System.assertEquals(50000, mockArchives.size(), 'Should have prepared 50000 records for batch processing');
+        System.assert(cleanup.chainingAttempted, 'Should attempt to chain next batch');
+        System.assertEquals(50000, cleanup.chainedTotalProcessed, 'Should pass correct total processed');
+        System.assertEquals(50000, cleanup.chainedBatchSize, 'Should maintain batch size');
+        System.assertNotEquals(null, cleanup.chainedReferenceDate, 'Should pass reference date');
     }
     
     @IsTest
@@ -109,7 +114,8 @@ private class rflib_LogArchiveCleanupTest {
         rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
         
         // Use mock that will trigger an exception
-        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(createFailureDeleteResults(5));
+        QueryException ex = new QueryException('Simulated error');
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(ex);
         rflib_LogArchiveCleanup.DML_EXECUTOR = mockDmlExecutor;
         
         rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
@@ -120,9 +126,10 @@ private class rflib_LogArchiveCleanupTest {
             List<SObject> scope = (List<SObject>)cleanup.start(null);
             cleanup.execute(null, scope);
             System.assert(false, 'Expected exception');
-        } catch (rflib_LogArchiveCleanup.rflib_LogArchiveCleanupException ex) {
+        } catch (rflib_LogArchiveCleanup.rflib_LogArchiveCleanupException actualEx) {
             // THEN
-            System.assert(ex.getMessage().contains('Batch processing failed'));
+            System.assert(actualEx.getMessage().contains('Batch processing failed'));
+            System.assert(actualEx.getMessage().contains('Simulated error'));
         }
         Test.stopTest();
     }
@@ -165,5 +172,20 @@ private class rflib_LogArchiveCleanupTest {
     
     private static Database.DeleteResult createFailureDeleteResult() {
         return (Database.DeleteResult) JSON.deserialize('{"success":false,"errors":[{"message":"Simulated error","statusCode":"FIELD_CUSTOM_VALIDATION_EXCEPTION"}]}', Database.DeleteResult.class);
+    }
+
+    
+    private class TestableLogArchiveCleanup extends rflib_LogArchiveCleanup {
+        public Boolean chainingAttempted = false;
+        public Integer chainedBatchSize;
+        public Datetime chainedReferenceDate;
+        public Integer chainedTotalProcessed;
+
+        protected override void chainNextBatch(Integer batchSize, Datetime referenceDate, Integer totalProcessed) {
+            chainingAttempted = true;
+            chainedBatchSize = batchSize;
+            chainedReferenceDate = referenceDate;
+            chainedTotalProcessed = totalProcessed;
+        }
     }
 }
