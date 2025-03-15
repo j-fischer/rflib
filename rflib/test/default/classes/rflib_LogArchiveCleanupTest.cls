@@ -37,6 +37,8 @@ private class rflib_LogArchiveCleanupTest {
         rflib_TestUtil.prepareLoggerForUnitTests();
         // We'll mock the setting through rflib_GlobalSettings.SETTINGS
         rflib_GlobalSettings.SETTINGS.put('Log_Archive_Retain_X_Days', String.valueOf(RETENTION_DAYS));
+        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Batch_Size', '2000');
+        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Query_Limit', '50000');
     }
     
     @IsTest

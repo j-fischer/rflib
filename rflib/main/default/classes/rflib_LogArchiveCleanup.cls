@@ -31,8 +31,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveCleanup');
     
-    private static final Integer DEFAULT_BATCH_SIZE = 2000;
-    private static final Integer DEFAULT_QUERY_LIMIT = 50000;
+    // Constants are now managed in rflib_GlobalSettings
     
     @TestVisible
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
@@ -65,7 +64,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     public void execute(SchedulableContext sc) {
         try {
             LOGGER.info('Starting scheduled cleanup of log archives');
-            Database.executeBatch(this, DEFAULT_BATCH_SIZE);
+            Database.executeBatch(this, rflib_GlobalSettings.logArchiveCleanupBatchSizeOrDefault);
         } catch (Exception ex) {
             LOGGER.fatal('Failed to execute scheduled cleanup', ex);
         }
@@ -88,7 +87,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
             })
             .whereAre(filterGroup)
             .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
-            .setLimit(DEFAULT_QUERY_LIMIT)
+            .setLimit(rflib_GlobalSettings.logArchiveCleanupQueryLimitOrDefault)
             .systemMode()
             .mockId('LogArchiveCleanup.start');
             
@@ -131,7 +130,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
                 referenceDate, 
                 totalProcessed
             ), 
-            DEFAULT_BATCH_SIZE
+            rflib_GlobalSettings.logArchiveCleanupBatchSizeOrDefault
         );
     }
 
@@ -139,7 +138,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
         try {
             LOGGER.info('Finished batch processing. Total records processed: {0}', new Object[] { totalProcessed });
             
-            if (totalProcessed > 0 && Math.mod(totalProcessed, DEFAULT_QUERY_LIMIT) == 0) {
+            if (totalProcessed > 0 && Math.mod(totalProcessed, rflib_GlobalSettings.logArchiveCleanupQueryLimitOrDefault) == 0) {
                 LOGGER.info('Chaining next batch as batch size limit was hit');
                 chainNextBatch(referenceDate, totalProcessed);
             }
