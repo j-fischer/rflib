@@ -39,6 +39,7 @@ public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends r
             rflib_Application_Event_Archive__b.Related_Record_ID__c
         })
         .orderBy(rflib_Application_Event_Archive__b.Occurred_On__c)
+        .sortDesc()
         .systemMode()
         .mockId('ApplicationEventArchiveCleanup.start');
     
