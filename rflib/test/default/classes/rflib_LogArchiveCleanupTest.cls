@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2025 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,6 +77,28 @@ private class rflib_LogArchiveCleanupTest {
         // Since batch is asynchronous and serialized/deserialized, mockDmlExecutor state 
         // won't be preserved after Test.stopTest(). We can only validate the test setup.
         System.assertEquals(10, mockArchives.size(), 'Should have prepared 10 records for deletion');
+    }
+    
+    @IsTest
+    static void testReferenceDateNormalization() {
+        // GIVEN - Setting a 1-day retention period
+        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Retain_X_Days', '1');
+        
+        // WHEN - Create a cleanup instance at a specific time
+        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+        
+        // Access the reference date directly (marked as @TestVisible in the class)
+        Datetime referenceDate = cleanup.referenceDate;
+        
+        // THEN - Verify the referenceDate is properly normalized to midnight
+        Date expectedDate = Date.today().addDays(-1);
+        Datetime expectedDateTime = Datetime.newInstance(expectedDate, Time.newInstance(0, 0, 0, 0));
+        
+        System.assertEquals(expectedDateTime, referenceDate, 
+            'Reference date should be normalized to midnight of yesterday');
+        System.assertEquals(0, referenceDate.hour(), 'Hour should be 0');
+        System.assertEquals(0, referenceDate.minute(), 'Minute should be 0');
+        System.assertEquals(0, referenceDate.second(), 'Second should be 0');
     }
 
     @IsTest

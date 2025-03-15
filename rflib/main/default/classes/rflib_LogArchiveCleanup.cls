@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2025 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,11 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     @TestVisible
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
     
-    private final Integer batchSize;
+    @TestVisible
     private final Datetime referenceDate;
+    private final Integer batchSize;
     private final Datetime lastProcessedDate;
+    
     private Integer totalProcessed = 0;
     
     public rflib_LogArchiveCleanup() {
@@ -47,7 +49,12 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     
     private rflib_LogArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
         this.batchSize = DEFAULT_BATCH_SIZE;
-        this.referenceDate = Datetime.now().addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
+        
+        // Normalize the reference date to start of day
+        Date today = Date.today();
+        Date cutoffDate = today.addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
+        this.referenceDate = Datetime.newInstance(cutoffDate, Time.newInstance(0, 0, 0, 0));
+        
         this.lastProcessedDate = lastProcessedDate;
         if (totalProcessed != null) {
             this.totalProcessed = totalProcessed;
@@ -87,8 +94,9 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
             .systemMode()
             .mockId('LogArchiveCleanup.start');
             
-        LOGGER.debug('Starting batch with query: {0}', new Object[] { query.toString() });
-        return query.toList();
+        List<SObject> records = query.toList();            
+        LOGGER.info('Starting batch processing {0} records older than {2} with query: {1}', new Object[] { records.size(), query.toString(), referenceDate });
+        return records;
     }
     
     public void execute(Database.BatchableContext bc, List<SObject> scope) {
