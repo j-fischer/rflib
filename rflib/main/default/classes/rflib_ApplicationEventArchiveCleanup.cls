@@ -27,28 +27,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public virtual with sharing class rflib_LogArchiveCleanup extends rflib_AbstractArchiveCleanup implements Schedulable, Database.Batchable<SObject>, Database.Stateful {
+public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends rflib_AbstractArchiveCleanup implements Schedulable, Database.Batchable<SObject>, Database.Stateful {
     
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveCleanup');
+    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApplicationEventArchiveCleanup');
 
     @TestVisible
-    private static final rflib_SOQL QUERY = rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
+    private static rflib_SOQL QUERY = rflib_SOQL.of(rflib_Application_Event_Archive__b.SObjectType)
         .with(new List<SObjectField>{
-            rflib_Logs_Archive__b.CreatedDate__c,
-            rflib_Logs_Archive__b.Context__c,
-            rflib_Logs_Archive__b.Log_Level__c,
-            rflib_Logs_Archive__b.Request_ID__c
+            rflib_Application_Event_Archive__b.Occurred_On__c,
+            rflib_Application_Event_Archive__b.Event_Name__c,
+            rflib_Application_Event_Archive__b.Related_Record_ID__c
         })
-        .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
+        .orderBy(rflib_Application_Event_Archive__b.Occurred_On__c)
         .systemMode()
-        .mockId('LogArchiveCleanup.start');
+        .mockId('ApplicationEventArchiveCleanup.start');
     
-    public rflib_LogArchiveCleanup() {
+    public rflib_ApplicationEventArchiveCleanup() {
         this(null, null);
     }
     
-    private rflib_LogArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
-        super(LOGGER, rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault, lastProcessedDate, totalProcessed);
+    private rflib_ApplicationEventArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
+        super(LOGGER, rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault, lastProcessedDate, totalProcessed);
     }
 
     public void execute(SchedulableContext sc) {
@@ -62,10 +61,10 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
     
     public override Iterable<SObject> start(Database.BatchableContext bc) {
         rflib_SOQL.FilterGroup filterGroup = rflib_SOQL.FilterGroup
-            .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate));
+            .add(rflib_SOQL.Filter.with(rflib_Application_Event_Archive__b.Occurred_On__c).lessThan(referenceDate));
 
         if (lastProcessedDate != null) {
-            filterGroup.add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(lastProcessedDate));
+            filterGroup.add(rflib_SOQL.Filter.with(rflib_Application_Event_Archive__b.Occurred_On__c).greaterThan(lastProcessedDate));
         }        
 
         QUERY.whereAre(filterGroup).setLimit(getQueryLimit());
@@ -79,7 +78,7 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
     
     protected override void chainNextBatch(Datetime lastProcessedDate, Integer totalProcessed) {
         Database.executeBatch(
-            new rflib_LogArchiveCleanup(
+            new rflib_ApplicationEventArchiveCleanup(
                 lastProcessedDate, 
                 totalProcessed
             ), 
@@ -88,12 +87,12 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
     }
     
     protected override Integer getBatchSize() {
-        return rflib_GlobalSettings.logArchiveCleanupBatchSizeOrDefault;
+        return rflib_GlobalSettings.appEventArchiveCleanupBatchSizeOrDefault;
     }
     
     protected override Integer getQueryLimit() {
-        return rflib_GlobalSettings.logArchiveCleanupQueryLimitOrDefault;
+        return rflib_GlobalSettings.appEventArchiveCleanupQueryLimitOrDefault;
     }
     
-    public class rflib_LogArchiveCleanupException extends Exception {}
+    public class rflib_ApplicationEventArchiveCleanupException extends Exception {}
 }

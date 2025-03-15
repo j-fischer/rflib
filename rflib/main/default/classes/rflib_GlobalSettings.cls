@@ -79,6 +79,12 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final Integer LOG_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
 
+    @TestVisible
+    private static final Integer APP_EVENT_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE = 2000;
+    
+    @TestVisible
+    private static final Integer APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -174,6 +180,20 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Log_Archive_Cleanup_Query_Limit');
             return String.isBlank(val) ? LOG_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer appEventArchiveCleanupBatchSizeOrDefault {
+        get {
+            String val = getSetting('App_Event_Archive_Cleanup_Batch_Size');
+            return String.isBlank(val) ? APP_EVENT_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer appEventArchiveCleanupQueryLimitOrDefault {
+        get {
+            String val = getSetting('App_Event_Archive_Cleanup_Query_Limit');
+            return String.isBlank(val) ? APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 

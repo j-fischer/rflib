@@ -30,9 +30,10 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockDmlExecutor implements rflib_DmlExecutor {
     public List<SObject> capturedRecords;
-        
+
     private final List<List<Database.SaveResult>> expectedSaveResults = new List<List<Database.SaveResult>>();
     private final List<List<Object>> expectedDeleteResults = new List<List<Object>>();
+
     private Integer invocationCount = 0;
     private Exception exceptionToThrow;
 

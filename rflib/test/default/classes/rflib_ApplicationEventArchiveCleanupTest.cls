@@ -28,17 +28,17 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_LogArchiveCleanupTest {
+private class rflib_ApplicationEventArchiveCleanupTest {
     
-    private static final Integer RETENTION_DAYS = 30;
+    private static final Integer RETENTION_DAYS = 45;
     
     @TestSetup
     static void setup() {
         rflib_TestUtil.prepareLoggerForUnitTests();
         // We'll mock the setting through rflib_GlobalSettings.SETTINGS
-        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Retain_X_Days', String.valueOf(RETENTION_DAYS));
-        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Batch_Size', '2000');
-        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Query_Limit', '50000');
+        rflib_GlobalSettings.SETTINGS.put('Application_Event_Retain_X_Days', String.valueOf(RETENTION_DAYS));
+        rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Batch_Size', '2000');
+        rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Query_Limit', '50000');
     }
     
     @IsTest
@@ -48,7 +48,7 @@ private class rflib_LogArchiveCleanupTest {
         
         // WHEN
         Test.startTest();
-        String jobId = System.schedule('Test Log Archive Cleanup', cronExp, new rflib_LogArchiveCleanup());
+        String jobId = System.schedule('Test App Event Archive Cleanup', cronExp, new rflib_ApplicationEventArchiveCleanup());
         Test.stopTest();
         
         // THEN
@@ -60,16 +60,16 @@ private class rflib_LogArchiveCleanupTest {
     @IsTest
     static void testBatchProcessing() {
         // GIVEN
-        List<rflib_Logs_Archive__b> mockArchives = createMockArchives(10);
-        rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
+        List<rflib_Application_Event_Archive__b> mockArchives = createMockArchives(10);
+        rflib_SOQL.setMock('ApplicationEventArchiveCleanup.start', mockArchives);
         
         // Mock the DML executor to avoid callout issues
         List<Database.DeleteResult> successResults = createSuccessDeleteResults(10);
         rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(successResults);
         
-        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+        rflib_ApplicationEventArchiveCleanup cleanup = new rflib_ApplicationEventArchiveCleanup();
         cleanup.dmlExecutor = mockDmlExecutor;
-
+        
         rflib_MockBatchContext mockBatchContext = new rflib_MockBatchContext();
         
         // WHEN
@@ -79,16 +79,17 @@ private class rflib_LogArchiveCleanupTest {
         cleanup.finish(mockBatchContext);
         Test.stopTest();
         
+        // THEN
         Assert.areEqual(10, mockDmlExecutor.capturedRecords.size(), 'Should capture 10 records for deletion');
     }
     
     @IsTest
     static void testStartMethod() {
         // GIVEN
-        List<rflib_Logs_Archive__b> mockArchives = createMockArchives(10);
-        rflib_SOQL.setMock('LogArchiveCleanup.start', mockArchives);
+        List<rflib_Application_Event_Archive__b> mockArchives = createMockArchives(10);
+        rflib_SOQL.setMock('ApplicationEventArchiveCleanup.start', mockArchives);
         
-        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+        rflib_ApplicationEventArchiveCleanup cleanup = new rflib_ApplicationEventArchiveCleanup();
         
         // WHEN
         Test.startTest();
@@ -102,26 +103,25 @@ private class rflib_LogArchiveCleanupTest {
     @IsTest
     static void testQueryLimit() {
         // Set specific values in settings
-        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Query_Limit', '30000');
+        rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Query_Limit', '25000');
         
-        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
-
+        rflib_ApplicationEventArchiveCleanup cleanup = new rflib_ApplicationEventArchiveCleanup();
+        
         cleanup.start(null);
         
-        String queryStr = rflib_LogArchiveCleanup.QUERY.toString();
-        Assert.isTrue(queryStr.contains('LIMIT 30000'), 'Query should contain the custom limit: ' + queryStr);
+        String queryStr = rflib_ApplicationEventArchiveCleanup.QUERY.toString();
+        Assert.isTrue(queryStr.contains('LIMIT 25000'), 'Query should contain the custom limit: ' + queryStr);
     }
     
-    private static List<rflib_Logs_Archive__b> createMockArchives(Integer count) {
-        List<rflib_Logs_Archive__b> archives = new List<rflib_Logs_Archive__b>();
+    private static List<rflib_Application_Event_Archive__b> createMockArchives(Integer count) {
+        List<rflib_Application_Event_Archive__b> archives = new List<rflib_Application_Event_Archive__b>();
         Datetime oldDate = Datetime.now().addDays(-60); // Older than retention period
         
         for (Integer i = 0; i < count; i++) {
-            archives.add(new rflib_Logs_Archive__b(
-                CreatedDate__c = oldDate.addMinutes(i),
-                Context__c = 'Test Context ' + i,
-                Log_Level__c = 'INFO',
-                Request_ID__c = 'REQ-' + i
+            archives.add(new rflib_Application_Event_Archive__b(
+                Occurred_On__c = oldDate.addMinutes(i),
+                Event_Name__c = 'Test Event ' + i,
+                Related_Record_ID__c = '001000000000' + i
             ));
         }
         
