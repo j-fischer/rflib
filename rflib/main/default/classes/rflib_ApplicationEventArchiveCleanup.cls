@@ -48,7 +48,7 @@ public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends r
     }
     
     private rflib_ApplicationEventArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
-        super(LOGGER, rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault, lastProcessedDate, totalProcessed);
+        super(LOGGER, rflib_GlobalSettings.daysToRetainApplicationEventArchiveOrDefault, lastProcessedDate, totalProcessed);
     }
 
     public void execute(SchedulableContext sc) {
