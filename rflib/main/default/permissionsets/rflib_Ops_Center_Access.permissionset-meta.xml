@@ -52,16 +52,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>rflib_Application_Event__c.Additional_Details__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>rflib_Application_Event__c.Related_Record_ID__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>rflib_Logs_Archive__b.Log_Messages__c</field>
         <readable>true</readable>
     </fieldPermissions>
