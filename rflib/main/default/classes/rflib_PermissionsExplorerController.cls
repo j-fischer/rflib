@@ -522,6 +522,7 @@ public with sharing class rflib_PermissionsExplorerController {
         @AuraEnabled public Boolean PermissionsRead;
         @AuraEnabled public Boolean PermissionsCreate;
         @AuraEnabled public Boolean PermissionsDelete;
+        @AuraEnabled public Boolean PermissionsViewAllFields;
         @AuraEnabled public Boolean PermissionsViewAllRecords;
         @AuraEnabled public Boolean PermissionsModifyAllRecords;
 
@@ -564,6 +565,7 @@ public with sharing class rflib_PermissionsExplorerController {
             this.PermissionsRead = record.PermissionsRead;
             this.PermissionsCreate = record.PermissionsCreate;
             this.PermissionsDelete = record.PermissionsDelete;
+            this.PermissionsViewAllFields = record.PermissionsViewAllFields;
             this.PermissionsViewAllRecords = record.PermissionsViewAllRecords;
             this.PermissionsModifyAllRecords = record.PermissionsModifyAllRecords;
 
