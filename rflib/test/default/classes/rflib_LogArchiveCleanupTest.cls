@@ -125,7 +125,6 @@ private class rflib_LogArchiveCleanupTest {
         // THEN
         System.assert(cleanup.chainingAttempted, 'Should attempt to chain next batch');
         System.assertEquals(50000, cleanup.chainedTotalProcessed, 'Should pass correct total processed');
-        System.assertEquals(50000, cleanup.chainedBatchSize, 'Should maintain batch size');
         System.assertNotEquals(null, cleanup.chainedReferenceDate, 'Should pass reference date');
     }
     
@@ -199,13 +198,11 @@ private class rflib_LogArchiveCleanupTest {
     
     private class TestableLogArchiveCleanup extends rflib_LogArchiveCleanup {
         public Boolean chainingAttempted = false;
-        public Integer chainedBatchSize;
         public Datetime chainedReferenceDate;
         public Integer chainedTotalProcessed;
 
-        protected override void chainNextBatch(Integer batchSize, Datetime referenceDate, Integer totalProcessed) {
+        protected override void chainNextBatch(Datetime referenceDate, Integer totalProcessed) {
             chainingAttempted = true;
-            chainedBatchSize = batchSize;
             chainedReferenceDate = referenceDate;
             chainedTotalProcessed = totalProcessed;
         }

@@ -31,14 +31,14 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveCleanup');
     
-    private static final Integer DEFAULT_BATCH_SIZE = 50000;
+    private static final Integer DEFAULT_BATCH_SIZE = 2000;
+    private static final Integer DEFAULT_QUERY_LIMIT = 50000;
     
     @TestVisible
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
     
     @TestVisible
     private final Datetime referenceDate;
-    private final Integer batchSize;
     private final Datetime lastProcessedDate;
     
     private Integer totalProcessed = 0;
@@ -48,8 +48,6 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     }
     
     private rflib_LogArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
-        this.batchSize = DEFAULT_BATCH_SIZE;
-        
         // Normalize the reference date to start of day
         Date today = Date.today();
         Date cutoffDate = today.addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
@@ -67,7 +65,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
     public void execute(SchedulableContext sc) {
         try {
             LOGGER.info('Starting scheduled cleanup of log archives');
-            Database.executeBatch(this, batchSize);
+            Database.executeBatch(this, DEFAULT_BATCH_SIZE);
         } catch (Exception ex) {
             LOGGER.fatal('Failed to execute scheduled cleanup', ex);
         }
@@ -90,7 +88,7 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
             })
             .whereAre(filterGroup)
             .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
-            .setLimit(batchSize)
+            .setLimit(DEFAULT_QUERY_LIMIT)
             .systemMode()
             .mockId('LogArchiveCleanup.start');
             
@@ -127,13 +125,13 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
         }
     }
     
-    protected virtual void chainNextBatch(Integer batchSize, Datetime referenceDate, Integer totalProcessed) {
+    protected virtual void chainNextBatch(Datetime referenceDate, Integer totalProcessed) {
         Database.executeBatch(
             new rflib_LogArchiveCleanup(
                 referenceDate, 
                 totalProcessed
             ), 
-            batchSize
+            DEFAULT_BATCH_SIZE
         );
     }
 
@@ -141,9 +139,9 @@ public virtual with sharing class rflib_LogArchiveCleanup implements Schedulable
         try {
             LOGGER.info('Finished batch processing. Total records processed: {0}', new Object[] { totalProcessed });
             
-            if (totalProcessed > 0 && Math.mod(totalProcessed, batchSize) == 0) {
+            if (totalProcessed > 0 && Math.mod(totalProcessed, DEFAULT_QUERY_LIMIT) == 0) {
                 LOGGER.info('Chaining next batch as batch size limit was hit');
-                chainNextBatch(batchSize, referenceDate, totalProcessed);
+                chainNextBatch(referenceDate, totalProcessed);
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to finish batch', ex);
