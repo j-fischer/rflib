@@ -36,6 +36,8 @@ public with sharing class rflib_ApexJobSchedulerController {
         rflib_LoggerUtil.logInternal(LOGGER, 'getJobDetails called with jobName: ' + jobName);
         ScheduledJobDetails details = new ScheduledJobDetails();
         try {
+            jobName = jobName.trim();
+            
             List<CronTrigger> cronTriggers = [
                 SELECT Id, CronExpression, TimesTriggered, NextFireTime, State
                 FROM CronTrigger
@@ -79,6 +81,10 @@ public with sharing class rflib_ApexJobSchedulerController {
             new List<Object>{ jobName, className, cronExpression }
         );
         try {
+            jobName = jobName.trim();
+            className = className.trim();
+            cronExpression = cronExpression.trim();
+
             Type jobType = Type.forName(className);
             if (jobType == null) {
                 LOGGER.error('Apex class not found: ' + className);
@@ -107,6 +113,7 @@ public with sharing class rflib_ApexJobSchedulerController {
     public static void deleteScheduledJob(String jobName) {
         rflib_LoggerUtil.logInternal(LOGGER, 'deleteScheduledJob called with jobName: ' + jobName);
         try {
+            jobName = jobName.trim();
             List<CronTrigger> cronTriggers = [
                 SELECT Id
                 FROM CronTrigger

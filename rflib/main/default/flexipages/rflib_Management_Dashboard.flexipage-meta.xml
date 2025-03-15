@@ -90,48 +90,6 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
-                    <name>className</name>
-                    <value>rflib_ApplicationEventArchiver</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>jobName</name>
-                    <value>RFLIB Application Event Archiver</value>
-                </componentInstanceProperties>
-                <componentName>rflibApexJobScheduler</componentName>
-                <identifier>c_rflibApexJobScheduler</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>className</name>
-                    <value>rflib_LogArchiveCleanup</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>jobName</name>
-                    <value>RFLIB Log Archive Cleanup</value>
-                </componentInstanceProperties>
-                <componentName>rflibApexJobScheduler</componentName>
-                <identifier>c_rflibApexJobScheduler2</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>bigObjectConfigs</name>
-                    <value>[{&quot;name&quot;:&quot;rflib_Logs_Archive__b&quot;,&quot;indexFields&quot;:[&quot;CreatedDate__c&quot;,&quot;Context__c&quot;,&quot;Log_Level__c&quot;,&quot;Request_ID__c&quot;], &quot;orderBy&quot;: &quot;ASC&quot;},{&quot;name&quot;:&quot;rflib_Application_Event_Archive__b&quot;,&quot;indexFields&quot;:[&quot;Occurred_On__c&quot;,&quot;Event_Name__c&quot;,&quot;Related_Record_ID__c&quot;,&quot;Created_By_ID__c&quot;], &quot;orderBy&quot;: &quot;DESC&quot;}]</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>fieldsToDisplay</name>
-                    <value>Record_Count__c,LastModifiedDate</value>
-                </componentInstanceProperties>
-                <componentName>rflibBigObjectStat</componentName>
-                <identifier>c_rflibBigObjectStat</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
                     <name>limitName</name>
                     <value>HourlyPublishedPlatformEvents</value>
                 </componentInstanceProperties>
@@ -211,6 +169,62 @@
                 </componentInstanceProperties>
                 <componentName>rflibOrgLimitStat</componentName>
                 <identifier>c_rflibOrgLimitStat1</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>bigObjectConfigs</name>
+                    <value>[{&quot;name&quot;:&quot;rflib_Logs_Archive__b&quot;,&quot;indexFields&quot;:[&quot;CreatedDate__c&quot;,&quot;Context__c&quot;,&quot;Log_Level__c&quot;,&quot;Request_ID__c&quot;], &quot;orderBy&quot;: &quot;ASC&quot;},{&quot;name&quot;:&quot;rflib_Application_Event_Archive__b&quot;,&quot;indexFields&quot;:[&quot;Occurred_On__c&quot;,&quot;Event_Name__c&quot;,&quot;Related_Record_ID__c&quot;,&quot;Created_By_ID__c&quot;], &quot;orderBy&quot;: &quot;DESC&quot;}]</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldsToDisplay</name>
+                    <value>Record_Count__c,LastModifiedDate</value>
+                </componentInstanceProperties>
+                <componentName>rflibBigObjectStat</componentName>
+                <identifier>c_rflibBigObjectStat</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_ApplicationEventArchiver</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Application Event Archiver</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_LogArchiveCleanup</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Log Archive Cleanup</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_ApplicationEventArchiveCleanup</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Application Event Archive Cleanup</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler3</identifier>
             </componentInstance>
         </itemInstances>
         <name>region3</name>
