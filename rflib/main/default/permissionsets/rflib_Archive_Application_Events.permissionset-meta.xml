@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>This permission set controls access to the Application Event archiving functionality in the RFLIB package.</description>
     <fieldPermissions>
         <editable>true</editable>
         <field>rflib_Application_Event_Archive__b.Additional_Details__c</field>
