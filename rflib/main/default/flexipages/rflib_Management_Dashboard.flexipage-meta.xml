@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>decorate</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>richTextValue</name>
+                    <value>&lt;p&gt;Read up on the latest features in the &lt;a href=&quot;https://github.com/j-fischer/rflib/wiki&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;RFLIB Wiki&lt;/a&gt; and speed up your logging adoption using the &lt;a href=&quot;https://github.com/j-fischer/rflib-plugin&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;RFLIB SFDX Plugin&lt;/a&gt; (beta). For new features and support, create an &lt;a href=&quot;https://github.com/j-fischer/rflib/issues&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;Issue on Github&lt;/a&gt;. (RFLIB Version {!$Label.RFLIB_Version})&lt;/p&gt;</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:richText</componentName>
+                <identifier>flexipage_richText</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
@@ -73,20 +87,6 @@
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
-        <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>className</name>
-                    <value>rflib_ApplicationEventArchiver</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>jobName</name>
-                    <value>RFLIB Application Event Archiver</value>
-                </componentInstanceProperties>
-                <componentName>rflibApexJobScheduler</componentName>
-                <identifier>c_rflibApexJobScheduler</identifier>
-            </componentInstance>
-        </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
@@ -169,6 +169,62 @@
                 </componentInstanceProperties>
                 <componentName>rflibOrgLimitStat</componentName>
                 <identifier>c_rflibOrgLimitStat1</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>bigObjectConfigs</name>
+                    <value>[{&quot;name&quot;:&quot;rflib_Logs_Archive__b&quot;,&quot;indexFields&quot;:[&quot;CreatedDate__c&quot;,&quot;Context__c&quot;,&quot;Log_Level__c&quot;,&quot;Request_ID__c&quot;], &quot;orderBy&quot;: &quot;ASC&quot;},{&quot;name&quot;:&quot;rflib_Application_Event_Archive__b&quot;,&quot;indexFields&quot;:[&quot;Occurred_On__c&quot;,&quot;Event_Name__c&quot;,&quot;Related_Record_ID__c&quot;,&quot;Created_By_ID__c&quot;], &quot;orderBy&quot;: &quot;DESC&quot;}]</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldsToDisplay</name>
+                    <value>Record_Count__c,LastModifiedDate</value>
+                </componentInstanceProperties>
+                <componentName>rflibBigObjectStat</componentName>
+                <identifier>c_rflibBigObjectStat</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_ApplicationEventArchiver</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Application Event Archiver</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_LogArchiveCleanup</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Log Archive Cleanup</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>className</name>
+                    <value>rflib_ApplicationEventArchiveCleanup</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>jobName</name>
+                    <value>RFLIB Application Event Archive Cleanup</value>
+                </componentInstanceProperties>
+                <componentName>rflibApexJobScheduler</componentName>
+                <identifier>c_rflibApexJobScheduler3</identifier>
             </componentInstance>
         </itemInstances>
         <name>region3</name>

@@ -63,7 +63,7 @@ export default class RflibApexJobScheduler extends LightningElement {
                 this.nextRunTime = result.data.nextRunTime;
                 this.cronExpressionInput = result.data.cronExpression;
             } else {
-                this.cronExpressionInput = '0 0 3 ? * 0#2'; // Default CRON
+                this.cronExpressionInput = '0 0 2 ? * SAT'; // Runs every Saturday at 2 AM
             }
         } else if (result.error) {
             logger.error('Error fetching job details: {0}', JSON.stringify(result.error));

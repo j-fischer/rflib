@@ -40,7 +40,7 @@ public with sharing class rflib_PermissionsExplorerController {
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
-    @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllRecords, PermissionsModifyAllRecords';
+    @TestVisible private static final String OBJ_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, PermissionsRead, PermissionsCreate, PermissionsEdit, PermissionsDelete, PermissionsViewAllFields, PermissionsViewAllRecords, PermissionsModifyAllRecords';
     @TestVisible private static final String APEX_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SetupEntityType, SetupEntityId';
  
     @TestVisible private static final String FLS_TABLE = ' FROM FieldPermissions';
@@ -522,6 +522,7 @@ public with sharing class rflib_PermissionsExplorerController {
         @AuraEnabled public Boolean PermissionsRead;
         @AuraEnabled public Boolean PermissionsCreate;
         @AuraEnabled public Boolean PermissionsDelete;
+        @AuraEnabled public Boolean PermissionsViewAllFields;
         @AuraEnabled public Boolean PermissionsViewAllRecords;
         @AuraEnabled public Boolean PermissionsModifyAllRecords;
 
@@ -564,6 +565,7 @@ public with sharing class rflib_PermissionsExplorerController {
             this.PermissionsRead = record.PermissionsRead;
             this.PermissionsCreate = record.PermissionsCreate;
             this.PermissionsDelete = record.PermissionsDelete;
+            this.PermissionsViewAllFields = record.PermissionsViewAllFields;
             this.PermissionsViewAllRecords = record.PermissionsViewAllRecords;
             this.PermissionsModifyAllRecords = record.PermissionsModifyAllRecords;
 

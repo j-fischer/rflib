@@ -4,6 +4,7 @@
         <apexClass>rflib_ApplicationEventController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <description>This permission set grants users the minimum required permissions to create application events in the RFLIB framework.</description>
     <fieldPermissions>
         <editable>true</editable>
         <field>rflib_Application_Event__c.Additional_Details__c</field>

@@ -36,6 +36,9 @@ public class rflib_GlobalSettings {
 
     @TestVisible
     private static final Integer APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE = 45;
+
+    @TestVisible
+    private static final Integer APPLICATION_EVENT_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE = 180;
     
     @TestVisible
     private static final Integer LOG_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE = 180;
@@ -72,11 +75,30 @@ public class rflib_GlobalSettings {
     
     @TestVisible
     private static final Boolean RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE = false; 
+    
+    @TestVisible
+    private static final Integer LOG_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE = 2000;
+    
+    @TestVisible
+    private static final Integer LOG_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
+
+    @TestVisible
+    private static final Integer APP_EVENT_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE = 2000;
+    
+    @TestVisible
+    private static final Integer APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
 
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
             return String.isBlank(val) ? APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer daysToRetainApplicationEventArchiveOrDefault {
+        get {
+            String val = getSetting('Application_Event_Archive_Retain_X_Days');
+            return String.isBlank(val) ? APPLICATION_EVENT_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 
@@ -154,6 +176,34 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Http_Mocking_Throw_Error_If_Not_Found');
             return String.isBlank(val) ? HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Integer logArchiveCleanupBatchSizeOrDefault {
+        get {
+            String val = getSetting('Log_Archive_Cleanup_Batch_Size');
+            return String.isBlank(val) ? LOG_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer logArchiveCleanupQueryLimitOrDefault {
+        get {
+            String val = getSetting('Log_Archive_Cleanup_Query_Limit');
+            return String.isBlank(val) ? LOG_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer appEventArchiveCleanupBatchSizeOrDefault {
+        get {
+            String val = getSetting('App_Event_Archive_Cleanup_Batch_Size');
+            return String.isBlank(val) ? APP_EVENT_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer appEventArchiveCleanupQueryLimitOrDefault {
+        get {
+            String val = getSetting('App_Event_Archive_Cleanup_Query_Limit');
+            return String.isBlank(val) ? APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 

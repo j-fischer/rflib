@@ -103,10 +103,13 @@
                                     <div class="slds-truncate" title="Delete Access">Delete Access</div>
                                 </th>
                                 <th scope="col">
-                                    <div class="slds-truncate" title="View All">View All</div>
+                                    <div class="slds-truncate" title="View All">View All Fields</div>
                                 </th>
                                 <th scope="col">
-                                    <div class="slds-truncate" title="Modify All">Modify All</div>
+                                    <div class="slds-truncate" title="View All">View All Records</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Modify All">Modify All Records</div>
                                 </th>
                             </tr>
                         </thead>
@@ -130,6 +133,9 @@
                                     </td>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsDelete}</div>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        <div>{rec.PermissionsViewAllFields}</div>
                                     </td>
                                     <td class="slds-truncate">
                                         <div>{rec.PermissionsViewAllRecords}</div>

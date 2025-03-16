@@ -142,7 +142,7 @@ const PERMISSION_TYPES = {
 };
 
 const OBJECT_PERMISSIONS_CSV_HEADER =
-    '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL","MODIFY ALL"\r\n';
+    '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL FIELDS","VIEW ALL RECORDS","MODIFY ALL RECORDS"\r\n';
 const FIELD_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS"\r\n';
 
 const logger = createLogger('PermissionsExplorer');
@@ -492,6 +492,8 @@ export default class PermissionsExplorer extends LightningElement {
                     '","' +
                     permission.PermissionsDelete +
                     '","' +
+                    permission.PermissionsViewAllFields +
+                    '","' +
                     permission.PermissionsViewAllRecords +
                     '","' +
                     permission.PermissionsModifyAllRecords +
@@ -565,6 +567,9 @@ export default class PermissionsExplorer extends LightningElement {
                     consolidatedPermissions[consolidatePermissionKey].PermissionsEdit || permission.PermissionsEdit;
                 consolidatedPermissions[consolidatePermissionKey].PermissionsDelete =
                     consolidatedPermissions[consolidatePermissionKey].PermissionsDelete || permission.PermissionsDelete;
+                consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllFields =
+                    consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllFields ||
+                    permission.PermissionsViewAllFields;
                 consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllRecords =
                     consolidatedPermissions[consolidatePermissionKey].PermissionsViewAllRecords ||
                     permission.PermissionsViewAllRecords;

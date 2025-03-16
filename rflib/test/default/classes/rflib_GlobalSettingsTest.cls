@@ -114,6 +114,18 @@ private class rflib_GlobalSettingsTest {
     }
 
     @IsTest
+    static void testDaysToRetainApplicationEventArchiveOrDefault() {
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Application_Event_Archive_Retain_X_Days',
+            rflib_GlobalSettings.APPLICATION_EVENT_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.daysToRetainApplicationEventArchiveOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testDaysToRetainArchivedLogsOrDefault() {
         Integer expectedValue = getConfiguredIntegerValueOrDefault(
             'Log_Archive_Retain_X_Days',
