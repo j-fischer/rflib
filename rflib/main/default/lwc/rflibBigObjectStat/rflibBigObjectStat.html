@@ -1,0 +1,40 @@
+<template>
+    <lightning-card title="Big Object Statistics">
+        <div slot="actions">
+            <lightning-button label="Count All" onclick={countAllBigObjects} disabled={isRefreshing}>
+            </lightning-button>
+        </div>
+
+        <template if:true={error}>
+            <div class="slds-p-around_medium">
+                <div class="slds-notify slds-notify_alert slds-alert_error">{error.message}</div>
+            </div>
+        </template>
+
+        <template if:true={hasStats}>
+            <div class="slds-p-around_medium">
+                <lightning-datatable
+                    key-field="Id"
+                    data={wiredStatsResult.data}
+                    columns={columns}
+                    hide-checkbox-column
+                    onrowaction={handleRowAction}
+                >
+                </lightning-datatable>
+            </div>
+        </template>
+
+        <template if:false={hasStats}>
+            <div class="slds-p-around_medium">
+                <div class="slds-illustration slds-illustration_small">
+                    <div class="slds-text-longform">
+                        <h3 class="slds-text-heading_medium">No Statistics Available</h3>
+                        <p class="slds-text-body_regular">
+                            Click "Refresh All" to calculate statistics for all configured Big Objects.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+</template>

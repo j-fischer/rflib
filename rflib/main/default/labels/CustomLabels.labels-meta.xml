@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>RFLIB_Version</fullName>
+        <categories>RFLIB</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>RFLIB Version</shortDescription>
+        <value>9.2.0</value>
+    </labels>
+</CustomLabels>

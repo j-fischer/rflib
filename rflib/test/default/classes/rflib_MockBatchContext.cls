@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2025 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,21 +26,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
- /**
-  * @description Utility class for common Controller specific functions.
-  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_ControllerUtil {
+public class rflib_MockBatchContext implements Database.BatchableContext {
     
-    /**
-     * @description Create an `AuraHandledException` for the given error message.
-     * @param  message The message to be returned to the client. 
-     * @return         The `AuraHandledException` object with the given error message.
-     */ 
-    public static AuraHandledException createAuraHandledException(String message) {
-        AuraHandledException ex = new AuraHandledException(message ?? 'Unknown error');
-        ex.setMessage(message);
-        return ex;
+    private Id jobId = '0md000000000001ABC';
+    private Id childJobId = '0md000000000002ABC';
+
+    public Id getChildJobId() {
+        return childJobId;
+    }
+
+	public Id getJobId() {
+        return jobId;
     }
 }
