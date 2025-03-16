@@ -81,14 +81,14 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     }
     
     public Iterable<SObject> start(Database.BatchableContext bc) {
-        rflib_SOQL query = this.buildQuery();
-        LOGGER.debug('Starting batch with jobId "{0}" and query: {1}', new Object[] { bc.getJobId(), query.toString() });
+        rflib_SOQL query = buildQuery();
+        LOGGER.info('Starting batch with jobId "{0}" and query: {1}', new Object[] { bc.getJobId(), query.toString() });
         return query.toList();
     }
     
     public void execute(Database.BatchableContext bc, List<SObject> scope) {
         try {
-            LOGGER.debug('Processing batch with jobId "{0}" and {1} records', new Object[] { bc.getJobId(), scope.size() });
+            LOGGER.info('Processing batch with jobId "{0}" and {1} records', new Object[] { bc.getJobId(), scope.size() });
             this.processRecords(scope);
         } catch (Exception ex) {
             LOGGER.error('Batch processing error', ex);
@@ -98,7 +98,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     
     public void finish(Database.BatchableContext bc) {
         try {
-            LOGGER.debug('Finishing batch with jobId "{0}"', new Object[] { bc.getJobId() });
+            LOGGER.info('Finishing batch with jobId "{0}"', new Object[] { bc.getJobId() });
             this.updateTargetRecord();
             this.chainNextBatchIfNeeded();
         } catch (Exception ex) {
@@ -129,7 +129,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     }
     
     private void processRecords(List<SObject> scope) {
-        LOGGER.debug('Processing {0} records', new Object[] { scope.size() });
+        LOGGER.info('Processing {0} records', new Object[] { scope.size() });
         
         for (SObject record : scope) {
             Object currentIndex1Val = record.get(indexFields[0]);
@@ -192,7 +192,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     private void chainNextBatchIfNeeded() {
         Integer pageCount = currentCount - startingCount;
         if (pageCount == pageSize) {
-            LOGGER.debug('Chaining next batch from index: {0}', new Object[] { lastIndex1Value });
+            LOGGER.info('Chaining next batch from index: {0}', new Object[] { lastIndex1Value });
             Database.executeBatch(this.createNextBatch());
         }
     }

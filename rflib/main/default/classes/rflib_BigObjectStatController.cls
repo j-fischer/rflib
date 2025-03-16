@@ -56,7 +56,7 @@ public with sharing class rflib_BigObjectStatController {
     @AuraEnabled
     public static void refreshStats(String bigObjectName, List<String> indexFields, String orderBy) {
         try {
-            LOGGER.debug('Refreshing stats for {0} with index fields {1} order by {2}', 
+            rflib_LoggerUtil.logInternal(LOGGER, 'Refreshing stats for {0} with index fields {1} order by {2}', 
                 new Object[] { bigObjectName, indexFields, orderBy });
 
             Id jobId = Database.executeBatch(new rflib_BigObjectCounter(
@@ -81,7 +81,7 @@ public with sharing class rflib_BigObjectStatController {
     @AuraEnabled(cacheable=true)
     public static List<FieldMetadata> getFieldMetadata(String fields) {
         try {
-            LOGGER.debug('Getting field metadata for fields: {0}', new Object[] { fields });
+            rflib_LoggerUtil.logInternal(LOGGER, 'Getting field metadata for fields: {0}', new Object[] { fields });
             
             List<FieldMetadata> metadata = new List<FieldMetadata>();
             SObjectType statType = rflib_Big_Object_Stat__c.SObjectType;
