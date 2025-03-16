@@ -36,6 +36,9 @@ public class rflib_GlobalSettings {
 
     @TestVisible
     private static final Integer APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE = 45;
+
+    @TestVisible
+    private static final Integer APPLICATION_EVENT_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE = 180;
     
     @TestVisible
     private static final Integer LOG_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE = 180;
@@ -89,6 +92,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
             return String.isBlank(val) ? APPLICATION_EVENT_RETAIN_X_DAYS_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer daysToRetainApplicationEventArchiveOrDefault {
+        get {
+            String val = getSetting('Application_Event_Archive_Retain_X_Days');
+            return String.isBlank(val) ? APPLICATION_EVENT_ARCHIVE_RETAIN_X_DAYS_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 

@@ -36,7 +36,7 @@ private class rflib_ApplicationEventArchiveCleanupTest {
     static void setup() {
         rflib_TestUtil.prepareLoggerForUnitTests();
         // We'll mock the setting through rflib_GlobalSettings.SETTINGS
-        rflib_GlobalSettings.SETTINGS.put('Application_Event_Retain_X_Days', String.valueOf(RETENTION_DAYS));
+        rflib_GlobalSettings.SETTINGS.put('Application_Event_Archive_Retain_X_Days', String.valueOf(RETENTION_DAYS));
         rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Batch_Size', '2000');
         rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Query_Limit', '50000');
     }

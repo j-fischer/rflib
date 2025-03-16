@@ -39,6 +39,7 @@ public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends r
             rflib_Application_Event_Archive__b.Related_Record_ID__c
         })
         .orderBy(rflib_Application_Event_Archive__b.Occurred_On__c)
+        .sortDesc()
         .systemMode()
         .mockId('ApplicationEventArchiveCleanup.start');
     
@@ -47,7 +48,7 @@ public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends r
     }
     
     private rflib_ApplicationEventArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
-        super(LOGGER, rflib_GlobalSettings.daysToRetainApplicationEventsOrDefault, lastProcessedDate, totalProcessed);
+        super(LOGGER, rflib_GlobalSettings.daysToRetainApplicationEventArchiveOrDefault, lastProcessedDate, totalProcessed);
     }
 
     public void execute(SchedulableContext sc) {
