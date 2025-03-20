@@ -680,6 +680,7 @@ gulp.task(
         'shell-force-configure-settings',
         'shell-force-create-log-event',
         'shell-force-create-application-event',
+        'shell-force-create-qa-user',
         'shell-force-open'
     )
 );
@@ -715,6 +716,7 @@ gulp.task(
                 done();
             }
         },
+        'shell-force-create-qa-user',
         'shell-force-open',
         'shell-force-test',
         'confirm-deleteOrg',
