@@ -1,3 +1,12 @@
+### RFLIB 9.2.0
+
+Package ID: 04tKY0000011PSKYA2
+Package Alias: RFLIB@9.2.0-2
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000011PSKYA2
+
+- [PR #104](https://github.com/j-fischer/rflib/pull/104) Added new capabilities for Big Object management, including record counting, monitoring, and cleanup. Introduced the Big Object Archive Cleanup framework with dedicated cleaners for Log and Application Event Archives. Enhanced the Management Dashboard with real-time Big Object statistics and improved scheduled job management.
+- [PR #105](https://github.com/j-fischer/rflib/pull/105) Added "View All Fields" permission visibility to the Permissions Explorer UI, enabling admins to audit this critical permission across profiles, permission sets, and permission set groups. Enhanced CSV exports to include "View All Fields" data. Improved the Permissions Explorer table to clearly display "View All Fields" status alongside other object permissions. Upgraded API version to 63.0.
+
 ### RFLIB 9.1.0
 
 Package ID: 04tKY0000011MQLYA2
