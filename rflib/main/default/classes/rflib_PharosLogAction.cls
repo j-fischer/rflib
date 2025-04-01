@@ -48,7 +48,7 @@ public class rflib_PharosLogAction {
     )
     public static void createPharosLogRecords(List<rflib_Log_Event__e> logEvents) {
         try {
-            LOGGER.info('createPharosLogRecords started for {0} events', new Object[] { logEvents.size() });
+            LOGGER.debug('createPharosLogRecords started for {0} events', new Object[] { logEvents.size() });
             
             rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
             rflib_LogLevel pharosLogLevel = rflib_LogLevel.fromString(settings.Pharos_Log_Level__c);
@@ -70,7 +70,7 @@ public class rflib_PharosLogAction {
             }
             
             if (!pharosLogs.isEmpty()) {
-                LOGGER.debug('Created {0} Pharos Log records', new Object[] { pharosLogs.size() });
+                LOGGER.info('Created {0} Pharos Log records', new Object[] { pharosLogs.size() });
                 
                 SObject pharosLogEvent = Schema.getGlobalDescribe().get(PHAROS_LOG_EVENT_OBJECT).newSObject();
                 pharosLogEvent.put(PHAROS_LOG_EVENT_OBJECT_BODY, JSON.serialize(pharosLogs));

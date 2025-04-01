@@ -48,6 +48,7 @@ public class rflib_FieldMapper {
      */
     public static SObject mapFields(SObject sourceObject, String targetObjectType) {
 
+        rflib_Field_Mapping_Rule__mdt activeRule = null;    
         try {
             LOGGER.debug('Mapping fields from source object {0} to target object {1}', new Object[] {
                 sourceObject.getSObjectType().getDescribe().getName(),
@@ -79,13 +80,11 @@ public class rflib_FieldMapper {
                 .getDescribe().fields.getMap();
             
             for (rflib_Field_Mapping_Rule__mdt rule : mappingRules) {
+                activeRule = rule;
                 Object value = null;
                 
                 if (rule.Simple_Field_Copy__c) {
                     // Use the formula field value as a source field name for direct copy
-                    LOGGER.debug('Performing simple field copy from {0} to {1}', 
-                        new Object[] { rule.Transformation_Formula__c, rule.Target_Field__c });
-                    
                     try {
                         value = sourceObject.get(rule.Transformation_Formula__c);
                     } catch (SObjectException ex) {
@@ -96,6 +95,9 @@ public class rflib_FieldMapper {
                     // If there's a transformation formula, evaluate it
                     value = evaluateFormula(rule, sourceObject, targetFields.get(rule.Target_Field__c));
                 }
+
+                LOGGER.trace('Mapped value for field {0} to {1}; simple copy: {2}',
+                        new Object[] { rule.Target_Field__c, value, rule.Simple_Field_Copy__c });
                 
                 if (value != null) {
                     targetObject.put(rule.Target_Field__c, value);
@@ -111,9 +113,10 @@ public class rflib_FieldMapper {
             return targetObject;
             
         } catch (Exception ex) {
-            LOGGER.error('Error mapping fields from source object {0} to target object {1}: {2}', new Object[] {
+            LOGGER.error('Error mapping fields from source object {0} to target object {1} for field {2}: {3}', new Object[] {
                 sourceObject.getSObjectType().getDescribe().getName(),
                 targetObjectType,
+                activeRule.Target_Field__c,
                 ex.getMessage()
             });
             throw ex;
@@ -138,7 +141,7 @@ public class rflib_FieldMapper {
         Schema.DisplayType fieldType = targetField.getDescribe().getType();
         
         switch on fieldType {
-            when STRING, ID {
+            when STRING, ID, PICKLIST {
                 return FormulaEval.FormulaReturnType.STRING;
             }
             when INTEGER, LONG {
