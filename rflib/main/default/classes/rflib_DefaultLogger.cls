@@ -448,7 +448,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
         logMessages.add(messageToLog);
 
-        if (reportingLogLevel.encompasses(logLevel) || (isMonitoredContext && rflib_LogLevel.INFO.encompasses(logLevel))) {
+        if (reportingLogLevel.encompasses(logLevel) || (reportingLogLevel != rflib_LogLevel.NONE && isMonitoredContext && rflib_LogLevel.INFO.encompasses(logLevel))) {
             reportLogs(logLevel);
         }
     }
