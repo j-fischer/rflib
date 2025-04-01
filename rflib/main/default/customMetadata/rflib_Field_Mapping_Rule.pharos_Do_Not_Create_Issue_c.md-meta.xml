@@ -12,16 +12,13 @@
     </values>
     <values>
         <field>Target_Object__c</field>
-        <value xsi:type="xsd:string">pharos_Log__c</value>
+        <value xsi:type="xsd:string">pharos__Log__c</value>
     </values>
     <values>
         <field>Transformation_Formula__c</field>
-        <value xsi:type="xsd:string">CASE(
-UPPER(Log_Level__c),
-&quot;FATAL&quot;, FALSE,
-&quot;ERROR&quot;, FALSE,
-&quot;WARN&quot;,TRUE,
-TRUE
+        <value xsi:type="xsd:string">AND(
+UPPER(Log_Level__c) != &quot;FATAL&quot;,
+UPPER(Log_Level__c) != &quot;ERROR&quot;
 )</value>
     </values>
 </CustomMetadata>

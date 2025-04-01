@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Target_Object__c</field>
-        <value xsi:type="xsd:string">pharos_Log__c</value>
+        <value xsi:type="xsd:string">pharos__Log__c</value>
     </values>
     <values>
         <field>Transformation_Formula__c</field>
