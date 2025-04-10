@@ -34,7 +34,8 @@ public class rflib_PharosLogAction {
     private static final String PHAROS_LOG_OBJECT = 'pharos__Log__c';
     private static final String PHAROS_LOG_EVENT_OBJECT = 'pharos__Log_Event__e';
     private static final String PHAROS_LOG_EVENT_OBJECT_BODY = 'pharos__Body__c';
-
+    private static final String PHAROS_POST_PROCESSING_SETTINGS_FIELD = 'pharos__Post_Processing_Settings__c';
+    
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events. 
@@ -65,7 +66,15 @@ public class rflib_PharosLogAction {
                     SObject pharosLog = Schema.getGlobalDescribe().get(PHAROS_LOG_OBJECT).newSObject();
                     
                     // Use rflib_FieldMapper to map fields from Log Event to Pharos Log
-                    pharosLogs.add(rflib_FieldMapper.mapFields(event, PHAROS_LOG_OBJECT));
+                    pharosLog = rflib_FieldMapper.mapFields(event, PHAROS_LOG_OBJECT);
+                    
+                    // Set post-processing settings
+                    Map<String, Boolean> postProcessingSettings = rflib_PharosPostProcessingBuilder.getPostProcessingSettings();
+                    if (!postProcessingSettings.isEmpty()) {
+                        pharosLog.put(PHAROS_POST_PROCESSING_SETTINGS_FIELD, JSON.serialize(postProcessingSettings));
+                    }
+                    
+                    pharosLogs.add(pharosLog);
                 }
             }
             

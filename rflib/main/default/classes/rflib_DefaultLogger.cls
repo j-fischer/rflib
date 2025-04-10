@@ -463,7 +463,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         List<String> filteredLines = new List<String>();
         
         for (String line : stackLines) {
-            if (!line.containsIgnoreCase('rflib_')) {
+            if (!line.containsIgnoreCase('rflib_Default')) {
                 filteredLines.add(line);
             }
         }
