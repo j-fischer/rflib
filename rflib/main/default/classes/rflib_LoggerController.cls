@@ -55,6 +55,9 @@ public with sharing class rflib_LoggerController {
     @AuraEnabled
     public static void log(String platformInfo, String level, String context, String message, String stacktrace) {
         rflib_Logger logger = rflib_LoggerUtil.getFactory().createLogger(context);
+        
+        // Set the log source to Browser
+        logger.setLogSource(rflib_LogSource.Browser);
 
         /* Overwriting configuration values for general log level, system log level, and reporting level to ensure that the 
          * client side log messages are managed by the client specific settings only, so that those log statements

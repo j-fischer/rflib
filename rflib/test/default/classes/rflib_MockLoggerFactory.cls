@@ -41,7 +41,7 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
     public rflib_MockLoggerFactory(rflib_LogLevel systemDebugLogLevel) {
         this.systemDebugLogLevel = systemDebugLogLevel;
     }
-
+    
     public rflib_Logger createLogger(String context) {
         rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
 

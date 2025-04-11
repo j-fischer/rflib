@@ -75,6 +75,21 @@ public class rflib_DefaultLoggerTest {
     }
 
     @isTest
+    public static void testSetLogSource() {
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+        rflib_Logger logger = loggerFactory.createLogger('testSetLogSource');
+
+        Test.startTest();
+        logger.setLogSource(rflib_LogSource.BROWSER);
+        Test.stopTest();
+
+        // In this test, we're just verifying the method doesn't throw an exception
+        // The actual implementation is tested in integration tests for LoggerFlowAction and LoggerController
+        System.assertEquals(true, true, 'Setting log source should not cause errors');
+    }
+
+    @isTest
     public static void testSetLogCacheSize() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 

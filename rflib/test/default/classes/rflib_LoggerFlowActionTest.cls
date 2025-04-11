@@ -77,6 +77,19 @@ private class rflib_LoggerFlowActionTest {
     }
 
     @IsTest
+    private static void testLogMessage_ValidateLogSource() {
+        rflib_MockLoggerFactory mockLoggerFactory = new rflib_MockLoggerFactory(rflib_LogLevel.INFO);
+        rflib_LoggerFlowAction.loggerFactory = mockLoggerFactory;
+
+        Test.startTest();
+        rflib_LoggerFlowAction.logMessage(createMessageInfo('info'));
+        Test.stopTest();
+
+        // Verify that the log source is set to Flow
+        System.assertEquals(rflib_LogSource.Flow.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c);
+    }
+
+    @IsTest
     private static void testLogMessage_Debug() {
         rflib_MockLoggerFactory debugLogFactory = new rflib_MockLoggerFactory(rflib_LogLevel.DEBUG);
         rflib_LoggerFlowAction.loggerFactory = debugLogFactory;

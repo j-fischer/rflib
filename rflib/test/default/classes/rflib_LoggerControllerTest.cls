@@ -103,6 +103,19 @@ private class rflib_LoggerControllerTest {
         executeTestLogMessage('Foo');
         Test.stopTest();
     } 
+    
+    @IsTest
+    static void testLog_SetsLogSourceToBrowser() {
+        rflib_MockLoggerFactory mockLoggerFactory = new rflib_MockLoggerFactory();
+        rflib_LoggerUtil.loggerFactory = mockLoggerFactory;
+        
+        Test.startTest();
+        rflib_LoggerController.log('platformInfo', 'INFO', 'someContext', 'some message', 'stacktrace');
+        Test.stopTest();
+        
+        // Verify the log source is set to Browser
+        System.assertEquals(rflib_LogSource.Browser.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c, 'Log source should be set to Browser');
+    }
 
     private static void executeTestLogMessage_UnsupportedLevels(String level) {
         String context = 'someContext';

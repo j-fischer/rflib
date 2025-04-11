@@ -300,4 +300,11 @@ public interface rflib_Logger {
    * or a `System.enqueueJob()` if the DML governor limit for the current transaction has been reached.
    */
   void publishBatchedLogEvents();
+
+  /**
+   * Set the source of the log messages. This is used to identify where logs are coming from.
+   * 
+   * @param source The source of the log messages (Apex, Flow, Browser)
+   */
+  void setLogSource(rflib_LogSource source);
 }

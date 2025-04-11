@@ -63,7 +63,9 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     @TestVisible private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
     @TestVisible private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
     @TestVisible private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
-
+    
+    @TestVisible private rflib_LogSource logSource = rflib_LogSource.Apex;
+    
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
      *
@@ -265,7 +267,11 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     public void setStacktrace(String newStacktrace) {
         STACKTRACE = newStacktrace;
     }
-
+    
+    public void setLogSource(rflib_LogSource source) {
+        logSource = source;
+    }
+    
     public void trace(String message) {
         trace(message, null);
     }
