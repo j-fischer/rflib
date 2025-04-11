@@ -32,6 +32,7 @@ package-lock.json
 **/*.ts
 
 # PHAROS
+**/pharos__*
 rflib/main/default/reports/prm*
 rflib/main/default/dashboards/prm*
 rflib/main/default/emailservices/ErrorEmailHandler.xml-meta.xml
