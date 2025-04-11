@@ -65,7 +65,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     @TestVisible private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
     
     @TestVisible private rflib_LogSource logSource = rflib_LogSource.Apex;
-    
+
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
      *
@@ -385,6 +385,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             Context__c = context.substring(0, Math.min(context.length(), 40)),
             Platform_Info__c = getPlatformInformation(),
             Log_Messages__c = logMessageToPublish,
+            Log_Source__c = logSource.toString(),
             Stacktrace__c = getStacktrace()
         );
 

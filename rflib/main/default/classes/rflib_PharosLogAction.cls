@@ -49,7 +49,7 @@ public class rflib_PharosLogAction {
     )
     public static void createPharosLogRecords(List<rflib_Log_Event__e> logEvents) {
         try {
-            LOGGER.debug('createPharosLogRecords started for {0} events', new Object[] { logEvents.size() });
+            LOGGER.debug('createPharosLogRecords started for {0} event(s)', new Object[] { logEvents.size() });
             
             rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getInstance();
             rflib_LogLevel pharosLogLevel = rflib_LogLevel.fromString(settings.Pharos_Log_Level__c);
