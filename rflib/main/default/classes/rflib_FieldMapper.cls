@@ -63,12 +63,15 @@ public class rflib_FieldMapper {
             // Create new instance of target object
             SObject targetObject = Schema.getGlobalDescribe().get(targetObjectType).newSObject();
             
-            // Get field mapping rules for the target object
-            List<rflib_Field_Mapping_Rule__mdt> mappingRules = [
-                SELECT Target_Object__c, Target_Field__c, Transformation_Formula__c, Simple_Field_Copy__c
-                FROM rflib_Field_Mapping_Rule__mdt 
-                WHERE Target_Object__c = :targetObjectType
-            ];
+            List<rflib_Field_Mapping_Rule__mdt> mappingRules = 
+                rflib_SOQL.of(rflib_Field_Mapping_Rule__mdt.SObjectType)
+                    .with(rflib_Field_Mapping_Rule__mdt.Target_Object__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Target_Field__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Transformation_Formula__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Simple_Field_Copy__c)
+                    .whereAre(rflib_SOQL.Filter.with(rflib_Field_Mapping_Rule__mdt.Target_Object__c).equal(targetObjectType))
+                    .mockId('FieldMappingRule.getRules')
+                    .toList();
 
             LOGGER.debug('Found {0} mapping rules for target object {1}: {2}', new Object[] {
                 mappingRules.size(),
