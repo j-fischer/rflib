@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>pharos__Area__c</label>
+    <protected>false</protected>
+    <values>
+        <field>Simple_Field_Copy__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Target_Field__c</field>
+        <value xsi:type="xsd:string">pharos__Area__c</value>
+    </values>
+    <values>
+        <field>Target_Object__c</field>
+        <value xsi:type="xsd:string">pharos__Log__c</value>
+    </values>
+    <values>
+        <field>Transformation_Formula__c</field>
+        <value xsi:type="xsd:string">CASE(
+UPPER(Log_Source__c),
+&quot;APEX&quot;, &quot;Apex&quot;,
+&quot;FLOW&quot;, &quot;Flow&quot;,
+&quot;&quot;
+)</value>
+    </values>
+</CustomMetadata>
