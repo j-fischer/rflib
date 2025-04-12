@@ -571,6 +571,13 @@ gulp.task(
 );
 
 gulp.task(
+    'shell-pharos-post-install',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/RunPharosPostInstallHander.apex`;
+    })
+);
+
+gulp.task(
     'shell-test-lwc',
     shellTask(function () {
         return 'npm run test:unit:coverage';
@@ -664,7 +671,8 @@ gulp.task(
             if (process.argv.includes('--pharos')) {
                 gulp.series(
                     'shell-force-install-pharos', 
-                    'shell-force-install-pharos-triton'
+                    'shell-force-install-pharos-triton',
+                    'shell-pharos-post-install',
                 )(done);
             } else {
                 done();
