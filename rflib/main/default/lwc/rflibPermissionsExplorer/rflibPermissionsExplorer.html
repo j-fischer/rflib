@@ -30,6 +30,64 @@
     <div class="slds-page-header">
         <div class="download-container" lwc:dom="manual"></div>
 
+        <!-- Export Filter Modal -->
+        <template if:true={showExportFilterModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">Export Filters</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <div class="slds-form">
+                            <div class="slds-form-element slds-m-bottom_small">
+                                <label class="slds-form-element__label">Profile/Permission Set Name</label>
+                                <div class="slds-form-element__control">
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter comma-separated names..."
+                                        value={exportSecurityObjectSearch}
+                                        onchange={handleExportSecurityObjectSearchChange}
+                                    >
+                                    </lightning-input>
+                                </div>
+                            </div>
+                            <div class="slds-form-element slds-m-bottom_small">
+                                <label class="slds-form-element__label">Object/Class/Page Name</label>
+                                <div class="slds-form-element__control">
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter comma-separated names..."
+                                        value={exportObjectSearch}
+                                        onchange={handleExportObjectSearchChange}
+                                    >
+                                    </lightning-input>
+                                </div>
+                            </div>
+                            <template if:true={isFieldPermissions}>
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label">Field Name</label>
+                                    <div class="slds-form-element__control">
+                                        <lightning-input
+                                            type="text"
+                                            placeholder="Enter comma-separated field names..."
+                                            value={exportFieldSearch}
+                                            onchange={handleExportFieldSearchChange}
+                                        >
+                                        </lightning-input>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick={closeExportFilterModal}>Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick={exportFilteredToCsv}>Export</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
         <div lwc:if={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"
@@ -78,12 +136,15 @@
                                 </lightning-button-menu>
                             </li>
                             <li class="slds-m-horizontal_xx-small">
-                                <lightning-button
-                                    type="submit"
+                                <lightning-button-menu
                                     label="Export to CSV"
-                                    onclick={exportToCsv}
+                                    menu-alignment="right"
+                                    onselect={handleExportSelection}
                                     disabled={isPermissionRecordsEmpty}
-                                ></lightning-button>
+                                >
+                                    <lightning-menu-item value="all" label="All"></lightning-menu-item>
+                                    <lightning-menu-item value="filtered" label="Filtered"></lightning-menu-item>
+                                </lightning-button-menu>
                             </li>
                             <li class="slds-m-horizontal_xx-small">
                                 <lightning-button-menu
