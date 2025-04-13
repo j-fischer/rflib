@@ -249,7 +249,13 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             .then((fields) => {
                 this.fieldInfos = fields.map((fieldInfo) => {
                     const dataType = fieldInfo.dataType;
-                    const value = this.isNewModal ? fieldInfo.defaultValue : this.recordValues[fieldInfo.apiName];
+                    const value = this.isNewModal
+                        ? fieldInfo.defaultValue === undefined
+                            ? null
+                            : fieldInfo.defaultValue
+                        : this.recordValues[fieldInfo.apiName] === undefined
+                          ? null
+                          : this.recordValues[fieldInfo.apiName];
 
                     return {
                         ...fieldInfo,

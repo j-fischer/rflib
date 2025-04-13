@@ -30,6 +30,145 @@
     <div class="slds-page-header">
         <div class="download-container" lwc:dom="manual"></div>
 
+        <!-- Export Filter Modal -->
+        <template if:true={showExportFilterModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">Export Filters</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- Collapsible filter explanation section -->
+                        <div class="slds-box slds-m-bottom_medium filter-info-box">
+                            <details>
+                                <summary class="slds-text-heading_small slds-m-bottom_x-small filter-summary">
+                                    <div class="slds-media slds-media_center">
+                                        <div class="slds-media__figure">
+                                            <lightning-icon
+                                                icon-name="utility:info"
+                                                size="x-small"
+                                                alternative-text="Info"
+                                            ></lightning-icon>
+                                        </div>
+                                        <div class="slds-media__body">Click to learn how filtering works</div>
+                                    </div>
+                                </summary>
+                                <div class="slds-p-top_small">
+                                    <p class="slds-m-bottom_small">
+                                        Each filter field accepts multiple values separated by commas. All searches are
+                                        case-sensitive substring matches. The filter combines entries as follows:
+                                    </p>
+                                    <ul class="slds-list_dotted slds-p-left_medium">
+                                        <li class="slds-p-vertical_x-small">
+                                            Values within the same field are combined with OR logic
+                                        </li>
+                                        <li class="slds-p-vertical_x-small">
+                                            Different filter fields are combined with AND logic
+                                        </li>
+                                        <li class="slds-p-vertical_x-small">
+                                            Searches are case-sensitive - "account" won't match "Account"
+                                        </li>
+                                        <li class="slds-p-vertical_x-small">
+                                            Searches match substrings - "Acc" will match "Account"
+                                        </li>
+                                    </ul>
+                                    <div class="slds-text-title slds-m-top_small slds-p-vertical_x-small">Example:</div>
+                                    <div class="slds-box slds-theme_default slds-m-top_x-small filter-example">
+                                        <p class="slds-p-vertical_xx-small">
+                                            <strong>Profile:</strong> "System Administrator, Sales User"
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small">
+                                            <strong>Object:</strong> "Account, Contact"
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small"><strong>Field:</strong> "Name, Phone"</p>
+                                        <p class="slds-p-vertical_x-small slds-m-top_x-small">
+                                            This will show permissions where:
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small">
+                                            (Profile contains "System Administrator" OR contains "Sales User")
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small">
+                                            AND (Object contains "Account" OR contains "Contact")
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small">
+                                            AND (Field contains "Name" OR contains "Phone")
+                                        </p>
+                                        <p class="slds-p-vertical_xx-small slds-m-top_x-small slds-text-color_weak">
+                                            Note: All matches are case-sensitive, so "account" won't match "Account"
+                                        </p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="slds-form">
+                            <div class="slds-form-element slds-m-bottom_small">
+                                <div class="slds-form-element__label slds-grid slds-grid_vertical-align-center">
+                                    <lightning-helptext
+                                        class="slds-m-right_x-small"
+                                        content="Enter names of profiles or permission sets to filter by, separated by commas. Example: 'System Administrator, Sales User'"
+                                    ></lightning-helptext>
+                                    Profile/Permission Set Name
+                                </div>
+                                <div class="slds-form-element__control">
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter comma-separated names..."
+                                        value={exportSecurityObjectSearch}
+                                        onchange={handleExportSecurityObjectSearchChange}
+                                    >
+                                    </lightning-input>
+                                </div>
+                            </div>
+                            <div class="slds-form-element slds-m-bottom_small">
+                                <div class="slds-form-element__label slds-grid slds-grid_vertical-align-center">
+                                    <lightning-helptext
+                                        class="slds-m-right_x-small"
+                                        content="Enter names of objects, classes, or pages to filter by, separated by commas. Example: 'Account, Contact'"
+                                    ></lightning-helptext>
+                                    Object/Class/Page Name
+                                </div>
+                                <div class="slds-form-element__control">
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter comma-separated names..."
+                                        value={exportObjectSearch}
+                                        onchange={handleExportObjectSearchChange}
+                                    >
+                                    </lightning-input>
+                                </div>
+                            </div>
+                            <template if:true={isFieldPermissions}>
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__label slds-grid slds-grid_vertical-align-center">
+                                        <lightning-helptext
+                                            class="slds-m-right_x-small"
+                                            content="Enter field names to filter by, separated by commas. Example: 'Name, Industry' for Account or 'Email, Phone' for Contact"
+                                        ></lightning-helptext>
+                                        Field Name
+                                    </div>
+                                    <div class="slds-form-element__control">
+                                        <lightning-input
+                                            type="text"
+                                            placeholder="Enter comma-separated field names..."
+                                            value={exportFieldSearch}
+                                            onchange={handleExportFieldSearchChange}
+                                        >
+                                        </lightning-input>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick={closeExportFilterModal}>Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick={exportFilteredToCsv}>Export</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
         <div lwc:if={isLoadingRecords}>
             <lightning-spinner
                 class="slds-is-fixed spinner-large"
@@ -78,12 +217,15 @@
                                 </lightning-button-menu>
                             </li>
                             <li class="slds-m-horizontal_xx-small">
-                                <lightning-button
-                                    type="submit"
+                                <lightning-button-menu
                                     label="Export to CSV"
-                                    onclick={exportToCsv}
+                                    menu-alignment="right"
+                                    onselect={handleExportSelection}
                                     disabled={isPermissionRecordsEmpty}
-                                ></lightning-button>
+                                >
+                                    <lightning-menu-item value="all" label="All"></lightning-menu-item>
+                                    <lightning-menu-item value="filtered" label="Filtered"></lightning-menu-item>
+                                </lightning-button-menu>
                             </li>
                             <li class="slds-m-horizontal_xx-small">
                                 <lightning-button-menu
@@ -114,21 +256,9 @@
     <div class="slds-grid">
         <div class="slds-col slds-size_1-of-1">
             <lightning-card>
-                <div
-                    class="slds-grid slds-grid_vertical-stretch"
-                    style="display: flex; flex-direction: column; height: 100%"
-                >
+                <div class="slds-grid slds-grid_vertical-stretch permissions-container">
                     <template lwc:if={isUserModeSelected}>
-                        <div
-                            class="slds-grid slds-m-left_medium"
-                            style="
-                                flex-grow: 1;
-                                display: flex;
-                                flex-direction: row;
-                                justify-content: start;
-                                align-items: end;
-                            "
-                        >
+                        <div class="slds-grid slds-m-left_medium user-permissions-grid">
                             <div class="slds-col slds-size_3-of-12 slds-m-right_x-small">
                                 <lightning-record-picker
                                     label="Select a user"
