@@ -109,9 +109,28 @@ private class rflib_FieldMapperTest {
         try {
             rflib_FieldMapper.mapFields(sourceLogEvent, INVALID_TARGET_TYPE);
             System.assert(false, 'Expected exception was not thrown');
-        } catch (Exception ex) {
-            System.assert(ex.getMessage().contains('Invalid object name'), 
-                         'Expected exception message about invalid object but got: ' + ex.getMessage());
+        } catch (rflib_FieldMapper.FieldMappingException ex) {
+            System.assertEquals('Invalid target object type: ' + INVALID_TARGET_TYPE, ex.getMessage(),
+                'Expected specific error message about invalid object type');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMapFields_BlankTargetObject() {
+        // Arrange
+        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(
+            Context__c = 'Test Context',
+            Log_Level__c = 'ERROR'
+        );
+        
+        // Act & Assert
+        Test.startTest();
+        try {
+            rflib_FieldMapper.mapFields(sourceLogEvent, '');
+            System.assert(false, 'Expected exception was not thrown');
+        } catch (rflib_FieldMapper.FieldMappingException ex) {
+            System.assertEquals('Target object type cannot be null or empty', ex.getMessage());
         }
         Test.stopTest();
     }
@@ -205,10 +224,10 @@ private class rflib_FieldMapperTest {
         
         // Setup mock mapping rules for different field types
         List<rflib_Field_Mapping_Rule__mdt> mappingRules = new List<rflib_Field_Mapping_Rule__mdt>{
-            createMappingRule(TARGET_OBJECT_TYPE, 'Event_Name__c', 'Context__c', true), // String
-            createMappingRule(TARGET_OBJECT_TYPE, 'Additional_Details__c', 'Log_Messages__c + " - Source: " + Source_System_ID__c', false), // String concatenation
-            createMappingRule(TARGET_OBJECT_TYPE, 'Occurred_On__c', 'NOW()', false), // DateTime
-            createMappingRule(TARGET_OBJECT_TYPE, 'Related_Record_ID__c', 'IF(Log_Level__c = "ERROR", Request_ID__c, "NO-ID")', false) // Conditional
+            createMappingRule(TARGET_OBJECT_TYPE, 'Event_Name__c', 'Context__c', false), // String with formula
+            createMappingRule(TARGET_OBJECT_TYPE, 'Additional_Details__c', 'Log_Messages__c', true), // Text Area - must use simple field copy
+            createMappingRule(TARGET_OBJECT_TYPE, 'Occurred_On__c', 'NOW()', false), // DateTime with formula
+            createMappingRule(TARGET_OBJECT_TYPE, 'Related_Record_ID__c', 'IF(Log_Level__c = "ERROR", Request_ID__c, "NO-ID")', false) // Conditional formula
         };
         rflib_SOQL.setMock('FieldMappingRule.getRules', mappingRules);
         
@@ -219,37 +238,9 @@ private class rflib_FieldMapperTest {
         
         // Assert
         System.assertEquals('Test Context', mappedEvent.Event_Name__c);
-        System.assertEquals('Detailed Log Information - Source: TEST_SYSTEM', mappedEvent.Additional_Details__c);
+        System.assertEquals('Detailed Log Information', mappedEvent.Additional_Details__c);
         System.assertNotEquals(null, mappedEvent.Occurred_On__c); // NOW() will be the current time
         System.assertEquals('TEST-REQ-001', mappedEvent.Related_Record_ID__c);
-    }
-    
-    @IsTest
-    static void testMapFields_UnsupportedFieldType() {
-        // This test is more about code coverage since it's hard to mock an unsupported field type
-        // All standard field types are supported, but we'll create a test to simulate the error path
-        
-        // Arrange
-        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(
-            Context__c = 'Test Context',
-            Log_Level__c = 'ERROR'
-        );
-        
-        // Setup a simple mapping rule
-        List<rflib_Field_Mapping_Rule__mdt> mappingRules = new List<rflib_Field_Mapping_Rule__mdt>{
-            createMappingRule(TARGET_OBJECT_TYPE, 'Event_Name__c', 'Context__c', false)
-        };
-        rflib_SOQL.setMock('FieldMappingRule.getRules', mappingRules);
-        
-        // Act & Assert
-        Test.startTest();
-        try {
-            rflib_FieldMapper.mapFields(sourceLogEvent, TARGET_OBJECT_TYPE);
-            System.assert(false, 'Expected exception was not thrown');
-        } catch (rflib_FieldMapper.FieldMappingException ex) {
-            System.assertEquals('Unsupported field type for formula evaluation: STRING', ex.getMessage());
-        }
-        Test.stopTest();
     }
     
     // Helper method to create a mapping rule
