@@ -44,3 +44,31 @@
 .download-container {
     display:none;
 }
+
+.filter-info-box {
+    background-color: #f3f3f3;
+    border-color: #dddbda;
+}
+
+.filter-summary {
+    cursor: pointer;
+    color: #032d60;
+}
+
+.filter-example {
+    background-color: white;
+}
+
+.permissions-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.user-permissions-grid {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: end;
+}

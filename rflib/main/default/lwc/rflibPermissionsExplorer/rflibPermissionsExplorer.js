@@ -175,6 +175,11 @@ export default class PermissionsExplorer extends LightningElement {
         primaryField: { fieldPath: 'Name' }
     };
 
+    showExportFilterModal = false;
+    exportSecurityObjectSearch = '';
+    exportObjectSearch = '';
+    exportFieldSearch = '';
+
     connectedCallback() {
         this.loadPermissions();
     }
@@ -449,16 +454,28 @@ export default class PermissionsExplorer extends LightningElement {
         }, 0);
     }
 
-    exportToCsv() {
-        logger.debug('Export to CSV: type={0}, numRecords={1}', this.currentPermissionType.value, this.numTotalRecords);
+    handleExportSelection(event) {
+        const selection = event.detail.value;
+        logger.debug('Export selection: {0}', selection);
+
+        if (selection === 'all') {
+            this.exportAllToCsv();
+        } else if (selection === 'filtered') {
+            this.showExportFilterModal = true;
+        }
+    }
+
+    exportAllToCsv() {
+        logger.debug(
+            'Export all to CSV: type={0}, numRecords={1}',
+            this.currentPermissionType.value,
+            this.numTotalRecords
+        );
         let csvContent = '';
 
         if (this.isFieldPermissions) {
             csvContent += FIELD_PERMISSIONS_CSV_HEADER;
-
-            let i;
-            for (i = 0; i < this.numTotalRecords; i++) {
-                let permission = this.permissionRecords[i];
+            this.permissionRecords.forEach((permission) => {
                 csvContent +=
                     '"' +
                     permission.SecurityObjectName +
@@ -471,13 +488,10 @@ export default class PermissionsExplorer extends LightningElement {
                     '","' +
                     permission.PermissionsEdit +
                     '"\r\n';
-            }
+            });
         } else {
             csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
-
-            let i;
-            for (i = 0; i < this.numTotalRecords; i++) {
-                let permission = this.permissionRecords[i];
+            this.permissionRecords.forEach((permission) => {
                 csvContent +=
                     '"' +
                     permission.SecurityObjectName +
@@ -498,13 +512,13 @@ export default class PermissionsExplorer extends LightningElement {
                     '","' +
                     permission.PermissionsModifyAllRecords +
                     '"\r\n';
-            }
+            });
         }
 
-        let element = document.createElement('a');
+        const element = document.createElement('a');
         element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
 
-        let fileName =
+        const fileName =
             (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
             this.currentPermissionType.value +
             '_' +
@@ -512,15 +526,137 @@ export default class PermissionsExplorer extends LightningElement {
             '.csv';
 
         element.setAttribute('download', fileName);
-
         element.style.display = 'none';
 
-        let downloadContainer = this.template.querySelector('.download-container');
+        const downloadContainer = this.template.querySelector('.download-container');
         downloadContainer.appendChild(element);
 
         element.click();
-
         downloadContainer.removeChild(element);
+    }
+
+    exportToCsv() {
+        logger.debug('Export to CSV: type={0}, numRecords={1}', this.currentPermissionType.value, this.numTotalRecords);
+        this.showExportFilterModal = true;
+    }
+
+    closeExportFilterModal() {
+        this.showExportFilterModal = false;
+        this.exportSecurityObjectSearch = '';
+        this.exportObjectSearch = '';
+        this.exportFieldSearch = '';
+    }
+
+    handleExportSecurityObjectSearchChange(event) {
+        this.exportSecurityObjectSearch = event.target.value;
+    }
+
+    handleExportObjectSearchChange(event) {
+        this.exportObjectSearch = event.target.value;
+    }
+
+    handleExportFieldSearchChange(event) {
+        this.exportFieldSearch = event.target.value;
+    }
+
+    exportFilteredToCsv() {
+        logger.debug(
+            'Exporting filtered CSV with filters: security={0}, object={1}, field={2}',
+            this.exportSecurityObjectSearch,
+            this.exportObjectSearch,
+            this.exportFieldSearch
+        );
+
+        const getSearchTerms = (searchStr) => {
+            if (!searchStr) return [];
+            return searchStr
+                .split(',')
+                .map((term) => term.trim())
+                .filter((term) => term.length > 0);
+        };
+
+        const securityTerms = getSearchTerms(this.exportSecurityObjectSearch);
+        const objectTerms = getSearchTerms(this.exportObjectSearch);
+        const fieldTerms = getSearchTerms(this.exportFieldSearch);
+
+        const filteredRecords = this.permissionRecords.filter((rec) => {
+            const matchesSecurity =
+                securityTerms.length === 0 || securityTerms.some((term) => rec.SecurityObjectName.indexOf(term) > -1);
+
+            const matchesObject =
+                objectTerms.length === 0 || objectTerms.some((term) => rec.SobjectType.indexOf(term) > -1);
+
+            const matchesField =
+                !this.isFieldPermissions ||
+                fieldTerms.length === 0 ||
+                fieldTerms.some((term) => rec.Field.indexOf(term) > -1);
+
+            return matchesSecurity && matchesObject && matchesField;
+        });
+
+        let csvContent = '';
+        if (this.isFieldPermissions) {
+            csvContent += FIELD_PERMISSIONS_CSV_HEADER;
+            filteredRecords.forEach((permission) => {
+                csvContent +=
+                    '"' +
+                    permission.SecurityObjectName +
+                    '","' +
+                    permission.SobjectType +
+                    '","' +
+                    permission.Field +
+                    '","' +
+                    permission.PermissionsRead +
+                    '","' +
+                    permission.PermissionsEdit +
+                    '"\r\n';
+            });
+        } else {
+            csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
+            filteredRecords.forEach((permission) => {
+                csvContent +=
+                    '"' +
+                    permission.SecurityObjectName +
+                    '","' +
+                    permission.SobjectType +
+                    '","' +
+                    permission.PermissionsRead +
+                    '","' +
+                    permission.PermissionsCreate +
+                    '","' +
+                    permission.PermissionsEdit +
+                    '","' +
+                    permission.PermissionsDelete +
+                    '","' +
+                    permission.PermissionsViewAllFields +
+                    '","' +
+                    permission.PermissionsViewAllRecords +
+                    '","' +
+                    permission.PermissionsModifyAllRecords +
+                    '"\r\n';
+            });
+        }
+
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+
+        const fileName =
+            (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
+            this.currentPermissionType.value +
+            '_' +
+            new Date().toISOString() +
+            '.csv';
+
+        element.setAttribute('download', fileName);
+        element.style.display = 'none';
+
+        const downloadContainer = this.template.querySelector('.download-container');
+        downloadContainer.appendChild(element);
+
+        element.click();
+        downloadContainer.removeChild(element);
+
+        this.closeExportFilterModal();
     }
 
     aggregatePermission() {
