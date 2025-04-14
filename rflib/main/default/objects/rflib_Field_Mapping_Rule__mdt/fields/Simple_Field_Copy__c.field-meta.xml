@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Simple_Field_Copy__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When checked, the Transformation Formula field is treated as a source field API name for direct field copying instead of a formula to evaluate.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>When checked, the Transformation Formula field is treated as a source field API name for direct field copying instead of a formula to evaluate.</inlineHelpText>
+    <label>Simple Field Copy</label>
+    <type>Checkbox</type>
+</CustomField> 

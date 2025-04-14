@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Transformation_Formula__c</fullName>
+    <description>Formula to transform the source value. If provided, this formula will be evaluated instead of using direct field mapping.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Formula to transform the source value. If provided, this formula will be evaluated instead of using direct field mapping.</inlineHelpText>
+    <label>Transformation Formula</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>10</visibleLines>
+</CustomField>
