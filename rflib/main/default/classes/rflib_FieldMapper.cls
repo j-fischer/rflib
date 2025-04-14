@@ -47,11 +47,10 @@ public class rflib_FieldMapper {
      * @return A new instance of the target object with mapped fields
      */
     public static SObject mapFields(SObject sourceObject, String targetObjectType) {
-
         rflib_Field_Mapping_Rule__mdt activeRule = null;    
         try {
             LOGGER.debug('Mapping fields from source object {0} to target object {1}', new Object[] {
-                sourceObject.getSObjectType().getDescribe().getName(),
+                sourceObject?.getSObjectType()?.getDescribe()?.getName(),
                 targetObjectType
             });
 
@@ -59,16 +58,30 @@ public class rflib_FieldMapper {
                 LOGGER.debug('Source object cannot be null');
                 throw new FieldMappingException('Source object cannot be null');
             }
+
+            if (String.isBlank(targetObjectType)) {
+                LOGGER.debug('Target object type cannot be null or empty');
+                throw new FieldMappingException('Target object type cannot be null or empty');
+            }
             
             // Create new instance of target object
-            SObject targetObject = Schema.getGlobalDescribe().get(targetObjectType).newSObject();
+            Schema.SObjectType targetSObjectType = Schema.getGlobalDescribe().get(targetObjectType);
+            if (targetSObjectType == null) {
+                LOGGER.error('Invalid target object type: {0}', new Object[] { targetObjectType });
+                throw new FieldMappingException('Invalid target object type: ' + targetObjectType);
+            }
+
+            SObject targetObject = targetSObjectType.newSObject();
             
-            // Get field mapping rules for the target object
-            List<rflib_Field_Mapping_Rule__mdt> mappingRules = [
-                SELECT Target_Object__c, Target_Field__c, Transformation_Formula__c, Simple_Field_Copy__c
-                FROM rflib_Field_Mapping_Rule__mdt 
-                WHERE Target_Object__c = :targetObjectType
-            ];
+            List<rflib_Field_Mapping_Rule__mdt> mappingRules = 
+                rflib_SOQL.of(rflib_Field_Mapping_Rule__mdt.SObjectType)
+                    .with(rflib_Field_Mapping_Rule__mdt.Target_Object__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Target_Field__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Transformation_Formula__c)
+                    .with(rflib_Field_Mapping_Rule__mdt.Simple_Field_Copy__c)
+                    .whereAre(rflib_SOQL.Filter.with(rflib_Field_Mapping_Rule__mdt.Target_Object__c).equal(targetObjectType))
+                    .mockId('FieldMappingRule.getRules')
+                    .toList();
 
             LOGGER.debug('Found {0} mapping rules for target object {1}: {2}', new Object[] {
                 mappingRules.size(),
@@ -82,7 +95,7 @@ public class rflib_FieldMapper {
             for (rflib_Field_Mapping_Rule__mdt rule : mappingRules) {
                 activeRule = rule;
                 Object value = null;
-                
+
                 if (rule.Simple_Field_Copy__c) {
                     // Use the formula field value as a source field name for direct copy
                     try {
@@ -112,14 +125,17 @@ public class rflib_FieldMapper {
             
             return targetObject;
             
+        } catch (FieldMappingException ex) {
+            LOGGER.error('Field mapping error: {0}', new Object[] { ex.getMessage() });
+            throw ex;
         } catch (Exception ex) {
             LOGGER.error('Error mapping fields from source object {0} to target object {1} for field {2}: {3}', new Object[] {
-                sourceObject.getSObjectType().getDescribe().getName(),
+                sourceObject?.getSObjectType()?.getDescribe()?.getName(),
                 targetObjectType,
-                activeRule.Target_Field__c,
+                activeRule?.Target_Field__c,
                 ex.getMessage()
             });
-            throw ex;
+            throw new FieldMappingException('Error during field mapping: ' + ex.getMessage());
         }
     }
     
@@ -128,20 +144,36 @@ public class rflib_FieldMapper {
         SObject sourceObject,
         Schema.SObjectField targetField
     ) {
-        FormulaEval.FormulaInstance ff = Formula.builder()
-            .withReturnType(getFormulaReturnType(targetField))
-            .withType(sourceObject.getSObjectType())
-            .withFormula(rule.Transformation_Formula__c)
-            .build();
+        if (rule == null) {
+            throw new FieldMappingException('Mapping rule cannot be null');
+        }
         
-        return ff.evaluate(sourceObject);
+        if (targetField == null) {
+            throw new FieldMappingException('Target field ' + rule.Target_Field__c + ' not found on target object');
+        }
+
+        try {
+            FormulaEval.FormulaInstance ff = Formula.builder()
+                .withReturnType(getFormulaReturnType(targetField))
+                .withType(sourceObject.getSObjectType())
+                .withFormula(rule.Transformation_Formula__c)
+                .build();
+            
+            return ff.evaluate(sourceObject);
+        } catch (Exception ex) {
+            throw new FieldMappingException('Error evaluating formula for field ' + rule.Target_Field__c + ': ' + ex.getMessage());
+        }
     }
     
     private static FormulaEval.FormulaReturnType getFormulaReturnType(Schema.SObjectField targetField) {
+        if (targetField == null) {
+            throw new FieldMappingException('Target field cannot be null');
+        }
+
         Schema.DisplayType fieldType = targetField.getDescribe().getType();
         
         switch on fieldType {
-            when STRING, ID, PICKLIST {
+            when STRING, ID, PICKLIST, TEXTAREA {
                 return FormulaEval.FormulaReturnType.STRING;
             }
             when INTEGER, LONG {
@@ -167,4 +199,4 @@ public class rflib_FieldMapper {
             }
         }
     }
-} 
+}
