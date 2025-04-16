@@ -1,3 +1,13 @@
+### RFLIB 9.3.0
+
+Package ID: 04tKY000000xMlyYAE
+Package Alias: RFLIB@9.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xMlyYAE
+
+- [PR #109](https://github.com/j-fischer/rflib/pull/109) Added new capability to filter the records when exporting them from the Permission Explorer UI to a CSV file. [Feature Request #107](https://github.com/j-fischer/rflib/issues/107)
+- [PR #108](https://github.com/j-fischer/rflib/pull/108) Introducing a flexible field mapping utility for Salesforce that allows dynamic field mapping between SObjects using custom metadata rules. The implementation supports both direct field mapping and formula-based transformations.
+- Fixed issue in Custom Settings Editor displaying "undefined" as a value when the input field should be blank.
+
 ### RFLIB 9.2.0
 
 Package ID: 04tKY0000011PSKYA2
