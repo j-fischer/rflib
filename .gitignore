@@ -48,3 +48,7 @@ config/user/.sfdx-hardis*
 
 # Claude reference file
 CLAUDE.md
+
+# Codex
+.codex
+codex.md
