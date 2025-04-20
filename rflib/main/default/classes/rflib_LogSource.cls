@@ -33,7 +33,8 @@
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
 public enum rflib_LogSource {
+    OmniStudio,
     Apex,
     Flow,
-    Browser
+    LWC
 }

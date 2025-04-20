@@ -60,10 +60,16 @@ public class rflib_PharosLogAction {
             }
             
             List<SObject> pharosLogs = new List<SObject>();
+            SObjectType pharosLogType = Schema.getGlobalDescribe().get(PHAROS_LOG_OBJECT);
+
+            if (pharosLogType == null) {
+                LOGGER.info('Pharos Log object not found in schema. Ensure the Pharos package is installed.');
+                return;
+            }
             
             for (rflib_Log_Event__e event : logEvents) {
                 if (matchesConfiguredLogLevel(pharosLogLevel, event)) {
-                    SObject pharosLog = Schema.getGlobalDescribe().get(PHAROS_LOG_OBJECT).newSObject();
+                    SObject pharosLog = pharosLogType.newSObject();
                     
                     // Use rflib_FieldMapper to map fields from Log Event to Pharos Log
                     pharosLog = rflib_FieldMapper.mapFields(event, PHAROS_LOG_OBJECT);

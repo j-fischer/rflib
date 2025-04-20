@@ -81,7 +81,7 @@ public class rflib_DefaultLoggerTest {
         rflib_Logger logger = loggerFactory.createLogger('testSetLogSource');
 
         Test.startTest();
-        logger.setLogSource(rflib_LogSource.BROWSER);
+        logger.setLogSource(rflib_LogSource.LWC);
         Test.stopTest();
 
         // In this test, we're just verifying the method doesn't throw an exception

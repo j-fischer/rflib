@@ -114,7 +114,7 @@ private class rflib_LoggerControllerTest {
         Test.stopTest();
         
         // Verify the log source is set to Browser
-        System.assertEquals(rflib_LogSource.Browser.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c, 'Log source should be set to Browser');
+        System.assertEquals(rflib_LogSource.LWC.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c, 'Log source should be set to Browser');
     }
 
     private static void executeTestLogMessage_UnsupportedLevels(String level) {

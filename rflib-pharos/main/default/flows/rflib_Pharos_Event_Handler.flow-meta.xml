@@ -1,44 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
-        <description>Log event details</description>
-        <name>Log_Pharos</name>
-        <label>Log Pharos</label>
-        <locationX>176</locationX>
-        <locationY>170</locationY>
-        <actionName>rflib_LoggerFlowAction</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Log_to_Pharos</targetReference>
-        </connector>
-        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
-        <inputParameters>
-            <name>context</name>
-            <value>
-                <stringValue>rflib_Pharos_Event_Handler</stringValue>
-            </value>
-        </inputParameters>
-        <inputParameters>
-            <name>logLevel</name>
-            <value>
-                <stringValue>INFO</stringValue>
-            </value>
-        </inputParameters>
-        <inputParameters>
-            <name>message</name>
-            <value>
-                <stringValue>Pharos Log Event Handler invoked for {!$record.Context__c} event of level {!$record.Log_Level__c}, request id = {!$record.Request_ID__c}</stringValue>
-            </value>
-        </inputParameters>
-        <nameSegment>rflib_LoggerFlowAction</nameSegment>
-        <offset>0</offset>
-    </actionCalls>
-    <actionCalls>
         <description>If Pharos is installed in the org, log events can be published to the Pharos application for enhanced diagnostics and workflows.</description>
         <name>Log_to_Pharos</name>
         <label>Log to Pharos</label>
         <locationX>176</locationX>
-        <locationY>278</locationY>
+        <locationY>170</locationY>
         <actionName>rflib_PharosLogAction</actionName>
         <actionType>apex</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
@@ -79,7 +46,7 @@
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Log_Pharos</targetReference>
+            <targetReference>Log_to_Pharos</targetReference>
         </connector>
         <flowRunAsUser>DefaultWorkflowUser</flowRunAsUser>
         <object>rflib_Log_Event__e</object>
