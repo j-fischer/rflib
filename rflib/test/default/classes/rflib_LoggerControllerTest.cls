@@ -110,10 +110,10 @@ private class rflib_LoggerControllerTest {
         rflib_LoggerUtil.loggerFactory = mockLoggerFactory;
         
         Test.startTest();
-        rflib_LoggerController.log('platformInfo', 'INFO', 'someContext', 'some message', 'stacktrace');
+        rflib_LoggerController.log('platformInfo', 'INFO', 'someContext', 'some message', 'stacktrace', 'LWC');
         Test.stopTest();
         
-        // Verify the log source is set to Browser
+        // Verify the log source is set to LWC (Browser)
         System.assertEquals(rflib_LogSource.LWC.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c, 'Log source should be set to Browser');
     }
 
@@ -125,7 +125,7 @@ private class rflib_LoggerControllerTest {
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo, stacktrace);
+        rflib_LoggerController.log(platformInfo, level, context, message, stacktrace, 'LWC');
         
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
     }
@@ -138,7 +138,7 @@ private class rflib_LoggerControllerTest {
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo, stacktrace);
+        rflib_LoggerController.log(platformInfo, level, context, message, stacktrace, 'LWC');
 
         System.assertEquals(1, rflib_DefaultLogger.LOG_STATEMENTS.size());
 

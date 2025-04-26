@@ -28,6 +28,8 @@
  */
 import logMessageToServer from '@salesforce/apex/rflib_LoggerController.log';
 import getSettings from '@salesforce/apex/rflib_LoggerController.getSettings';
+// Default log source for LWC
+const DEFAULT_LOG_SOURCE = 'LWC';
 
 const LogLevel = Object.freeze({
     TRACE: { index: 0, label: 'TRACE' },
@@ -96,7 +98,7 @@ const getFilteredStacktrace = () => {
     }
 };
 
-const log = (level, component, message) => {
+const log = (level, component, message, source = DEFAULT_LOG_SOURCE) => {
     const msgToLog = level.label + '|' + component + '|' + message;
     if (level.index >= state.config.consoleLogLevel.index) {
         window.console.log(msgToLog);
@@ -114,7 +116,8 @@ const log = (level, component, message) => {
                 level: level.label,
                 context: component,
                 message: state.messages.join('\n'),
-                stacktrace: getFilteredStacktrace()
+                stacktrace: getFilteredStacktrace(),
+                logSource: source
             }).catch((error) => {
                 window.console.log('>>> Failed to log message to server for: ' + JSON.stringify(error));
             });
@@ -154,7 +157,7 @@ const initializationPromise = getSettings()
         window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
     });
 
-const createLogger = (loggerName) => {
+const createLogger = (loggerName, logSource = DEFAULT_LOG_SOURCE) => {
     const setConfig = (newConfig) => {
         log(
             LogLevel.DEBUG,
@@ -172,27 +175,27 @@ const createLogger = (loggerName) => {
     };
 
     const trace = (...args) => {
-        log(LogLevel.TRACE, loggerName, format(...args));
+        log(LogLevel.TRACE, loggerName, format(...args), logSource);
     };
 
     const debug = (...args) => {
-        log(LogLevel.DEBUG, loggerName, format(...args));
+        log(LogLevel.DEBUG, loggerName, format(...args), logSource);
     };
 
     const info = (...args) => {
-        log(LogLevel.INFO, loggerName, format(...args));
+        log(LogLevel.INFO, loggerName, format(...args), logSource);
     };
 
     const warn = (...args) => {
-        log(LogLevel.WARN, loggerName, format(...args));
+        log(LogLevel.WARN, loggerName, format(...args), logSource);
     };
 
     const error = (...args) => {
-        log(LogLevel.ERROR, loggerName, format(...args));
+        log(LogLevel.ERROR, loggerName, format(...args), logSource);
     };
 
     const fatal = (...args) => {
-        log(LogLevel.FATAL, loggerName, format(...args));
+        log(LogLevel.FATAL, loggerName, format(...args), logSource);
     };
 
     return {

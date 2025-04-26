@@ -53,10 +53,15 @@ public with sharing class rflib_LoggerController {
      * @param  stacktrace The stacktrace for the log statement.
      */
     @AuraEnabled
-    public static void log(String platformInfo, String level, String context, String message, String stacktrace) {
+    public static void log(String platformInfo, String level, String context, String message, String stacktrace, String logSource) {
         rflib_Logger logger = rflib_LoggerUtil.getFactory().createLogger(context);
         
-        logger.setLogSource(rflib_LogSource.LWC);
+        // Set log source based on client input, default to LWC on error
+        try {
+            logger.setLogSource(rflib_LogSource.valueOf(logSource));
+        } catch (Exception e) {
+            logger.setLogSource(rflib_LogSource.LWC);
+        }
 
         /* Overwriting configuration values for general log level, system log level, and reporting level to ensure that the 
          * client side log messages are managed by the client specific settings only, so that those log statements

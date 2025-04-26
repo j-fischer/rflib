@@ -211,7 +211,8 @@ describe('server logger', () => {
             expect(logToServerMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     level,
-                    message: expect.stringContaining(`${level}|test|test message`)
+                    message: expect.stringContaining(`${level}|test|test message`),
+                    logSource: 'LWC'
                 })
             );
         });
@@ -534,10 +535,11 @@ describe('change stack size', () => {
         
         // Verify
         expect(logToServerMock).toHaveBeenNthCalledWith(
-            1, 
+            1,
             expect.objectContaining({
                 level: 'INFO',
-                message: expect.stringContaining(`DEBUG|test|debug message 1`)
+                message: expect.stringContaining(`DEBUG|test|debug message 1`),
+                logSource: 'LWC'
             })
         );
 
@@ -551,7 +553,8 @@ describe('change stack size', () => {
             2,
             expect.objectContaining({
                 level: 'INFO',
-                message: expect.not.stringContaining(`DEBUG|test|debug message 1`)
+                message: expect.not.stringContaining(`DEBUG|test|debug message 1`),
+                logSource: 'LWC'
             })
         );
     });

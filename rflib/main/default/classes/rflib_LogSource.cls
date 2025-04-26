@@ -36,5 +36,6 @@ public enum rflib_LogSource {
     OmniStudio,
     Apex,
     Flow,
-    LWC
+    LWC,
+    Aura
 }
