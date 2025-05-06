@@ -64,8 +64,8 @@ sf package install --package <Package ID> --target-org <your org alias>
 Here are the commands for the latest versions:
 
 ```
-rem RFLIB 9.2.0
-sf package install --package 04tKY0000011PSKYA2 --target-org <your org alias>
+rem RFLIB 9.3.0
+sf package install --package 04tKY000000xMlyYAE --target-org <your org alias>
 
 rem RFLIB-FS 3.0.1
 sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
@@ -134,7 +134,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 ## Third Party Sources
 
 - Thanks to Marco Almodova for granting me his ConfirmationDialog component including the right to share it under the BSD-3-Clause license: https://github.com/marcoalmodova/confirm-dialog
-- Thanks to the Beyond The Cloud team for their SOQL library, which is licensed under the MIT license: https://github.com/beyond-the-cloud-dev/soql-lib/blob/main/LICENSE)
+- Thanks to the Beyond The Cloud team for their SOQL library, which is licensed under the MIT license: https://github.com/beyond-the-cloud-dev/soql-lib/blob/main/LICENSE
 
 ## Credits
 
