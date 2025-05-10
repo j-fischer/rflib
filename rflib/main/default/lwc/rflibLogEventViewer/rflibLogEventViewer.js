@@ -101,13 +101,16 @@ export default class RflibLogEventViewer extends LightningElement {
             })
             .catch((error) => {
                 LOGGER.error('Failed to retrieve Apex logs: ' + JSON.stringify(error));
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Error Loading Debug Logs',
-                        message: error.body?.message || 'Unknown error occurred while loading debug logs',
-                        variant: 'error'
-                    })
-                );
+                // Guard dispatchEvent for SSR compatibility
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Error Loading Debug Logs',
+                            message: error.body?.message || 'Unknown error occurred while loading debug logs',
+                            variant: 'error'
+                        })
+                    );
+                }
             })
             .finally(() => {
                 this.isLoadingLogs = false;
@@ -155,7 +158,6 @@ export default class RflibLogEventViewer extends LightningElement {
         LOGGER.debug('Downloading Apex log: ' + logId);
 
         // Fetch is not supported in op_mini all, IE Mobile 11, IE 11, bb 10,
-        /* eslint-disable-next-line compat/compat */
         fetch(`${APEX_LOG_DOWNLOAD_URL}?file=${logId}`)
             .then((response) => response?.text())
             .then((apexLogText) => {

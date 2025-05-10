@@ -259,7 +259,9 @@ export default class RflibLogEventList extends LightningElement {
                 currentPage: this.currentPageIndex + 1
             })
         });
-        this.dispatchEvent(event);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(event);
+        }
     }
 
     connectedCallback() {
@@ -303,6 +305,8 @@ export default class RflibLogEventList extends LightningElement {
         const logSelectedEvent = new CustomEvent('logselected', {
             detail: JSON.stringify(evtInfo)
         });
-        this.dispatchEvent(logSelectedEvent);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(logSelectedEvent);
+        }
     }
 }

@@ -147,13 +147,15 @@ export default class RflibBigObjectStat extends LightningElement {
                 });
             }
 
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Success',
-                    message: 'Refresh initiated for all Big Objects',
-                    variant: 'success'
-                })
-            );
+            if (!import.meta.env.SSR) {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Refresh initiated for all Big Objects',
+                        variant: 'success'
+                    })
+                );
+            }
         } catch (error) {
             logger.error('Failed to refresh all Big Objects', error);
             this.handleError('Refresh Error', 'Failed to refresh all Big Object statistics');
@@ -219,13 +221,15 @@ export default class RflibBigObjectStat extends LightningElement {
     }
 
     handleError(title, message) {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title,
-                message,
-                variant: 'error',
-                mode: 'sticky'
-            })
-        );
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title,
+                    message,
+                    variant: 'error',
+                    mode: 'sticky'
+                })
+            );
+        }
     }
 }

@@ -173,7 +173,9 @@ export default class RflibApexJobScheduler extends LightningElement {
             message,
             variant
         });
-        this.dispatchEvent(evt);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(evt);
+        }
     }
 
     get formattedNextRunTime() {

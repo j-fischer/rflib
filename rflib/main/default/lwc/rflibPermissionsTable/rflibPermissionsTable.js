@@ -165,7 +165,9 @@ export default class RflibFieldPermissionsTable extends LightningElement {
                 currentPage: this.currentPageIndex + 1
             })
         });
-        this.dispatchEvent(event);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(event);
+        }
     }
 
     executeSearch() {

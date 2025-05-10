@@ -180,6 +180,8 @@ export default class RflibPublicGroupMemberManager extends LightningElement {
 
     showToast(title, message, variant) {
         logger.debug(`Showing toast - Title: ${title}, Message: ${message}, Variant: ${variant}`);
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+        }
     }
 }

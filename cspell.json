@@ -34,7 +34,6 @@
         "**/tsconfig.json",
         "cspell.json",
         "lcov.info",
-        "Gruntfile.js",
         "gulpfile.js",
         "package*.json",
         "CHANGELOG.md",

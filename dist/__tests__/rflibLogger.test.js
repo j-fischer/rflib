@@ -26,17 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable jest/expect-expect */
 const loggerSettings = require('./data/loggerSettings.json');
 
 describe('Logger Tests', () => {
     let mockDataApi;
     let mockComputeLogger;
     let functionContext;
-    
+
     beforeEach(() => {
         jest.useFakeTimers();
-        
+
         // Setup mocks
         mockDataApi = {
             query: jest.fn(),
@@ -74,13 +73,11 @@ describe('Logger Tests', () => {
         it('factory should return a logger instance', async () => {
             const createLogger = require('../rflibLogger').createLogger;
             const logger = createLogger(functionContext, mockComputeLogger, 'factory', true);
-            
+
             await Promise.resolve();
-            
+
             expect(logger).toBeDefined();
-            expect(mockComputeLogger.debug).toHaveBeenCalledWith(
-                expect.stringContaining('Cleared log messages')
-            );
+            expect(mockComputeLogger.debug).toHaveBeenCalledWith(expect.stringContaining('Cleared log messages'));
         });
     });
 
@@ -88,18 +85,14 @@ describe('Logger Tests', () => {
         let logger;
 
         beforeEach(async () => {
-            logger = require('../rflibLogger').createLogger(
-                functionContext, 
-                mockComputeLogger, 
-                'console'
-            );
+            logger = require('../rflibLogger').createLogger(functionContext, mockComputeLogger, 'console');
             await Promise.resolve();
         });
 
         function executeComputeLogLevelTest(validLogLevels) {
             const logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
-            
-            validLogLevels.forEach(level => {
+
+            validLogLevels.forEach((level) => {
                 logger[level.toLowerCase()]('SHOULD LOG to console');
                 const mockFn = mockComputeLogger[level === 'FATAL' ? 'error' : level.toLowerCase()];
                 expect(mockFn).toHaveBeenCalledWith(
@@ -108,8 +101,8 @@ describe('Logger Tests', () => {
             });
 
             logLevels
-                .filter(level => !validLogLevels.includes(level))
-                .forEach(level => {
+                .filter((level) => !validLogLevels.includes(level))
+                .forEach((level) => {
                     logger[level.toLowerCase()]('should not log to console');
                     const mockFn = mockComputeLogger[level.toLowerCase()];
                     expect(mockFn).not.toHaveBeenCalled();
@@ -126,27 +119,22 @@ describe('Logger Tests', () => {
         let logger;
 
         beforeEach(async () => {
-            logger = require('../rflibLogger').createLogger(
-                functionContext, 
-                mockComputeLogger, 
-                'server',
-                true
-            );
+            logger = require('../rflibLogger').createLogger(functionContext, mockComputeLogger, 'server', true);
             await Promise.resolve();
         });
 
         async function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
             logger.setConfig({ serverLogLevel });
 
-            validLogLevels.forEach(level => {
+            validLogLevels.forEach((level) => {
                 logger[level.toLowerCase()]('SHOULD LOG to server');
             });
 
             await Promise.resolve();
 
             expect(mockDataApi.create).toHaveBeenCalledTimes(validLogLevels.length);
-            
-            validLogLevels.forEach(level => {
+
+            validLogLevels.forEach((level) => {
                 expect(mockDataApi.create).toHaveBeenCalledWith(
                     expect.objectContaining({
                         type: 'rflib_Log_Event__e',
@@ -177,12 +165,14 @@ describe('Logger Tests', () => {
         it('should log timer events', () => {
             const timerName = 'Test Timer';
             logger.setConfig({ computeLogLevel: 'TRACE' });
-            
+
             const logTimer = logFactory.startLogTimer(logger, 10, timerName);
             logTimer.done();
 
             expect(mockComputeLogger.trace).toHaveBeenCalledWith(
-                expect.stringMatching(/^TRACE\|context-id-123\|timer\|Test Timer took a total of \d+ms \(threshold=10ms\)\.$/)
+                expect.stringMatching(
+                    /^TRACE\|context-id-123\|timer\|Test Timer took a total of \d+ms \(threshold=10ms\)\.$/
+                )
             );
         });
     });

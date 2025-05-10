@@ -26,21 +26,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable jest/expect-expect */
 const loggerSettings = require('./data/loggerSettings.json');
 
 describe('Application Event Logger Tests', () => {
     let mockDataApi;
     let mockLogger;
     let functionContext;
-    
+
     beforeEach(() => {
         // Setup mocks
         mockDataApi = {
             query: jest.fn(),
             create: jest.fn()
         };
-        
+
         mockLogger = {
             trace: jest.fn(),
             debug: jest.fn(),
@@ -72,7 +71,7 @@ describe('Application Event Logger Tests', () => {
         it('factory should return an application event logger instance', async () => {
             const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
             const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
-            
+
             await Promise.resolve();
             expect(appEventLogger).toBeDefined();
         });
@@ -86,7 +85,7 @@ describe('Application Event Logger Tests', () => {
 
             const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
             const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
-            
+
             await Promise.resolve();
             await appEventLogger.logApplicationEvent(eventName, relatedRecordId, additionalDetails);
 
@@ -108,7 +107,7 @@ describe('Application Event Logger Tests', () => {
 
             const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
             const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
-            
+
             await Promise.resolve();
             await appEventLogger.logApplicationEvent(eventName, null, additionalDetails);
 
@@ -123,7 +122,6 @@ describe('Application Event Logger Tests', () => {
     });
 
     describe('log application event failure', () => {
-        
         it('should log error that the server log failed', async () => {
             const eventName = 'test-event';
             const error = new Error('foo bar error');
@@ -133,7 +131,7 @@ describe('Application Event Logger Tests', () => {
 
             const createApplicationEventLogger = require('../rflibLogger.js').createApplicationEventLogger;
             const appEventLogger = createApplicationEventLogger(functionContext, mockLogger);
-            
+
             await appEventLogger.logApplicationEvent(eventName, null, null);
             await Promise.resolve();
 

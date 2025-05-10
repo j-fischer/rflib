@@ -84,7 +84,9 @@ export default class RflibUserProfileResolver extends LightningElement {
 
                 const profileSelectedEvent = new CustomEvent('profileselected', { detail: result.Profile.Name });
 
-                this.dispatchEvent(profileSelectedEvent);
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(profileSelectedEvent);
+                }
                 this.closeModal();
             })
             .catch((error) => {
@@ -99,7 +101,9 @@ export default class RflibUserProfileResolver extends LightningElement {
                     message: 'An error occurred: ' + (error instanceof String ? error : JSON.stringify(error)),
                     variant: 'error'
                 });
-                this.dispatchEvent(evt);
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(evt);
+                }
             })
             .finally(() => {
                 this.isModalOpen = false;

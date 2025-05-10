@@ -152,6 +152,8 @@ export default class RflibUserPermissionSetManager extends LightningElement {
             message,
             variant
         });
-        this.dispatchEvent(evt);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(evt);
+        }
     }
 }
