@@ -129,6 +129,20 @@ public class rflib_StringUtil {
         result += ')';
         return result;
     }
+
+    /**
+     * Truncates a string to a specified maximum size if it exceeds that size.
+     * @param text The text to potentially truncate
+     * @param maxSize The maximum allowed size for the text
+     * @return The original text if within size limits, or truncated version if over
+     */
+    public static String truncateToMaxSize(String text, Integer maxSize) {
+        if (text == null) {
+            return null;
+        }
+        Integer textLength = text.length();
+        return textLength > maxSize ? text.substring(0, maxSize) : text;
+    }
     
     @SuppressWarnings('PMD.EmptyStatementBlock')
     private rflib_StringUtil() { }

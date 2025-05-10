@@ -74,17 +74,20 @@ public class rflib_GlobalSettings {
     private static final Boolean HTTP_REQUEST_MOCKING_THROW_ERROR_IF_MOCK_NOT_FOUND_DEFAULT_VALUE = false; 
     
     @TestVisible
-    private static final Boolean RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE = false; 
-    
+    private static final Boolean RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE = false;
+
+    @TestVisible
+    private static final Boolean APP_EVENT_MASKING_ENABLED_DEFAULT_VALUE = false;
+
     @TestVisible
     private static final Integer LOG_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE = 2000;
-    
+
     @TestVisible
     private static final Integer LOG_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
 
     @TestVisible
     private static final Integer APP_EVENT_ARCHIVE_CLEANUP_BATCH_SIZE_DEFAULT_VALUE = 2000;
-    
+
     @TestVisible
     private static final Integer APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
 
@@ -211,6 +214,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('RFLIB_Development_Mode_Enabled');
             return String.isBlank(val) ? RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Boolean isApplicationEventMaskingEnabled {
+        get {
+            String val = getSetting('App_Event_Masking_Enabled');
+            return String.isBlank(val) ? APP_EVENT_MASKING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
 
