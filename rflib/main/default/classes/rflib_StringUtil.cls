@@ -34,6 +34,14 @@
 @SuppressWarnings('PMD.ClassNamingConventions, PMD.ApexSharingViolations')
 public class rflib_StringUtil {
     
+    /**
+     * Enum to specify where to truncate a string from
+     */
+    public enum TruncateFrom {
+        START,    // Truncate from the beginning of the string
+        TAIL      // Truncate from the end of the string (default)
+    }
+
     @TestVisible
     private static List<rflib_Masking_Rule__mdt> allActiveMaskingRules {
         get {
@@ -132,16 +140,39 @@ public class rflib_StringUtil {
 
     /**
      * Truncates a string to a specified maximum size if it exceeds that size.
+     * By default, truncates from the end of the string.
      * @param text The text to potentially truncate
      * @param maxSize The maximum allowed size for the text
      * @return The original text if within size limits, or truncated version if over
      */
     public static String truncateToMaxSize(String text, Integer maxSize) {
+        return truncateToMaxSize(text, maxSize, TruncateFrom.TAIL);
+    }
+
+    /**
+     * Truncates a string to a specified maximum size if it exceeds that size.
+     * @param text The text to potentially truncate
+     * @param maxSize The maximum allowed size for the text
+     * @param truncateFrom Specifies where to truncate the string from (START, TAIL)
+     * @return The original text if within size limits, or truncated version if over
+     */
+    public static String truncateToMaxSize(String text, Integer maxSize, TruncateFrom truncateFrom) {
         if (text == null) {
             return null;
         }
         Integer textLength = text.length();
-        return textLength > maxSize ? text.substring(0, maxSize) : text;
+        if (textLength <= maxSize) {
+            return text;
+        }
+
+        switch on truncateFrom {
+            when START {
+                return text.substring(textLength - maxSize);
+            }
+            when else {
+                return text.substring(0, maxSize);
+            }
+        }
     }
     
     @SuppressWarnings('PMD.EmptyStatementBlock')

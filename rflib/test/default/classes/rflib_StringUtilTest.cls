@@ -190,6 +190,19 @@ private class rflib_StringUtilTest {
         System.assertEquals(input.substring(0, maxSize), result, 'Should contain first maxSize characters');
     }
 
+    @IsTest
+    private static void testTruncateToMaxSize_FromStart() {
+        String input = 'This is a very long test string';
+        Integer maxSize = 10;
+        
+        Test.startTest();
+        String result = rflib_StringUtil.truncateToMaxSize(input, maxSize, rflib_StringUtil.TruncateFrom.START);
+        Test.stopTest();
+        
+        System.assertEquals(10, result.length(), 'Result should be truncated to maxSize');
+        System.assertEquals(input.substring(input.length() - maxSize), result, 'Should contain last maxSize characters');
+    }
+
     private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
         return createRule(target, replacement, 1);
     }

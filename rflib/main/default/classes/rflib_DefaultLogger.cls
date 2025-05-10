@@ -360,7 +360,7 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             requestId = 'NULL';
         }
 
-        String logMessageToPublish = rflib_StringUtil.truncateToMaxSize(maskedLogMessagesIfApplicable, MAX_MESSAGE_SIZE);
+        String logMessageToPublish = rflib_StringUtil.truncateToMaxSize(maskedLogMessagesIfApplicable, MAX_MESSAGE_SIZE, rflib_StringUtil.TruncateFrom.START);
         
         List<SObject> platformEventsToLog = new List<SObject>();
 
