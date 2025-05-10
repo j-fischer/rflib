@@ -461,7 +461,7 @@ gulp.task(
 gulp.task(
     'shell-force-test',
     shellTask(function () {
-        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4`;
+        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4 --concise`;
     })
 );
 

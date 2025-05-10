@@ -34,8 +34,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_DefaultApplicationEventService');
 
-    @TestVisible 
-    private static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;
+    public static final Integer MAX_ADDITIONAL_DETAIL_SIZE = 32768;
 
     @TestVisible
     private static rflib_BigObjectDatabaseExecutor BIG_OBJECT_DB_EXECUTOR = new rflib_DefaultBigObjectDatabaseExecutor();
@@ -91,7 +90,7 @@ public inherited sharing class rflib_DefaultApplicationEventService implements r
         for (rflib_ApplicationEventDetails evt : applicationEvents) {
             Integer additionalDetailsLength = evt.additionalDetails != null ? evt.additionalDetails.length() : 0;
             String additionalDetailsToSave = additionalDetailsLength < MAX_ADDITIONAL_DETAIL_SIZE
-                ? evt.additionalDetails 
+                ? evt.additionalDetails
                 : evt.additionalDetails.substring(additionalDetailsLength - MAX_ADDITIONAL_DETAIL_SIZE);
 
             eventsToPublish.add(new rflib_Application_Event_Occurred_Event__e(

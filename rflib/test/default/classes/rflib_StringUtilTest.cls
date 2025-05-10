@@ -156,6 +156,53 @@ private class rflib_StringUtilTest {
         System.assertEquals('(\'Test1\',\'Test2\',\'Test3\')', result, 'The result should correctly format a multi-element list.');
     }
 
+    @IsTest
+    private static void testTruncateToMaxSize_NullInput() {
+        Test.startTest();
+        String result = rflib_StringUtil.truncateToMaxSize(null, 10);
+        Test.stopTest();
+        
+        System.assertEquals(null, result, 'Null input should return null');
+    }
+    
+    @IsTest
+    private static void testTruncateToMaxSize_WithinLimit() {
+        String input = 'test string';
+        Integer maxSize = 20;
+        
+        Test.startTest();
+        String result = rflib_StringUtil.truncateToMaxSize(input, maxSize);
+        Test.stopTest();
+        
+        System.assertEquals(input, result, 'String within size limit should remain unchanged');
+    }
+    
+    @IsTest
+    private static void testTruncateToMaxSize_ExceedsLimit() {
+        String input = 'This is a very long test string';
+        Integer maxSize = 10;
+        
+        Test.startTest();
+        String result = rflib_StringUtil.truncateToMaxSize(input, maxSize);
+        Test.stopTest();
+        
+        System.assertEquals(10, result.length(), 'Result should be truncated to maxSize');
+        System.assertEquals(input.substring(0, maxSize), result, 'Should contain first maxSize characters');
+    }
+
+    @IsTest
+    private static void testTruncateToMaxSize_FromStart() {
+        String input = 'This is a very long test string';
+        Integer maxSize = 10;
+        
+        Test.startTest();
+        String result = rflib_StringUtil.truncateToMaxSize(input, maxSize, rflib_StringUtil.TruncateFrom.START);
+        Test.stopTest();
+        
+        System.assertEquals(10, result.length(), 'Result should be truncated to maxSize');
+        System.assertEquals(input.substring(input.length() - maxSize), result, 'Should contain last maxSize characters');
+    }
+
     private static rflib_Masking_Rule__mdt createRule(String target, String replacement) {
         return createRule(target, replacement, 1);
     }

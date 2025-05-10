@@ -1,3 +1,12 @@
+### RFLIB 9.4.0
+
+Package ID: TBD
+Package Alias: RFLIB@9.4.0-1
+Install link: TBD
+
+- Added masking capability to the Application Event Service for sensitive information in the Additional_Details\_\_c field, utilizing the same masking rules as the Logger framework. [Feature Request #111](https://github.com/j-fischer/rflib/issues/111)
+- Added new Global Setting called 'App_Event_Masking_Enabled' to control whether masking is applied to Application Events (disabled by default).
+
 ### RFLIB 9.3.0
 
 Package ID: 04tKY000000xMlyYAE
