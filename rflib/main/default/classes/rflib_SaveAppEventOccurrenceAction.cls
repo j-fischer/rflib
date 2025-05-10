@@ -31,9 +31,6 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_SaveAppEventOccurrenceAction');
     
-    @TestVisible
-    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE  = new rflib_DefaultApplicationEventService();
-
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events.

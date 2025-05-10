@@ -33,24 +33,6 @@ private class rflib_DefaultApplicationEventServiceTest {
     private static final rflib_MockEventPublisher MOCK_EVENT_PUBLISHER = new rflib_MockEventPublisher();
     private static final rflib_MockBigObjectDatabaseExecutor MOCK_BIG_OBJECT_DB_EXECUTOR = new rflib_MockBigObjectDatabaseExecutor();
 
-    @TestSetup
-    static void setup() {
-        // Create test masking rule
-        // This would typically be done through custom metadata, but for test purposes
-        // we'll use the TestVisible allActiveMaskingRules in rflib_StringUtil
-        rflib_Masking_Rule__mdt testRule = new rflib_Masking_Rule__mdt(
-            DeveloperName = 'Test_Masking_Rule',
-            MasterLabel = 'Test Masking Rule',
-            Is_Active__c = true,
-            Target__c = 'SENSITIVE_DATA',
-            Target_Type__c = 'RegEx',
-            Replacement__c = 'MASKED_VALUE',
-            Order__c = 1
-        );
-
-        rflib_StringUtil.allActiveMaskingRules = new List<rflib_Masking_Rule__mdt>{ testRule };
-    }
-
     @isTest
     static void testPublishApplicationEvent_success() {
         String eventName = 'Test Event';
