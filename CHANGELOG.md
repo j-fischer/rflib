@@ -1,11 +1,10 @@
 ### RFLIB 9.4.0
 
-Package ID: TBD
+Package ID: 04tKY000000xX6HYAU
 Package Alias: RFLIB@9.4.0-1
-Install link: TBD
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xX6HYAU
 
-- Added masking capability to the Application Event Service for sensitive information in the Additional_Details\_\_c field, utilizing the same masking rules as the Logger framework. [Feature Request #111](https://github.com/j-fischer/rflib/issues/111)
-- Added new Global Setting called 'App_Event_Masking_Enabled' to control whether masking is applied to Application Events (disabled by default).
+- [PR #112](https://github.com/j-fischer/rflib/pull/112) Added masking capability to the Application Event Service for sensitive information in the `Additional_Details__c` field, utilizing the same masking rules as the Logger framework. Added new Global Setting called 'App_Event_Masking_Enabled' to control whether masking is applied to Application Events (disabled by default). [Feature Request #111](https://github.com/j-fischer/rflib/issues/111)
 
 ### RFLIB 9.3.0
 
