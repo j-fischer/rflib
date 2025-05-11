@@ -52,7 +52,7 @@ const state = {
 const convertToString = (arg) => {
     if (arg === undefined) return 'undefined';
     if (arg === null) return 'null';
-    
+
     switch (typeof arg) {
         case 'object':
             try {
@@ -73,9 +73,7 @@ const convertToString = (arg) => {
 
 const format = (strToFormat, ...args) => {
     return strToFormat.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] !== 'undefined' 
-            ? convertToString(args[number])
-            : 'undefined';
+        return typeof args[number] !== 'undefined' ? convertToString(args[number]) : 'undefined';
     });
 };
 
@@ -97,7 +95,6 @@ const log = (level, component, message, context, computeLogger) => {
 
     addMessage(msgToLog);
 
-    //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
             const platformInfo = Object.assign({}, process.resourceUsage(), process.memoryUsage());
@@ -239,10 +236,13 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
             if (typeof logger[logMethodName] === 'function') {
                 logger[logMethodName].apply(logger, [
                     '{0} took a total of {1}ms (threshold={2}ms).',
-                    timerName, duration, threshold
+                    timerName,
+                    duration,
+                    threshold
                 ]);
             } else {
-                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', 
+                logger.warn(
+                    '{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided',
                     timerName,
                     duration,
                     threshold
