@@ -141,7 +141,9 @@ export default class LogEventMonitor extends LightningElement {
                         message: 'Log Monitor will not work without EMP API enabled.',
                         variant: 'error'
                     });
-                    _this.dispatchEvent(evt);
+                    if (!import.meta.env.SSR) {
+                        _this.dispatchEvent(evt);
+                    }
                 }
 
                 return subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback);
@@ -154,7 +156,9 @@ export default class LogEventMonitor extends LightningElement {
                     message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
                     variant: 'success'
                 });
-                _this.dispatchEvent(evt);
+                if (!import.meta.env.SSR) {
+                    _this.dispatchEvent(evt);
+                }
             });
     }
 
@@ -192,13 +196,15 @@ export default class LogEventMonitor extends LightningElement {
         if (newConnectionMode >= 0) {
             _this.unsubscribeConnection();
 
-            _this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Disconnected from event channel',
-                    message: 'You are no longer receiving any log events.',
-                    variant: 'warn'
-                })
-            );
+            if (!import.meta.env.SSR) {
+                _this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Disconnected from event channel',
+                        message: 'You are no longer receiving any log events.',
+                        variant: 'warn'
+                    })
+                );
+            }
 
             if (newConnectionMode === CONNECTION_MODE.DISCONNECTED.value) {
                 logger.debug('Disconnecting from event channel; no further action required');
@@ -225,7 +231,9 @@ export default class LogEventMonitor extends LightningElement {
                                 ' records. Please change the search criteria to retrieve all records.',
                             variant: 'warning'
                         });
-                        this.dispatchEvent(evt);
+                        if (!import.meta.env.SSR) {
+                            this.dispatchEvent(evt);
+                        }
                     }
                 })
                 .catch((ex) => {
@@ -235,7 +243,9 @@ export default class LogEventMonitor extends LightningElement {
                         message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
                         variant: 'error'
                     });
-                    this.dispatchEvent(evt);
+                    if (!import.meta.env.SSR) {
+                        this.dispatchEvent(evt);
+                    }
                 });
 
             return;
@@ -269,7 +279,9 @@ export default class LogEventMonitor extends LightningElement {
                         message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
                         variant: 'success'
                     });
-                    _this.dispatchEvent(evt);
+                    if (!import.meta.env.SSR) {
+                        _this.dispatchEvent(evt);
+                    }
                 });
             } else {
                 logger.debug('Connection deactivated');
@@ -279,7 +291,9 @@ export default class LogEventMonitor extends LightningElement {
                     message: 'You are no longer receiving any log events.',
                     variant: 'warn'
                 });
-                _this.dispatchEvent(evt);
+                if (!import.meta.env.SSR) {
+                    _this.dispatchEvent(evt);
+                }
             }
         };
 
@@ -322,7 +336,9 @@ export default class LogEventMonitor extends LightningElement {
                             message: 'Cleared ' + result + ' archived records.',
                             variant: 'info'
                         });
-                        this.dispatchEvent(evt);
+                        if (!import.meta.env.SSR) {
+                            this.dispatchEvent(evt);
+                        }
                     })
                     .catch((ex) => {
                         logger.debug('Failed to clear archive: ' + JSON.stringify(ex));
@@ -331,7 +347,9 @@ export default class LogEventMonitor extends LightningElement {
                             message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
                             variant: 'error'
                         });
-                        this.dispatchEvent(evt);
+                        if (!import.meta.env.SSR) {
+                            this.dispatchEvent(evt);
+                        }
                     });
             } else if (event.detail.status === 'cancel') {
                 logger.debug('Cancelled clearing of archive');
@@ -364,7 +382,9 @@ export default class LogEventMonitor extends LightningElement {
                             ' records. Please change the search criteria to retrieve all records.',
                         variant: 'warning'
                     });
-                    this.dispatchEvent(evt);
+                    if (!import.meta.env.SSR) {
+                        this.dispatchEvent(evt);
+                    }
                 }
             })
             .catch((ex) => {
@@ -374,7 +394,9 @@ export default class LogEventMonitor extends LightningElement {
                     message: 'An error occurred: ' + (ex instanceof String ? ex : JSON.stringify(ex)),
                     variant: 'error'
                 });
-                this.dispatchEvent(evt);
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(evt);
+                }
             });
     }
 

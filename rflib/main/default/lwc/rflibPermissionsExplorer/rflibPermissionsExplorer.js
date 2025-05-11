@@ -396,7 +396,9 @@ export default class PermissionsExplorer extends LightningElement {
                     variant: 'warning',
                     mode: 'sticky'
                 });
-                this.dispatchEvent(evt);
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(evt);
+                }
             }
 
             this.page = 1;
@@ -449,7 +451,9 @@ export default class PermissionsExplorer extends LightningElement {
                         variant: 'error',
                         mode: 'sticky'
                     });
-                    this.dispatchEvent(evt);
+                    if (!import.meta.env.SSR) {
+                        this.dispatchEvent(evt);
+                    }
                 });
         }, 0);
     }

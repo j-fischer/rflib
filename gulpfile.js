@@ -463,7 +463,7 @@ gulp.task(
 gulp.task(
     'shell-force-test',
     shellTask(function () {
-        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4`;
+        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4 --concise`;
     })
 );
 
@@ -847,4 +847,4 @@ gulp.task(
 gulp.task('create-event', gulp.series('prompt-alias', 'shell-force-create-log-event'));
 
 // Default task
-gulp.task('default', gulp.series('shell-test-lwc'));
+gulp.task('default', gulp.series('shell-lint', 'shell-test-lwc'));

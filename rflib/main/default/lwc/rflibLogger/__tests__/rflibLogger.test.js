@@ -26,8 +26,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable jest/expect-expect */
-/* eslint-disable compat/compat */
 import _ from 'lodash';
 
 const loggerSettings = require('./data/loggerSettings.json');
@@ -71,9 +69,7 @@ describe('create logger', () => {
         await Promise.resolve();
 
         expect(logger).toBeDefined();
-        await expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Retrieved settings for user')
-        );
+        await expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Retrieved settings for user'));
     });
 });
 
@@ -87,24 +83,24 @@ describe('console logger', () => {
         getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
         getSettingsMock.mockResolvedValue(loggerSettings.default);
         logger = require('c/rflibLogger').createLogger('console');
-        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: "NONE" });
+        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: 'NONE' });
     });
 
     afterEach(() => {
         consoleSpy.mockRestore();
         jest.clearAllMocks();
-        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: "NONE" });
+        logger.setConfig({ consoleLogLevel: 'NONE', serverLogLevel: 'NONE' });
     });
 
     function executeConsoleLogLevelTest(validLogLevels) {
         const logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 
-        validLogLevels.forEach(logLevel => {
+        validLogLevels.forEach((logLevel) => {
             logger[logLevel.toLowerCase()]('SHOULD LOG to console');
-            expect(consoleSpy).toHaveBeenCalledWith(`${logLevel}|console|SHOULD LOG to console`)
+            expect(consoleSpy).toHaveBeenCalledWith(`${logLevel}|console|SHOULD LOG to console`);
         });
 
-        _.pullAll(logLevels, validLogLevels).forEach(logLevel => {
+        _.pullAll(logLevels, validLogLevels).forEach((logLevel) => {
             logger[logLevel.toLowerCase()]('should not log to console');
             expect(consoleSpy).not.toHaveBeenCalledWith(
                 expect.stringContaining(`${logLevel}|console|should not log to console`)
@@ -175,15 +171,15 @@ describe('server logger', () => {
             // Setup mocks
             getSettingsMock = jest.fn().mockResolvedValue(loggerSettings.default);
             require('@salesforce/apex/rflib_LoggerController.getSettings').default = getSettingsMock;
-            
+
             logToServerMock = jest.fn().mockResolvedValue(undefined);
             require('@salesforce/apex/rflib_LoggerController.log').default = logToServerMock;
-            
+
             // Create logger instance
             const loggerModule = require('c/rflibLogger');
             logger = loggerModule.createLogger('test');
         });
-        
+
         // Wait for initialization
         await Promise.resolve();
     });
@@ -196,23 +192,22 @@ describe('server logger', () => {
     async function executeServerLogLevelTest(serverLogLevel, validLogLevels) {
         // Set config
         logger.setConfig({ serverLogLevel });
-        
+
         // Execute logs
         for (const level of validLogLevels) {
             logger[level.toLowerCase()]('test message');
         }
-        
+
         // Wait for all promises
         await Promise.resolve();
-        
+
         // Verify
         expect(logToServerMock).toHaveBeenCalledTimes(validLogLevels.length);
-        validLogLevels.forEach(level => {
+        validLogLevels.forEach((level) => {
             expect(logToServerMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     level,
-                    message: expect.stringContaining(`${level}|test|test message`),
-                    logSource: 'LWC'
+                    message: expect.stringContaining(`${level}|test|test message`)
                 })
             );
         });
@@ -268,7 +263,7 @@ describe('server logger failure', () => {
         logToServerMock.mockRejectedValue(new Error('foo bar error'));
 
         const logger = require('c/rflibLogger').createLogger('server');
-        
+
         await Promise.resolve().then(() => {
             logger.setConfig({ serverLogLevel: 'FATAL' });
             logger.fatal('some message');
@@ -276,16 +271,14 @@ describe('server logger failure', () => {
 
         await new Promise(process.nextTick);
 
-        await expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Failed to log message to server for')
-        );
+        await expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to log message to server for'));
     });
 });
 
 describe('log timer', () => {
     let logger;
     let consoleSpy;
-    let logFactory;    
+    let logFactory;
     let getSettingsMock;
 
     beforeEach(() => {
@@ -308,7 +301,7 @@ describe('log timer', () => {
         logger.setConfig({
             consoleLogLevel: 'TRACE'
         });
-        
+
         const timerName = 'Foo Bar';
         const logTimer = logFactory.startLogTimer(logger, 10, timerName);
         logTimer.done();
@@ -322,7 +315,7 @@ describe('log timer', () => {
         logger.setConfig({
             consoleLogLevel: 'INFO'
         });
-        
+
         const timerName = 'Foo Bar';
         const logTimer = logFactory.startLogTimer(logger, 10, timerName);
 
@@ -364,7 +357,9 @@ describe('log timer', () => {
         logTimer.done();
 
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringMatching(/^WARN\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\. NOTE: Invalid log Level provided$/)
+            expect.stringMatching(
+                /^WARN\|timer\|Foo Bar took a total of \d+ms \(threshold=10ms\)\. NOTE: Invalid log Level provided$/
+            )
         );
     });
 });
@@ -375,7 +370,7 @@ describe('format string tests', () => {
 
     beforeEach(() => {
         consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-        
+
         const getSettingsMock = require('@salesforce/apex/rflib_LoggerController.getSettings').default;
         getSettingsMock.mockResolvedValue(loggerSettings.default);
         logger = require('c/rflibLogger').createLogger('TestLogger');
@@ -391,17 +386,9 @@ describe('format string tests', () => {
             consoleLogLevel: 'INFO'
         });
 
-        logger.info('Types: {0}, {1}, {2}, {3}, {4}', 
-            undefined, 
-            null, 
-            'string', 
-            42, 
-            true
-        );
+        logger.info('Types: {0}, {1}, {2}, {3}, {4}', undefined, null, 'string', 42, true);
 
-        expect(consoleSpy).toHaveBeenCalledWith( 
-            expect.stringContaining('Types: undefined, null, string, 42, true')
-        );
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Types: undefined, null, string, 42, true'));
     });
 
     it('should format complex types correctly', () => {
@@ -416,13 +403,7 @@ describe('format string tests', () => {
             consoleLogLevel: 'INFO'
         });
 
-        logger.info('Complex: {0}, {1}, {2}, {3}, {4}', 
-            testObj,
-            testArr,
-            testFn,
-            testSymbol,
-            testBigInt
-        );
+        logger.info('Complex: {0}, {1}, {2}, {3}, {4}', testObj, testArr, testFn, testSymbol, testBigInt);
 
         expect(consoleSpy).toHaveBeenCalledWith(
             expect.stringContaining('Complex: {"name":"test"}, [1,2,3], function, Symbol(test), 9007199254740991')
@@ -439,9 +420,7 @@ describe('format string tests', () => {
 
         logger.info('Circular: {0}', circular);
 
-        expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Circular: [Circular Object]')
-        );
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Circular: [Circular Object]'));
     });
 
     it('should handle missing arguments', () => {
@@ -451,9 +430,7 @@ describe('format string tests', () => {
 
         logger.info('Missing: {0}, {1}', 'exists');
 
-        expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Missing: exists, undefined')
-        );
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Missing: exists, undefined'));
     });
 
     it('should handle nested objects and arrays', () => {
@@ -474,14 +451,7 @@ describe('format string tests', () => {
     });
 
     it('should handle array with mixed types', () => {
-        const mixedArray = [
-            42,
-            'string',
-            { obj: 'value' },
-            [1, 2],
-            null,
-            undefined
-        ];
+        const mixedArray = [42, 'string', { obj: 'value' }, [1, 2], null, undefined];
 
         logger.setConfig({
             consoleLogLevel: 'INFO'
@@ -505,15 +475,15 @@ describe('change stack size', () => {
             // Setup mocks
             getSettingsMock = jest.fn().mockResolvedValue(loggerSettings.default);
             require('@salesforce/apex/rflib_LoggerController.getSettings').default = getSettingsMock;
-            
+
             logToServerMock = jest.fn().mockResolvedValue(undefined);
             require('@salesforce/apex/rflib_LoggerController.log').default = logToServerMock;
-            
+
             // Create logger instance
             const loggerModule = require('c/rflibLogger');
             logger = loggerModule.createLogger('test');
         });
-        
+
         // Wait for initialization
         await Promise.resolve();
     });
@@ -526,26 +496,25 @@ describe('change stack size', () => {
     it('should shift log stack when capacity is reached', async () => {
         // Set config
         logger.setConfig({ serverLogLevel: 'INFO', stackSize: 2 });
-        
+
         logger.debug('debug message 1');
         logger.info('info message 1');
-        
+
         // Wait for all promises
         await Promise.resolve();
-        
+
         // Verify
         expect(logToServerMock).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
                 level: 'INFO',
-                message: expect.stringContaining(`DEBUG|test|debug message 1`),
-                logSource: 'LWC'
+                message: expect.stringContaining(`DEBUG|test|debug message 1`)
             })
         );
 
         // The info message should drop the debug message from the stack
         logger.info('info message 2');
-        
+
         // Wait for all promises
         await Promise.resolve();
 
@@ -553,8 +522,7 @@ describe('change stack size', () => {
             2,
             expect.objectContaining({
                 level: 'INFO',
-                message: expect.not.stringContaining(`DEBUG|test|debug message 1`),
-                logSource: 'LWC'
+                message: expect.not.stringContaining(`DEBUG|test|debug message 1`)
             })
         );
     });

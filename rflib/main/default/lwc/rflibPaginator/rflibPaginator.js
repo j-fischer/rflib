@@ -59,19 +59,27 @@ export default class Paginator extends LightningElement {
     }
 
     handlePrevious() {
-        this.dispatchEvent(new CustomEvent('previous'));
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new CustomEvent('previous'));
+        }
     }
 
     handleNext() {
-        this.dispatchEvent(new CustomEvent('next'));
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new CustomEvent('next'));
+        }
     }
 
     handleFirst() {
-        this.dispatchEvent(new CustomEvent('first'));
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new CustomEvent('first'));
+        }
     }
 
     handleLast() {
-        this.dispatchEvent(new CustomEvent('last'));
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new CustomEvent('last'));
+        }
     }
 
     handlePageNumberChange(evt) {
@@ -79,7 +87,9 @@ export default class Paginator extends LightningElement {
             let selectedPage =
                 evt.target.value > this.totalPages ? this.totalPages : evt.target.value < 1 ? 1 : evt.target.value;
 
-            this.dispatchEvent(new CustomEvent('gotopage', { detail: selectedPage }));
+            if (!import.meta.env.SSR) {
+                this.dispatchEvent(new CustomEvent('gotopage', { detail: selectedPage }));
+            }
         }
     }
 }

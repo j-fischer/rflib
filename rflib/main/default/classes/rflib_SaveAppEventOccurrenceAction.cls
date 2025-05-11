@@ -31,9 +31,6 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_SaveAppEventOccurrenceAction');
     
-    @TestVisible
-    private static rflib_ApplicationEventService APPLICATION_EVENT_SERVICE  = new rflib_DefaultApplicationEventService();
-
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events.
@@ -60,12 +57,20 @@ public with sharing class rflib_SaveAppEventOccurrenceAction {
     }
 
     private static rflib_Application_Event__c convert(rflib_Application_Event_Occurred_Event__e evt) {
+        String additionalDetails = evt.Additional_Details__c;
+        
+        // Apply masking to Additional_Details__c if enabled
+        String processedDetails = rflib_GlobalSettings.isApplicationEventMaskingEnabled && String.isNotBlank(additionalDetails) 
+            ? rflib_StringUtil.truncateToMaxSize(rflib_StringUtil.replaceWithAllMaskingRules(additionalDetails), 
+                rflib_DefaultApplicationEventService.MAX_ADDITIONAL_DETAIL_SIZE)
+            : additionalDetails;
+
         return new rflib_Application_Event__c(
             Created_By_ID__c = evt.Created_By_ID__c,
             Occurred_On__c = evt.Occurred_On__c,
             Event_Name__c = evt.Event_Name__c,
             Related_Record_ID__c = String.isNotBlank(evt.Related_Record_ID__c) ? evt.Related_Record_ID__c : rflib_DefaultApplicationEventService.NO_RECORD_ID,
-            Additional_Details__c = evt.Additional_Details__c
+            Additional_Details__c = processedDetails
         );
     }
 

@@ -376,7 +376,9 @@ export default class RflibCustomSettingsEditor extends LightningElement {
             message: message,
             variant: variant
         });
-        this.dispatchEvent(evt);
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(evt);
+        }
     }
 
     getPicklistOptions(fieldInfo) {
