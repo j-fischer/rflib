@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Log_Source__c</fullName>
-    <description>The source type where the log originated: Apex, Flow, Browser.</description>
+    <description>The source type where the log originated: Apex, Flow, Aura, LWC, OmniStudio.</description>
     <externalId>false</externalId>
     <isFilteringDisabled>false</isFilteringDisabled>
     <isNameField>false</isNameField>
