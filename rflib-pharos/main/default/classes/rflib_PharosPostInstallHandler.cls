@@ -46,12 +46,12 @@ public with sharing class rflib_PharosPostInstallHandler implements InstallHandl
         
         // Define default settings
         Map<String, String> defaultSettings = new Map<String, String> {
-            'auditTrail' => 'false',
+            'auditTrail' => 'true',
             'deployResult' => 'true',
             'installedPackages' => 'true',
-            'objectInfo' => 'false',
+            'objectInfo' => 'true',
             'pendingJobs' => 'true',
-            'relatedObjects' => 'false',
+            'relatedObjects' => 'true',
             'stackTrace' => 'true',
             'totalActiveSession' => 'true',
             'userInfo' => 'true'
