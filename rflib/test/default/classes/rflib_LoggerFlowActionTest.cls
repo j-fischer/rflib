@@ -78,7 +78,7 @@ private class rflib_LoggerFlowActionTest {
 
     @IsTest
     private static void testLogMessage_ValidateLogSource() {
-        rflib_MockLoggerFactory mockLoggerFactory = new rflib_MockLoggerFactory(rflib_LogLevel.INFO);
+        rflib_MockLoggerFactory mockLoggerFactory = new rflib_MockLoggerFactory(rflib_LogLevel.INFO, rflib_LogLevel.INFO);
         rflib_LoggerFlowAction.loggerFactory = mockLoggerFactory;
 
         Test.startTest();
