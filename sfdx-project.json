@@ -47,10 +47,11 @@
       "path": "rflib-pharos",
       "default": false,
       "package": "RFLIB-PHAROS",
-      "versionName": "ver 0.1.0",
+      "versionName": "ver 0.1",
       "versionNumber": "0.1.0.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
       "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+      "versionDescription": "Extension to RFLIB library adding integration with Pharos. License: BSD-3-Clause. Dependencies: RFLIB",
       "dependencies": [
         {
           "package": "RFLIB@9.4.0-1"
@@ -155,6 +156,7 @@
     "RFLIB@9.1.0-1": "04tKY0000011MQLYA2",
     "RFLIB@9.2.0-2": "04tKY0000011PSKYA2",
     "RFLIB@9.3.0-1": "04tKY000000xMlyYAE",
-    "RFLIB@9.4.0-1": "04tKY000000xX6HYAU"
+    "RFLIB@9.4.0-1": "04tKY000000xX6HYAU",
+    "RFLIB-PHAROS": "0HoKY000000oNTl0AM"
   }
 }
