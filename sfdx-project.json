@@ -7,7 +7,8 @@
       "versionName": "ver 9.4.0",
       "versionNumber": "9.4.0.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
-      "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md"
+      "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+      "versionDescription": "Open source library with logging framework and advanced monitoring capabilities. License: BSD-3-Clause."
     },
     {
       "path": "rflib-fs",
@@ -17,6 +18,7 @@
       "versionNumber": "3.0.1.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
       "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+      "versionDescription": "Extension to RFLIB library adding Feature Switches. License: BSD-3-Clause. Dependencies: RFLIB",
       "dependencies": [
         {
           "package": "RFLIB@4.1.0-1"
@@ -31,6 +33,7 @@
       "versionNumber": "3.0.2.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
       "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+      "versionDescription": "Extension to RFLIB library adding a Trigger Framework. License: BSD-3-Clause. Dependencies: RFLIB, RFLIB-FS",
       "dependencies": [
         {
           "package": "RFLIB@4.1.0-1"
