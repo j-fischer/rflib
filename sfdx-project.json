@@ -39,6 +39,20 @@
           "package": "RFLIB-FS@2.0.0-1"
         }
       ]
+    },
+    {
+      "path": "rflib-pharos",
+      "default": false,
+      "package": "RFLIB-PHAROS",
+      "versionName": "ver 0.1.0",
+      "versionNumber": "0.1.0.NEXT",
+      "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
+      "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
+      "dependencies": [
+        {
+          "package": "RFLIB@9.4.0-1"
+        }
+      ]
     }
   ],
   "namespace": "",
