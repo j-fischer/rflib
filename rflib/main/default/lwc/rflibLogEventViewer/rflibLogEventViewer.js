@@ -60,6 +60,8 @@ export default class RflibLogEventViewer extends LightningElement {
         showContext: true
     };
 
+    @track processedLogMessages = [];
+
     @api
     get logEvent() {
         return this._logEvent;
@@ -71,6 +73,7 @@ export default class RflibLogEventViewer extends LightningElement {
         } else {
             this.apexLogs = [];
         }
+        this.processLogMessages();
     }
 
     @wire(getRecord, { recordId: '$userId', fields: FIELDS })
@@ -275,5 +278,176 @@ export default class RflibLogEventViewer extends LightningElement {
             ...this.fieldVisibility,
             [fieldName]: isChecked
         };
+    }
+
+    processLogMessages() {
+        if (!this._logEvent?.Log_Messages__c) {
+            this.processedLogMessages = [];
+            return;
+        }
+
+        const logText = this._logEvent.Log_Messages__c;
+        const messages = [];
+        let messageId = 0;
+
+        // Split by newlines and process each line
+        const lines = logText.split('\n');
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            if (line.trim() === '') {
+                continue;
+            }
+
+            // Check for embedded JSON in the line
+            const processedLine = this.processLineWithEmbeddedJson(line, messageId);
+            messages.push(...processedLine.messages);
+            messageId = processedLine.nextId;
+        }
+
+        this.processedLogMessages = messages;
+    }
+
+    processLineWithEmbeddedJson(line, startId) {
+        const messages = [];
+        let currentId = startId;
+
+        // Look for JSON patterns in the line
+        const jsonRegex = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}|\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = jsonRegex.exec(line)) !== null) {
+            const jsonCandidate = match[0];
+
+            // Add any text before the JSON
+            if (match.index > lastIndex) {
+                const preText = line.substring(lastIndex, match.index).trim();
+                if (preText) {
+                    messages.push(this.createMessageObject(preText, currentId++, false));
+                }
+            }
+
+            // Check if this is valid JSON
+            if (this.isValidJson(jsonCandidate)) {
+                messages.push(this.createMessageObject(jsonCandidate, currentId++, true));
+            } else {
+                // If not valid JSON, treat as text
+                messages.push(this.createMessageObject(jsonCandidate, currentId++, false));
+            }
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // Add any remaining text after the last JSON
+        if (lastIndex < line.length) {
+            const remainingText = line.substring(lastIndex).trim();
+            if (remainingText) {
+                messages.push(this.createMessageObject(remainingText, currentId++, false));
+            }
+        }
+
+        // If no JSON found, treat the entire line as text
+        if (messages.length === 0) {
+            messages.push(this.createMessageObject(line, currentId++, false));
+        }
+
+        return {
+            messages: messages,
+            nextId: currentId
+        };
+    }
+
+    createMessageObject(content, id, forceJson = null) {
+        const isJson = forceJson !== null ? forceJson : this.isValidJson(content.trim());
+
+        if (isJson) {
+            try {
+                const parsedJson = JSON.parse(content.trim());
+                const formattedJson = JSON.stringify(parsedJson, null, 2);
+                const preview = this.createJsonPreview(parsedJson);
+
+                return {
+                    id: id,
+                    content: content,
+                    isJson: true,
+                    isText: false,
+                    isExpanded: false,
+                    isCollapsed: true,
+                    formattedJson: formattedJson,
+                    preview: preview,
+                    expandIcon: 'utility:chevronright',
+                    expandLabel: 'Expand JSON'
+                };
+            } catch (e) {
+                // If parsing fails, treat as text
+            }
+        }
+
+        return {
+            id: id,
+            content: content,
+            isJson: false,
+            isText: true,
+            isExpanded: false,
+            isCollapsed: false
+        };
+    }
+
+    isCompleteJson(text) {
+        try {
+            JSON.parse(text);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    isValidJson(text) {
+        if (!text || typeof text !== 'string') return false;
+
+        const trimmed = text.trim();
+        if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return false;
+
+        try {
+            const parsed = JSON.parse(trimmed);
+            return typeof parsed === 'object';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    createJsonPreview(jsonObj) {
+        if (Array.isArray(jsonObj)) {
+            return `Array [${jsonObj.length} items]`;
+        }
+
+        if (typeof jsonObj === 'object' && jsonObj !== null) {
+            const keys = Object.keys(jsonObj);
+            const keyPreview = keys.slice(0, 3).join(', ');
+            const remaining = keys.length > 3 ? `, +${keys.length - 3} more` : '';
+            return `Object {${keyPreview}${remaining}}`;
+        }
+
+        return 'JSON Data';
+    }
+
+    toggleJsonExpansion(event) {
+        const messageId = parseInt(event.currentTarget.dataset.messageId, 10);
+        const messageIndex = this.processedLogMessages.findIndex((msg) => msg.id === messageId);
+
+        if (messageIndex !== -1) {
+            const messages = [...this.processedLogMessages];
+            const message = { ...messages[messageIndex] };
+
+            message.isExpanded = !message.isExpanded;
+            message.isCollapsed = !message.isExpanded;
+            message.expandIcon = message.isExpanded ? 'utility:chevrondown' : 'utility:chevronright';
+            message.expandLabel = message.isExpanded ? 'Collapse JSON' : 'Expand JSON';
+
+            messages[messageIndex] = message;
+            this.processedLogMessages = messages;
+        }
     }
 }
