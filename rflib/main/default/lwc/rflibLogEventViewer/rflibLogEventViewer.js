@@ -40,6 +40,7 @@ import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
 const APEX_LOG_DOWNLOAD_URL = '/servlet/servlet.FileDownload';
+const FIELD_VISIBILITY_KEY = 'rflib_log_viewer_field_visibility';
 
 const LOGGER = createLogger('rflibLogEventViewer');
 
@@ -95,6 +96,7 @@ export default class RflibLogEventViewer extends LightningElement {
     }
 
     connectedCallback() {
+        this.loadFieldVisibilitySettings();
         if (this.logEvent?.Request_ID__c) {
             this.loadApexLogs();
         }
@@ -288,6 +290,39 @@ export default class RflibLogEventViewer extends LightningElement {
             ...this.fieldVisibility,
             [fieldName]: isChecked
         };
+
+        this.saveFieldVisibilitySettings();
+    }
+
+    loadFieldVisibilitySettings() {
+        try {
+            const stored = sessionStorage.getItem(FIELD_VISIBILITY_KEY);
+            if (stored) {
+                const parsedSettings = JSON.parse(stored);
+                this.fieldVisibility = {
+                    ...this.fieldVisibility,
+                    ...parsedSettings
+                };
+                LOGGER.debug(
+                    'Loaded field visibility settings from session storage: {0}',
+                    JSON.stringify(this.fieldVisibility)
+                );
+            }
+        } catch (error) {
+            LOGGER.error('Failed to load field visibility settings from session storage: {0}', error.message);
+        }
+    }
+
+    saveFieldVisibilitySettings() {
+        try {
+            sessionStorage.setItem(FIELD_VISIBILITY_KEY, JSON.stringify(this.fieldVisibility));
+            LOGGER.debug(
+                'Saved field visibility settings to session storage: {0}',
+                JSON.stringify(this.fieldVisibility)
+            );
+        } catch (error) {
+            LOGGER.error('Failed to save field visibility settings to session storage: {0}', error.message);
+        }
     }
 
     processLogMessages() {
