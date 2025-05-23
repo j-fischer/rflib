@@ -268,6 +268,16 @@ export default class RflibLogEventViewer extends LightningElement {
         this.showFieldSettings = !this.showFieldSettings;
     }
 
+    toggleFullscreen() {
+        LOGGER.debug('Toggling fullscreen mode');
+        this.dispatchEvent(new CustomEvent('togglefullscreen'));
+    }
+
+    closeViewer() {
+        LOGGER.debug('Closing log viewer');
+        this.dispatchEvent(new CustomEvent('closeviewer'));
+    }
+
     handleFieldVisibilityChange(event) {
         const fieldName = event.target.name;
         const isChecked = event.target.checked;

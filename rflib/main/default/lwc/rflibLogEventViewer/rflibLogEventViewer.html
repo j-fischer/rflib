@@ -32,12 +32,6 @@
 
         <div slot="actions">
             <div class="slds-button-group" role="group">
-                <lightning-button-icon
-                    icon-name="utility:settings"
-                    alternative-text="Field Visibility Settings"
-                    title="Field Visibility Settings"
-                    onclick={toggleFieldSettings}
-                ></lightning-button-icon>
                 <lightning-button-menu
                     label={downloadButtonLabel}
                     icon-name="utility:download"
@@ -70,6 +64,24 @@
                         </lightning-menu-item>
                     </template>
                 </lightning-button-menu>
+                <lightning-button-icon
+                    icon-name="utility:expand"
+                    alternative-text="Fullscreen"
+                    title="Fullscreen"
+                    onclick={toggleFullscreen}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:settings"
+                    alternative-text="Field Visibility Settings"
+                    title="Field Visibility Settings"
+                    onclick={toggleFieldSettings}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:close"
+                    alternative-text="Close"
+                    title="Close"
+                    onclick={closeViewer}
+                ></lightning-button-icon>
             </div>
         </div>
 

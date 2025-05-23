@@ -89,21 +89,19 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     get leftColumnClass() {
+        if (!this.hasLogEvent) {
+            return 'slds-col slds-size_1-of-1 left-column';
+        }
         return this.showLeftColumn ? 'slds-col slds-size_7-of-12 left-column' : 'slds-hide';
     }
 
     get rightColumnClass() {
+        if (!this.hasLogEvent) {
+            return 'slds-hide';
+        }
         return this.showLeftColumn
             ? 'slds-col slds-size_5-of-12 container right-column'
             : 'slds-col slds-size_1-of-1 container right-column full-width';
-    }
-
-    get toggleColumnIcon() {
-        return this.showLeftColumn ? 'utility:left_align' : 'utility:right_align';
-    }
-
-    get toggleColumnLabel() {
-        return this.showLeftColumn ? 'Hide Log List' : 'Show Log List';
     }
 
     @wire(CurrentPageReference)
@@ -486,8 +484,15 @@ export default class LogEventMonitor extends LightningElement {
         }
     }
 
-    toggleLeftColumn() {
-        logger.debug('Toggling left column visibility, current state={0}', this.showLeftColumn);
+    handleToggleFullscreen() {
+        logger.debug('Toggling left column visibility for fullscreen, current state={0}', this.showLeftColumn);
         this.showLeftColumn = !this.showLeftColumn;
+    }
+
+    handleCloseViewer() {
+        logger.debug('Closing log viewer');
+        this.selectedLogEvent = null;
+        this.selectedLogEventCreatedById = null;
+        this.showLeftColumn = true;
     }
 }

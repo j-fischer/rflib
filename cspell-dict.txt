@@ -91,3 +91,7 @@ René
 Batchable
 helptext
 chevrondown
+ontogglefullscreen
+oncloseviewer
+togglefullscreen
+closeviewer
