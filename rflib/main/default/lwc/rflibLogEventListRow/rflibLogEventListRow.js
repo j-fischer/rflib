@@ -38,4 +38,39 @@ export default class RflibLogEventListRow extends LightningElement {
     get createdDate() {
         return this.evt.CreatedDate || this.evt.CreatedDate__c;
     }
+
+    get logLevel() {
+        return this.evt.Log_Level__c;
+    }
+
+    get rowClass() {
+        const baseClass = 'log-row';
+        const levelClass = this.getLevelClass();
+        return `${baseClass} ${levelClass}`;
+    }
+
+    get logLevelClass() {
+        const baseClass = 'log-level';
+        const levelClass = this.getLevelClass();
+        return `${baseClass} ${levelClass}`;
+    }
+
+    getLevelClass() {
+        const level = this.logLevel?.toLowerCase();
+        switch (level) {
+            case 'error':
+                return 'level-error';
+            case 'warn':
+            case 'warning':
+                return 'level-warn';
+            case 'info':
+                return 'level-info';
+            case 'debug':
+                return 'level-debug';
+            case 'trace':
+                return 'level-trace';
+            default:
+                return 'level-default';
+        }
+    }
 }

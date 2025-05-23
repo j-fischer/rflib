@@ -28,6 +28,84 @@
  */
 
 :host {
-    display: table-row;
+    display: contents;
     cursor: pointer;
+}
+
+.log-row {
+    border-bottom: 1px solid #e5e5e5;
+    transition: background-color 0.2s ease;
+}
+
+.log-row:hover {
+    background-color: #f8f9fa;
+}
+
+.log-level {
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.level-error {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.level-warn {
+    background-color: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fed7aa;
+}
+
+.level-info {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.level-debug {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.level-trace {
+    background-color: #fafafa;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.level-default {
+    background-color: #f9fafb;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.log-row.level-error {
+    border-left: 3px solid #dc2626;
+}
+
+.log-row.level-warn {
+    border-left: 3px solid #d97706;
+}
+
+.log-row.level-info {
+    border-left: 3px solid #2563eb;
+}
+
+.log-row.level-debug {
+    border-left: 3px solid #16a34a;
+}
+
+.log-row.level-trace {
+    border-left: 3px solid #6b7280;
+}
+
+.log-row.level-default {
+    border-left: 3px solid #9ca3af;
 }
