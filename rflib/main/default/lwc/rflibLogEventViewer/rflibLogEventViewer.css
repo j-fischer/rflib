@@ -34,17 +34,6 @@
     border-radius: 0.25rem;
 }
 
-.log-message-item {
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 0.5rem;
-}
-
-.log-message-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
 .json-message {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
