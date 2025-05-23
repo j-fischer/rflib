@@ -673,8 +673,7 @@ gulp.task(
             if (process.argv.includes('--pharos')) {
                 gulp.series(
                     'shell-force-install-pharos', 
-                    'shell-force-install-pharos-triton',
-                    'shell-pharos-post-install',
+                    'shell-pharos-post-install'
                 )(done);
             } else {
                 done();
