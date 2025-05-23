@@ -51,6 +51,14 @@ export default class RflibLogEventViewer extends LightningElement {
     isLoadingLogs = false;
 
     @track user = {};
+    showFieldSettings = false;
+    fieldVisibility = {
+        showDate: true,
+        showCreatedBy: true,
+        showLogLevel: true,
+        showRequestId: true,
+        showContext: true
+    };
 
     @api
     get logEvent() {
@@ -189,7 +197,21 @@ export default class RflibLogEventViewer extends LightningElement {
     }
 
     get title() {
-        return this.logEvent.Request_ID__c + ' - ' + this.logEvent.Log_Level__c + ' - ' + this.logEvent.Context__c;
+        const parts = [];
+
+        if (this.fieldVisibility.showRequestId && this.logEvent.Request_ID__c) {
+            parts.push(this.logEvent.Request_ID__c);
+        }
+
+        if (this.fieldVisibility.showLogLevel && this.logEvent.Log_Level__c) {
+            parts.push(this.logEvent.Log_Level__c);
+        }
+
+        if (this.fieldVisibility.showContext && this.logEvent.Context__c) {
+            parts.push(this.logEvent.Context__c);
+        }
+
+        return parts.length > 0 ? parts.join(' - ') : 'Log Event';
     }
 
     get name() {
@@ -236,5 +258,22 @@ export default class RflibLogEventViewer extends LightningElement {
 
     get downloadButtonLabel() {
         return this.apexLogs?.length > 0 ? `(${this.apexLogs.length})` : '';
+    }
+
+    toggleFieldSettings() {
+        LOGGER.debug('Toggling field settings visibility');
+        this.showFieldSettings = !this.showFieldSettings;
+    }
+
+    handleFieldVisibilityChange(event) {
+        const fieldName = event.target.name;
+        const isChecked = event.target.checked;
+
+        LOGGER.debug('Field visibility changed: {0}={1}', fieldName, isChecked);
+
+        this.fieldVisibility = {
+            ...this.fieldVisibility,
+            [fieldName]: isChecked
+        };
     }
 }

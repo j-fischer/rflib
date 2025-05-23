@@ -32,6 +32,12 @@
 
         <div slot="actions">
             <div class="slds-button-group" role="group">
+                <lightning-button-icon
+                    icon-name="utility:settings"
+                    alternative-text="Field Visibility Settings"
+                    title="Field Visibility Settings"
+                    onclick={toggleFieldSettings}
+                ></lightning-button-icon>
                 <lightning-button-menu
                     label={downloadButtonLabel}
                     icon-name="utility:download"
@@ -67,47 +73,104 @@
             </div>
         </div>
 
+        <template lwc:if={showFieldSettings}>
+            <div class="slds-box slds-box_small slds-m-bottom_small field-settings-panel">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Field Visibility Settings</h3>
+                <div class="slds-grid slds-wrap slds-gutters_small">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Date"
+                            checked={fieldVisibility.showDate}
+                            onchange={handleFieldVisibilityChange}
+                            name="showDate"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Created By"
+                            checked={fieldVisibility.showCreatedBy}
+                            onchange={handleFieldVisibilityChange}
+                            name="showCreatedBy"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Log Level in Title"
+                            checked={fieldVisibility.showLogLevel}
+                            onchange={handleFieldVisibilityChange}
+                            name="showLogLevel"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Request ID in Title"
+                            checked={fieldVisibility.showRequestId}
+                            onchange={handleFieldVisibilityChange}
+                            name="showRequestId"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Context in Title"
+                            checked={fieldVisibility.showContext}
+                            onchange={handleFieldVisibilityChange}
+                            name="showContext"
+                        ></lightning-input>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <lightning-tabset>
             <lightning-tab label="Log Event">
                 <div class="slds-m-around_medium">
-                    <div class="slds-form-element">
-                        <span class="slds-form-element__label">Date</span>
-                        <div class="slds-form-element__control slds-border_bottom">
-                            <div class="slds-form-element__static">
-                                <lightning-formatted-date-time
-                                    value={createdDate}
-                                    year="numeric"
-                                    day="2-digit"
-                                    month="long"
-                                    hour="2-digit"
-                                    minute="2-digit"
-                                    second="2-digit"
-                                    weekday="long"
-                                >
-                                </lightning-formatted-date-time>
+                    <template lwc:if={fieldVisibility.showDate}>
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Date</span>
+                            <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">
+                                    <lightning-formatted-date-time
+                                        value={createdDate}
+                                        year="numeric"
+                                        day="2-digit"
+                                        month="long"
+                                        hour="2-digit"
+                                        minute="2-digit"
+                                        second="2-digit"
+                                        weekday="long"
+                                    >
+                                    </lightning-formatted-date-time>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="slds-form-element">
-                        <span class="slds-form-element__label">Created By</span>
-                        <div class="slds-form-element__control slds-border_bottom">
-                            <template lwc:if={isUserInfoNotAvailable}>
-                                <div class="slds-form-element__static">User ID: {createdBy}</div>
-                            </template>
-                            <template lwc:if={user.id}>
-                                <div class="slds-form-element__static slds-grid">
-                                    <div class="slds-col slds-size_1-of-2">
-                                        <div>Name: {name}</div>
-                                        <div>Profile: {profile}</div>
+                    </template>
+                    <template lwc:if={fieldVisibility.showCreatedBy}>
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Created By</span>
+                            <div class="slds-form-element__control slds-border_bottom">
+                                <template lwc:if={isUserInfoNotAvailable}>
+                                    <div class="slds-form-element__static">User ID: {createdBy}</div>
+                                </template>
+                                <template lwc:if={user.id}>
+                                    <div class="slds-form-element__static slds-grid">
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <div>Name: {name}</div>
+                                            <div>Profile: {profile}</div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <div>Email: {email}</div>
+                                            <div>Phone: {phone}</div>
+                                        </div>
                                     </div>
-                                    <div class="slds-col slds-size_1-of-2">
-                                        <div>Email: {email}</div>
-                                        <div>Phone: {phone}</div>
-                                    </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                     <div class="slds-form-element">
                         <span class="slds-form-element__label">Log Messages</span>
                         <div class="slds-form-element__control slds-border_bottom">

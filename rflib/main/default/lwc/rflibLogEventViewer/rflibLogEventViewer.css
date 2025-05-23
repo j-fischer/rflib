@@ -27,3 +27,9 @@
 .stacktrace code {
     color: #333;
 }
+
+.field-settings-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #d0d0d0;
+    border-radius: 0.25rem;
+}
