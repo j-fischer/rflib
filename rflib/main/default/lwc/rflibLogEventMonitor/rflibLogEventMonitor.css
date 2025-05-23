@@ -30,3 +30,15 @@
 .flex-layout {
     align-items: stretch;
 }
+
+.left-column {
+    transition: width 0.3s ease;
+}
+
+.right-column {
+    transition: width 0.3s ease;
+}
+
+.full-width {
+    width: 100%;
+}

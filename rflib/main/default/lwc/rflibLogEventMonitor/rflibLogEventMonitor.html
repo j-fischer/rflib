@@ -114,6 +114,14 @@
                             <li class="slds-m-horizontal_xx-small">
                                 <button class="slds-button slds-button_neutral" onclick={clearLogs}>Clear Logs</button>
                             </li>
+                            <li class="slds-m-horizontal_xx-small">
+                                <lightning-button-icon
+                                    icon-name={toggleColumnIcon}
+                                    alternative-text={toggleColumnLabel}
+                                    title={toggleColumnLabel}
+                                    onclick={toggleLeftColumn}
+                                ></lightning-button-icon>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -122,7 +130,7 @@
     </div>
 
     <div class="slds-grid">
-        <div class="slds-col slds-size_7-of-12">
+        <div class={leftColumnClass} lwc:if={showLeftColumn}>
             <lightning-card>
                 <c-rflib-log-event-list
                     onrefreshed={handleRefreshed}
@@ -146,7 +154,7 @@
                 </div>
             </lightning-card>
         </div>
-        <div class="slds-col slds-size_5-of-12 container">
+        <div class={rightColumnClass}>
             <template lwc:if={hasLogEvent}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}

@@ -78,6 +78,7 @@ export default class LogEventMonitor extends LightningElement {
     endDate = null;
 
     subscription = null;
+    showLeftColumn = true;
 
     get isArchiveMode() {
         return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
@@ -85,6 +86,24 @@ export default class LogEventMonitor extends LightningElement {
 
     get hasLogEvent() {
         return this.selectedLogEvent != null;
+    }
+
+    get leftColumnClass() {
+        return this.showLeftColumn ? 'slds-col slds-size_7-of-12 left-column' : 'slds-hide';
+    }
+
+    get rightColumnClass() {
+        return this.showLeftColumn
+            ? 'slds-col slds-size_5-of-12 container right-column'
+            : 'slds-col slds-size_1-of-1 container right-column full-width';
+    }
+
+    get toggleColumnIcon() {
+        return this.showLeftColumn ? 'utility:left_align' : 'utility:right_align';
+    }
+
+    get toggleColumnLabel() {
+        return this.showLeftColumn ? 'Hide Log List' : 'Show Log List';
     }
 
     @wire(CurrentPageReference)
@@ -465,5 +484,10 @@ export default class LogEventMonitor extends LightningElement {
             logger.debug('End date changed={0}', event.target.value);
             this.endDate = event.target.value;
         }
+    }
+
+    toggleLeftColumn() {
+        logger.debug('Toggling left column visibility, current state={0}', this.showLeftColumn);
+        this.showLeftColumn = !this.showLeftColumn;
     }
 }
