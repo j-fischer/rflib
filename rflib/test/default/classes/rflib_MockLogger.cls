@@ -39,11 +39,14 @@ public class rflib_MockLogger implements rflib_Logger {
     public rflib_LogLevel generalLogLevel;
     public rflib_LogLevel logAggregationLogLevel;
     public String platformInfo;
+    public String stacktrace;
 
     public Boolean logsPrinted = false;
     public Boolean logEventsPublished = false;
     public Boolean batchedEventsPublished = false;
     public Boolean isMonitoredContext = false;
+    
+    public rflib_LogSource logSource = rflib_LogSource.Apex;
 
     public final List<LogDetails> logDetails = new List<LogDetails>();
 
@@ -85,6 +88,14 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public void setPlatformInfo(String platformInfo) {
         this.platformInfo = platformInfo;
+    }
+
+    public void setStacktrace(String stacktrace) {
+        this.stacktrace = stacktrace;
+    }
+    
+    public void setLogSource(rflib_LogSource source) {
+        this.logSource = source;
     }
 
     public void trace(String message) {
@@ -172,7 +183,7 @@ public class rflib_MockLogger implements rflib_Logger {
     public void publishBatchedLogEvents() {
         batchedEventsPublished = true;
     }
-
+    
     public class LogDetails {
         public final rflib_LogLevel logLevel;
         public final String message;

@@ -28,6 +28,8 @@
  */
 import logMessageToServer from '@salesforce/apex/rflib_LoggerController.log';
 import getSettings from '@salesforce/apex/rflib_LoggerController.getSettings';
+// Default log source for LWC
+const DEFAULT_LOG_SOURCE = 'LWC';
 
 const LogLevel = Object.freeze({
     TRACE: { index: 0, label: 'TRACE' },
@@ -52,7 +54,7 @@ const state = {
 const convertToString = (arg) => {
     if (arg === undefined) return 'undefined';
     if (arg === null) return 'null';
-    
+
     switch (typeof arg) {
         case 'object':
             try {
@@ -73,9 +75,7 @@ const convertToString = (arg) => {
 
 const format = (strToFormat, ...args) => {
     return strToFormat.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] !== 'undefined' 
-            ? convertToString(args[number])
-            : 'undefined';
+        return typeof args[number] !== 'undefined' ? convertToString(args[number]) : 'undefined';
     });
 };
 
@@ -88,7 +88,17 @@ const addMessage = (message) => {
     state.messages.push(fullMessage);
 };
 
-const log = (level, component, message) => {
+const getFilteredStacktrace = () => {
+    try {
+        const error = new Error();
+        const stackLines = error.stack.split('\n');
+        return stackLines.filter((line) => !line.toLowerCase().includes('rflib')).join('\n');
+    } catch (error) {
+        return '[Unable to generate stacktrace]';
+    }
+};
+
+const log = (level, component, message, source = DEFAULT_LOG_SOURCE) => {
     const msgToLog = level.label + '|' + component + '|' + message;
     if (level.index >= state.config.consoleLogLevel.index) {
         window.console.log(msgToLog);
@@ -105,7 +115,9 @@ const log = (level, component, message) => {
                 platformInfo: JSON.stringify(platformInfo),
                 level: level.label,
                 context: component,
-                message: state.messages.join('\n')
+                message: state.messages.join('\n'),
+                stacktrace: getFilteredStacktrace(),
+                logSource: source
             }).catch((error) => {
                 window.console.log('>>> Failed to log message to server for: ' + JSON.stringify(error));
             });
@@ -145,7 +157,7 @@ const initializationPromise = getSettings()
         window.console.log('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
     });
 
-const createLogger = (loggerName) => {
+const createLogger = (loggerName, logSource = DEFAULT_LOG_SOURCE) => {
     const setConfig = (newConfig) => {
         log(
             LogLevel.DEBUG,
@@ -163,27 +175,27 @@ const createLogger = (loggerName) => {
     };
 
     const trace = (...args) => {
-        log(LogLevel.TRACE, loggerName, format(...args));
+        log(LogLevel.TRACE, loggerName, format(...args), logSource);
     };
 
     const debug = (...args) => {
-        log(LogLevel.DEBUG, loggerName, format(...args));
+        log(LogLevel.DEBUG, loggerName, format(...args), logSource);
     };
 
     const info = (...args) => {
-        log(LogLevel.INFO, loggerName, format(...args));
+        log(LogLevel.INFO, loggerName, format(...args), logSource);
     };
 
     const warn = (...args) => {
-        log(LogLevel.WARN, loggerName, format(...args));
+        log(LogLevel.WARN, loggerName, format(...args), logSource);
     };
 
     const error = (...args) => {
-        log(LogLevel.ERROR, loggerName, format(...args));
+        log(LogLevel.ERROR, loggerName, format(...args), logSource);
     };
 
     const fatal = (...args) => {
-        log(LogLevel.FATAL, loggerName, format(...args));
+        log(LogLevel.FATAL, loggerName, format(...args), logSource);
     };
 
     return {
@@ -210,10 +222,13 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
             if (typeof logger[logMethodName] === 'function') {
                 logger[logMethodName].apply(logger, [
                     '{0} took a total of {1}ms (threshold={2}ms).',
-                    timerName, duration, threshold
+                    timerName,
+                    duration,
+                    threshold
                 ]);
             } else {
-                logger.warn('{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided', 
+                logger.warn(
+                    '{0} took a total of {1}ms (threshold={2}ms). NOTE: Invalid log Level provided',
                     timerName,
                     duration,
                     threshold

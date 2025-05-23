@@ -387,9 +387,11 @@ gulp.task('gitpush-origin', function (done) {
 });
 
 // Shell tasks
-function shellTask(getCommand) {
+function shellTask(getCommand, ignoreErrors = false) {
     return function (done) {
-        return shell.task(getCommand())(done);
+        return shell.task(getCommand(), {
+            ignoreErrors: ignoreErrors
+        })(done);
     };
 }
 
@@ -448,7 +450,7 @@ gulp.task(
     'shell-force-assign-permset',
     shellTask(function () {
         return `sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} && sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
-    })
+    }, true)
 );
 
 gulp.task(
@@ -497,7 +499,7 @@ gulp.task(
     'shell-force-install-streaming-monitor',
     shellTask(function () {
         return `sf package install --package 04t1t000003Po3QAAS -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
-    })
+    }, true)
 );
 
 gulp.task(
@@ -508,10 +510,24 @@ gulp.task(
 );
 
 gulp.task(
+    'shell-force-install-pharos',
+    shellTask(function () {
+        return `sf package install --package 04t5a000001g4x9AAA -o ${config.alias} -w 10`;
+    })
+);
+
+gulp.task(
+    'shell-force-install-pharos-triton',
+    shellTask(function () {
+        return `sf package install --package 04tbm0000005QbN -o ${config.alias} -w 10`;
+    })
+);
+
+gulp.task(
     'shell-force-install-omnistudio',
     shellTask(function () {
         return `sf package install --package 04t4W000000YWaz -o ${config.alias} -w 10 --no-prompt && sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o ${config.alias} && sf org assign permset --name OmniStudioUser --name BRERuntime -o ${config.alias}`;
-    })
+    }, true)
 );
 
 gulp.task(
@@ -553,6 +569,13 @@ gulp.task(
     'shell-force-create-application-event',
     shellTask(function () {
         return `sf apex run -o ${config.alias} -f scripts/apex/CreateApplicationEvent.apex`;
+    })
+);
+
+gulp.task(
+    'shell-pharos-post-install',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/RunPharosPostInstallHandler.apex`;
     })
 );
 
@@ -642,6 +665,16 @@ gulp.task(
         function installOmniStudio(done) {
             if (process.argv.includes('--omni')) {
                 gulp.series('shell-force-install-omnistudio')(done);
+            } else {
+                done();
+            }
+        },
+        function installPharos(done) {
+            if (process.argv.includes('--pharos')) {
+                gulp.series(
+                    'shell-force-install-pharos', 
+                    'shell-pharos-post-install'
+                )(done);
             } else {
                 done();
             }

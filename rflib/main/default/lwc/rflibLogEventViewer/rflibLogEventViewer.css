@@ -9,3 +9,21 @@
 .download-container {
     display:none;
 }
+
+.stacktrace {
+    max-height: 400px;
+    font-family: Consolas, Monaco, 'Courier New', Courier, monospace;
+    font-size: 12px;
+    white-space: pre;
+    background-color: #f8f8f8;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.stacktrace pre {
+    margin: 0;
+}
+
+.stacktrace code {
+    color: #333;
+}

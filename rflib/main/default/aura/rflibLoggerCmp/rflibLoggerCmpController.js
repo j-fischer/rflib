@@ -36,7 +36,7 @@
         }
 
         var loggerFactory = component.find('loggerFactory');
-        var logger = loggerFactory.createLogger(name);
+        var logger = loggerFactory.createLogger(name, 'Aura');
 
         component.set('v.logger', logger);
     },

@@ -75,6 +75,7 @@ global class rflib_OmniStudioRemoteActions implements System.Callable {
         List<String> args = parseArgs((String)input.get('args'));
 
         rflib_Logger logger = loggerFactory.createLogger(context);
+        logger.setLogSource(rflib_LogSource.OmniStudio);
 
         switch on logLevel.toUpperCase() {
             when 'FATAL' {

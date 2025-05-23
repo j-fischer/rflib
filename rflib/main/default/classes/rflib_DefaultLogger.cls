@@ -41,6 +41,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
     @TestVisible
     private static String PLATFORM_INFO = null;
+    @TestVisible 
+    private static String STACKTRACE = null;
 
     private static final String APPLICATION_EVENT_NAME_PATTERN = 'log-{0}-{1}';
 
@@ -61,6 +63,8 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
     @TestVisible private rflib_LogLevel flushLogStackLevel = rflib_LogLevel.NONE;
     @TestVisible private rflib_LogLevel batchReportingLogLevel = rflib_LogLevel.NONE;
     @TestVisible private rflib_LogLevel logAggregationLogLevel = rflib_LogLevel.NONE;
+
+    @TestVisible private rflib_LogSource logSource = rflib_LogSource.Apex;
 
     /**
      * DEPRECATED - Use `new rflib_DefaultLoggerFactory.createLogger()` instead.
@@ -260,6 +264,14 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         PLATFORM_INFO = platformInfo;
     }
 
+    public void setStacktrace(String newStacktrace) {
+        STACKTRACE = newStacktrace;
+    }
+    
+    public void setLogSource(rflib_LogSource source) {
+        logSource = source;
+    }
+    
     public void trace(String message) {
         trace(message, null);
     }
@@ -370,7 +382,9 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
             Log_Level__c = logLevel.toString(),
             Context__c = context.substring(0, Math.min(context.length(), 40)),
             Platform_Info__c = getPlatformInformation(),
-            Log_Messages__c = logMessageToPublish
+            Log_Messages__c = logMessageToPublish,
+            Log_Source__c = logSource.toString(),
+            Stacktrace__c = getStacktrace()
         );
 
         platformEventsToLog.add(eventToLog);
@@ -439,9 +453,27 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
         logMessages.add(messageToLog);
 
-        if (reportingLogLevel.encompasses(logLevel) || (isMonitoredContext && rflib_LogLevel.INFO.encompasses(logLevel))) {
+        if (reportingLogLevel.encompasses(logLevel) || (reportingLogLevel != rflib_LogLevel.NONE && isMonitoredContext && rflib_LogLevel.INFO.encompasses(logLevel))) {
             reportLogs(logLevel);
         }
+    }
+
+    private String getStacktrace() {
+        if (String.isNotBlank(STACKTRACE)) {
+            return STACKTRACE;
+        }
+
+        String fullStacktrace = new DmlException().getStackTraceString();
+        List<String> stackLines = fullStacktrace.split('\n');
+        List<String> filteredLines = new List<String>();
+        
+        for (String line : stackLines) {
+            if (!line.containsIgnoreCase('rflib_Default')) {
+                filteredLines.add(line);
+            }
+        }
+        
+        return String.join(filteredLines, '\n');
     }
 
     private String getPlatformInformation() {

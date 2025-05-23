@@ -46,13 +46,22 @@ public with sharing class rflib_LoggerController {
      * Log action to be invoked from the client. THe statement will be logged using a custom settings logger.
      * This controller is used by the rflib_logger LWC module.
      * 
+     * @param  platformInfo The platform information for the log statement.
      * @param  level   The level for the log statement.
      * @param  context The context for the log statement. 
      * @param  message message description
+     * @param  stacktrace The stacktrace for the log statement.
      */
     @AuraEnabled
-    public static void log(String level, String context, String message, String platformInfo){
+    public static void log(String platformInfo, String level, String context, String message, String stacktrace, String logSource) {
         rflib_Logger logger = rflib_LoggerUtil.getFactory().createLogger(context);
+        
+        // Set log source based on client input, default to LWC on error
+        try {
+            logger.setLogSource(rflib_LogSource.valueOf(logSource));
+        } catch (Exception e) {
+            logger.setLogSource(rflib_LogSource.LWC);
+        }
 
         /* Overwriting configuration values for general log level, system log level, and reporting level to ensure that the 
          * client side log messages are managed by the client specific settings only, so that those log statements
@@ -60,10 +69,11 @@ public with sharing class rflib_LoggerController {
          */
         logger.setGeneralLogLevel(rflib_LogLevel.DEBUG);
         logger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
-        logger.setReportingLogLevel(rflib_LogLevel.DEBUG);
+        logger.setReportingLogLevel(rflib_LogLevel.INFO);
         logger.setFlushLogCacheLevel(rflib_LogLevel.NONE);
 
         logger.setPlatformInfo(platformInfo);
+        logger.setStacktrace(stacktrace);
 
         switch on level.toUpperCase() {
             when 'TRACE' {

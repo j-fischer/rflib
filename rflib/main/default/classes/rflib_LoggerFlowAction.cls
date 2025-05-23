@@ -46,6 +46,9 @@ public with sharing class rflib_LoggerFlowAction {
             rflib_Logger logger = messageInfo.useBatchReporting ? 
                 loggerFactory.createBatchedLogger(messageInfo.context) :
                 loggerFactory.createLogger(messageInfo.context);
+                
+            // Set the log source to Flow
+            logger.setLogSource(rflib_LogSource.Flow);
 
             switch on messageInfo.logLevel.toUpperCase() {
                 when 'FATAL' {
