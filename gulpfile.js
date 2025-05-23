@@ -575,7 +575,7 @@ gulp.task(
 gulp.task(
     'shell-pharos-post-install',
     shellTask(function () {
-        return `sf apex run -o ${config.alias} -f scripts/apex/RunPharosPostInstallHander.apex`;
+        return `sf apex run -o ${config.alias} -f scripts/apex/RunPharosPostInstallHandler.apex`;
     })
 );
 
