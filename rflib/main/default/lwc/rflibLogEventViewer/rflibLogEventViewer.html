@@ -64,79 +64,8 @@
                         </lightning-menu-item>
                     </template>
                 </lightning-button-menu>
-                <lightning-button-icon
-                    icon-name="utility:expand"
-                    alternative-text="Fullscreen"
-                    title="Fullscreen"
-                    onclick={toggleFullscreen}
-                ></lightning-button-icon>
-                <lightning-button-icon
-                    icon-name="utility:settings"
-                    alternative-text="Field Visibility Settings"
-                    title="Field Visibility Settings"
-                    onclick={toggleFieldSettings}
-                ></lightning-button-icon>
-                <lightning-button-icon
-                    icon-name="utility:close"
-                    alternative-text="Close"
-                    title="Close"
-                    onclick={closeViewer}
-                ></lightning-button-icon>
             </div>
         </div>
-
-        <template lwc:if={showFieldSettings}>
-            <div class="slds-box slds-box_small slds-m-bottom_small field-settings-panel">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Field Visibility Settings</h3>
-                <div class="slds-grid slds-wrap slds-gutters_small">
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Date"
-                            checked={fieldVisibility.showDate}
-                            onchange={handleFieldVisibilityChange}
-                            name="showDate"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Created By"
-                            checked={fieldVisibility.showCreatedBy}
-                            onchange={handleFieldVisibilityChange}
-                            name="showCreatedBy"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Log Level in Title"
-                            checked={fieldVisibility.showLogLevel}
-                            onchange={handleFieldVisibilityChange}
-                            name="showLogLevel"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Request ID in Title"
-                            checked={fieldVisibility.showRequestId}
-                            onchange={handleFieldVisibilityChange}
-                            name="showRequestId"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col slds-size_1-of-2">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Context in Title"
-                            checked={fieldVisibility.showContext}
-                            onchange={handleFieldVisibilityChange}
-                            name="showContext"
-                        ></lightning-input>
-                    </div>
-                </div>
-            </div>
-        </template>
 
         <lightning-tabset>
             <lightning-tab label="Log Event">

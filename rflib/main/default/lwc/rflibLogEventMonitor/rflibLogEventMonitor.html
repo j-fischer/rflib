@@ -43,17 +43,17 @@
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
                 <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning-icon size="medium" icon-name="utility:side_list" alternative-text="" title="Log Monitor"></lightning-icon>
+                    </div>
                     <div class="slds-media__body">
                         <div class="slds-page-header__name">
                             <div class="slds-page-header__name-title">
                                 <h1>
-                                    <span class="slds-page-header__title slds-truncate">
-                                        {numTotalRecords} Total Log Events
-                                    </span>
+                                    <span class="slds-page-header__title slds-truncate title">Log Monitor</span>
                                 </h1>
                             </div>
                         </div>
-                        <p class="slds-page-header__name-meta">Connection Status • {currentConnectionMode.label}</p>
                     </div>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
-                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
+                            <li class="slds-m-left_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-input
                                     type="datetime"
                                     name="startDate"
@@ -71,7 +71,7 @@
                                 >
                                 </lightning-input>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
+                            <li class="slds-m-left_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-input
                                     type="datetime"
                                     name="endDate"
@@ -81,21 +81,21 @@
                                 >
                                 </lightning-input>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
+                            <li class="slds-m-left_xx-small" lwc:if={isArchiveMode}>
                                 <button class="slds-button slds-button_neutral" onclick={queryArchive}>
                                     Query Archive
                                 </button>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
+                            <li class="slds-m-left_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-button-menu icon-name="utility:settings">
                                     <lightning-menu-item label="Clear Archive" onclick={clearArchive}>
                                     </lightning-menu-item>
                                 </lightning-button-menu>
                             </li>
-                            <li class="slds-m-horizontal_xx-small" lwc:if={isArchiveMode}>
+                            <li class="slds-m-left_xx-small" lwc:if={isArchiveMode}>
                                 <lightning-icon icon-name="utility:threedots_vertical"></lightning-icon>
                             </li>
-                            <li class="slds-m-horizontal_xx-small">
+                            <li class="slds-m-left_xx-small">
                                 <lightning-button-menu
                                     label={currentConnectionMode.label}
                                     onselect={changeConnectionMode}
@@ -111,7 +111,7 @@
                                     </template>
                                 </lightning-button-menu>
                             </li>
-                            <li class="slds-m-horizontal_xx-small">
+                            <li class="slds-m-left_xx-small">
                                 <button class="slds-button slds-button_neutral" onclick={clearLogs}>Clear Logs</button>
                             </li>
                         </ul>
@@ -119,9 +119,93 @@
                 </div>
             </div>
         </div>
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-meta">
+                <p class="slds-page-header__name-meta">{numTotalRecords} Total Log Events</p>
+                <p class="slds-page-header__name-meta">Connection Status • {currentConnectionMode.label}</p>
+            </div>
+            <div class="slds-page-header__col-controls">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control" lwc:if={hasLogEvent}>
+                        <ul class="slds-button-group-list">
+                            <li>
+                                <lightning-button-icon 
+                                    icon-name="utility:toggle_panel_left" 
+                                    variant="border-filled" size="large" 
+                                    title="List View Controls" 
+                                    onclick={handleToggleFullscreen}
+                                    >
+                                </lightning-button-icon>
+                            </li>
+                            <li>
+                                <lightning-button-icon
+                                    icon-name="utility:settings"
+                                    alternative-text="Field Visibility Settings"
+                                    title="Field Visibility Settings"
+                                    onclick={handleToggleShowSettings}>
+                                </lightning-button-icon>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <template lwc:if={showFieldSettings}>
+            <div class="slds-p-around_medium field-settings-panel">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Field Visibility Settings</h3>
+                <div class="slds-grid slds-gutters_small">
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Date"
+                            checked={fieldVisibility.showDate}
+                            onchange={handleFieldVisibilityChange}
+                            name="showDate"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Created By"
+                            checked={fieldVisibility.showCreatedBy}
+                            onchange={handleFieldVisibilityChange}
+                            name="showCreatedBy"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Log Level in Title"
+                            checked={fieldVisibility.showLogLevel}
+                            onchange={handleFieldVisibilityChange}
+                            name="showLogLevel"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Request ID in Title"
+                            checked={fieldVisibility.showRequestId}
+                            onchange={handleFieldVisibilityChange}
+                            name="showRequestId"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
+                            label="Show Context in Title"
+                            checked={fieldVisibility.showContext}
+                            onchange={handleFieldVisibilityChange}
+                            name="showContext"
+                        ></lightning-input>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
+    
 
-    <div class="slds-grid">
+    <div class="slds-grid slds-m-top_medium slds-gutters_x-small">
         <div class={leftColumnClass}>
             <lightning-card>
                 <c-rflib-log-event-list
@@ -146,13 +230,21 @@
                 </div>
             </lightning-card>
         </div>
-        <div class={rightColumnClass} lwc:if={hasLogEvent}>
-            <c-rflib-log-event-viewer
-                log-event={selectedLogEvent}
-                user-id={selectedLogEventCreatedById}
-                ontogglefullscreen={handleToggleFullscreen}
-                oncloseviewer={handleCloseViewer}
-            ></c-rflib-log-event-viewer>
+        <div class={rightColumnClass}>
+            <template lwc:if={hasLogEvent}>
+                <c-rflib-log-event-viewer
+                    log-event={selectedLogEvent}
+                    user-id={selectedLogEventCreatedById}
+                    ontogglefullscreen={handleToggleFullscreen}
+                    oncloseviewer={handleCloseViewer}
+                    field-visibility={fieldVisibility}
+                ></c-rflib-log-event-viewer>
+            </template>
+            <template lwc:else>
+                <lightning-card>
+                    <p class="slds-p-around_small">Please select a log event from the left</p>
+                </lightning-card>
+            </template>
         </div>
     </div>
 </template>

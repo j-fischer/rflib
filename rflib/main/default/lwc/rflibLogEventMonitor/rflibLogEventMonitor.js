@@ -35,6 +35,11 @@ import { CurrentPageReference } from 'lightning/navigation';
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
 
+import { loadStyle } from 'lightning/platformResourceLoader';
+import hideHeaderCSS from '@salesforce/resourceUrl/rflib_HidePageHeader';
+
+const FIELD_VISIBILITY_KEY = 'rflib_log_viewer_field_visibility';
+
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
 const CONNECTION_MODE = {
@@ -80,6 +85,15 @@ export default class LogEventMonitor extends LightningElement {
     subscription = null;
     showLeftColumn = true;
 
+    showFieldSettings = false;
+    fieldVisibility = {
+        showDate: true,
+        showCreatedBy: true,
+        showLogLevel: true,
+        showRequestId: true,
+        showContext: true
+    };
+
     get isArchiveMode() {
         return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
     }
@@ -89,16 +103,10 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     get leftColumnClass() {
-        if (!this.hasLogEvent) {
-            return 'slds-col slds-size_1-of-1 left-column';
-        }
         return this.showLeftColumn ? 'slds-col slds-size_7-of-12 left-column' : 'slds-hide';
     }
 
     get rightColumnClass() {
-        if (!this.hasLogEvent) {
-            return 'slds-hide';
-        }
         return this.showLeftColumn
             ? 'slds-col slds-size_5-of-12 container right-column'
             : 'slds-col slds-size_1-of-1 container right-column full-width';
@@ -177,6 +185,13 @@ export default class LogEventMonitor extends LightningElement {
                     _this.dispatchEvent(evt);
                 }
             });
+
+        loadStyle(this, hideHeaderCSS)
+        .catch(error => {
+            console.error('Error loading custom CSS for header hiding: ', error);
+        });
+
+        this.loadFieldVisibilitySettings();
     }
 
     disconnectedCallback() {
@@ -494,5 +509,54 @@ export default class LogEventMonitor extends LightningElement {
         this.selectedLogEvent = null;
         this.selectedLogEventCreatedById = null;
         this.showLeftColumn = true;
+    }
+
+    handleToggleShowSettings() {
+        this.showFieldSettings = !this.showFieldSettings;
+    }
+
+    handleFieldVisibilityChange(event) {
+        const fieldName = event.target.name;
+        const isChecked = event.target.checked;
+
+        logger.debug('Field visibility changed: {0}={1}', fieldName, isChecked);
+
+        this.fieldVisibility = {
+            ...this.fieldVisibility,
+            [fieldName]: isChecked
+        };
+
+        this.saveFieldVisibilitySettings();
+    }
+
+    saveFieldVisibilitySettings() {
+        try {
+            sessionStorage.setItem(FIELD_VISIBILITY_KEY, JSON.stringify(this.fieldVisibility));
+            logger.debug(
+                'Saved field visibility settings to session storage: {0}',
+                JSON.stringify(this.fieldVisibility)
+            );
+        } catch (error) {
+            logger.error('Failed to save field visibility settings to session storage: {0}', error.message);
+        }
+    }
+
+    loadFieldVisibilitySettings() {
+        try {
+            const stored = sessionStorage.getItem(FIELD_VISIBILITY_KEY);
+            if (stored) {
+                const parsedSettings = JSON.parse(stored);
+                this.fieldVisibility = {
+                    ...this.fieldVisibility,
+                    ...parsedSettings
+                };
+                logger.debug(
+                    'Loaded field visibility settings from session storage: {0}',
+                    JSON.stringify(this.fieldVisibility)
+                );
+            }
+        } catch (error) {
+            logger.error('Failed to load field visibility settings from session storage: {0}', error.message);
+        }
     }
 }
