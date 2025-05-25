@@ -132,17 +132,20 @@
                                 <lightning-button-icon 
                                     icon-name="utility:toggle_panel_left" 
                                     variant="border-filled" size="large" 
-                                    title="List View Controls" 
+                                    title={tooltipFullscreen} 
                                     onclick={handleToggleFullscreen}
+                                    tooltip={tooltipFullscreen}
                                     >
                                 </lightning-button-icon>
                             </li>
                             <li>
                                 <lightning-button-icon
                                     icon-name="utility:settings"
-                                    alternative-text="Field Visibility Settings"
-                                    title="Field Visibility Settings"
-                                    onclick={handleToggleShowSettings}>
+                                    alternative-text="Log visibility settings"
+                                    title="Log visibility settings"
+                                    onclick={handleToggleShowSettings}
+                                    tooltip="Log visibility settings"
+                                    >
                                 </lightning-button-icon>
                             </li>
                         </ul>

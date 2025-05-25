@@ -39,6 +39,7 @@
                     menu-alignment="right"
                     onselect={handleDownloadMenuSelect}
                     loading={isLoadingLogs}
+                    tooltip="Download log files"
                 >
                     <lightning-menu-item value="rflib-log" label="RFLIB Log File"> </lightning-menu-item>
                     <template if:true={hasApexLogs}>

@@ -504,6 +504,10 @@ export default class LogEventMonitor extends LightningElement {
         this.showLeftColumn = !this.showLeftColumn;
     }
 
+    get tooltipFullscreen() {
+        return this.showLeftColumn ? "Hide left panel" : "Show right list of log events";
+    }
+
     handleCloseViewer() {
         logger.debug('Closing log viewer');
         this.selectedLogEvent = null;
