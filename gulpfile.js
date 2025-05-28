@@ -402,6 +402,25 @@ gulp.task('evaluate-packages-to-install', function (done) {
     }
 });
 
+gulp.task('create-scratch-org', function (done) {
+    const skipCreation = process.argv.includes('--skip-creation');
+    const previewMode = process.argv.includes('--preview');
+    const omni = process.argv.includes('--omni');
+
+    if (!skipCreation) {
+        let createScratchTaskName = omni
+            ? 'shell-force-create-org-with-omni-default'
+            : 'shell-force-create-org-default';
+        if (previewMode) {
+            createScratchTaskName += '-preview';
+        }
+
+        gulp.series(createScratchTaskName)(done);
+    } else {
+        done();
+    }
+});
+
 // Shell tasks
 function shellTask(getCommand, ignoreErrors = false) {
     return function (done) {
@@ -616,7 +635,6 @@ gulp.task(
             `sf package install --package 04t3h000004RdLTAA0 -o ${config.alias} -w 10 &&` + //RFLIB@2.6.0-1
             `sf package install --package 04t3h000004jpyMAAQ -o ${config.alias} -w 10 &&` + //RFLIB-FS@1.0.2-1
             `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10 &&` + //RFLIB-TF@1.0.1
-            `sf package install --package 04tKY000000xcKvYAI -o ${config.alias} -w 10 &&` + //RFLIB-PHAROS@1.0.0
             `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex &&` +
             `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package} &&` +
             `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`
@@ -652,24 +670,7 @@ gulp.task(
     'create-scratch',
     gulp.series(
         'prompt-alias',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-            const omni = process.argv.includes('--omni');
-
-            if (!skipCreation) {
-                let createScratchTaskName = omni
-                    ? 'shell-force-create-org-with-omni-default'
-                    : 'shell-force-create-org-default';
-                if (previewMode) {
-                    createScratchTaskName += '-preview';
-                }
-
-                gulp.series(createScratchTaskName)(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-set-debug-mode',
         'shell-force-push',
         'shell-force-assign-permset',
@@ -693,20 +694,7 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-
-            if (!skipCreation) {
-                if (previewMode) {
-                    gulp.series('shell-force-create-org-preview')(done);
-                } else {
-                    gulp.series('shell-force-create-org')(done);
-                }
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-install-streaming-monitor',
@@ -728,20 +716,7 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-
-            if (!skipCreation) {
-                if (previewMode) {
-                    gulp.series('shell-force-create-org-preview')(done);
-                } else {
-                    gulp.series('shell-force-create-org')(done);
-                }
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'evaluate-packages-to-install',
         'shell-force-test-package-install-and-upgrade',
         'shell-force-configure-settings',
@@ -766,14 +741,7 @@ gulp.task(
     'test-install-all-packages',
     gulp.series(
         'prompt-alias',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            if (!skipCreation) {
-                gulp.series('shell-force-create-org')(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         shellTask(function() {
             const packages = getLatestPackageVersionIds();
             const commands = Object.keys(packages)
@@ -810,14 +778,7 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            if (!skipCreation) {
-                gulp.series('shell-force-create-org')(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-test',
