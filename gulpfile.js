@@ -129,13 +129,34 @@ function getLatestPackageVersionIds() {
     }, {});
 }
 
-// Confirm deletion of org
-gulp.task('confirm-deleteOrg', function () {
-    return gulp.src('*').pipe(
-        confirm({
-            question: 'Ready to delete org. Press "y" to continue or any other key to cancel...',
-            input: '_key:y'
-        })
+// Confirm deletion of org with proper cancellation
+gulp.task('confirm-deleteOrg', function (done) {
+    gulp.src('*').pipe(
+        prompt.prompt(
+            {
+                type: 'list',
+                name: 'confirmDeletion',
+                message: 'Do you want to delete the org?',
+                choices: [
+                    { name: 'Yes', value: true },
+                    { name: 'No', value: false }
+                ]
+            },
+            function (res) {
+                if (res.confirmDeletion) {
+                    // Run the delete org task when confirmed
+                    gulp.series('shell-force-delete-org')(function(err) {
+                        if (err) {
+                            gutil.log(gutil.colors.red('Error deleting org:'), err);
+                        }
+                        done(err);
+                    });
+                } else {
+                    gutil.log(gutil.colors.yellow('Org deletion cancelled by user'));
+                    done();
+                }
+            }
+        )
     );
 });
 
@@ -731,8 +752,7 @@ gulp.task(
         'shell-force-create-qa-user',
         'shell-force-open',
         'shell-force-test',
-        'confirm-deleteOrg',
-        'shell-force-delete-org'
+        'confirm-deleteOrg'
     )
 );
 
