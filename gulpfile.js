@@ -386,6 +386,22 @@ gulp.task('gitpush-origin', function (done) {
     });
 });
 
+gulp.task('evaluate-packages-to-install', function (done) {
+    if (process.argv.includes('--omni')) {
+        gulp.series('shell-force-install-omnistudio')(done);
+    } else {
+        done();
+    }
+    if (process.argv.includes('--pharos')) {
+        gulp.series(
+            'shell-force-install-pharos', 
+            'shell-pharos-post-install'
+        )(done);
+    } else {
+        done();
+    }
+});
+
 // Shell tasks
 function shellTask(getCommand, ignoreErrors = false) {
     return function (done) {
@@ -663,23 +679,7 @@ gulp.task(
         'shell-force-create-qa-user',
         'shell-force-install-streaming-monitor',
         'shell-force-install-bigobject-utility',
-        function installOmniStudio(done) {
-            if (process.argv.includes('--omni')) {
-                gulp.series('shell-force-install-omnistudio')(done);
-            } else {
-                done();
-            }
-        },
-        function installPharos(done) {
-            if (process.argv.includes('--pharos')) {
-                gulp.series(
-                    'shell-force-install-pharos', 
-                    'shell-pharos-post-install'
-                )(done);
-            } else {
-                done();
-            }
-        },
+        'evaluate-packages-to-install',
         'shell-force-open',
         'shell-force-test',
         'shell-test-lwc'
@@ -710,6 +710,8 @@ gulp.task(
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-install-streaming-monitor',
+        'shell-force-install-bigobject-utility',
+        'evaluate-packages-to-install',
         'shell-force-assign-permset',
         'shell-force-configure-settings',
         'shell-force-create-log-event',
@@ -740,6 +742,7 @@ gulp.task(
                 done();
             }
         },
+        'evaluate-packages-to-install',
         'shell-force-test-package-install-and-upgrade',
         'shell-force-configure-settings',
         'shell-force-create-log-event',
