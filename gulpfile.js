@@ -600,6 +600,7 @@ gulp.task(
             `sf package install --package 04t3h000004RdLTAA0 -o ${config.alias} -w 10 &&` + //RFLIB@2.6.0-1
             `sf package install --package 04t3h000004jpyMAAQ -o ${config.alias} -w 10 &&` + //RFLIB-FS@1.0.2-1
             `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10 &&` + //RFLIB-TF@1.0.1
+            `sf package install --package 04tKY000000xcKvYAI -o ${config.alias} -w 10 &&` + //RFLIB-PHAROS@1.0.0
             `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex &&` +
             `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package} &&` +
             `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`
