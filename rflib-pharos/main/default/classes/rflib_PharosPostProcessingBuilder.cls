@@ -37,6 +37,14 @@ public with sharing class rflib_PharosPostProcessingBuilder {
     public static Map<String, Boolean> getPostProcessingSettings() {
         Map<String, Boolean> postProcessingSettings = new Map<String, Boolean>();
         Map<String, rflib_Pharos_Post_Processing_Setting__c> settings = rflib_Pharos_Post_Processing_Setting__c.getAll();
+
+        // Unlocked packages do not support post-install scripts, so we need to ensure that
+        // the settings are created if they do not exist. This will avoid runtime errors.
+        // TODO: Consider what to do when new settings are added in later release. 
+        if (settings == null || settings.isEmpty()) {
+            new rflib_PharosPostInstallHandler().createDefaultSettings();
+            settings = rflib_Pharos_Post_Processing_Setting__c.getAll();
+        }
         
         // Add all keys from custom settings with their boolean values
         for (String settingName : settings.keySet()) {
