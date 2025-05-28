@@ -88,8 +88,8 @@ export default class LogEventMonitor extends LightningElement {
     showFieldSettings = false;
     fieldVisibility = {
         showDate: true,
-        showCreatedBy: true,
         showLogLevel: true,
+        showCreatedBy: true,
         showRequestId: true,
         showContext: true
     };

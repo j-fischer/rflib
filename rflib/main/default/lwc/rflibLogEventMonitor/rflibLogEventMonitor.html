@@ -169,6 +169,15 @@
                     <div class="slds-col">
                         <lightning-input
                             type="checkbox"
+                            label="Show Log Level"
+                            checked={fieldVisibility.showLogLevel}
+                            onchange={handleFieldVisibilityChange}
+                            name="showLogLevel"
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input
+                            type="checkbox"
                             label="Show Created By"
                             checked={fieldVisibility.showCreatedBy}
                             onchange={handleFieldVisibilityChange}
@@ -178,16 +187,7 @@
                     <div class="slds-col">
                         <lightning-input
                             type="checkbox"
-                            label="Show Log Level in Title"
-                            checked={fieldVisibility.showLogLevel}
-                            onchange={handleFieldVisibilityChange}
-                            name="showLogLevel"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Request ID in Title"
+                            label="Show Request ID"
                             checked={fieldVisibility.showRequestId}
                             onchange={handleFieldVisibilityChange}
                             name="showRequestId"
@@ -196,7 +196,7 @@
                     <div class="slds-col">
                         <lightning-input
                             type="checkbox"
-                            label="Show Context in Title"
+                            label="Show Context"
                             checked={fieldVisibility.showContext}
                             onchange={handleFieldVisibilityChange}
                             name="showContext"
