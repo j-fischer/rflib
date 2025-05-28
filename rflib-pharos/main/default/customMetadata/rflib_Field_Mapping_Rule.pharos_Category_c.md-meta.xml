@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>Simple_Field_Copy__c</field>
-        <value xsi:type="xsd:boolean">false</value>
+        <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>Target_Field__c</field>
@@ -16,15 +16,6 @@
     </values>
     <values>
         <field>Transformation_Formula__c</field>
-        <value xsi:type="xsd:string">CASE(
-    UPPER(Log_Level__c), 
-    &quot;FATAL&quot;, &quot;Error&quot;,
-    &quot;ERROR&quot;, &quot;Error&quot;,
-    &quot;WARN&quot;, &quot;Warning&quot;,
-    &quot;INFO&quot;, &quot;Debug&quot;,
-    &quot;DEBUG&quot;, &quot;Debug&quot;,
-    &quot;TRACE&quot;, &quot;Debug&quot;,
-    &quot;Error&quot;
-)</value>
+        <value xsi:type="xsd:string">Log_Source__c</value>
     </values>
 </CustomMetadata>
