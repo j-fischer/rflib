@@ -554,7 +554,7 @@ gulp.task(
 gulp.task(
     'shell-force-install-streaming-monitor',
     shellTask(function () {
-        return `sf package install --package 04t1t000003Po3QAAS -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
+        return `sf package install --package 04tJ5000000gP9WIAU -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
     }, true)
 );
 
