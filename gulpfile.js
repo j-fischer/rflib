@@ -129,13 +129,34 @@ function getLatestPackageVersionIds() {
     }, {});
 }
 
-// Confirm deletion of org
-gulp.task('confirm-deleteOrg', function () {
-    return gulp.src('*').pipe(
-        confirm({
-            question: 'Ready to delete org. Press "y" to continue or any other key to cancel...',
-            input: '_key:y'
-        })
+// Confirm deletion of org with proper cancellation
+gulp.task('confirm-deleteOrg', function (done) {
+    gulp.src('*').pipe(
+        prompt.prompt(
+            {
+                type: 'list',
+                name: 'confirmDeletion',
+                message: 'Do you want to delete the org?',
+                choices: [
+                    { name: 'Yes', value: true },
+                    { name: 'No', value: false }
+                ]
+            },
+            function (res) {
+                if (res.confirmDeletion) {
+                    // Run the delete org task when confirmed
+                    gulp.series('shell-force-delete-org')(function(err) {
+                        if (err) {
+                            gutil.log(gutil.colors.red('Error deleting org:'), err);
+                        }
+                        done(err);
+                    });
+                } else {
+                    gutil.log(gutil.colors.yellow('Org deletion cancelled by user'));
+                    done();
+                }
+            }
+        )
     );
 });
 
@@ -386,10 +407,47 @@ gulp.task('gitpush-origin', function (done) {
     });
 });
 
+gulp.task('evaluate-packages-to-install', function (done) {
+    if (process.argv.includes('--omni')) {
+        gulp.series('shell-force-install-omnistudio')(done);
+    } else {
+        done();
+    }
+    if (process.argv.includes('--pharos')) {
+        gulp.series(
+            'shell-force-install-pharos', 
+            'shell-pharos-post-install'
+        )(done);
+    } else {
+        done();
+    }
+});
+
+gulp.task('create-scratch-org', function (done) {
+    const skipCreation = process.argv.includes('--skip-creation');
+    const previewMode = process.argv.includes('--preview');
+    const omni = process.argv.includes('--omni');
+
+    if (!skipCreation) {
+        let createScratchTaskName = omni
+            ? 'shell-force-create-org-with-omni-default'
+            : 'shell-force-create-org-default';
+        if (previewMode) {
+            createScratchTaskName += '-preview';
+        }
+
+        gulp.series(createScratchTaskName)(done);
+    } else {
+        done();
+    }
+});
+
 // Shell tasks
-function shellTask(getCommand) {
+function shellTask(getCommand, ignoreErrors = false) {
     return function (done) {
-        return shell.task(getCommand())(done);
+        return shell.task(getCommand(), {
+            ignoreErrors: ignoreErrors
+        })(done);
     };
 }
 
@@ -448,7 +506,7 @@ gulp.task(
     'shell-force-assign-permset',
     shellTask(function () {
         return `sf org assign permset --name rflib_Ops_Center_Access --target-org ${config.alias} && sf org assign permset --name rflib_Create_Application_Event --target-org ${config.alias}`;
-    })
+    }, true)
 );
 
 gulp.task(
@@ -496,8 +554,8 @@ gulp.task(
 gulp.task(
     'shell-force-install-streaming-monitor',
     shellTask(function () {
-        return `sf package install --package 04t1t000003Po3QAAS -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
-    })
+        return `sf package install --package 04tJ5000000gP9WIAU -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
+    }, true)
 );
 
 gulp.task(
@@ -508,10 +566,24 @@ gulp.task(
 );
 
 gulp.task(
+    'shell-force-install-pharos',
+    shellTask(function () {
+        return `sf package install --package 04t5a000001g4x9AAA -o ${config.alias} -w 10`;
+    })
+);
+
+gulp.task(
+    'shell-force-install-pharos-triton',
+    shellTask(function () {
+        return `sf package install --package 04tbm0000005QbN -o ${config.alias} -w 10`;
+    })
+);
+
+gulp.task(
     'shell-force-install-omnistudio',
     shellTask(function () {
         return `sf package install --package 04t4W000000YWaz -o ${config.alias} -w 10 --no-prompt && sf org assign permsetlicense --name FinServ_FinancialServicesCloudStandardPsl --name BRERuntime --name OmniStudioRuntime -o ${config.alias} && sf org assign permset --name OmniStudioUser --name BRERuntime -o ${config.alias}`;
-    })
+    }, true)
 );
 
 gulp.task(
@@ -553,6 +625,13 @@ gulp.task(
     'shell-force-create-application-event',
     shellTask(function () {
         return `sf apex run -o ${config.alias} -f scripts/apex/CreateApplicationEvent.apex`;
+    })
+);
+
+gulp.task(
+    'shell-pharos-post-install',
+    shellTask(function () {
+        return `sf apex run -o ${config.alias} -f scripts/apex/RunPharosPostInstallHandler.apex`;
     })
 );
 
@@ -612,24 +691,7 @@ gulp.task(
     'create-scratch',
     gulp.series(
         'prompt-alias',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-            const omni = process.argv.includes('--omni');
-
-            if (!skipCreation) {
-                let createScratchTaskName = omni
-                    ? 'shell-force-create-org-with-omni-default'
-                    : 'shell-force-create-org-default';
-                if (previewMode) {
-                    createScratchTaskName += '-preview';
-                }
-
-                gulp.series(createScratchTaskName)(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-set-debug-mode',
         'shell-force-push',
         'shell-force-assign-permset',
@@ -639,13 +701,7 @@ gulp.task(
         'shell-force-create-qa-user',
         'shell-force-install-streaming-monitor',
         'shell-force-install-bigobject-utility',
-        function installOmniStudio(done) {
-            if (process.argv.includes('--omni')) {
-                gulp.series('shell-force-install-omnistudio')(done);
-            } else {
-                done();
-            }
-        },
+        'evaluate-packages-to-install',
         'shell-force-open',
         'shell-force-test',
         'shell-test-lwc'
@@ -659,23 +715,12 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-
-            if (!skipCreation) {
-                if (previewMode) {
-                    gulp.series('shell-force-create-org-preview')(done);
-                } else {
-                    gulp.series('shell-force-create-org')(done);
-                }
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-install-streaming-monitor',
+        'shell-force-install-bigobject-utility',
+        'evaluate-packages-to-install',
         'shell-force-assign-permset',
         'shell-force-configure-settings',
         'shell-force-create-log-event',
@@ -692,20 +737,8 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            const previewMode = process.argv.includes('--preview');
-
-            if (!skipCreation) {
-                if (previewMode) {
-                    gulp.series('shell-force-create-org-preview')(done);
-                } else {
-                    gulp.series('shell-force-create-org')(done);
-                }
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
+        'evaluate-packages-to-install',
         'shell-force-test-package-install-and-upgrade',
         'shell-force-configure-settings',
         'shell-force-create-log-event',
@@ -719,8 +752,7 @@ gulp.task(
         'shell-force-create-qa-user',
         'shell-force-open',
         'shell-force-test',
-        'confirm-deleteOrg',
-        'shell-force-delete-org'
+        'confirm-deleteOrg'
     )
 );
 
@@ -729,14 +761,7 @@ gulp.task(
     'test-install-all-packages',
     gulp.series(
         'prompt-alias',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            if (!skipCreation) {
-                gulp.series('shell-force-create-org')(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         shellTask(function() {
             const packages = getLatestPackageVersionIds();
             const commands = Object.keys(packages)
@@ -773,14 +798,7 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        function createScratchOrg(done) {
-            const skipCreation = process.argv.includes('--skip-creation');
-            if (!skipCreation) {
-                gulp.series('shell-force-create-org')(done);
-            } else {
-                done();
-            }
-        },
+        'create-scratch-org',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-test',

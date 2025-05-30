@@ -103,15 +103,29 @@ private class rflib_LoggerControllerTest {
         executeTestLogMessage('Foo');
         Test.stopTest();
     } 
+    
+    @IsTest
+    static void testLog_SetsLogSourceToBrowser() {
+        rflib_MockLoggerFactory mockLoggerFactory = new rflib_MockLoggerFactory();
+        rflib_LoggerUtil.loggerFactory = mockLoggerFactory;
+        
+        Test.startTest();
+        rflib_LoggerController.log('platformInfo', 'INFO', 'someContext', 'some message', 'stacktrace', 'LWC');
+        Test.stopTest();
+        
+        // Verify the log source is set to LWC (Browser)
+        System.assertEquals(rflib_LogSource.LWC.toString(), mockLoggerFactory.eventCapture.getEvent().Log_Source__c, 'Log source should be set to Browser');
+    }
 
     private static void executeTestLogMessage_UnsupportedLevels(String level) {
         String context = 'someContext';
         String message = 'some message';
         String platformInfo = '{"key": "some random platform info 123"}';
+        String stacktrace = 'some stacktrace';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo);
+        rflib_LoggerController.log(platformInfo, level, context, message, stacktrace, 'LWC');
         
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
     }
@@ -120,10 +134,11 @@ private class rflib_LoggerControllerTest {
         String context = 'someContext';
         String message = 'some message';
         String platformInfo = '{"key": "some random platform info 123"}';
+        String stacktrace = 'some stacktrace';
 
         System.assertEquals(0, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
-        rflib_LoggerController.log(level, context, message, platformInfo);
+        rflib_LoggerController.log(platformInfo, level, context, message, stacktrace, 'LWC');
 
         System.assertEquals(1, rflib_DefaultLogger.LOG_STATEMENTS.size());
 
@@ -133,5 +148,6 @@ private class rflib_LoggerControllerTest {
         System.assert(rflib_DefaultLogger.LOG_STATEMENTS.get(0).contains(message), 'Message should be part of the log statement');
         
         System.assertEquals(platformInfo, rflib_DefaultLogger.PLATFORM_INFO);
+        System.assertEquals(stacktrace, rflib_DefaultLogger.STACKTRACE);
     }
 }

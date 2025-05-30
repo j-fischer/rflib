@@ -32,6 +32,7 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
     public final DebugLogCapture debugLogCapture = new DebugLogCapture();
     public final EventCapture eventCapture = new EventCapture();
 
+    private final rflib_LogLevel reportingLogLevel;
     private final rflib_LogLevel systemDebugLogLevel;
 
     public rflib_MockLoggerFactory() {
@@ -39,14 +40,23 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
     }
 
     public rflib_MockLoggerFactory(rflib_LogLevel systemDebugLogLevel) {
-        this.systemDebugLogLevel = systemDebugLogLevel;
+        this(systemDebugLogLevel, null);
     }
 
+    public rflib_MockLoggerFactory(rflib_LogLevel systemDebugLogLevel, rflib_LogLevel reportingLogLevel) {
+        this.systemDebugLogLevel = systemDebugLogLevel;
+        this.reportingLogLevel = reportingLogLevel;
+    }
+    
     public rflib_Logger createLogger(String context) {
         rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
 
         if (systemDebugLogLevel != null) {
             result.setSystemDebugLevel(rflib_LogLevel.DEBUG);
+        }
+        
+        if (reportingLogLevel != null) {
+            result.setReportingLogLevel(reportingLogLevel);
         }
         return result;
     }
@@ -56,6 +66,10 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
 
         if (systemDebugLogLevel != null) {
             result.setSystemDebugLevel(rflib_LogLevel.DEBUG);
+        }
+        
+        if (reportingLogLevel != null) {
+            result.setReportingLogLevel(reportingLogLevel);
         }
         return result;
     }
@@ -159,6 +173,9 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
 
         public rflib_Log_Event__e getEvent(Integer index) {
+            if (capturedLogEvents == null || index >= capturedLogEvents.size()) {
+                throw new rflib_InvalidStateException('No log event captured at index ' + index);
+            }
             return capturedLogEvents[index];
         }
 
@@ -167,6 +184,9 @@ public class rflib_MockLoggerFactory implements rflib_LoggerFactory {
         }
 
         public rflib_Application_Event_Occurred_Event__e getAppEvent(Integer index) {
+            if (capturedAppEvents == null || index >= capturedAppEvents.size()) {
+                throw new rflib_InvalidStateException('No app event captured at index ' + index);
+            }
             return capturedAppEvents[index];
         }
 

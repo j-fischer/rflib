@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>pharos__Summary__c</label>
+    <protected>false</protected>
+    <values>
+        <field>Simple_Field_Copy__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Target_Field__c</field>
+        <value xsi:type="xsd:string">pharos__Summary__c</value>
+    </values>
+    <values>
+        <field>Target_Object__c</field>
+        <value xsi:type="xsd:string">pharos__Log__c</value>
+    </values>
+    <values>
+        <field>Transformation_Formula__c</field>
+        <value xsi:type="xsd:string">TEXT(CreatedDate) &amp; 
+CreatedById &amp; &quot; &quot; &amp; 
+BLANKVALUE(Context__c, &quot;N/A&quot;) &amp; &quot; &quot; &amp;
+BLANKVALUE(Log_Level__c, &quot;N/A&quot;) &amp; &quot; &quot; &amp;
+BLANKVALUE(Request_ID__c, &quot;N/A&quot;)</value>
+    </values>
+</CustomMetadata>

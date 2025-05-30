@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>If Pharos is installed in the org, log events can be published to the Pharos application for enhanced diagnostics and workflows.</description>
+        <name>Log_to_Pharos</name>
+        <label>Log to Pharos</label>
+        <locationX>176</locationX>
+        <locationY>170</locationY>
+        <actionName>rflib_PharosLogAction</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>logEvents</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_PharosLogAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>63.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <environments>Default</environments>
+    <interviewLabel>RFLIB Pharos Event Handler {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>RFLIB Pharos Event Handler</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Log_to_Pharos</targetReference>
+        </connector>
+        <flowRunAsUser>DefaultWorkflowUser</flowRunAsUser>
+        <object>rflib_Log_Event__e</object>
+        <triggerType>PlatformEvent</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

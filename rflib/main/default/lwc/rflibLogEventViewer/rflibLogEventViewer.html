@@ -155,6 +155,17 @@
                     </div>
                 </div>
             </lightning-tab>
+            <lightning-tab label="Stacktrace">
+                <div class="slds-m-around_medium">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <div class="slds-form-element__static slds-scrollable_y stacktrace">
+                                <pre><code>{logEvent.Stacktrace__c}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </lightning-tab>
         </lightning-tabset>
     </lightning-card>
 </template>

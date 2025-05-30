@@ -30,3 +30,12 @@ package-lock.json
 **/tsconfig.json
 
 **/*.ts
+
+# PHAROS
+**/pharos__*
+rflib/main/default/reports/prm*
+rflib/main/default/reportTypes/prm*
+rflib/main/default/reportTypes/MDF*
+rflib/main/default/dashboards/prm*
+rflib/main/default/emailservices/ErrorEmailHandler.xml-meta.xml
+rflib/main/default/PlatformEventSubscriberConfigs/PharosOrderEventTriggerConfig.platformEventSubscriberConfig-meta.xml
