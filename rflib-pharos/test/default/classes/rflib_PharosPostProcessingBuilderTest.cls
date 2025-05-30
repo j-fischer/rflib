@@ -54,8 +54,23 @@ private class rflib_PharosPostProcessingBuilderTest {
         // Execute test with no settings configured
         Map<String, Boolean> settings = rflib_PharosPostProcessingBuilder.getPostProcessingSettings();
         
-        // Verify results - map should be empty since no settings exist
-        System.assertEquals(0, settings.size());
+        // Verify that default settings were created
+        System.assertNotEquals(0, settings.size(), 'Default settings should have been created');
+        
+        // Verify that settings match the default values
+        Map<String, rflib_Pharos_Post_Processing_Setting__c> customSettings = rflib_Pharos_Post_Processing_Setting__c.getAll();
+        System.assertNotEquals(0, customSettings.size(), 'Custom settings should have been created');
+        
+        // Each setting in the map should match its corresponding custom setting
+        for (String settingName : settings.keySet()) {
+            rflib_Pharos_Post_Processing_Setting__c customSetting = customSettings.get(settingName);
+            System.assertNotEquals(null, customSetting, 'Custom setting should exist for ' + settingName);
+            System.assertEquals(
+                Boolean.valueOf(customSetting.Value__c), 
+                settings.get(settingName), 
+                'Setting value mismatch for ' + settingName
+            );
+        }
     }
     
     private static void setupTestSettings() {
