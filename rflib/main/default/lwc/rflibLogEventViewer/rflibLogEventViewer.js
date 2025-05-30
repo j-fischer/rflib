@@ -40,7 +40,6 @@ import PROFILE_FIELD from '@salesforce/schema/User.Profile.Name';
 const FIELDS = [NAME_FIELD, PHONE_FIELD, EMAIL_FIELD, PROFILE_FIELD];
 
 const APEX_LOG_DOWNLOAD_URL = '/servlet/servlet.FileDownload';
-const FIELD_VISIBILITY_KEY = 'rflib_log_viewer_field_visibility';
 
 const LOGGER = createLogger('rflibLogEventViewer');
 
@@ -52,14 +51,9 @@ export default class RflibLogEventViewer extends LightningElement {
     isLoadingLogs = false;
 
     @track user = {};
-    showFieldSettings = false;
-    fieldVisibility = {
-        showDate: true,
-        showCreatedBy: true,
-        showLogLevel: true,
-        showRequestId: true,
-        showContext: true
-    };
+
+    @api
+    fieldVisibility;
 
     @track processedLogMessages = [];
 
@@ -96,7 +90,6 @@ export default class RflibLogEventViewer extends LightningElement {
     }
 
     connectedCallback() {
-        this.loadFieldVisibilitySettings();
         if (this.logEvent?.Request_ID__c) {
             this.loadApexLogs();
         }
@@ -203,19 +196,9 @@ export default class RflibLogEventViewer extends LightningElement {
 
     get title() {
         const parts = [];
-
-        if (this.fieldVisibility.showRequestId && this.logEvent.Request_ID__c) {
-            parts.push(this.logEvent.Request_ID__c);
-        }
-
-        if (this.fieldVisibility.showLogLevel && this.logEvent.Log_Level__c) {
-            parts.push(this.logEvent.Log_Level__c);
-        }
-
-        if (this.fieldVisibility.showContext && this.logEvent.Context__c) {
-            parts.push(this.logEvent.Context__c);
-        }
-
+        parts.push(this.logEvent.Request_ID__c);
+        parts.push(this.logEvent.Log_Level__c);
+        parts.push(this.logEvent.Context__c);
         return parts.length > 0 ? parts.join(' - ') : 'Log Event';
     }
 
@@ -237,10 +220,6 @@ export default class RflibLogEventViewer extends LightningElement {
 
     get hasEvent() {
         return !!this.logEvent;
-    }
-
-    get isUserInfoNotAvailable() {
-        return !this.user.id;
     }
 
     get platformInfo() {
@@ -265,65 +244,6 @@ export default class RflibLogEventViewer extends LightningElement {
         return this.apexLogs?.length > 0 ? `(${this.apexLogs.length})` : '';
     }
 
-    toggleFieldSettings() {
-        LOGGER.debug('Toggling field settings visibility');
-        this.showFieldSettings = !this.showFieldSettings;
-    }
-
-    toggleFullscreen() {
-        LOGGER.debug('Toggling fullscreen mode');
-        this.dispatchEvent(new CustomEvent('togglefullscreen'));
-    }
-
-    closeViewer() {
-        LOGGER.debug('Closing log viewer');
-        this.dispatchEvent(new CustomEvent('closeviewer'));
-    }
-
-    handleFieldVisibilityChange(event) {
-        const fieldName = event.target.name;
-        const isChecked = event.target.checked;
-
-        LOGGER.debug('Field visibility changed: {0}={1}', fieldName, isChecked);
-
-        this.fieldVisibility = {
-            ...this.fieldVisibility,
-            [fieldName]: isChecked
-        };
-
-        this.saveFieldVisibilitySettings();
-    }
-
-    loadFieldVisibilitySettings() {
-        try {
-            const stored = sessionStorage.getItem(FIELD_VISIBILITY_KEY);
-            if (stored) {
-                const parsedSettings = JSON.parse(stored);
-                this.fieldVisibility = {
-                    ...this.fieldVisibility,
-                    ...parsedSettings
-                };
-                LOGGER.debug(
-                    'Loaded field visibility settings from session storage: {0}',
-                    JSON.stringify(this.fieldVisibility)
-                );
-            }
-        } catch (error) {
-            LOGGER.error('Failed to load field visibility settings from session storage: {0}', error.message);
-        }
-    }
-
-    saveFieldVisibilitySettings() {
-        try {
-            sessionStorage.setItem(FIELD_VISIBILITY_KEY, JSON.stringify(this.fieldVisibility));
-            LOGGER.debug(
-                'Saved field visibility settings to session storage: {0}',
-                JSON.stringify(this.fieldVisibility)
-            );
-        } catch (error) {
-            LOGGER.error('Failed to save field visibility settings to session storage: {0}', error.message);
-        }
-    }
 
     processLogMessages() {
         if (!this._logEvent?.Log_Messages__c) {
@@ -346,7 +266,7 @@ export default class RflibLogEventViewer extends LightningElement {
             }
 
             // Check for embedded JSON in the line
-            const processedLine = this.processLineWithEmbeddedJson(line, messageId);
+            const processedLine = this.processLineWithEmbeddedJson(line, messageId, i+1);
             messages.push(...processedLine.messages);
             messageId = processedLine.nextId;
         }
@@ -354,7 +274,7 @@ export default class RflibLogEventViewer extends LightningElement {
         this.processedLogMessages = messages;
     }
 
-    processLineWithEmbeddedJson(line, startId) {
+    processLineWithEmbeddedJson(line, startId, lineId) {
         const messages = [];
         let currentId = startId;
 
@@ -370,16 +290,16 @@ export default class RflibLogEventViewer extends LightningElement {
             if (match.index > lastIndex) {
                 const preText = line.substring(lastIndex, match.index).trim();
                 if (preText) {
-                    messages.push(this.createMessageObject(preText, currentId++, false));
+                    messages.push(this.createMessageObject(preText, currentId++, false, lineId));
                 }
             }
 
             // Check if this is valid JSON
             if (this.isValidJson(jsonCandidate)) {
-                messages.push(this.createMessageObject(jsonCandidate, currentId++, true));
+                messages.push(this.createMessageObject(jsonCandidate, currentId++, true, lineId));
             } else {
                 // If not valid JSON, treat as text
-                messages.push(this.createMessageObject(jsonCandidate, currentId++, false));
+                messages.push(this.createMessageObject(jsonCandidate, currentId++, false, lineId));
             }
 
             lastIndex = match.index + match[0].length;
@@ -389,13 +309,13 @@ export default class RflibLogEventViewer extends LightningElement {
         if (lastIndex < line.length) {
             const remainingText = line.substring(lastIndex).trim();
             if (remainingText) {
-                messages.push(this.createMessageObject(remainingText, currentId++, false));
+                messages.push(this.createMessageObject(remainingText, currentId++, false, lineId));
             }
         }
 
         // If no JSON found, treat the entire line as text
         if (messages.length === 0) {
-            messages.push(this.createMessageObject(line, currentId++, false));
+            messages.push(this.createMessageObject(line, currentId++, false, lineId));
         }
 
         return {
@@ -404,26 +324,23 @@ export default class RflibLogEventViewer extends LightningElement {
         };
     }
 
-    createMessageObject(content, id, forceJson = null) {
+    createMessageObject(content, id, forceJson = null, lineId) {
         const isJson = forceJson !== null ? forceJson : this.isValidJson(content.trim());
 
         if (isJson) {
             try {
                 const parsedJson = JSON.parse(content.trim());
                 const formattedJson = JSON.stringify(parsedJson, null, 2);
-                const preview = this.createJsonPreview(parsedJson);
+                const preview = this.createJsonPreview(content);
 
                 return {
                     id: id,
                     content: content,
                     isJson: true,
                     isText: false,
-                    isExpanded: false,
-                    isCollapsed: true,
                     formattedJson: formattedJson,
                     preview: preview,
-                    expandIcon: 'utility:chevronright',
-                    expandLabel: 'Expand JSON'
+                    lineId: lineId,
                 };
             } catch (e) {
                 // If parsing fails, treat as text
@@ -435,18 +352,8 @@ export default class RflibLogEventViewer extends LightningElement {
             content: content,
             isJson: false,
             isText: true,
-            isExpanded: false,
-            isCollapsed: false
+            lineId: lineId,
         };
-    }
-
-    isCompleteJson(text) {
-        try {
-            JSON.parse(text);
-            return true;
-        } catch (e) {
-            return false;
-        }
     }
 
     isValidJson(text) {
@@ -463,36 +370,8 @@ export default class RflibLogEventViewer extends LightningElement {
         }
     }
 
-    createJsonPreview(jsonObj) {
-        if (Array.isArray(jsonObj)) {
-            return `Array [${jsonObj.length} items]`;
-        }
-
-        if (typeof jsonObj === 'object' && jsonObj !== null) {
-            const keys = Object.keys(jsonObj);
-            const keyPreview = keys.slice(0, 3).join(', ');
-            const remaining = keys.length > 3 ? `, +${keys.length - 3} more` : '';
-            return `Object {${keyPreview}${remaining}}`;
-        }
-
-        return 'JSON Data';
+    createJsonPreview(content) {
+        return content.substring(0, 100);
     }
 
-    toggleJsonExpansion(event) {
-        const messageId = parseInt(event.currentTarget.dataset.messageId, 10);
-        const messageIndex = this.processedLogMessages.findIndex((msg) => msg.id === messageId);
-
-        if (messageIndex !== -1) {
-            const messages = [...this.processedLogMessages];
-            const message = { ...messages[messageIndex] };
-
-            message.isExpanded = !message.isExpanded;
-            message.isCollapsed = !message.isExpanded;
-            message.expandIcon = message.isExpanded ? 'utility:chevrondown' : 'utility:chevronright';
-            message.expandLabel = message.isExpanded ? 'Collapse JSON' : 'Expand JSON';
-
-            messages[messageIndex] = message;
-            this.processedLogMessages = messages;
-        }
-    }
 }
