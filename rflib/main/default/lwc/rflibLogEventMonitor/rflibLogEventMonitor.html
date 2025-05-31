@@ -44,7 +44,12 @@
             <div class="slds-page-header__col-title">
                 <div class="slds-media">
                     <div class="slds-media__figure">
-                        <lightning-icon size="medium" icon-name="utility:side_list" alternative-text="" title="Log Monitor"></lightning-icon>
+                        <lightning-icon
+                            size="medium"
+                            icon-name="utility:side_list"
+                            alternative-text=""
+                            title="Log Monitor"
+                        ></lightning-icon>
                     </div>
                     <div class="slds-media__body">
                         <div class="slds-page-header__name">
@@ -126,87 +131,60 @@
             </div>
             <div class="slds-page-header__col-controls">
                 <div class="slds-page-header__controls">
-                    <div class="slds-page-header__control" lwc:if={hasLogEvent}>
+                    <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
                             <li>
-                                <lightning-button-icon 
-                                    icon-name="utility:toggle_panel_left" 
-                                    variant="border-filled" size="large" 
-                                    title={tooltipFullscreen} 
+                                <lightning-button-icon
+                                    icon-name="utility:toggle_panel_left"
+                                    variant="border-filled"
+                                    size="large"
+                                    title={tooltipFullscreen}
                                     onclick={handleToggleFullscreen}
                                     tooltip={tooltipFullscreen}
-                                    >
+                                    disabled={isExpandButtonDisabled}
+                                >
                                 </lightning-button-icon>
                             </li>
                             <li>
-                                <lightning-button-icon
+                                <lightning-button-menu
                                     icon-name="utility:settings"
                                     alternative-text="Log visibility settings"
-                                    title="Log visibility settings"
-                                    onclick={handleToggleShowSettings}
-                                    tooltip="Log visibility settings"
-                                    >
-                                </lightning-button-icon>
+                                    menu-alignment="right"
+                                    onselect={handleFieldVisibilityMenuSelect}
+                                >
+                                    <lightning-menu-item
+                                        label="Show Date"
+                                        value="showDate"
+                                        checked={fieldVisibility.showDate}
+                                    ></lightning-menu-item>
+                                    <lightning-menu-item
+                                        label="Show Log Level"
+                                        value="showLogLevel"
+                                        checked={fieldVisibility.showLogLevel}
+                                    ></lightning-menu-item>
+                                    <lightning-menu-item
+                                        label="Show Created By"
+                                        value="showCreatedBy"
+                                        checked={fieldVisibility.showCreatedBy}
+                                    ></lightning-menu-item>
+                                    <lightning-menu-item
+                                        label="Show Request ID"
+                                        value="showRequestId"
+                                        checked={fieldVisibility.showRequestId}
+                                    ></lightning-menu-item>
+                                    <lightning-menu-item
+                                        label="Show Context"
+                                        value="showContext"
+                                        checked={fieldVisibility.showContext}
+                                    ></lightning-menu-item>
+                                </lightning-button-menu>
                             </li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
-        <template lwc:if={showFieldSettings}>
-            <div class="slds-p-around_medium field-settings-panel">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Field Visibility Settings</h3>
-                <div class="slds-grid slds-gutters_small">
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Date"
-                            checked={fieldVisibility.showDate}
-                            onchange={handleFieldVisibilityChange}
-                            name="showDate"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Log Level"
-                            checked={fieldVisibility.showLogLevel}
-                            onchange={handleFieldVisibilityChange}
-                            name="showLogLevel"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Created By"
-                            checked={fieldVisibility.showCreatedBy}
-                            onchange={handleFieldVisibilityChange}
-                            name="showCreatedBy"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Request ID"
-                            checked={fieldVisibility.showRequestId}
-                            onchange={handleFieldVisibilityChange}
-                            name="showRequestId"
-                        ></lightning-input>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-input
-                            type="checkbox"
-                            label="Show Context"
-                            checked={fieldVisibility.showContext}
-                            onchange={handleFieldVisibilityChange}
-                            name="showContext"
-                        ></lightning-input>
-                    </div>
-                </div>
-            </div>
-        </template>
     </div>
-    
 
     <div class="slds-grid slds-m-top_medium slds-gutters_x-small">
         <div class={leftColumnClass}>
@@ -234,7 +212,7 @@
             </lightning-card>
         </div>
         <div class={rightColumnClass}>
-            <template lwc:if={hasLogEvent}>
+            <template lwc:if={isLogEventSelected}>
                 <c-rflib-log-event-viewer
                     log-event={selectedLogEvent}
                     user-id={selectedLogEventCreatedById}

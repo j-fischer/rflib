@@ -85,7 +85,6 @@ export default class LogEventMonitor extends LightningElement {
     subscription = null;
     showLeftColumn = true;
 
-    showFieldSettings = false;
     fieldVisibility = {
         showDate: true,
         showLogLevel: true,
@@ -98,8 +97,12 @@ export default class LogEventMonitor extends LightningElement {
         return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
     }
 
-    get hasLogEvent() {
+    get isLogEventSelected() {
         return this.selectedLogEvent != null;
+    }
+
+    get isExpandButtonDisabled() {
+        return !this.isLogEventSelected;
     }
 
     get leftColumnClass() {
@@ -186,8 +189,7 @@ export default class LogEventMonitor extends LightningElement {
                 }
             });
 
-        loadStyle(this, hideHeaderCSS)
-        .catch(error => {
+        loadStyle(this, hideHeaderCSS).catch((error) => {
             console.error('Error loading custom CSS for header hiding: ', error);
         });
 
@@ -505,7 +507,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     get tooltipFullscreen() {
-        return this.showLeftColumn ? "Hide left panel" : "Show right list of log events";
+        return this.showLeftColumn ? 'Hide left panel' : 'Show right list of log events';
     }
 
     handleCloseViewer() {
@@ -515,19 +517,15 @@ export default class LogEventMonitor extends LightningElement {
         this.showLeftColumn = true;
     }
 
-    handleToggleShowSettings() {
-        this.showFieldSettings = !this.showFieldSettings;
-    }
+    handleFieldVisibilityMenuSelect(event) {
+        const fieldName = event.detail.value;
+        const currentValue = this.fieldVisibility[fieldName];
 
-    handleFieldVisibilityChange(event) {
-        const fieldName = event.target.name;
-        const isChecked = event.target.checked;
-
-        logger.debug('Field visibility changed: {0}={1}', fieldName, isChecked);
+        logger.debug('Field visibility changed: {0}={1}', fieldName, !currentValue);
 
         this.fieldVisibility = {
             ...this.fieldVisibility,
-            [fieldName]: isChecked
+            [fieldName]: !currentValue
         };
 
         this.saveFieldVisibilitySettings();
