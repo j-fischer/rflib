@@ -27,6 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import { LightningElement, api } from 'lwc';
+import { createLogger } from 'c/rflibLogger';
+
+const logger = createLogger('rflibLogEventViewerMessage');
 
 export default class RflibLogEventViewerMessage extends LightningElement {
     @api
@@ -38,6 +41,7 @@ export default class RflibLogEventViewerMessage extends LightningElement {
     isExpanded = false;
 
     toggleJsonExpansion() {
+        logger.debug('Toggling JSON expansion, current state={0}', this.isExpanded);
         this.isExpanded = !this.isExpanded;
     }
 
@@ -60,33 +64,39 @@ export default class RflibLogEventViewerMessage extends LightningElement {
 
     get processedMessage() {
         if (!this.message?.content) {
+            logger.debug('No message content found');
             return '';
         }
 
         if (!this.message.content.includes('|')) {
+            logger.debug('Message content does not contain structured format');
             return this.message.content;
         }
 
+        logger.debug('Processing structured message content');
         return this.parseStructuredMessage(this.message.content);
     }
 
     parseStructuredMessage(content) {
         const parts = content.split('|');
+        logger.debug('Split message into {0} parts', parts.length);
 
         if (parts.length < 6) {
+            logger.debug('Not enough parts for structured message, returning original content');
             return content;
         }
 
         const fields = this.extractFields(parts);
         const visibleFields = this.buildVisibleFields(fields);
 
+        logger.debug('Built {0} visible fields from message', visibleFields.length);
         return visibleFields.join(' | ');
     }
 
     extractFields(parts) {
         let messageStartIndex = 5;
 
-        return {
+        const fields = {
             date: parts[0] || '',
             logLevel: parts[1] || '',
             userId: parts[2] || '',
@@ -94,11 +104,30 @@ export default class RflibLogEventViewerMessage extends LightningElement {
             context: parts[4] || '',
             message: parts.slice(messageStartIndex).join('|')
         };
+
+        logger.debug(
+            'Extracted fields: date={0}, logLevel={1}, userId={2}, requestId={3}, context={4}',
+            fields.date,
+            fields.logLevel,
+            fields.userId,
+            fields.requestId,
+            fields.context
+        );
+
+        return fields;
     }
 
     buildVisibleFields(fields) {
-        const visibleFields = [];
+        logger.debug(
+            'Field visibility settings: showDate={0}, showLogLevel={1}, showCreatedBy={2}, showRequestId={3}, showContext={4}',
+            this.fieldVisibility.showDate,
+            this.fieldVisibility.showLogLevel,
+            this.fieldVisibility.showCreatedBy,
+            this.fieldVisibility.showRequestId,
+            this.fieldVisibility.showContext
+        );
 
+        const visibleFields = [];
         if (this.fieldVisibility.showDate && fields.date) {
             visibleFields.push(fields.date);
         }
