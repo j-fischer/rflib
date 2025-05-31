@@ -62,62 +62,67 @@ export default class RflibLogEventViewerMessage extends LightningElement {
         if (!this.message?.content) {
             return '';
         }
-        console.log(JSON.stringify(this.message));
-        console.log(this.message.id);
+
         if (!this.message.content.includes('|')) {
             return this.message.content;
         }
-        const parts = this.message.content.split('|');
-        let processedTextArray = [];
-        if (this.fieldVisibility.showDate) {
-            processedTextArray.push(parts[0]);
-        }
-        if (this.fieldVisibility.showLogLevel && parts[1]) {
-            processedTextArray.push(parts[1]);
-        }
-        if (this.fieldVisibility.showCreatedById && parts[2] && parts[2].startsWith('005')) {
-            processedTextArray.push(parts[2]);
-            if (this.fieldVisibility.showRequestId && parts[3] && parts.length >= 5) {
-                processedTextArray.push(parts[3]);
-                if (this.fieldVisibility.showContext && parts[4]) {
-                    processedTextArray.push(parts[4]);
-                }
-                if (parts[4]) {
-                    processedTextArray.push(parts.slice(5).join('|'));
-                }
-                return processedTextArray.join('|');
-            } else if (parts[3]) {
-                if (this.fieldVisibility.showContext && parts[3]) {
-                    processedTextArray.push(parts[3]);
-                }
-                if (parts[3]) {
-                    processedTextArray.push(parts.slice(4).join('|'));
-                }
-                return processedTextArray.join('|');
-            }
-        } else if (parts[2] && parts[2].startsWith('005')) {
-            if (this.fieldVisibility.showRequestId && parts[3] && parts.length >= 5) {
-                processedTextArray.push(parts[3]);
-                if (this.fieldVisibility.showContext && parts[4]) {
-                    processedTextArray.push(parts[4]);
-                }
-                processedTextArray.push(parts.slice(5).join('|'));
-                return processedTextArray.join('|');
-            }
-            if (parts[4]) {
-                if (this.fieldVisibility.showContext && parts[4]) {
-                    processedTextArray.push(parts[4]);
-                }
-                processedTextArray.push(parts.slice(5).join('|'));
 
-                return processedTextArray.join('|');
-            }
-        } else if (parts[2]) {
-            if (this.fieldVisibility.showContext) {
-                processedTextArray.push(parts[2]);
-            }
-            processedTextArray.push(parts.slice(3).join('|'));
+        return this.parseStructuredMessage(this.message.content);
+    }
+
+    parseStructuredMessage(content) {
+        const parts = content.split('|');
+
+        if (parts.length < 6) {
+            return content;
         }
-        return processedTextArray.join('|');
+
+        const fields = this.extractFields(parts);
+        const visibleFields = this.buildVisibleFields(fields);
+
+        return visibleFields.join(' | ');
+    }
+
+    extractFields(parts) {
+        let messageStartIndex = 5;
+
+        return {
+            date: parts[0] || '',
+            logLevel: parts[1] || '',
+            userId: parts[2] || '',
+            requestId: parts[3] || '',
+            context: parts[4] || '',
+            message: parts.slice(messageStartIndex).join('|')
+        };
+    }
+
+    buildVisibleFields(fields) {
+        const visibleFields = [];
+
+        if (this.fieldVisibility.showDate && fields.date) {
+            visibleFields.push(fields.date);
+        }
+
+        if (this.fieldVisibility.showLogLevel && fields.logLevel) {
+            visibleFields.push(fields.logLevel);
+        }
+
+        if (this.fieldVisibility.showCreatedBy && fields.userId) {
+            visibleFields.push(fields.userId);
+        }
+
+        if (this.fieldVisibility.showRequestId && fields.requestId) {
+            visibleFields.push(fields.requestId);
+        }
+
+        if (this.fieldVisibility.showContext && fields.context) {
+            visibleFields.push(fields.context);
+        }
+
+        if (fields.message) {
+            visibleFields.push(fields.message);
+        }
+
+        return visibleFields;
     }
 }
