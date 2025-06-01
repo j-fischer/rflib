@@ -223,7 +223,12 @@
             </template>
             <template lwc:else>
                 <lightning-card>
-                    <p class="slds-p-around_small">Please select a log event from the left</p>
+                    <div class="slds-text-align_center slds-p-around_large">
+                        <h3 class="slds-text-heading_medium slds-m-bottom_x-small">No Log Event Selected</h3>
+                        <p class="slds-text-body_regular slds-text-color_weak">
+                            Select a log event from the list to view its details and messages
+                        </p>
+                    </div>
                 </lightning-card>
             </template>
         </div>
