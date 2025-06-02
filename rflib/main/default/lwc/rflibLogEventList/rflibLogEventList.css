@@ -46,3 +46,21 @@
 .slds-table_striped tbody tr:nth-of-type(even).selected > td {
     background-color: var(--lwc-colorBackgroundRowNew);
 }
+
+.slds-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.slds-table thead th {
+    background-color: #fafbfc;
+    border-bottom: 2px solid #e5e5e5;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.slds-table tbody {
+    background-color: #ffffff;
+}

@@ -35,6 +35,11 @@ import { CurrentPageReference } from 'lightning/navigation';
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
 
+import { loadStyle } from 'lightning/platformResourceLoader';
+import hideHeaderCSS from '@salesforce/resourceUrl/rflib_HidePageHeader';
+
+const FIELD_VISIBILITY_KEY = 'rflib_log_viewer_field_visibility';
+
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
 const CONNECTION_MODE = {
@@ -78,13 +83,36 @@ export default class LogEventMonitor extends LightningElement {
     endDate = null;
 
     subscription = null;
+    showLeftColumn = true;
+
+    fieldVisibility = {
+        showDate: true,
+        showLogLevel: true,
+        showCreatedBy: true,
+        showRequestId: true,
+        showContext: true
+    };
 
     get isArchiveMode() {
         return this.currentConnectionMode === CONNECTION_MODE.ARCHIVE;
     }
 
-    get hasLogEvent() {
+    get isLogEventSelected() {
         return this.selectedLogEvent != null;
+    }
+
+    get isExpandButtonDisabled() {
+        return !this.isLogEventSelected;
+    }
+
+    get leftColumnClass() {
+        return this.showLeftColumn ? 'slds-col slds-size_7-of-12 left-column' : 'slds-hide';
+    }
+
+    get rightColumnClass() {
+        return this.showLeftColumn
+            ? 'slds-col slds-size_5-of-12 container right-column'
+            : 'slds-col slds-size_1-of-1 container right-column full-width';
     }
 
     @wire(CurrentPageReference)
@@ -92,6 +120,8 @@ export default class LogEventMonitor extends LightningElement {
         if (currentPageReference?.state?.c__debug) {
             logger.debug('Enabling EMP API debug mode');
             this.debugEnabled = true;
+        } else {
+            logger.debug('EMP API debug mode not enabled');
         }
     }
 
@@ -118,12 +148,14 @@ export default class LogEventMonitor extends LightningElement {
     connectedCallback() {
         let _this = this;
 
+        logger.debug('Initializing LogEventMonitor component');
         this.registerErrorListener();
 
         const messageCallback = function (msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
             _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
             _this.numTotalRecords = _this.capturedEvents.length;
+            logger.debug('Updated total records count to {0}', _this.numTotalRecords);
         };
 
         if (_this.debugEnabled) {
@@ -160,9 +192,16 @@ export default class LogEventMonitor extends LightningElement {
                     _this.dispatchEvent(evt);
                 }
             });
+
+        loadStyle(this, hideHeaderCSS).catch((error) => {
+            logger.error('Error loading custom CSS for header hiding: {0}', error.message);
+        });
+
+        this.loadFieldVisibilitySettings();
     }
 
     disconnectedCallback() {
+        logger.debug('Disconnecting LogEventMonitor component');
         this.unsubscribeConnection();
     }
 
@@ -221,6 +260,7 @@ export default class LogEventMonitor extends LightningElement {
                     _this.capturedEvents = result.records;
                     _this.numTotalRecords = result.records.length;
                     _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
+                    logger.debug('Archive query successful: retrieved {0} records', result.records.length);
 
                     if (result.queryLimit === _this.numTotalRecords) {
                         const evt = new ShowToastEvent({
@@ -267,6 +307,7 @@ export default class LogEventMonitor extends LightningElement {
                     logger.debug('New message received: ' + JSON.stringify(msg));
                     _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
                     _this.numTotalRecords = _this.capturedEvents.length;
+                    logger.debug('Updated total records count to {0}', _this.numTotalRecords);
                 };
 
                 logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
@@ -312,6 +353,7 @@ export default class LogEventMonitor extends LightningElement {
         this.numTotalRecords = 0;
         this.selectedLogEvent = null;
         this.selectedLogEventCreatedById = null;
+        logger.debug('Cleared all log data and selections');
     }
 
     clearArchive() {
@@ -327,6 +369,7 @@ export default class LogEventMonitor extends LightningElement {
                 this.numTotalRecords = 0;
                 this.selectedLogEvent = null;
                 this.selectedLogEventCreatedById = null;
+                logger.debug('Reset UI state before clearing archive');
 
                 clearArchive()
                     .then((result) => {
@@ -372,6 +415,7 @@ export default class LogEventMonitor extends LightningElement {
                 _this.capturedEvents = result.records;
                 _this.numTotalRecords = result.records.length;
                 _this.currentConnectionMode = CONNECTION_MODE.ARCHIVE;
+                logger.debug('Manual archive query successful: retrieved {0} records', result.records.length);
 
                 if (result.queryLimit === _this.numTotalRecords) {
                     const evt = new ShowToastEvent({
@@ -438,6 +482,12 @@ export default class LogEventMonitor extends LightningElement {
         this.page = eventDetails.currentPage;
         this.numDisplayedRecords = eventDetails.numDisplayedRecords;
         this.totalPages = Math.ceil(this.numDisplayedRecords / this.pageSize);
+        logger.debug(
+            'Updated pagination: page={0}, displayedRecords={1}, totalPages={2}',
+            this.page,
+            this.numDisplayedRecords,
+            this.totalPages
+        );
     }
 
     handlePageChange(event) {
@@ -451,6 +501,11 @@ export default class LogEventMonitor extends LightningElement {
 
         this.selectedLogEventCreatedById = logEvent.CreatedById || logEvent.CreatedById__c;
         this.selectedLogEvent = logEvent;
+        logger.debug(
+            'Selected log event details: createdById={0}, logLevel={1}',
+            this.selectedLogEventCreatedById,
+            logEvent.Log_Level__c
+        );
     }
 
     handleStartDateChanged(event) {
@@ -464,6 +519,69 @@ export default class LogEventMonitor extends LightningElement {
         if (this.endDate !== event.target.value) {
             logger.debug('End date changed={0}', event.target.value);
             this.endDate = event.target.value;
+        }
+    }
+
+    handleToggleFullscreen() {
+        logger.debug('Toggling left column visibility for fullscreen, current state={0}', this.showLeftColumn);
+        this.showLeftColumn = !this.showLeftColumn;
+    }
+
+    get tooltipFullscreen() {
+        return this.showLeftColumn ? 'Hide left panel' : 'Show right list of log events';
+    }
+
+    handleCloseViewer() {
+        logger.debug('Closing log viewer');
+        this.selectedLogEvent = null;
+        this.selectedLogEventCreatedById = null;
+        this.showLeftColumn = true;
+    }
+
+    handleFieldVisibilityMenuSelect(event) {
+        const fieldName = event.detail.value;
+        const currentValue = this.fieldVisibility[fieldName];
+
+        logger.debug('Field visibility changed: {0}={1}', fieldName, !currentValue);
+
+        this.fieldVisibility = {
+            ...this.fieldVisibility,
+            [fieldName]: !currentValue
+        };
+
+        this.saveFieldVisibilitySettings();
+    }
+
+    saveFieldVisibilitySettings() {
+        try {
+            sessionStorage.setItem(FIELD_VISIBILITY_KEY, JSON.stringify(this.fieldVisibility));
+            logger.debug(
+                'Saved field visibility settings to session storage: {0}',
+                JSON.stringify(this.fieldVisibility)
+            );
+        } catch (error) {
+            logger.error('Failed to save field visibility settings to session storage: {0}', error.message);
+        }
+    }
+
+    loadFieldVisibilitySettings() {
+        try {
+            const stored = sessionStorage.getItem(FIELD_VISIBILITY_KEY);
+            if (stored) {
+                const parsedSettings = JSON.parse(stored);
+                this.fieldVisibility = {
+                    ...this.fieldVisibility,
+                    ...parsedSettings
+                };
+                logger.debug(
+                    'Loaded field visibility settings from session storage: {0}',
+                    JSON.stringify(this.fieldVisibility)
+                );
+            } else {
+                logger.debug('No stored field visibility settings found, using defaults');
+            }
+        } catch (error) {
+            logger.error('Failed to load field visibility settings from session storage: {0}', error.message);
         }
     }
 }

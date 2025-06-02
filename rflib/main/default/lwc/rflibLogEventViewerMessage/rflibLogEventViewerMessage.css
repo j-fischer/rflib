@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2025 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,86 +26,83 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-:host {
-    display: contents;
-    cursor: pointer;
+ 
+.json-message {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    overflow: hidden;
 }
 
-.log-row {
-    border-bottom: 1px solid #e5e5e5;
+.json-header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
-.log-row:hover {
-    background-color: #f8f9fa;
-}
-
-.log-level {
+.json-label {
     font-weight: 600;
-    font-size: 0.75rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    text-align: center;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: #495057;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    width: 100%;
 }
 
-.level-error {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+.json-content {
+    margin: 0;
+    padding: 0.75rem;
+    background-color: inherit;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: #212529;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: none;
+    border-radius: 0;
+    overflow-x: auto;
 }
 
-.level-warn {
-    background-color: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fed7aa;
+.json-content code {
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    padding: 0;
 }
 
-.level-info {
-    background-color: #eff6ff;
-    color: #2563eb;
-    border: 1px solid #bfdbfe;
+.json-preview {
+    padding: 0.75rem;
+    font-style: italic;
+    color: #6c757d;
+    font-size: 0.875rem;
+    background-color: #ffffff;
 }
 
-.level-debug {
-    background-color: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
+.text-message {
+    padding: 0.25rem 0;
+    line-height: 1.5;
 }
 
-.level-trace {
-    background-color: #fafafa;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
+.text-message lightning-formatted-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
-.level-default {
-    background-color: #f9fafb;
-    color: #374151;
-    border: 1px solid #d1d5db;
+.wrapper {
+    line-height: 1.5;
+    padding: 0px 5px;
 }
 
-.log-row.level-error {
-    border-left: 3px solid #dc2626;
+.light {
+    background-color: #ffffff;
 }
 
-.log-row.level-warn {
-    border-left: 3px solid #d97706;
-}
-
-.log-row.level-info {
-    border-left: 3px solid #2563eb;
-}
-
-.log-row.level-debug {
-    border-left: 3px solid #16a34a;
-}
-
-.log-row.level-trace {
-    border-left: 3px solid #6b7280;
-}
-
-.log-row.level-default {
-    border-left: 3px solid #9ca3af;
+.dark {
+    background-color: #f7f7f7;
 }

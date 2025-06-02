@@ -27,30 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
 -->
 <template>
-    <td class="slds-truncate">
-        <div>
-            <lightning-formatted-date-time
-                value={createdDate}
-                year="numeric"
-                day="2-digit"
-                month="2-digit"
-                hour="2-digit"
-                minute="2-digit"
-                second="2-digit"
-            >
-            </lightning-formatted-date-time>
-        </div>
-    </td>
-    <td class="slds-truncate">
-        <div>{createdBy}</div>
-    </td>
-    <td class="slds-truncate">
-        <div>{evt.Request_ID__c}</div>
-    </td>
-    <td>
-        <div class="slds-truncate">{evt.Log_Level__c}</div>
-    </td>
-    <td>
-        <div class="slds-truncate">{evt.Context__c}</div>
-    </td>
+    <tr class={rowClass}>
+        <td class="slds-truncate">
+            <div>
+                <lightning-formatted-date-time
+                    value={createdDate}
+                    year="numeric"
+                    day="2-digit"
+                    month="2-digit"
+                    hour="2-digit"
+                    minute="2-digit"
+                    second="2-digit"
+                >
+                </lightning-formatted-date-time>
+            </div>
+        </td>
+        <td class="slds-truncate">
+            <div>{createdBy}</div>
+        </td>
+        <td class="slds-truncate">
+            <div>{evt.Request_ID__c}</div>
+        </td>
+        <td>
+            <div class={logLevelClass}>{evt.Log_Level__c}</div>
+        </td>
+        <td>
+            <div class="slds-truncate">{evt.Context__c}</div>
+        </td>
+    </tr>
 </template>

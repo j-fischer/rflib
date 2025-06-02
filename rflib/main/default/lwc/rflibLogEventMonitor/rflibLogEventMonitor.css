@@ -30,3 +30,11 @@
 .flex-layout {
     align-items: stretch;
 }
+
+.full-width {
+    width: 100%;
+}
+
+.title {
+    font-size: 1.5rem;
+}

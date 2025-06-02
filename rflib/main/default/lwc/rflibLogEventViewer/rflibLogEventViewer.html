@@ -1,31 +1,31 @@
 <!--
-    * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
-    * All rights reserved.
-    *
-    * Redistribution and use in source and binary forms, with or without
-    * modification, are permitted provided that the following conditions are met:
-    *
-    * 1. Redistributions of source code must retain the above copyright notice,
-    *    this list of conditions and the following disclaimer.
-    * 2. Redistributions in binary form must reproduce the above copyright
-    *    notice, this list of conditions and the following disclaimer in the
-    *    documentation and/or other materials provided with the distribution.
-    * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
-    *    contributors may be used to endorse or promote products derived from
-    *    this software without specific prior written permission.
-    *
-    * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-    * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    * POSSIBILITY OF SUCH DAMAGE.
-    -->
+  * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+  *
+  * 1. Redistributions of source code must retain the above copyright notice,
+  *    this list of conditions and the following disclaimer.
+  * 2. Redistributions in binary form must reproduce the above copyright
+  *    notice, this list of conditions and the following disclaimer in the
+  *    documentation and/or other materials provided with the distribution.
+  * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+  *    contributors may be used to endorse or promote products derived from
+  *    this software without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  * POSSIBILITY OF SUCH DAMAGE.
+  -->
 <template>
     <lightning-card title={title} icon-name="utility:summarydetail" lwc:if={hasEvent}>
         <div class="download-container" lwc:dom="manual"></div>
@@ -39,9 +39,10 @@
                     menu-alignment="right"
                     onselect={handleDownloadMenuSelect}
                     loading={isLoadingLogs}
+                    tooltip="Download log files"
                 >
                     <lightning-menu-item value="rflib-log" label="RFLIB Log File"> </lightning-menu-item>
-                    <template if:true={hasApexLogs}>
+                    <template lwc:if={hasApexLogs}>
                         <lightning-menu-divider></lightning-menu-divider>
                         <template for:each={apexLogs} for:item="log">
                             <lightning-menu-item
@@ -53,7 +54,7 @@
                             </lightning-menu-item>
                         </template>
                     </template>
-                    <template if:false={hasApexLogs}>
+                    <template lwc:else>
                         <lightning-menu-divider></lightning-menu-divider>
                         <lightning-menu-item
                             value="no-logs"
@@ -91,9 +92,6 @@
                     <div class="slds-form-element">
                         <span class="slds-form-element__label">Created By</span>
                         <div class="slds-form-element__control slds-border_bottom">
-                            <template lwc:if={isUserInfoNotAvailable}>
-                                <div class="slds-form-element__static">User ID: {createdBy}</div>
-                            </template>
                             <template lwc:if={user.id}>
                                 <div class="slds-form-element__static slds-grid">
                                     <div class="slds-col slds-size_1-of-2">
@@ -106,13 +104,23 @@
                                     </div>
                                 </div>
                             </template>
+                            <template lwc:else>
+                                <div class="slds-form-element__static">User ID: {createdBy}</div>
+                            </template>
                         </div>
                     </div>
                     <div class="slds-form-element">
                         <span class="slds-form-element__label">Log Messages</span>
                         <div class="slds-form-element__control slds-border_bottom">
                             <div class="slds-form-element__static slds-scrollable_y logMessages">
-                                <lightning-formatted-text value={logEvent.Log_Messages__c}></lightning-formatted-text>
+                                <template for:each={processedLogMessages} for:item="message">
+                                    <c-rflib-log-event-viewer-message
+                                        key={message.id}
+                                        message={message}
+                                        field-visibility={fieldVisibility}
+                                    >
+                                    </c-rflib-log-event-viewer-message>
+                                </template>
                             </div>
                         </div>
                     </div>

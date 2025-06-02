@@ -1,0 +1,29 @@
+<template>
+    <div class={wrapperClass}>
+        <template lwc:if={message.isJson}>
+            <div class="json-message">
+                <div class="json-header">
+                    <lightning-button-icon
+                        icon-name={expandIcon}
+                        alternative-text={expandLabel}
+                        title={expandLabel}
+                        size="medium"
+                        variant="bare"
+                        onclick={toggleJsonExpansion}
+                        data-message-id={message.id}
+                        tooltip="Expand-Collapse JSON"
+                    ></lightning-button-icon>
+                    <span class="json-label">{message.preview}</span>
+                </div>
+                <template lwc:if={isExpanded}>
+                    <pre class="json-content"><code>{message.formattedJson}</code></pre>
+                </template>
+            </div>
+        </template>
+        <template lwc:if={message.isText}>
+            <div class="text-message">
+                <lightning-formatted-text value={processedMessage}></lightning-formatted-text>
+            </div>
+        </template>
+    </div>
+</template>
