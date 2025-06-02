@@ -649,17 +649,22 @@ gulp.task(
     })
 );
 
-gulp.task(
-    'shell-force-test-package-install-and-upgrade',
+gulp.task('shell-force-test-package-install-and-upgrade',
     shellTask(function () {
-        return (
+        const skipBaseInstall = process.argv.includes('--skip-base-install');
+        const basePackages = [
             `sf package install --package 04t3h000004RdLTAA0 -o ${config.alias} -w 10 &&` + //RFLIB@2.6.0-1
             `sf package install --package 04t3h000004jpyMAAQ -o ${config.alias} -w 10 &&` + //RFLIB-FS@1.0.2-1
-            `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10 &&` + //RFLIB-TF@1.0.1
+            `sf package install --package 04t3h000004jnfBAAQ -o ${config.alias} -w 10` //RFLIB-TF@1.0.1
+        ];
+
+        const upgradeCommands = [
             `sf apex run -o ${config.alias} -f scripts/apex/CreateLogEvent.apex &&` +
             `sf texei package dependencies install -u ${config.alias} --packages ${config.package.package} &&` +
             `sf package install --package ${config.package.latestVersionAlias} -o ${config.alias} -w 10`
-        );
+        ];
+
+        return skipBaseInstall ? upgradeCommands.join(' && ') : [...basePackages, ...upgradeCommands].join(' && ');
     })
 );
 
@@ -731,8 +736,7 @@ gulp.task(
 );
 
 // Test package upgrade
-gulp.task(
-    'test-package-upgrade',
+gulp.task('test-package-upgrade',
     gulp.series(
         'prompt-alias',
         'prompt-selectPackage',
@@ -749,7 +753,13 @@ gulp.task(
                 done();
             }
         },
-        'shell-force-create-qa-user',
+        function createQAUser(done) {
+            if (!process.argv.includes('--skip-base-install')) {
+                gulp.series('shell-force-create-qa-user')(done);
+            } else {
+                done();
+            }
+        },
         'shell-force-open',
         'shell-force-test',
         'confirm-deleteOrg'
