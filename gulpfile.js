@@ -568,7 +568,7 @@ gulp.task(
 gulp.task(
     'shell-force-install-pharos',
     shellTask(function () {
-        return `sf package install --package 04t5a000001g4x9AAA -o ${config.alias} -w 10`;
+        return `sf package install --package 04tKW000000keZf -o ${config.alias} -w 10`;
     })
 );
 
