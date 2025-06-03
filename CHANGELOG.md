@@ -1,3 +1,11 @@
+### RFLIB-PHAROS 1.0.0
+
+Package ID: 04tKY000000xdPTYAY
+Package Alias: RFLIB@1.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xdPTYAY
+
+- [PR #114](https://github.com/j-fischer/rflib/pull/114) Initial version of the Pharos integration, which is fully configurable to accommodate future Pharos versions without requiring code changes. See [https://pharos.ai/](https://pharos.ai/) and the [Getting Started with Pharos Integration](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Pharos-Integration) Wiki page for more information.
+
 ### RFLIB 10.0.0
 
 Package ID: 04tKY000000xdPOYAY

@@ -42,6 +42,12 @@ The following lists describe some of the key features of rflib.
 - Fully configurable trigger management (activation, order, error handling, etc) using Custom Metadata Types
 - [Framework for Retryable Actions](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Retryable-Actions) using Platform Events for asynchronous actions with automatic retries
 
+#### Pharos AI Integration (package RFLIB-PHAROS):
+
+- Seamless integration with Pharos AI to increased operational support, investigative support and issue management.
+- Fully configurable using Custom Settings and the `Field Mapping` Custom Metadata object.
+- Does not have direct package dependency, integration works entirely through Platform Events.
+
 ## Deploy
 
 **The best way to add RFLIB to your environment is by installing the unlocked package.**
@@ -72,6 +78,9 @@ sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
 
 rem RFLIB-TF 3.0.2
 sf package install --package 04tKY000000xAF1YAM --target-org <your org alias>
+
+rem RFLIB-PHAROS 1.0.0
+sf package install --package 04tKY000000xdPTYAY --target-org <your org alias>
 ```
 
 To deploy code:
@@ -151,6 +160,7 @@ See [CHANGELOG file](https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md
 - Thanks to Numaan Mahammad for Big Object Utility: https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000EcvSsUAJ
 - Thanks to Pearl Lee (@thetechbee) and Aleksandra Radovanovic (@\_AleksM) for being such amazing supporters of my work and this library
 - Thanks to [Jonathan Gillespie](https://github.com/jongpie) for the ongoing support and PR contributions
+- Thanks to the [Pharos AI Team](https://pharos.ai/) for the great collaboration.
 
 ## Attribution
 
