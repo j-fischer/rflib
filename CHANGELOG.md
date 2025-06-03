@@ -1,3 +1,12 @@
+### RFLIB 10.0.0
+
+Package ID: 04tKY000000xdPOYAY
+Package Alias: RFLIB@10.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000xdPOYAY
+
+- [PR #116](https://github.com/j-fischer/rflib/pull/116) Introduced several enhancements to the Log Monitor, including field visibility settings, improved JSON content display, message highlighting by log level, and a full-screen viewing mode. These improvements collectively make log events easier to read, navigate, and analyze through better visual organization and user interface guidance. [Feature Request #113](https://github.com/j-fischer/rflib/issues/113)
+- [PR #114](https://github.com/j-fischer/rflib/pull/114) Enhanced Log Event by adding stacktrace support and improved log source tracking (Apex/Flow/LWC). Stacktraces are now visibile in the Log Event Viewer under a dedicated tab.
+
 ### RFLIB 9.4.0
 
 Package ID: 04tKY000000xX6HYAU
