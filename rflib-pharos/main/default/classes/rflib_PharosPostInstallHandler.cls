@@ -26,7 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-public with sharing class rflib_PharosPostInstallHandler implements InstallHandler {
+@SuppressWarnings('PMD.ClassNamingConventions')
+ public with sharing class rflib_PharosPostInstallHandler implements InstallHandler {
     
     /**
      * Implements the InstallHandler interface to create default post-processing settings

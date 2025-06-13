@@ -26,6 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+@SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_PharosPostProcessingBuilder {
     
     /**
