@@ -28,13 +28,18 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_PharosLogAction {
-    
+
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PharosLogAction');
     
-    private static final String PHAROS_LOG_OBJECT = 'pharos__Log__c';
     private static final String PHAROS_LOG_EVENT_OBJECT = 'pharos__Log_Event__e';
     private static final String PHAROS_LOG_EVENT_OBJECT_BODY = 'pharos__Body__c';
     private static final String PHAROS_POST_PROCESSING_SETTINGS_FIELD = 'pharos__Post_Processing_Settings__c';
+    
+    @TestVisible
+    private static String PHAROS_LOG_OBJECT = 'pharos__Log__c';
+
+    @TestVisible
+    private static rflib_EventPublisher EVENT_PUBLISHER = new rflib_EventBusPublisher();
     
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
@@ -87,10 +92,16 @@ public class rflib_PharosLogAction {
             if (!pharosLogs.isEmpty()) {
                 LOGGER.info('Created {0} Pharos Log records', new Object[] { pharosLogs.size() });
                 
-                SObject pharosLogEvent = Schema.getGlobalDescribe().get(PHAROS_LOG_EVENT_OBJECT).newSObject();
+                SObjectType pharosLogEventType = Schema.getGlobalDescribe().get(PHAROS_LOG_EVENT_OBJECT);
+                if (pharosLogEventType == null) {
+                    LOGGER.error('Pharos Log Event object not found in schema. Ensure the Pharos package is installed.');
+                    return;
+                }
+
+                SObject pharosLogEvent = pharosLogEventType.newSObject();
                 pharosLogEvent.put(PHAROS_LOG_EVENT_OBJECT_BODY, JSON.serialize(pharosLogs));
                 
-                EventBus.publish(pharosLogEvent);
+                EVENT_PUBLISHER.publish(pharosLogEvent);
             }         
         } catch (Exception ex) {
             LOGGER.error('Failed to create Pharos Log records', ex);

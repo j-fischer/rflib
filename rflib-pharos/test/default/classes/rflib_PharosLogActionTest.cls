@@ -30,10 +30,17 @@
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_PharosLogActionTest {
     
+    private static final rflib_MockEventPublisher MOCK_EVENT_PUBLISHER = new rflib_MockEventPublisher();
+
+    private static Boolean isPharosPackageInstalled() {
+        return Schema.getGlobalDescribe().get(rflib_PharosLogAction.PHAROS_LOG_OBJECT) != null;
+    }
+
     @IsTest
     static void testCreatePharosLogRecords_Success() {
         // Setup
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         setupPostProcessingSettings();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
@@ -42,7 +49,7 @@ private class rflib_PharosLogActionTest {
         
         List<rflib_Log_Event__e> logEvents = new List<rflib_Log_Event__e>{
             createLogEvent('ERROR', 'Test error message', 'TestContext', 'REQ-001'),
-            createLogEvent('WARN', 'Test warning message', 'TestContext', 'REQ-002')
+            createLogEvent('FATAL', 'Test fatal message', 'TestContext', 'REQ-002')
         };
         
         // Act
@@ -50,15 +57,26 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert - verify that the method executed without exceptions
-        // Since we can't directly verify platform event publishing in unit tests,
-        // we verify the method completed successfully by reaching this point
-        System.assert(true, 'Method executed successfully');
+        // Assert - verify the method executed successfully
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        
+        // If Pharos package is installed, verify event was published correctly
+        if (isPharosPackageInstalled()) {
+            String eventTypeName = publishedEvent.getSObjectType().getDescribe().getName();
+            System.assert(eventTypeName.endsWith('Log_Event__e'), 'Should publish a Log_Event__e type: ' + eventTypeName);
+            
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(2, pharosLogs.size(), 'Should have 2 Pharos log records');
+        } else {
+            // If package is not installed, verify no event was published
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
     }
     
     @IsTest
     static void testCreatePharosLogRecords_PharosLoggingDisabled() {
         // Setup
+        setupEventPublisher();
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
         settings.Pharos_Log_Level__c = 'NONE';
         upsert settings;
@@ -72,14 +90,17 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert - method should return early when Pharos logging is disabled
-        System.assert(true, 'Method executed successfully with disabled logging');
+        // Assert - no event should be published when Pharos logging is disabled
+        System.assertEquals(null, MOCK_EVENT_PUBLISHER.capturedPlatformEvent, 'No event should be published when logging is disabled');
     }
     
     @IsTest
     static void testCreatePharosLogRecords_PharosObjectNotFound() {
-        // Setup - use an invalid object type to simulate package not installed
-        setupTestFieldMappingRules();
+        rflib_PharosLogAction.PHAROS_LOG_OBJECT = 'rflib_DoesNotExist'; // Simulate Pharos Log object not found
+        
+        // Setup
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
         settings.Pharos_Log_Level__c = 'ERROR';
@@ -94,14 +115,16 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert - method should handle missing Pharos objects gracefully
-        System.assert(true, 'Method executed successfully with missing objects');
+        // Assert - no event should be published when Pharos package is not installed
+        System.assertEquals(null, MOCK_EVENT_PUBLISHER.capturedPlatformEvent, 
+            'No event should be published when Pharos package is not installed');
     }
     
     @IsTest
     static void testCreatePharosLogRecords_LogLevelFiltering() {
         // Setup
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         setupPostProcessingSettings();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
@@ -121,14 +144,22 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert - verify method executed without exceptions
-        System.assert(true, 'Method executed successfully with log level filtering');
+        // Assert - verify only ERROR and FATAL level events were processed
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        
+        if (isPharosPackageInstalled()) {
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(2, pharosLogs.size(), 'Should only process ERROR and FATAL level events');
+        } else {
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
     }
     
     @IsTest
     static void testCreatePharosLogRecords_WarnLogLevel() {
         // Setup
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         setupPostProcessingSettings();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
@@ -146,43 +177,26 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert
-        System.assert(true, 'Method executed successfully with WARN log level');
-    }
-    
-    @IsTest
-    static void testCreatePharosLogRecords_InfoLogLevel() {
-        // Setup
-        setupTestFieldMappingRules();
-        setupPostProcessingSettings();
+        // Assert - verify ERROR and WARN level events were processed
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
         
-        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
-        settings.Pharos_Log_Level__c = 'INFO';
-        upsert settings;
-        
-        List<rflib_Log_Event__e> logEvents = new List<rflib_Log_Event__e>{
-            createLogEvent('ERROR', 'This should be processed', 'TestContext', 'REQ-001'),
-            createLogEvent('INFO', 'This should be processed', 'TestContext', 'REQ-002'),
-            createLogEvent('DEBUG', 'This should NOT be processed', 'TestContext', 'REQ-003')
-        };
-        
-        // Act
-        Test.startTest();
-        rflib_PharosLogAction.createPharosLogRecords(logEvents);
-        Test.stopTest();
-        
-        // Assert
-        System.assert(true, 'Method executed successfully with INFO log level');
+        if (isPharosPackageInstalled()) {
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(2, pharosLogs.size(), 'Should process ERROR and WARN level events');
+        } else {
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
     }
     
     @IsTest
     static void testCreatePharosLogRecords_UnsupportedLogLevel() {
         // Setup
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         setupPostProcessingSettings();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
-        settings.Pharos_Log_Level__c = 'TRACE'; // Unsupported level
+        settings.Pharos_Log_Level__c = 'INFO'; // Unsupported level
         upsert settings;
         
         List<rflib_Log_Event__e> logEvents = new List<rflib_Log_Event__e>{
@@ -194,8 +208,15 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert - should default to WARN level
-        System.assert(true, 'Method executed successfully with unsupported log level');
+        // Assert - should default to WARN level and process ERROR event if package is installed
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        
+        if (isPharosPackageInstalled()) {
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(1, pharosLogs.size(), 'Should process ERROR event with default WARN level');
+        } else {
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
     }
     
     @IsTest
@@ -235,7 +256,8 @@ private class rflib_PharosLogActionTest {
     @IsTest
     static void testCreatePharosLogRecords_NoPostProcessingSettings() {
         // Setup - don't setup post processing settings
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
         settings.Pharos_Log_Level__c = 'ERROR';
@@ -250,17 +272,22 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert
-        System.assert(true, 'Method executed successfully without post processing settings');
+        // Assert - event should still be published if package is installed
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        
+        if (isPharosPackageInstalled()) {
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(1, pharosLogs.size(), 'Should process ERROR event without post processing settings');
+        } else {
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
     }
     
     @IsTest
     static void testMatchesConfiguredLogLevel_ErrorLevel() {
-        // This method tests the private matchesConfiguredLogLevel method indirectly
-        // by testing scenarios where it would be called
-        
         // Setup
-        setupTestFieldMappingRules();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForPharos();
         
         rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
         settings.Pharos_Log_Level__c = 'ERROR';
@@ -277,8 +304,41 @@ private class rflib_PharosLogActionTest {
         rflib_PharosLogAction.createPharosLogRecords(logEvents);
         Test.stopTest();
         
-        // Assert
-        System.assert(true, 'Log level matching executed successfully');
+        // Assert - only FATAL and ERROR should be processed
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        if (isPharosPackageInstalled()) {
+            List<Object> pharosLogs = getPharosLogsFromEvent(publishedEvent);
+            System.assertEquals(2, pharosLogs.size(), 'Should only process FATAL and ERROR level events');
+        } else {
+            System.assertEquals(null, publishedEvent, 'No event should be published when Pharos package is not installed');
+        }
+    }
+
+    @IsTest
+    static void testCreatePharosLogRecords_rflibLogObject() {
+        // This test will succeed in every org, regardless of Pharos package installation
+        rflib_PharosLogAction.PHAROS_LOG_OBJECT = 'rflib_Log__c'; 
+
+        // Setup
+        setupEventPublisher();
+        setupTestFieldMappingRulesForRflib();
+        setupPostProcessingSettings();
+        
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
+        settings.Pharos_Log_Level__c = 'ERROR';
+        upsert settings;
+        
+        List<rflib_Log_Event__e> logEvents = new List<rflib_Log_Event__e>{
+            createLogEvent('ERROR', 'Test error message', 'TestContext', 'REQ-001'),
+            createLogEvent('FATAL', 'Test fatal message', 'TestContext', 'REQ-002')
+        };
+        
+        // Act
+        Test.startTest();
+        rflib_PharosLogAction.createPharosLogRecords(logEvents);
+        Test.stopTest();
+
+        Assert.isTrue(true, 'Method executed successfully with rflib_Log__c object');
     }
     
     // Helper methods
@@ -292,13 +352,32 @@ private class rflib_PharosLogActionTest {
         );
     }
     
-    private static void setupTestFieldMappingRules() {
-        // Setup mock field mapping rules for the FieldMapper
+    private static void setupTestFieldMappingRulesForPharos() {
+        // Setup mock field mapping rules based on real customMetadata
         List<rflib_Field_Mapping_Rule__mdt> mappingRules = new List<rflib_Field_Mapping_Rule__mdt>{
-            createMappingRule('pharos__Log__c', 'pharos__Context__c', 'Context__c', true),
-            createMappingRule('pharos__Log__c', 'pharos__Log_Level__c', 'Log_Level__c', true),
-            createMappingRule('pharos__Log__c', 'pharos__Message__c', 'Log_Messages__c', true),
-            createMappingRule('pharos__Log__c', 'pharos__Request_ID__c', 'Request_ID__c', true)
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Area__c', 'Context__c', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Category__c', 'Log_Source__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Details__c', 'Log_Messages__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Do_Not_Create_Issue__c', 'FALSE', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Organization_Id__c', '"someOrgId"', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Organization_Name__c', 'Org__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Request_Id_External__c', 'Request_ID__c', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Stacktrace__c', 'Stack_Trace__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Summary__c', '"Sample Summary"', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__Type__c', 'Log_Level__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'pharos__User_Id__c', 'CreatedById', false)
+        };
+        
+        rflib_SOQL.setMock('FieldMappingRule.getRules', mappingRules);
+    }
+
+    private static void setupTestFieldMappingRulesForRflib() {
+        // Setup mock field mapping rules based on real customMetadata
+        List<rflib_Field_Mapping_Rule__mdt> mappingRules = new List<rflib_Field_Mapping_Rule__mdt>{
+            createMappingRule('rflib_Log__c', 'Context__c', 'Context__c', false),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'Log_Messages__c', 'Log_Messages__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'Request_ID__c', 'Request_ID__c', true),
+            createMappingRule(rflib_PharosLogAction.PHAROS_LOG_OBJECT, 'Log_Level__c', 'Log_Level__c', true)
         };
         
         rflib_SOQL.setMock('FieldMappingRule.getRules', mappingRules);
@@ -316,6 +395,30 @@ private class rflib_PharosLogActionTest {
             Transformation_Formula__c = transformationFormula,
             Simple_Field_Copy__c = isSimpleFieldCopy
         );
+    }
+
+    private static void setupEventPublisher(){
+        rflib_PharosLogAction.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
+    }
+    
+    private static String getBodyFieldName(SObject publishedEvent) {
+        for (Schema.SObjectField field : publishedEvent.getSObjectType().getDescribe().fields.getMap().values()) {
+            if (field.getDescribe().getName().endsWith('Body__c')) {
+                return field.getDescribe().getName();
+            }
+        }
+        return null;
+    }
+    
+    private static List<Object> getPharosLogsFromEvent(SObject publishedEvent) {
+        String bodyFieldName = getBodyFieldName(publishedEvent);
+        if (bodyFieldName != null) {
+            String eventBody = (String) publishedEvent.get(bodyFieldName);
+            if (eventBody != null) {
+                return (List<Object>) JSON.deserializeUntyped(eventBody);
+            }
+        }
+        return new List<Object>();
     }
     
     private static void setupPostProcessingSettings() {
