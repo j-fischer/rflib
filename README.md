@@ -80,7 +80,7 @@ rem RFLIB-TF 3.0.2
 sf package install --package 04tKY000000xAF1YAM --target-org <your org alias>
 
 rem RFLIB-PHAROS 1.0.0
-sf package install --package 04tKY000000xdPTYAY --target-org <your org alias>
+sf package install --package 04tKY000000xhxmYAA --target-org <your org alias>
 ```
 
 To deploy code:
