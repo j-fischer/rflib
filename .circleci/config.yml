@@ -131,7 +131,6 @@ jobs:
                           npx sf apex get log --log-id $LOG_ID --target-org ciorg
                       done
                   when: on_fail
-
             - run:
                   name: Clean Up
                   command: |
@@ -142,7 +141,6 @@ jobs:
                   root: ~/
                   paths:
                       - apex_tests/*
-                  when: on_success
 
     run_lwc_tests:
         <<: *defaults
@@ -176,7 +174,6 @@ jobs:
                       npx sf org delete scratch -o ciorg -p
 
 workflows:
-    version: 2.1
     build_and_test:
         jobs:
             - setup_project
