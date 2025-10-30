@@ -9,7 +9,8 @@ jobs:
     setup_project:
         <<: *defaults
         steps:
-            - checkout
+            - checkout:
+                  method: full
             - run:
                   name: Install jq
                   command: |
