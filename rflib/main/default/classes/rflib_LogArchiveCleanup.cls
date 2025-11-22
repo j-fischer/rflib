@@ -32,7 +32,7 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveCleanup');
 
     @TestVisible
-    private static final rflib_SOQL QUERY = rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
+    private static final rflib_SOQL.Queryable QUERY = rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
         .with(new List<SObjectField>{
             rflib_Logs_Archive__b.CreatedDate__c,
             rflib_Logs_Archive__b.Context__c,
