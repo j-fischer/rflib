@@ -55,8 +55,6 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
     totalPages;
     numTotalRecords;
     numDisplayedRecords;
-
-    // eslint-disable-next-line @lwc/lwc/no-async-await
     async connectedCallback() {
         logger.debug('Initializing component, DEFAULT_PAGE_SIZE={0}', DEFAULT_PAGE_SIZE);
 

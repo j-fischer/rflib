@@ -407,8 +407,6 @@ export default class PermissionsExplorer extends LightningElement {
         };
 
         this.isLoadingRecords = true;
-
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
             // The cached responses for a permission type instead of making the HTTP requests.
             // Using timeout to guarantee rendering of spinner widget, which may not happen if the browser accesses

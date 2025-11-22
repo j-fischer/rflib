@@ -131,7 +131,6 @@ export default class RflibLogEventList extends LightningElement {
 
     handleSearchFieldBlur() {
         // Small delay to handle focus changes between fields
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
             const focusedElement = this.template.activeElement;
             if (!focusedElement || !focusedElement.dataset.field) {

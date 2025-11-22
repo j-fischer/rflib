@@ -105,8 +105,6 @@ const log = (level, component, message, source = DEFAULT_LOG_SOURCE) => {
     }
 
     addMessage(msgToLog);
-
-    //eslint-disable-next-line no-use-before-define
     initializationPromise.then(() => {
         if (level.index >= state.config.serverLogLevel.index) {
             const platformInfo = performance.toJSON();

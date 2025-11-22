@@ -396,7 +396,6 @@ describe('format string tests', () => {
         const testArr = [1, 2, 3];
         const testFn = () => {};
         const testSymbol = Symbol('test');
-        // eslint-disable-next-line no-undef
         const testBigInt = BigInt(9007199254740991);
 
         logger.setConfig({
