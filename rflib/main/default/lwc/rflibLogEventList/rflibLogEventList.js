@@ -279,6 +279,11 @@ export default class RflibLogEventList extends LightningElement {
     }
 
     @api
+    getFilteredRecords() {
+        return JSON.parse(JSON.stringify(this.filteredRecords));
+    }
+
+    @api
     get currentPage() {
         return this._currentPage;
     }

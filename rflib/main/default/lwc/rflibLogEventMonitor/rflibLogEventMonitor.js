@@ -84,6 +84,7 @@ export default class LogEventMonitor extends LightningElement {
 
     subscription = null;
     showLeftColumn = true;
+    isExporting = false;
 
     fieldVisibility = {
         showDate: true,
@@ -113,6 +114,80 @@ export default class LogEventMonitor extends LightningElement {
         return this.showLeftColumn
             ? 'slds-col slds-size_5-of-12 container right-column'
             : 'slds-col slds-size_1-of-1 container right-column full-width';
+    }
+
+    exportToCsv() {
+        logger.debug('Exporting to CSV');
+        this.isExporting = true;
+
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            try {
+                const logEventList = this.template.querySelector('c-rflib-log-event-list');
+                if (!logEventList) {
+                    logger.error('Log event list component not found');
+                    this.isExporting = false;
+                    return;
+                }
+
+                const records = logEventList.getFilteredRecords();
+                logger.debug('Retrieved {0} records for export', records.length);
+
+                if (records.length === 0) {
+                    const evt = new ShowToastEvent({
+                        title: 'No records to export',
+                        message: 'There are no log events to export.',
+                        variant: 'info'
+                    });
+                    if (!import.meta.env.SSR) {
+                        this.dispatchEvent(evt);
+                    }
+                    this.isExporting = false;
+                    return;
+                }
+
+                const csvHeader = '"Date","Created By","Request ID","Level","Context","Log Messages"\r\n';
+                let csvContent = csvHeader;
+
+                records.forEach((rec) => {
+                    const date = rec.CreatedDate || '';
+                    const createdBy = rec.CreatedById || rec.CreatedById__c || '';
+                    const requestId = rec.Request_ID__c || '';
+                    const level = rec.Log_Level__c || '';
+                    const context = rec.Context__c || '';
+                    const messages = (rec.Log_Messages__c || '').replace(/"/g, '""'); // Escape double quotes
+
+                    csvContent += `"${date}","${createdBy}","${requestId}","${level}","${context}","${messages}"\r\n`;
+                });
+
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+
+                const modeLabel = this.currentConnectionMode.label.replace(/\s+/g, '_');
+                const fileName = `Log_Events_${modeLabel}_${new Date().toISOString()}.csv`;
+
+                element.setAttribute('download', fileName);
+                element.style.display = 'none';
+
+                const downloadContainer = this.template.querySelector('.download-container');
+                downloadContainer.appendChild(element);
+
+                element.click();
+                downloadContainer.removeChild(element);
+            } catch (error) {
+                logger.error('Failed to export to CSV: {0}', error.message);
+                const evt = new ShowToastEvent({
+                    title: 'Export Failed',
+                    message: 'An error occurred while exporting to CSV: ' + error.message,
+                    variant: 'error'
+                });
+                if (!import.meta.env.SSR) {
+                    this.dispatchEvent(evt);
+                }
+            } finally {
+                this.isExporting = false;
+            }
+        }, 0);
     }
 
     @wire(CurrentPageReference)
