@@ -191,14 +191,11 @@
         </div>
     </div>
 
-    <div lwc:if={isExporting}>
-        <lightning-spinner
-            class="slds-is-fixed spinner-large"
-            size="large"
-            alternative-text="Exporting records..."
-            data-text="Exporting records..."
-        >
-        </lightning-spinner>
+    <div lwc:if={isExporting} class="export-overlay">
+        <div class="spinner-wrapper">
+            <lightning-spinner size="large" alternative-text="Exporting records..."> </lightning-spinner>
+        </div>
+        <div class="export-text">Exporting records...</div>
     </div>
     <div class="download-container" lwc:dom="manual"></div>
 
