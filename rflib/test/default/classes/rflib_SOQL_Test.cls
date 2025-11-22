@@ -3384,7 +3384,7 @@ private class rflib_SOQL_Test {
 
 			// Verify
 			Assert.areEqual(
-				'SObject row was retrieved via rflib_SOQL without querying the requested field: Task.Type',
+				'SObject row was retrieved via SOQL without querying the requested field: Task.Type',
 				queryException.getMessage(),
 				'The user should not have access to the \'Type\' field.'
 			);
@@ -3417,7 +3417,7 @@ private class rflib_SOQL_Test {
 
 			// Verify
 			Assert.areEqual(
-				'SObject row was retrieved via rflib_SOQL without querying the requested field: Task.Type',
+				'SObject row was retrieved via SOQL without querying the requested field: Task.Type',
 				queryException.getMessage(),
 				'The user should not have access to the \'Type\' field.'
 			);
