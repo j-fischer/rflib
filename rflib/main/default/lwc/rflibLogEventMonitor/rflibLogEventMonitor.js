@@ -158,7 +158,7 @@ export default class LogEventMonitor extends LightningElement {
 
                     let rawMessages = rec.Log_Messages__c || '';
                     if (rawMessages.length > 32000) {
-                        rawMessages = rawMessages.substring(0, 32000) + '... [TRUNCATED]';
+                        rawMessages = '[TRUNCATED] ...' + rawMessages.substring(rawMessages.length - 32000);
                     }
                     const messages = rawMessages.replace(/"/g, '""'); // Escape double quotes
 
