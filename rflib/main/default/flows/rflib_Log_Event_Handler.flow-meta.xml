@@ -69,7 +69,7 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
         <nameSegment>rflib_SendLogEventEmailAction</nameSegment>
         <offset>0</offset>
     </actionCalls>
-    <apiVersion>63.0</apiVersion>
+    <apiVersion>65.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <description>Flow to execute when an RFLIB Log Event has been dispatched. The handler currently invokes the Send Log Event Email action, but can be extended to, for example, persist log information in a Custom Object.</description>
     <environments>Default</environments>

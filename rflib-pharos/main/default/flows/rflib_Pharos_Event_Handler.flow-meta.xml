@@ -18,7 +18,7 @@
         <nameSegment>rflib_PharosLogAction</nameSegment>
         <offset>0</offset>
     </actionCalls>
-    <apiVersion>63.0</apiVersion>
+    <apiVersion>65.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <environments>Default</environments>
     <interviewLabel>RFLIB Pharos Event Handler {!$Flow.CurrentDateTime}</interviewLabel>
