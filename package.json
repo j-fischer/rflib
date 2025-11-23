@@ -73,11 +73,6 @@
         "sf-fx-sdk-nodejs": "^3.1.0",
         "time-require": "^0.1.2"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "lint-staged && npm run lint:aura"
-        }
-    },
     "lint-staged": {
         "**/*.{html,js,json,yaml,yml,md,cmp,page,component}": [
             "prettier --write"
@@ -102,7 +97,7 @@
         "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
         "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'",
         "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
-        "prepare": "husky install"
+        "prepare": "husky"
     },
     "volta": {
         "node": "20.17.0"
