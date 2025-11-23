@@ -120,7 +120,6 @@ export default class LogEventMonitor extends LightningElement {
         logger.debug('Exporting to CSV');
         this.isExporting = true;
 
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
         setTimeout(() => {
             try {
                 const logEventList = this.template.querySelector('c-rflib-log-event-list');
