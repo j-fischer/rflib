@@ -32,7 +32,7 @@ public virtual with sharing class rflib_ApplicationEventArchiveCleanup extends r
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_ApplicationEventArchiveCleanup');
 
     @TestVisible
-    private static rflib_SOQL QUERY = rflib_SOQL.of(rflib_Application_Event_Archive__b.SObjectType)
+    private static rflib_SOQL.Queryable QUERY = rflib_SOQL.of(rflib_Application_Event_Archive__b.SObjectType)
         .with(new List<SObjectField>{
             rflib_Application_Event_Archive__b.Occurred_On__c,
             rflib_Application_Event_Archive__b.Event_Name__c,

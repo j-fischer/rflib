@@ -81,7 +81,7 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
     }
     
     public Iterable<SObject> start(Database.BatchableContext bc) {
-        rflib_SOQL query = buildQuery();
+        rflib_SOQL.Queryable query = buildQuery();
         LOGGER.info('Starting batch with jobId "{0}" and query: {1}', new Object[] { bc.getJobId(), query.toString() });
         return query.toList();
     }
@@ -115,8 +115,8 @@ public with sharing class rflib_BigObjectCounter implements Database.Batchable<S
         if (indexFields == null || indexFields.isEmpty()) throw new rflib_BigObjectCounterException('Index Fields cannot be empty');
     }
     
-    private rflib_SOQL buildQuery() {
-        rflib_SOQL query = rflib_SOQL.of(bigObjectType).with(indexFields);
+    private rflib_SOQL.Queryable buildQuery() {
+        rflib_SOQL.Queryable query = rflib_SOQL.of(bigObjectType).with(indexFields);
         
         if (!isInitialBatch) {
             query.whereAre(rflib_SOQL.Filter.with(indexFields[0]).greaterOrEqual(lastIndex1Value));
