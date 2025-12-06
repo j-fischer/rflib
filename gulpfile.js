@@ -552,13 +552,6 @@ gulp.task(
 );
 
 gulp.task(
-    'shell-force-install-streaming-monitor',
-    shellTask(function () {
-        return `sf package install --package 04tJ5000000gQFxIAM -o ${config.alias} -w 10 && sf org assign permset --name Streaming_Monitor -o ${config.alias}`;
-    }, true)
-);
-
-gulp.task(
     'shell-force-install-bigobject-utility',
     shellTask(function () {
         return `sf package install --package 04tGA000005dJQCYA2 -o ${config.alias} -w 10`;
@@ -704,7 +697,6 @@ gulp.task(
         'shell-force-create-log-event',
         'shell-force-create-application-event',
         'shell-force-create-qa-user',
-        'shell-force-install-streaming-monitor',
         'shell-force-install-bigobject-utility',
         'evaluate-packages-to-install',
         'shell-force-open',
@@ -723,7 +715,6 @@ gulp.task(
         'create-scratch-org',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
-        'shell-force-install-streaming-monitor',
         'shell-force-install-bigobject-utility',
         'evaluate-packages-to-install',
         'shell-force-assign-permset',
