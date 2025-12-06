@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PlatformEventChannelMember xmlns="http://soap.sforce.com/2006/04/metadata">
-    <eventChannel>ChangeEvents</eventChannel>
-    <selectedEntity>rflib_Big_Object_Stat__ChangeEvent</selectedEntity>
+    <eventChannel>rflib_Big_Object_Stat_ChangeEvent__chn</eventChannel>
+    <selectedEntity>rflib_Big_Object_Stat_Event__e</selectedEntity>
 </PlatformEventChannelMember>

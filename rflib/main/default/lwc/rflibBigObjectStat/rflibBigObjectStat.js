@@ -8,7 +8,7 @@ import refreshStats from '@salesforce/apex/rflib_BigObjectStatController.refresh
 import getFieldMetadata from '@salesforce/apex/rflib_BigObjectStatController.getFieldMetadata';
 
 const logger = createLogger('rflibBigObjectStat');
-const CDC_CHANNEL = '/data/rflib_Big_Object_Stat__ChangeEvent';
+const CDC_CHANNEL = '/event/rflib_Big_Object_Stat_ChangeEvent__chn';
 
 const ACTIONS = [{ label: 'Refresh', name: 'refresh' }];
 
@@ -170,23 +170,13 @@ export default class RflibBigObjectStat extends LightningElement {
             this.subscription = await subscribe(CDC_CHANNEL, -1, (event) => {
                 logger.debug('Received CDC event: {0}', JSON.stringify(event));
 
-                const changeType = event.data?.payload?.ChangeEventHeader?.changeType;
-                const changedFields = event.data?.payload?.ChangeEventHeader?.changedFields;
-
-                if (changeType === 'UPDATE' || changeType === 'CREATE') {
-                    logger.debug(
-                        'Processing {0} event. Changed fields: {1}',
-                        changeType,
-                        JSON.stringify(changedFields)
-                    );
-                    refreshApex(this.wiredStatsResult)
-                        .then(() => {
-                            logger.debug('Successfully refreshed data after CDC event');
-                        })
-                        .catch((error) => {
-                            logger.error('Error refreshing data after CDC event', error);
-                        });
-                }
+                refreshApex(this.wiredStatsResult)
+                    .then(() => {
+                        logger.debug('Successfully refreshed data after CDC event');
+                    })
+                    .catch((error) => {
+                        logger.error('Error refreshing data after CDC event', error);
+                    });
             });
 
             logger.info('Successfully subscribed to Big Object Stat CDC events');

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlatformEventChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <channelType>event</channelType>
+    <eventType>custom</eventType>
+    <label>RFLIB Big Object Stat Channel</label>
+</PlatformEventChannel>
