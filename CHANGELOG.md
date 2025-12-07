@@ -1,3 +1,13 @@
+### RFLIB 10.0.0
+
+Package ID: 04tKY000000ygWuYAI
+Package Alias: RFLIB@10.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY000000ygWuYAI
+
+- [PR #120](https://github.com/j-fischer/rflib/pull/120) Added the ability to export filtered logs from the Log Monitor to a CSV file.
+- [PR #121](https://github.com/j-fischer/rflib/pull/121) Upgraded Beyond The Cloud's SOQL library (rflib_SOQL) that RFLIB redistributes to version 6.5.
+- [PR #122](https://github.com/j-fischer/rflib/pull/122) Refactored Big Object Stat component to use a custom Platform Event instead of a Change Data Capture (CDC) event as packaging did not allow the use of CDC events.
+
 ### RFLIB-PHAROS 1.0.0
 
 Package ID: 04tKY000000xhxmYAA
