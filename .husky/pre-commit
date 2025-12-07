@@ -1,1 +1,6 @@
+#!/bin/sh
+# Ensure Volta is in the PATH Use the user's home directory to locate Volta
+export VOLTA_HOME="$HOME/AppData/Local/Volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
 npx lint-staged && npm run lint:aura
