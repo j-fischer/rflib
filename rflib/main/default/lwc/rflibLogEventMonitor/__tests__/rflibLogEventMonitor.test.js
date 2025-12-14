@@ -348,9 +348,6 @@ describe('c-rflib-log-event-monitor', () => {
 
                     return flushPromises();
                 }
-            })
-            .then(() => {
-                // expect(clearArchive).toHaveBeenCalled();
             });
     });
 });
