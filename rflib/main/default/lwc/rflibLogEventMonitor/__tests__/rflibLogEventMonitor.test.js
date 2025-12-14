@@ -22,7 +22,11 @@ jest.mock('c/rflibLogger', () => {
 jest.mock('lightning/empApi', () => {
     return {
         subscribe: jest.fn(),
-        unsubscribe: jest.fn(),
+        unsubscribe: jest.fn((subscription, callback) => {
+            if (callback) {
+                callback({});
+            }
+        }),
         onError: jest.fn(),
         setDebugFlag: jest.fn(),
         isEmpEnabled: jest.fn()
@@ -171,6 +175,74 @@ describe('c-rflib-log-event-monitor', () => {
             });
     });
 
+    it('handles connection mode change to Disconnected', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                // Change connection mode to Disconnected (value 0)
+                const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
+                let targetMenu;
+                menus.forEach(m => {
+                    if (m.label === 'New Messages') targetMenu = m;
+                });
+                if (!targetMenu && menus.length > 1) targetMenu = menus[1];
+
+                if (targetMenu) {
+                    targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 0 } }));
+                }
+
+                return flushPromises();
+            })
+            .then(() => {
+                expect(unsubscribe).toHaveBeenCalled();
+                // Ensure no new subscription
+                expect(subscribe).toHaveBeenCalledTimes(1); // Only initial subscription
+            });
+    });
+
+    it('handles connection mode change to Historic and New Messages', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                // Change connection mode to Historic and New Messages (value -2)
+                const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
+                let targetMenu;
+                menus.forEach(m => {
+                    if (m.label === 'New Messages') targetMenu = m;
+                });
+                if (!targetMenu && menus.length > 1) targetMenu = menus[1];
+
+                if (targetMenu) {
+                    targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: -2 } }));
+                }
+
+                return flushPromises();
+            })
+            .then(() => {
+                expect(unsubscribe).toHaveBeenCalled();
+                expect(subscribe).toHaveBeenCalledTimes(2); // Initial + New mode
+                expect(subscribe.mock.calls[1][1]).toBe(-2); // replayId
+            });
+    });
+
     it('exports logs to CSV', () => {
         const element = createElement('c-rflib-log-event-monitor', {
             is: RflibLogEventMonitor
@@ -242,7 +314,7 @@ describe('c-rflib-log-event-monitor', () => {
                 menus.forEach(m => {
                     if (m.label === 'New Messages') targetMenu = m;
                 });
-                if (!targetMenu) targetMenu = menus[1]; // Fallback
+                if (!targetMenu && menus.length > 1) targetMenu = menus[1]; // Fallback
 
                 targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 1 } }));
                 return flushPromises();
@@ -278,7 +350,6 @@ describe('c-rflib-log-event-monitor', () => {
                 }
             })
             .then(() => {
-                // If dialog was found
                 // expect(clearArchive).toHaveBeenCalled();
             });
     });
