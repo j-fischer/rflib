@@ -67,7 +67,7 @@
         "jit-grunt": "^0.10.0",
         "lint-staged": "^16.2.7",
         "lodash": "^4.17.21",
-        "prettier": "3.6.2",
+        "prettier": "3.7.4",
         "prettier-plugin-apex": "2.2.6",
         "semver": "^7.7.3",
         "sf-fx-sdk-nodejs": "^3.1.0",
@@ -100,6 +100,6 @@
         "prepare": "husky"
     },
     "volta": {
-        "node": "20.17.0"
+        "node": "24.12.0"
     }
 }
