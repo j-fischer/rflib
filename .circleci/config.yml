@@ -3,7 +3,7 @@ version: 2.1
 # Defining default values for all jobs
 defaults: &defaults
     docker:
-        - image: cimg/node:24
+        - image: cimg/node:lts
 
 jobs:
     setup_project:
