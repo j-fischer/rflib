@@ -1,6 +1,7 @@
+/* cspell:ignore rowaction */
 import { createElement } from 'lwc';
 import RflibCustomSettingsEditor from 'c/rflibCustomSettingsEditor';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { ShowToastEventName } from 'lightning/platformShowToastEvent';
 import canUserModifyCustomSettings from '@salesforce/apex/rflib_CustomSettingsEditorController.canUserModifyCustomSettings';
 import deleteCustomSettingRecord from '@salesforce/apex/rflib_CustomSettingsEditorController.deleteCustomSettingRecord';
 import getCustomSettingFields from '@salesforce/apex/rflib_CustomSettingsEditorController.getCustomSettingFields';
@@ -117,9 +118,6 @@ const MOCK_FIELD_INFOS = [
     }
 ];
 
-// The mock for ShowToastEvent in this repo uses 'lightning__ShowToastEvent'
-const SHOW_TOAST_EVENT_NAME = 'lightning__ShowToastEvent';
-
 describe('c-rflib-custom-settings-editor', () => {
     afterEach(() => {
         while (document.body.firstChild) {
@@ -171,7 +169,7 @@ describe('c-rflib-custom-settings-editor', () => {
         document.body.appendChild(element);
 
         const toastHandler = jest.fn();
-        element.addEventListener(SHOW_TOAST_EVENT_NAME, toastHandler);
+        element.addEventListener(ShowToastEventName, toastHandler);
 
         await flushPromises();
         await flushPromises();
@@ -193,7 +191,7 @@ describe('c-rflib-custom-settings-editor', () => {
         document.body.appendChild(element);
 
         const toastHandler = jest.fn();
-        element.addEventListener(SHOW_TOAST_EVENT_NAME, toastHandler);
+        element.addEventListener(ShowToastEventName, toastHandler);
 
         await flushPromises();
         await flushPromises();
@@ -214,7 +212,7 @@ describe('c-rflib-custom-settings-editor', () => {
         document.body.appendChild(element);
 
         const toastHandler = jest.fn();
-        element.addEventListener(SHOW_TOAST_EVENT_NAME, toastHandler);
+        element.addEventListener(ShowToastEventName, toastHandler);
 
         await flushPromises();
         await flushPromises();
@@ -431,7 +429,7 @@ describe('c-rflib-custom-settings-editor', () => {
         const saveButton = footerButtons[1];
 
         const toastHandler = jest.fn();
-        element.addEventListener(SHOW_TOAST_EVENT_NAME, toastHandler);
+        element.addEventListener(ShowToastEventName, toastHandler);
 
         saveButton.click();
         await flushPromises();
