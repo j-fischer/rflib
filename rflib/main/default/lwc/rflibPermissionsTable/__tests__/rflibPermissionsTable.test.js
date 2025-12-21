@@ -186,7 +186,7 @@ describe('c-rflib-permissions-table', () => {
     });
 
     it('handles profile selection event from resolver', async () => {
-         const element = createElement('c-rflib-permissions-table', {
+        const element = createElement('c-rflib-permissions-table', {
             is: RflibPermissionsTable
         });
         element.permissionRecords = MOCK_DATA;

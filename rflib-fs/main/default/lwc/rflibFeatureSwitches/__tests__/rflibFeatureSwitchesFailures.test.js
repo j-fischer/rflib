@@ -44,11 +44,9 @@ describe('isFeatureSwitchTurnedOn() Failures', () => {
         mockGetAllFeatureSwitches.mockRejectedValue(new Error('some error'));
 
         const isFeatureSwitchTurnedOn = require('c/rflibFeatureSwitches').isFeatureSwitchTurnedOn;
-        
-        await expect(isFeatureSwitchTurnedOn('activeSwitch'))
-            .rejects
-            .toThrow('some error');
-            
+
+        await expect(isFeatureSwitchTurnedOn('activeSwitch')).rejects.toThrow('some error');
+
         expect(mockGetAllFeatureSwitches).toHaveBeenCalledTimes(1);
     });
 });

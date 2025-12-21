@@ -140,32 +140,33 @@ describe('c-rflib-log-event-viewer-message', () => {
 
         document.body.appendChild(element);
 
-        return Promise.resolve().then(() => {
-            // Check preview mode
-            const preview = element.shadowRoot.querySelector('.json-label');
-            expect(preview).not.toBeNull();
-            expect(preview.textContent).toBe('{"key":"value"}');
+        return Promise.resolve()
+            .then(() => {
+                // Check preview mode
+                const preview = element.shadowRoot.querySelector('.json-label');
+                expect(preview).not.toBeNull();
+                expect(preview.textContent).toBe('{"key":"value"}');
 
-            // Click expand button
-            const button = element.shadowRoot.querySelector('lightning-button-icon');
-            button.click();
-        })
-        .then(() => {
-            // Check expanded mode
-            const pre = element.shadowRoot.querySelector('pre');
-            expect(pre).not.toBeNull();
-            expect(pre.textContent).toBe(formattedJson);
+                // Click expand button
+                const button = element.shadowRoot.querySelector('lightning-button-icon');
+                button.click();
+            })
+            .then(() => {
+                // Check expanded mode
+                const pre = element.shadowRoot.querySelector('pre');
+                expect(pre).not.toBeNull();
+                expect(pre.textContent).toBe(formattedJson);
 
-            // Click collapse button
-            const button = element.shadowRoot.querySelector('lightning-button-icon');
-            button.click();
-        })
-        .then(() => {
-            // Back to preview
-            const pre = element.shadowRoot.querySelector('pre');
-            expect(pre).toBeNull();
-            const preview = element.shadowRoot.querySelector('.json-label');
-            expect(preview).not.toBeNull();
-        });
+                // Click collapse button
+                const button = element.shadowRoot.querySelector('lightning-button-icon');
+                button.click();
+            })
+            .then(() => {
+                // Back to preview
+                const pre = element.shadowRoot.querySelector('pre');
+                expect(pre).toBeNull();
+                const preview = element.shadowRoot.querySelector('.json-label');
+                expect(preview).not.toBeNull();
+            });
     });
 });

@@ -1,11 +1,11 @@
-export const CurrentPageReference = (function() {
+export const CurrentPageReference = (function () {
     let _dataCallback;
     const adapter = jest.fn().mockImplementation((dataCallback) => {
         _dataCallback = dataCallback;
         return {
             connect: jest.fn(),
             disconnect: jest.fn(),
-            update: jest.fn(),
+            update: jest.fn()
         };
     });
     adapter.emit = (value) => {

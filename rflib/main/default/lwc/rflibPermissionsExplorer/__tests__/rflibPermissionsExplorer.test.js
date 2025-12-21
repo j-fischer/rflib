@@ -39,18 +39,66 @@ const MOCK_APEX_RESPONSE = {
 };
 
 // Mock all Apex methods explicitly with inline jest.fn()
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllProfiles', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser', () => ({ default: jest.fn() }), { virtual: true });
-jest.mock('@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser', () => ({ default: jest.fn() }), { virtual: true });
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSets',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllPermissionSetGroups',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllProfiles',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSets',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForAllPermissionSetGroups',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
 
 async function flushPromises() {
     return Promise.resolve();
