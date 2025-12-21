@@ -1,4 +1,3 @@
-
 import { createElement } from 'lwc';
 import RflibUserPermissionAssignmentList from 'c/rflibUserPermissionAssignmentList';
 import getUserPermissionAssignments from '@salesforce/apex/rflib_UserPermAssignmentController.getUserPermissionAssignments';
