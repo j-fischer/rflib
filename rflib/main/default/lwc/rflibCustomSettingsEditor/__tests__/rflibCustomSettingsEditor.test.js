@@ -1,4 +1,3 @@
-/* cspell:ignore rowaction */
 import { createElement } from 'lwc';
 import RflibCustomSettingsEditor from 'c/rflibCustomSettingsEditor';
 import { ShowToastEventName } from 'lightning/platformShowToastEvent';
