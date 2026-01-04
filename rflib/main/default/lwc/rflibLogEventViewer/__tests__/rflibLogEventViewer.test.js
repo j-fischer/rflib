@@ -127,7 +127,7 @@ describe('c-rflib-log-event-viewer', () => {
 
         // Wait for apex logs to load
         return Promise.resolve().then(() => {
-             // Mock window.URL.createObjectURL or simulated click
+            // Mock window.URL.createObjectURL or simulated click
             const clickSpy = jest.fn();
 
             // Use real element to pass type checks
@@ -135,9 +135,9 @@ describe('c-rflib-log-event-viewer', () => {
             jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
                 const el = realCreateElement(tagName);
                 if (tagName === 'a') {
-                     // We can't overwrite click easily on DOM element in some envs, but let's try
-                     // Or just spy on it
-                     el.click = clickSpy;
+                    // We can't overwrite click easily on DOM element in some envs, but let's try
+                    // Or just spy on it
+                    el.click = clickSpy;
                 }
                 return el;
             });

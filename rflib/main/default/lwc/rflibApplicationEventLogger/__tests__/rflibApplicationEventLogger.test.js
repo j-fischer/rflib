@@ -51,15 +51,13 @@ describe('log application event', () => {
         mockSaveApplicationEvent = jest.fn();
 
         // Setup module mocks
-        jest.mock('@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent', 
-            () => ({ default: mockSaveApplicationEvent }), 
+        jest.mock(
+            '@salesforce/apex/rflib_ApplicationEventController.logApplicationEvent',
+            () => ({ default: mockSaveApplicationEvent }),
             { virtual: true }
         );
-        
-        jest.mock('c/rflibLogger', 
-            () => mockLoggerFactory, 
-            { virtual: true }
-        );
+
+        jest.mock('c/rflibLogger', () => mockLoggerFactory, { virtual: true });
 
         applicationEventLogger = require('../rflibApplicationEventLogger');
     });
@@ -84,9 +82,9 @@ describe('log application event', () => {
             relatedRecordId,
             additionalDetails
         );
-        
+
         expect(mockLogger.debug).toHaveBeenCalledWith('Application Event successfully recorded');
-        
+
         expect(mockSaveApplicationEvent).toHaveBeenCalledWith(
             expect.objectContaining({
                 eventName,
@@ -115,13 +113,13 @@ describe('log application event', () => {
             relatedRecordId,
             additionalDetails
         );
-        
+
         expect(mockLogger.error).toHaveBeenCalledWith(
             'Failed to log application event to server for: {0}, error={1}',
             eventName,
             expect.stringContaining('foobar')
         );
-        
+
         expect(mockSaveApplicationEvent).toHaveBeenCalledWith(
             expect.objectContaining({
                 eventName,

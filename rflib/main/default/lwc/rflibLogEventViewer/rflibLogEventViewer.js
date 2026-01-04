@@ -244,7 +244,6 @@ export default class RflibLogEventViewer extends LightningElement {
         return this.apexLogs?.length > 0 ? `(${this.apexLogs.length})` : '';
     }
 
-
     processLogMessages() {
         if (!this._logEvent?.Log_Messages__c) {
             this.processedLogMessages = [];
@@ -266,7 +265,7 @@ export default class RflibLogEventViewer extends LightningElement {
             }
 
             // Check for embedded JSON in the line
-            const processedLine = this.processLineWithEmbeddedJson(line, messageId, i+1);
+            const processedLine = this.processLineWithEmbeddedJson(line, messageId, i + 1);
             messages.push(...processedLine.messages);
             messageId = processedLine.nextId;
         }
@@ -340,7 +339,7 @@ export default class RflibLogEventViewer extends LightningElement {
                     isText: false,
                     formattedJson: formattedJson,
                     preview: preview,
-                    lineId: lineId,
+                    lineId: lineId
                 };
             } catch (e) {
                 // If parsing fails, treat as text
@@ -352,7 +351,7 @@ export default class RflibLogEventViewer extends LightningElement {
             content: content,
             isJson: false,
             isText: true,
-            lineId: lineId,
+            lineId: lineId
         };
     }
 
@@ -373,5 +372,4 @@ export default class RflibLogEventViewer extends LightningElement {
     createJsonPreview(content) {
         return content.substring(0, 100);
     }
-
 }

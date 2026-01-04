@@ -6,8 +6,6 @@
     "EmailEncodingKey": "UTF-8",
     "LanguageLocaleKey": "en_US",
     "profileName": "Minimum Access - Salesforce",
-    "permsets": [
-        "rflib_Create_Application_Event"
-    ],
+    "permsets": ["rflib_Create_Application_Event"],
     "generatePassword": true
 }

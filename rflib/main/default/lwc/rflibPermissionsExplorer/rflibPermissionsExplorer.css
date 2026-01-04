@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 .flex-layout {
     align-items: stretch;
 }
@@ -42,7 +42,7 @@
 }
 
 .download-container {
-    display:none;
+    display: none;
 }
 
 .filter-info-box {
