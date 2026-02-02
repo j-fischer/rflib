@@ -98,7 +98,7 @@ function bumpVersion() {
 function getLatestPackageVersionIds() {
     const projectConfig = JSON.parse(fs.readFileSync('sfdx-project.json', 'utf8'));
     const aliases = projectConfig.packageAliases;
-    
+
     // Group by package name (strip version)
     const packageGroups = Object.keys(aliases).reduce((acc, alias) => {
         const id = aliases[alias];
@@ -415,7 +415,7 @@ gulp.task('evaluate-packages-to-install', function (done) {
     }
     if (process.argv.includes('--pharos')) {
         gulp.series(
-            'shell-force-install-pharos', 
+            'shell-force-install-pharos',
             'shell-pharos-post-install'
         )(done);
     } else {
@@ -766,11 +766,11 @@ gulp.task(
         shellTask(function() {
             const packages = getLatestPackageVersionIds();
             const commands = Object.keys(packages)
-                .map(pkg => 
+                .map(pkg =>
                     `sf package install --package ${packages[pkg]} -o ${config.alias} -w 10`
                 )
                 .join(' && ');
-            
+
             return commands;
         }),
         'shell-force-configure-settings',
@@ -811,6 +811,32 @@ gulp.task(
     )
 );
 
+gulp.task('scan-flow', function(done) {
+    const exec = require('child_process').exec;
+    const flowPath = 'rflib/main/default/flows';
+
+    exec(`sf flow scan -d ${flowPath} -t error`, { maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
+        console.log(stdout);
+        console.error(stderr);
+
+        const errorMatch = stdout.match(/- error:\s+(\d+)/);
+        if (errorMatch) {
+            const errorCount = parseInt(errorMatch[1], 10);
+            if (errorCount > 0) {
+                done(new Error(`Flow scan failed with ${errorCount} errors.`));
+                return;
+            }
+        }
+
+        if (err) {
+             done(err);
+             return;
+        }
+
+        done();
+    });
+});
+
 // Test task
 gulp.task(
     'test',
@@ -824,6 +850,7 @@ gulp.task(
             }
         },
         'shell-lint',
+        'scan-flow',
         'shell-test-lwc'
     )
 );

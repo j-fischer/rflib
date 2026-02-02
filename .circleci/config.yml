@@ -163,6 +163,22 @@ jobs:
                       bash <(curl -s https://codecov.io/bash)
                       rm -f test-result-codecoverage.json
                       node_modules/codecov/bin/codecov
+    scan_flows:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Install Dependencies
+                  command: npm install
+            - run:
+                  name: Install Lightning Flow Scanner
+                  command: |
+                      echo y | npx sf plugins install lightning-flow-scanner
+            - run:
+                  name: Scan Flows
+                  command: |
+                      npx gulp scan-flow
     cleanup_scratch_org:
         <<: *defaults
         steps:
@@ -184,6 +200,9 @@ workflows:
                   requires:
                       - setup_dx
             - run_lwc_tests:
+                  requires:
+                      - setup_project
+            - scan_flows:
                   requires:
                       - setup_project
             - run_apex_tests:
