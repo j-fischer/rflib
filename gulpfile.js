@@ -859,4 +859,4 @@ gulp.task(
 gulp.task('create-event', gulp.series('prompt-alias', 'shell-force-create-log-event'));
 
 // Default task
-gulp.task('default', gulp.series('shell-lint', 'shell-test-lwc'));
+gulp.task('default', gulp.series('shell-lint', 'shell-test-lwc', 'scan-flow'));
