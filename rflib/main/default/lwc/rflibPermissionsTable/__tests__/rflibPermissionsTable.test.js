@@ -103,7 +103,7 @@ describe('c-rflib-permissions-table', () => {
         searchInput.dispatchEvent(new CustomEvent('change'));
 
         // Simulate enter key press
-        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { which: 13 }));
+        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter' }));
 
         await Promise.resolve();
 
@@ -130,7 +130,7 @@ describe('c-rflib-permissions-table', () => {
         searchInput.dispatchEvent(new CustomEvent('change'));
 
         // Simulate enter key press on parent div wrapper
-        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { which: 13 }));
+        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter' }));
 
         await Promise.resolve();
 
@@ -157,7 +157,7 @@ describe('c-rflib-permissions-table', () => {
         searchInput.dispatchEvent(new CustomEvent('change'));
 
         // Simulate enter key press on parent div
-        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { which: 13 }));
+        searchInput.parentElement.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter' }));
 
         await Promise.resolve();
 

@@ -184,8 +184,11 @@ jest.mock(
     { virtual: true }
 );
 
-async function flushPromises() {
-    return Promise.resolve();
+async function flushPromises(times = 1) {
+    for (let i = 0; i < times; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.resolve();
+    }
 }
 
 function selectPermissionType(element, permissionTypeValue) {
@@ -239,8 +242,7 @@ describe('c-rflib-permissions-explorer', () => {
         document.body.appendChild(element);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         return element;
     }
@@ -252,8 +254,7 @@ describe('c-rflib-permissions-explorer', () => {
         selectPermissionType(element, permissionTypeValue);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
     }
 
     it('renders and loads default permissions', async () => {
@@ -287,8 +288,7 @@ describe('c-rflib-permissions-explorer', () => {
         const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
         paginator.dispatchEvent(new CustomEvent('next'));
 
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(table.currentPage).toBe(2);
     });
@@ -324,8 +324,7 @@ describe('c-rflib-permissions-explorer', () => {
         element.addEventListener(ShowToastEventName, toastHandler);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(toastHandler).toHaveBeenCalled();
     });
@@ -399,8 +398,7 @@ describe('c-rflib-permissions-explorer', () => {
         selectPermissionType(element, 'ObjectPermissionsUser');
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // No user selected, so the user-specific Apex should NOT be called
         expect(getObjectLevelSecurityForUser).not.toHaveBeenCalled();
@@ -429,8 +427,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(getObjectLevelSecurityForUser).toHaveBeenCalled();
 
@@ -450,8 +447,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(getFieldLevelSecurityForUser).toHaveBeenCalled();
     });
@@ -468,8 +464,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(getApexSecurityForUser).toHaveBeenCalled();
     });
@@ -498,10 +493,7 @@ describe('c-rflib-permissions-explorer', () => {
         document.body.appendChild(element);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(4);
 
         expect(getObjectLevelSecurityForAllProfiles).toHaveBeenCalledTimes(2);
 
@@ -533,8 +525,7 @@ describe('c-rflib-permissions-explorer', () => {
         document.body.appendChild(element);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(toastHandler).toHaveBeenCalled();
         const toastDetail = toastHandler.mock.calls[0][0].detail;
@@ -560,8 +551,7 @@ describe('c-rflib-permissions-explorer', () => {
         selectPermissionType(element, 'ObjectPermissionsProfiles');
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // Should NOT call Apex again — using cached data
         expect(getObjectLevelSecurityForAllProfiles).not.toHaveBeenCalled();
@@ -668,8 +658,7 @@ describe('c-rflib-permissions-explorer', () => {
         document.body.appendChild(element);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // Open export filter modal
         const exportMenu = getExportMenu(element);
@@ -793,8 +782,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // Click Aggregate button
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
@@ -836,8 +824,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // Click Aggregate button
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
@@ -878,8 +865,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // Aggregate first
         let buttons = element.shadowRoot.querySelectorAll('lightning-button');
@@ -898,8 +884,7 @@ describe('c-rflib-permissions-explorer', () => {
         resetBtn.click();
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // After reset, records should be restored from cache (original 3 records)
         table = element.shadowRoot.querySelector('c-rflib-permissions-table');
@@ -926,8 +911,7 @@ describe('c-rflib-permissions-explorer', () => {
         document.body.appendChild(element);
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(toastHandler).toHaveBeenCalled();
         const toastDetail = toastHandler.mock.calls[0][0].detail;
@@ -951,8 +935,7 @@ describe('c-rflib-permissions-explorer', () => {
         userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         expect(getObjectLevelSecurityForUser).toHaveBeenCalled();
 
@@ -963,8 +946,7 @@ describe('c-rflib-permissions-explorer', () => {
         selectPermissionType(element, 'ObjectPermissionsProfiles');
 
         jest.runAllTimers();
-        await flushPromises();
-        await flushPromises();
+        await flushPromises(2);
 
         // User picker should not be shown anymore
         const userPickerAfter = element.shadowRoot.querySelector('lightning-record-picker');
