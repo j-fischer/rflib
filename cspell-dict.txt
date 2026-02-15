@@ -96,3 +96,4 @@ oncloseviewer
 togglefullscreen
 closeviewer
 Vabu
+rowaction
