@@ -886,7 +886,7 @@ describe('c-rflib-permissions-explorer', () => {
         jest.runAllTimers();
         await flushPromises(2);
 
-        // After reset, records should be restored from cache (original 3 records)
+        // After reset, cache is invalidated and records are reloaded (original 3 records)
         table = element.shadowRoot.querySelector('c-rflib-permissions-table');
         expect(table.permissionRecords).toHaveLength(3);
 
