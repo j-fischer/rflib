@@ -43,16 +43,23 @@ describe('c-rflib-user-permission-assignment-list', () => {
         jest.clearAllMocks();
     });
 
-    it('initializes and loads data correctly', async () => {
-        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
-
+    function createComponent(props = {}) {
         const element = createElement('c-rflib-user-permission-assignment-list', {
             is: RflibUserPermissionAssignmentList
         });
-        element.permissionSetName = 'TestPermSet';
-        element.isAssigned = true;
-        element.title = 'Test Title';
+        Object.assign(element, props);
         document.body.appendChild(element);
+        return element;
+    }
+
+    it('initializes and loads data correctly', async () => {
+        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
+
+        const element = createComponent({
+            permissionSetName: 'TestPermSet',
+            isAssigned: true,
+            title: 'Test Title'
+        });
 
         // Verify title
         const card = element.shadowRoot.querySelector('lightning-card');
@@ -80,13 +87,27 @@ describe('c-rflib-user-permission-assignment-list', () => {
         expect(paginator.totalRecords).toBe(30);
     });
 
+    it('renders datatable with correct column definitions', async () => {
+        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
+
+        const element = createComponent();
+
+        await flushPromises();
+        await flushPromises();
+
+        const datatable = element.shadowRoot.querySelector('lightning-datatable');
+        expect(datatable.columns).toEqual([
+            { label: 'Name', fieldName: 'name', sortable: true },
+            { label: 'Email', fieldName: 'email', type: 'email', sortable: true },
+            { label: 'Phone', fieldName: 'phone', type: 'phone', sortable: true },
+            { label: 'Profile', fieldName: 'profile', sortable: true }
+        ]);
+    });
+
     it('handles pagination events correctly', async () => {
         getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
 
-        const element = createElement('c-rflib-user-permission-assignment-list', {
-            is: RflibUserPermissionAssignmentList
-        });
-        document.body.appendChild(element);
+        const element = createComponent();
 
         await flushPromises();
         await flushPromises();
@@ -128,10 +149,7 @@ describe('c-rflib-user-permission-assignment-list', () => {
     it('handles pagination bounds correctly', async () => {
         getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
 
-        const element = createElement('c-rflib-user-permission-assignment-list', {
-            is: RflibUserPermissionAssignmentList
-        });
-        document.body.appendChild(element);
+        const element = createComponent();
 
         await flushPromises();
         await flushPromises();
@@ -154,15 +172,34 @@ describe('c-rflib-user-permission-assignment-list', () => {
         expect(datatable.data[0].id).toBe('user25');
     });
 
+    it('updates displayed record count correctly per page', async () => {
+        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
+
+        const element = createComponent();
+
+        await flushPromises();
+        await flushPromises();
+
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+
+        // Page 1 should show 25 records (the page size)
+        expect(paginator.pageSize).toBe(25);
+        expect(paginator.totalRecords).toBe(30);
+
+        // Navigate to page 2 (should have 5 remaining records)
+        paginator.dispatchEvent(new CustomEvent('next'));
+        await flushPromises();
+
+        const datatable = element.shadowRoot.querySelector('lightning-datatable');
+        expect(datatable.data.length).toBe(5);
+    });
+
     it('handles error when loading data', async () => {
         const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
         const error = { body: { message: 'An error occurred' } };
         getUserPermissionAssignments.mockRejectedValue(error);
 
-        const element = createElement('c-rflib-user-permission-assignment-list', {
-            is: RflibUserPermissionAssignmentList
-        });
-        document.body.appendChild(element);
+        const element = createComponent();
 
         await flushPromises();
         await flushPromises();
