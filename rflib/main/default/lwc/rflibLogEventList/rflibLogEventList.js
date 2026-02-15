@@ -43,10 +43,10 @@ export default class RflibLogEventList extends LightningElement {
     @api pageSize;
     @track _currentPage = 1; // Changed to internal tracked property
 
-    @track allRecords = [];
+    allRecords = [];
     @track filteredRecordCount;
     @track recordsToDisplay = [];
-    @track selectedRow;
+    selectedRow;
 
     @track createdBySearch;
     @track levelSearch;
@@ -250,7 +250,7 @@ export default class RflibLogEventList extends LightningElement {
             this.totalPages = 1;
         }
 
-        logger.debug('recordsToDisplay={0}', JSON.stringify(this.recordsToDisplay));
+        // logger.debug('recordsToDisplay={0}', JSON.stringify(this.recordsToDisplay));
 
         const event = new CustomEvent('refreshed', {
             detail: JSON.stringify({
