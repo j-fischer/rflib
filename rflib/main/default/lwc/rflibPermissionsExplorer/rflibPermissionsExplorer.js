@@ -730,6 +730,10 @@ export default class PermissionsExplorer extends LightningElement {
     resetPermission() {
         logger.debug('resetPermission() invoked');
         this.arePermissionsAggregated = false;
+
+        const cacheKey = this.currentPermissionType.value + (this.selectedUserId || '');
+        delete this.cache[cacheKey];
+
         this.loadPermissions();
     }
 

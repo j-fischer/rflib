@@ -72,7 +72,7 @@ jest.mock(
 
 // Helper to flush promises
 function flushPromises() {
-    return new Promise(resolve => setTimeout(resolve, 0));
+    return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 describe('c-rflib-log-event-monitor', () => {
@@ -126,7 +126,7 @@ describe('c-rflib-log-event-monitor', () => {
                         }
                     }
                 };
-                if(messageCallback) messageCallback(message);
+                if (messageCallback) messageCallback(message);
                 return flushPromises();
             })
             .then(() => {
@@ -153,7 +153,7 @@ describe('c-rflib-log-event-monitor', () => {
             .then(() => {
                 const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
                 let targetMenu;
-                menus.forEach(m => {
+                menus.forEach((m) => {
                     if (m.label === 'New Messages') targetMenu = m;
                 });
                 if (!targetMenu && menus.length > 1) targetMenu = menus[1];
@@ -191,7 +191,7 @@ describe('c-rflib-log-event-monitor', () => {
                 // Change connection mode to Disconnected (value 0)
                 const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
                 let targetMenu;
-                menus.forEach(m => {
+                menus.forEach((m) => {
                     if (m.label === 'New Messages') targetMenu = m;
                 });
                 if (!targetMenu && menus.length > 1) targetMenu = menus[1];
@@ -225,7 +225,7 @@ describe('c-rflib-log-event-monitor', () => {
                 // Change connection mode to Historic and New Messages (value -2)
                 const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
                 let targetMenu;
-                menus.forEach(m => {
+                menus.forEach((m) => {
                     if (m.label === 'New Messages') targetMenu = m;
                 });
                 if (!targetMenu && menus.length > 1) targetMenu = menus[1];
@@ -256,8 +256,8 @@ describe('c-rflib-log-event-monitor', () => {
 
         return flushPromises()
             .then(() => {
-                 const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
-                 logEventList.getFilteredRecords = jest.fn(() => [
+                const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+                logEventList.getFilteredRecords = jest.fn(() => [
                     {
                         CreatedDate: '2021-01-01',
                         CreatedById: 'User1',
@@ -279,7 +279,7 @@ describe('c-rflib-log-event-monitor', () => {
                 });
 
                 const buttons = Array.from(element.shadowRoot.querySelectorAll('button'));
-                const exportButton = buttons.find(b => b.textContent.trim() === 'Export to CSV');
+                const exportButton = buttons.find((b) => b.textContent.trim() === 'Export to CSV');
 
                 if (exportButton) {
                     exportButton.click();
@@ -311,7 +311,7 @@ describe('c-rflib-log-event-monitor', () => {
             .then(() => {
                 const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
                 let targetMenu;
-                menus.forEach(m => {
+                menus.forEach((m) => {
                     if (m.label === 'New Messages') targetMenu = m;
                 });
                 if (!targetMenu && menus.length > 1) targetMenu = menus[1]; // Fallback
@@ -323,17 +323,17 @@ describe('c-rflib-log-event-monitor', () => {
                 // Query "Clear Archive" menu item.
                 const menuItems = element.shadowRoot.querySelectorAll('lightning-menu-item');
                 let clearItem;
-                menuItems.forEach(item => {
+                menuItems.forEach((item) => {
                     if (item.label === 'Clear Archive') clearItem = item;
                 });
 
                 if (clearItem) {
                     clearItem.click();
                 } else {
-                     // Since menu items might be inside a closed slot of lightning-button-menu, they might not be in DOM.
-                     // But sfdx-lwc-jest usually renders them.
-                     // If fail, we assume it's because of stubbing.
-                     // Let's assume we can find it.
+                    // Since menu items might be inside a closed slot of lightning-button-menu, they might not be in DOM.
+                    // But sfdx-lwc-jest usually renders them.
+                    // If fail, we assume it's because of stubbing.
+                    // Let's assume we can find it.
                 }
 
                 return flushPromises();

@@ -182,7 +182,7 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
 
     handleSecurityObjectNameKeyPress(event) {
-        if (event.which === 13) {
+        if (event.key === 'Enter') {
             this.executeSearch();
         }
     }
@@ -195,7 +195,7 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
 
     handleObjectSearchKeyPress(event) {
-        if (event.which === 13) {
+        if (event.key === 'Enter') {
             this.executeSearch();
         }
     }
@@ -208,7 +208,7 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
 
     handleFieldSearchKeyPress(event) {
-        if (event.which === 13) {
+        if (event.key === 'Enter') {
             this.executeSearch();
         }
     }
