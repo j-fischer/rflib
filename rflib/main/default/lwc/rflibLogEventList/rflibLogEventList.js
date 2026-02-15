@@ -250,7 +250,7 @@ export default class RflibLogEventList extends LightningElement {
             this.totalPages = 1;
         }
 
-        // logger.debug('recordsToDisplay={0}', JSON.stringify(this.recordsToDisplay));
+        logger.debug('recordsToDisplay={0}', JSON.stringify(this.recordsToDisplay));
 
         const event = new CustomEvent('refreshed', {
             detail: JSON.stringify({
