@@ -350,4 +350,242 @@ describe('c-rflib-log-event-monitor', () => {
                 }
             });
     });
+
+    it('handles pagination', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                // Simulate refresh with more records
+                const eventDetails = {
+                    currentPage: 2,
+                    numDisplayedRecords: 25,
+                    pageSize: 10
+                };
+
+                const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+                logEventList.dispatchEvent(new CustomEvent('refreshed', { detail: JSON.stringify(eventDetails) }));
+
+                return flushPromises();
+            })
+            .then(() => {
+                // To test pagination handlers, we interact with the paginator component
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                expect(paginator).not.toBeNull();
+
+                // Simulate Next
+                paginator.dispatchEvent(new CustomEvent('next'));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                // Simulate Next again (should be clamped if logic handles it, but component just increments)
+                // The component checks vs totalPages.
+                paginator.dispatchEvent(new CustomEvent('next'));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                paginator.dispatchEvent(new CustomEvent('previous'));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                paginator.dispatchEvent(new CustomEvent('first'));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                paginator.dispatchEvent(new CustomEvent('previous'));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                paginator.dispatchEvent(new CustomEvent('last'));
+                return flushPromises();
+            });
+    });
+
+    it('handles date changes and manual archive query', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        getArchivedRecords.mockResolvedValue({ records: [], queryLimit: 100 });
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                // Switch to Archive mode
+                const menus = Array.from(element.shadowRoot.querySelectorAll('lightning-button-menu'));
+                const modeMenu = menus.find((m) => m.label === 'New Messages');
+
+                if (modeMenu) {
+                    modeMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 1 } })); // Archive
+                } else {
+                    throw new Error('Mode menu not found');
+                }
+
+                return flushPromises();
+            })
+            .then(() => {
+                const startInputs = Array.from(element.shadowRoot.querySelectorAll('lightning-input'));
+                const startDateInput = startInputs.find((i) => i.name === 'startDate');
+
+                if (startDateInput) {
+                    startDateInput.value = '2021-01-01';
+                    startDateInput.dispatchEvent(new CustomEvent('change'));
+                } else {
+                    throw new Error('Start date input not found');
+                }
+
+                const endDateInput = startInputs.find((i) => i.name === 'endDate');
+                if (endDateInput) {
+                    endDateInput.value = '2021-01-31';
+                    endDateInput.dispatchEvent(new CustomEvent('change'));
+                }
+
+                return flushPromises();
+            })
+            .then(() => {
+                const buttons = Array.from(element.shadowRoot.querySelectorAll('button'));
+                const queryBtn = buttons.find((b) => b.textContent.trim() === 'Query Archive');
+
+                if (queryBtn) queryBtn.click();
+
+                return flushPromises();
+            })
+            .then(() => {
+                expect(getArchivedRecords).toHaveBeenCalledWith({
+                    startDate: '2021-01-01',
+                    endDate: '2021-01-31'
+                });
+            });
+    });
+
+    it('toggles fullscreen mode', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises().then(() => {
+            const buttons = Array.from(element.shadowRoot.querySelectorAll('lightning-button-icon'));
+            const toggleBtn = buttons.find((b) => b.iconName === 'utility:toggle_panel_left');
+
+            if (!toggleBtn) throw new Error('Toggle button not found');
+
+            // Initially visible (so button hides it)
+            expect(element.shadowRoot.querySelector('.left-column')).not.toBeNull();
+            expect(element.shadowRoot.querySelector('.left-column').classList).not.toContain('slds-hide');
+
+            toggleBtn.click();
+            return flushPromises().then(() => {
+                // When hidden, the class 'left-column' is removed and replaced by 'slds-hide'
+                // We select the first child of the grid
+                const leftCol = element.shadowRoot.querySelector('.slds-grid.slds-m-top_x-small > div:first-child');
+                expect(leftCol.classList).toContain('slds-hide');
+                expect(leftCol.classList).not.toContain('left-column');
+
+                // Click again to show
+                toggleBtn.click();
+                return flushPromises().then(() => {
+                    const leftColVisible = element.shadowRoot.querySelector(
+                        '.slds-grid.slds-m-top_x-small > div:first-child'
+                    );
+                    expect(leftColVisible.classList).not.toContain('slds-hide');
+                    expect(leftColVisible.classList).toContain('left-column');
+                });
+            });
+        });
+    });
+
+    it('handles log selection and closing viewer', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+                const logEvent = {
+                    Id: '123',
+                    CreatedById: 'User1',
+                    Log_Level__c: 'ERROR',
+                    Platform_Info__c: '{}'
+                };
+                logEventList.dispatchEvent(new CustomEvent('logselected', { detail: JSON.stringify(logEvent) }));
+
+                return flushPromises();
+            })
+            .then(() => {
+                const viewer = element.shadowRoot.querySelector('c-rflib-log-event-viewer');
+                expect(viewer).not.toBeNull();
+
+                viewer.dispatchEvent(new CustomEvent('closeviewer'));
+                return flushPromises();
+            })
+            .then(() => {
+                const viewer = element.shadowRoot.querySelector('c-rflib-log-event-viewer');
+                expect(viewer).toBeNull();
+            });
+    });
+
+    it('manages field visibility settings', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        const getItemSpy = jest.spyOn(Storage.prototype, 'getItem');
+        const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+
+        document.body.appendChild(element);
+
+        return flushPromises()
+            .then(() => {
+                expect(getItemSpy).toHaveBeenCalledWith('rflib_log_viewer_field_visibility');
+
+                const menus = Array.from(element.shadowRoot.querySelectorAll('lightning-button-menu'));
+                const menu = menus.find((m) => m.iconName === 'utility:settings');
+
+                if (!menu) throw new Error('Settings menu not found');
+
+                menu.dispatchEvent(new CustomEvent('select', { detail: { value: 'showDate' } }));
+
+                return flushPromises();
+            })
+            .then(() => {
+                expect(setItemSpy).toHaveBeenCalled();
+                const savedSettings = JSON.parse(setItemSpy.mock.calls[0][1]);
+                expect(savedSettings.showDate).toBe(false); // Toggled from true default
+            });
+    });
 });
