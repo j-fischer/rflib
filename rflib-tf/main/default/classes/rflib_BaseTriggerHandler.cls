@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2026
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,18 +29,13 @@
 
 /**
  * @group Trigger
- * @description Main interface for the trigger framework.
+ * @description Base interface for the trigger framework.
  */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public interface rflib_TriggerHandler extends rflib_BaseTriggerHandler {
+public interface rflib_BaseTriggerHandler {
     /**
-     * Method to be invoked by the Trigger Framework in the vent of a recursive invocation. The counter will the number 
-     * of times the recursive loop was entered.  
-     * 
-     * @param  args          The TriggerManager.Args object containing all event details.
-     * @param  numInvocation The number of times this event trigger has been invoked in the recursive context. 
-     *                       Note that the number increases per event type, i.e. before and after update trigger
-     *                       will each have a counter of 1 during the first cycle.
+     * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 
+     * @param  args The TriggerManager.Args object containing all event details.
      */
-    void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation);
+    void run(rflib_TriggerManager.Args args);
 }
