@@ -26,46 +26,55 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- @IsTest
- @SuppressWarnings('PMD.ClassNamingConventions')
+@IsTest
+@SuppressWarnings('PMD.ClassNamingConventions')
 public class rflib_MockTriggerHandler implements rflib_TriggerHandler {
-    
-    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockTriggerHandler');
+    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory()
+        .createLogger('rflib_MockTriggerHandler');
 
     // These fields have to be static because the class gets instantiated by the TriggerManager, not injected.
-    public static List<rflib_TriggerManager.Args> CAPTURED_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();
-    public static List<rflib_TriggerManager.Args> CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();
+    public static List<rflib_TriggerManager.Args> capturedRunTriggerArgs = new List<rflib_TriggerManager.Args>();
+    public static List<rflib_TriggerManager.Args> capturedConsecutiveRunTriggerArgs = new List<rflib_TriggerManager.Args>();
 
-    public static Exception EXCEPTION_ON_RUN = null;
-    public static Exception EXCEPTION_ON_CONSECUTIVE_RUN = null;
+    public static Exception exceptionOnRun = null;
+    public static Exception exceptionOnConsecutiveRun = null;
 
-    public static Callable ACTION_WHEN_CALLED = null;
+    public static Callable actionWhenCalled = null;
 
     public void run(rflib_TriggerManager.Args args) {
         LOGGER.info('run() invoked');
 
-        CAPTURED_RUN_TRIGGER_ARGS.add(args);
+        capturedRunTriggerArgs.add(args);
 
-        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_RUN != null) });
-        if (ACTION_WHEN_CALLED != null) {
-            ACTION_WHEN_CALLED.call('run', new Map<String, Object> { 'triggerArgs' => args });
+        LOGGER.info(
+            'will run action={0}, should throw exception={1} ',
+            new List<object>{ (actionWhenCalled != null), (exceptionOnRun != null) }
+        );
+        if (actionWhenCalled != null) {
+            actionWhenCalled.call('run', new Map<String, Object>{ 'triggerArgs' => args });
         }
 
-        if (EXCEPTION_ON_RUN != null) {
-            throw EXCEPTION_ON_RUN;
+        if (exceptionOnRun != null) {
+            throw exceptionOnRun;
         }
     }
 
     public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
-        CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.add(args);
-        
-        LOGGER.info('onConsecutiveRun invoked, will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_RUN != null) });
-        if (ACTION_WHEN_CALLED != null) {
-            ACTION_WHEN_CALLED.call('onConsecutiveRun', new Map<String, Object> { 'triggerArgs' => args, 'numInvocation' => numInvocation });
+        capturedConsecutiveRunTriggerArgs.add(args);
+
+        LOGGER.info(
+            'onConsecutiveRun invoked, will run action={0}, should throw exception={1} ',
+            new List<object>{ (actionWhenCalled != null), (exceptionOnRun != null) }
+        );
+        if (actionWhenCalled != null) {
+            actionWhenCalled.call(
+                'onConsecutiveRun',
+                new Map<String, Object>{ 'triggerArgs' => args, 'numInvocation' => numInvocation }
+            );
         }
 
-        if (EXCEPTION_ON_CONSECUTIVE_RUN != null) {
-            throw EXCEPTION_ON_CONSECUTIVE_RUN;
-        } 
+        if (exceptionOnConsecutiveRun != null) {
+            throw exceptionOnConsecutiveRun;
+        }
     }
 }
