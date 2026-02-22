@@ -29,16 +29,10 @@
 
 /**
  * @group Trigger
- * @description Base interface for the trigger framework.
+ * @description Main interface for the trigger framework.
  */ 
-public interface rflib_TriggerHandler {
-
-    /**
-     * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 
-     * @param  args The TriggerManager.Args object containing all event details.
-     */
-    void run(rflib_TriggerManager.Args args);
-
+@SuppressWarnings('PMD.ClassNamingConventions')
+public interface rflib_TriggerHandler extends rflib_BaseTriggerHandler {
     /**
      * Method to be invoked by the Trigger Framework in the vent of a recursive invocation. The counter will the number 
      * of times the recursive loop was entered.  

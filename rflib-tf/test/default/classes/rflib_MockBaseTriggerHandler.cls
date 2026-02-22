@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2021 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,27 +28,29 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
+public with sharing class rflib_MockBaseTriggerHandler implements rflib_BaseTriggerHandler {
     
-    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockRetryableActionHandler');
+    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockBaseTriggerHandler');
 
-    public static List<rflib_Retryable_Action__e> CAPTURED_ACTION_EVENTS = new List<rflib_Retryable_Action__e>();
+    // These fields have to be static because the class gets instantiated by the TriggerManager, not injected.
+    public static List<rflib_TriggerManager.Args> capturedRunTriggerArgs = new List<rflib_TriggerManager.Args>();
 
-    public static Exception EXCEPTION_ON_EXECUTE = null;
+    public static Exception exceptionOnRun = null;
+
     public static Callable actionWhenCalled = null;
 
-    public void execute(List<rflib_Retryable_Action__e> actions) {
+    public void run(rflib_TriggerManager.Args args) {
         LOGGER.info('run() invoked');
 
-        CAPTURED_ACTION_EVENTS.addAll(actions);
+        capturedRunTriggerArgs.add(args);
 
-        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (actionWhenCalled != null), (EXCEPTION_ON_EXECUTE != null) });
+        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (actionWhenCalled != null), (exceptionOnRun != null) });
         if (actionWhenCalled != null) {
-            actionWhenCalled.call('run', new Map<String, Object> { 'actions' => actions });
+            actionWhenCalled.call('run', new Map<String, Object> { 'triggerArgs' => args });
         }
 
-        if (EXCEPTION_ON_EXECUTE != null) {
-            throw EXCEPTION_ON_EXECUTE;
+        if (exceptionOnRun != null) {
+            throw exceptionOnRun;
         }
     }
 }

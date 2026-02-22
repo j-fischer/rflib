@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2026
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,29 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
+
+/**
+ * @group Trigger
+ * @description Base interface for the trigger framework.
+ */ 
 @SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
-    
-    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockRetryableActionHandler');
-
-    public static List<rflib_Retryable_Action__e> CAPTURED_ACTION_EVENTS = new List<rflib_Retryable_Action__e>();
-
-    public static Exception EXCEPTION_ON_EXECUTE = null;
-    public static Callable actionWhenCalled = null;
-
-    public void execute(List<rflib_Retryable_Action__e> actions) {
-        LOGGER.info('run() invoked');
-
-        CAPTURED_ACTION_EVENTS.addAll(actions);
-
-        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (actionWhenCalled != null), (EXCEPTION_ON_EXECUTE != null) });
-        if (actionWhenCalled != null) {
-            actionWhenCalled.call('run', new Map<String, Object> { 'actions' => actions });
-        }
-
-        if (EXCEPTION_ON_EXECUTE != null) {
-            throw EXCEPTION_ON_EXECUTE;
-        }
-    }
+public interface rflib_BaseTriggerHandler {
+    /**
+     * Method to be invoked by the Trigger Framework when a trigger is executed in the main event context. 
+     * @param  args The TriggerManager.Args object containing all event details.
+     */
+    void run(rflib_TriggerManager.Args args);
 }

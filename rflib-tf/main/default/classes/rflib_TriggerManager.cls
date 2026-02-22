@@ -37,7 +37,7 @@ public inherited sharing class rflib_TriggerManager {
     
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createBatchedLogger('rflib_TriggerManager');
 
-    private static Map<String, rflib_TriggerHandler> ACTIVE_HANDLERS = new Map<String, rflib_TriggerHandler>();
+    private static Map<String, rflib_BaseTriggerHandler> ACTIVE_HANDLERS = new Map<String, rflib_BaseTriggerHandler>();
 
     private static Map<rflib_TriggerManager.Args, Integer> ON_CONSECUTIVE_RUN_COUNTERS = new Map<rflib_TriggerManager.Args,Integer>();
 
@@ -62,7 +62,7 @@ public inherited sharing class rflib_TriggerManager {
 
     @TestVisible
     private static void dispatch(rflib_TriggerManager.Args args) {
-        List<TriggerHandlerInfo> handlers = getHandlers(args);
+        List<BaseTriggerHandlerInfo> handlers = getHandlers(args);
 
         if (rflib_FeatureSwitch.isTurnedOn('rflib_Disable_All_Triggers')) {
             LOGGER.warn('The All Trigger Feature switch is turned off, exiting trigger execution.');
@@ -84,12 +84,12 @@ public inherited sharing class rflib_TriggerManager {
         }
     }
 
-    private static void runHandlers(rflib_TriggerManager.Args args, List<TriggerHandlerInfo> handlers) {
-        for (TriggerHandlerInfo handlerInfo : handlers) {
-            rflib_TriggerHandler handler = handlerInfo.handler;
+    private static void runHandlers(rflib_TriggerManager.Args args, List<BaseTriggerHandlerInfo> handlers) {
+        for (BaseTriggerHandlerInfo handlerInfo : handlers) {
+            rflib_BaseTriggerHandler handler = handlerInfo.handler;
 
             String recursionKey = getRecursionKey(args, handlerInfo);
-            rflib_TriggerHandler activeHandler = ACTIVE_HANDLERS.get(recursionKey);
+            rflib_BaseTriggerHandler activeHandler = ACTIVE_HANDLERS.get(recursionKey);
             LOGGER.debug('Is consecutive run? ' + (activeHandler != null));
 
             if (activeHandler == null) {
@@ -109,9 +109,13 @@ public inherited sharing class rflib_TriggerManager {
                 }
             }
 
-            if (activeHandler != null) {
+            if (
+                activeHandler != null
+                && handler instanceof rflib_TriggerHandler
+            ) {
+                rflib_TriggerHandler triggerHandler = (rflib_TriggerHandler) handler;
                 try {
-                    handler.onConsecutiveRun(args, incrementAndGetCounter(args));
+                    triggerHandler.onConsecutiveRun(args, incrementAndGetCounter(args));
                 } catch (Exception ex) {
                     if (handlerInfo.catchException) {
                         LOGGER.warn('onConsecutiveRun: Handler "{0}" threw an exception with message "{1}". Stacktrace:\n{2}', new object[] { handlerInfo.handlerType, ex.getMessage(), ex.getStackTraceString() });
@@ -137,8 +141,8 @@ public inherited sharing class rflib_TriggerManager {
         return count;
     }
 
-    private static List<TriggerHandlerInfo> getHandlers(rflib_TriggerManager.Args args) {
-        List<TriggerHandlerInfo> result = new List<TriggerHandlerInfo>();
+    private static List<BaseTriggerHandlerInfo> getHandlers(rflib_TriggerManager.Args args) {
+        List<BaseTriggerHandlerInfo> result = new List<BaseTriggerHandlerInfo>();
 
         String sObjectName = args.objectType.getDescribe().getName();
         List<rflib_Trigger_Configuration__mdt> triggerHandlers = QUERY_LOCATOR.getRecords(sObjectName, args.operation.name());
@@ -151,10 +155,10 @@ public inherited sharing class rflib_TriggerManager {
                 LOGGER.error('Could not find Class with name {0} for Object {1} and operation {2}, please review your configuration.', new Object[] { handlerInfo.Class_Name__c, sObjectName, args.operation.name() });
                 continue;
             }
-            rflib_TriggerHandler handler = (rflib_TriggerHandler) handlerType.newInstance();
+            rflib_BaseTriggerHandler handler = (rflib_BaseTriggerHandler) handlerType.newInstance();
 
             Boolean catchException = handlerInfo.Exception_Behavior__c == 'Catch Exception';
-            result.add(new TriggerHandlerInfo(handler, handlerType, catchException));
+            result.add(new BaseTriggerHandlerInfo(handler, handlerType, catchException));
         }
 
         LOGGER.debug('{0} active trigger(s) found for operation {1} on object type {2}: {3}', new List<Object> { activeTriggers.size(), args.operation, sObjectName, String.join(activeTriggers, ',') });
@@ -162,7 +166,7 @@ public inherited sharing class rflib_TriggerManager {
         return result;
     }
 
-    private static String getRecursionKey(rflib_TriggerManager.Args args, TriggerHandlerInfo handlerInfo) {
+    private static String getRecursionKey(rflib_TriggerManager.Args args, BaseTriggerHandlerInfo handlerInfo) {
         return args.objectType.getDescribe().getName() + '_' +
             args.operation + '_' +
             handlerInfo.handlerType.getName();
@@ -178,7 +182,19 @@ public inherited sharing class rflib_TriggerManager {
             this.handlerType = handlerType;
             this.catchException = catchException;
         }
-    }    
+    }
+
+    public class BaseTriggerHandlerInfo {
+        public final rflib_BaseTriggerHandler handler;
+        public final Type handlerType;
+        public final Boolean catchException;
+
+        public BaseTriggerHandlerInfo(rflib_BaseTriggerHandler handler, Type handlerType, Boolean catchException) {
+            this.handler = handler;
+            this.handlerType = handlerType;
+            this.catchException = catchException;
+        }
+    }
 
     /**
     * @group Trigger
