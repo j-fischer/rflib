@@ -154,6 +154,9 @@ jobs:
             - attach_workspace:
                   at: ~/
             - run:
+                  name: Install Dependencies
+                  command: npm install
+            - run:
                   name: Report Coverage
                   command: |
                       cp ~/apex_tests/test-result-codecoverage.json .
