@@ -142,6 +142,9 @@ jobs:
             - attach_workspace:
                   at: ~/
             - run:
+                  name: Install Dependencies
+                  command: npm install
+            - run:
                   name: Run LWC Tests
                   command: |
                       npm run test:unit:coverage
