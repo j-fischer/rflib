@@ -3,7 +3,7 @@ version: 2.1
 # Defining default values for all jobs
 defaults: &defaults
     docker:
-        - image: cimg/node:lts
+        - image: salesforce/cli:2.122.6-full
 
 jobs:
     setup_project:
@@ -11,11 +11,6 @@ jobs:
         steps:
             - checkout:
                   method: full
-            - run:
-                  name: Install jq
-                  command: |
-                      sudo apt-get update
-                      sudo apt-get install -y jq
             - run:
                   name: Install Salesforce DX
                   command: |
@@ -26,7 +21,6 @@ jobs:
                       export SF_LOG_LEVEL=debug
                       export SF_IMPROVED_CODE_COVERAGE=true
                       node -v
-                      npm install @salesforce/cli@2.113.6
                       npx sf --version
                       npx sf plugins --core
             - persist_to_workspace:
