@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @IsTest
-public class rflib_MockSingleRunOnlyTriggerHandlerOverride extends rflib_SingleRunOnlyTriggerHandler {
+public class rflib_MockSROTriggerHandlerOverride extends rflib_SingleRunOnlyTriggerHandler {
     private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory()
         .createLogger('rflib_MockTriggerHandler');
 
@@ -69,7 +69,7 @@ public class rflib_MockSingleRunOnlyTriggerHandlerOverride extends rflib_SingleR
      * @param numInvocation The number of times the trigger handler has been invoked.
      * @return void
      */
-    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+    public override void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
         CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.add(args);
 
         LOGGER.info(

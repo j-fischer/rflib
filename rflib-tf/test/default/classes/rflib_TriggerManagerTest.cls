@@ -32,6 +32,10 @@ private class rflib_TriggerManagerTest {
     private static final String ABORT_TRANSACTION = 'Abort Transaction';
     private static final String CATCH_EXCEPTION = 'Catch Exception';
 
+    private static final String MOCK_TRIGGER_HANDLER = 'rflib_MockTriggerHandler';
+    private static final String MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER = 'rflib_MockSingleRunOnlyTriggerHandler';
+    private static final String MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE = 'rflib_MockSROTriggerHandlerOverride';
+
     private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
     private static final String AFTER_UPDATE = TriggerOperation.AFTER_UPDATE.name();
     private static final String OBJECT_TYPE_NAME = rflib_Log_Event__e.SObjectType.getDescribe().getName();
@@ -61,6 +65,14 @@ private class rflib_TriggerManagerTest {
         );
     }
 
+    private static void setup(String className, String exceptionBehaviour) {
+        rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
+            createConfiguration(className, exceptionBehaviour),
+            OBJECT_TYPE_NAME,
+            AFTER_INSERT
+        );
+    }
+
     @IsTest
     public static void testRun_DisableAllTriggersFeatureSwitchOn() {
         setup(ABORT_TRANSACTION);
@@ -71,7 +83,20 @@ private class rflib_TriggerManagerTest {
 
         rflib_TriggerManager.dispatch(createArgs(createEvent()));
 
-        System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        Assert.areEqual(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+    }
+
+    @IsTest
+    public static void testRun_DisableAllTriggersFeatureSwitchOnSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
+
+        rflib_FeatureSwitch.featureSwitches = new Map<String, Map<String, Boolean>>{
+            'rflib_Disable_All_Triggers' => new Map<String, Boolean>{ rflib_FeatureSwitch.GLOBAL_SCOPE => true }
+        };
+
+        rflib_TriggerManager.dispatch(createArgs(createEvent()));
+
+        Assert.areEqual(0, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
     }
 
     @IsTest
@@ -81,7 +106,18 @@ private class rflib_TriggerManagerTest {
         System.runAs(BYPASS_TRIGGERS_USER) {
             rflib_TriggerManager.dispatch(createArgs(createEvent()));
 
-            System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+            Assert.areEqual(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        }
+    }
+
+    @IsTest
+    public static void testRun_BypassAllTriggerPermissionSetSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
+
+        System.runAs(BYPASS_TRIGGERS_USER) {
+            rflib_TriggerManager.dispatch(createArgs(createEvent()));
+
+            Assert.areEqual(0, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
         }
     }
 
@@ -99,6 +135,19 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
+    public static void testRun_SuccessSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
+
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS);
+        }
+    }
+
+    @IsTest
     public static void testRun_ExceptionCaught() {
         setup(CATCH_EXCEPTION);
 
@@ -111,10 +160,34 @@ private class rflib_TriggerManagerTest {
 
             rflib_TriggerManager.Args args = assertRunTriggerArgs(ev);
 
-            System.assertEquals(true, args.hasExceptions());
-            System.assertEquals(
+            Assert.isTrue(args.hasExceptions());
+            Assert.areEqual(
                 ex.getMessage(),
                 args.getCaughtExceptionsByType(rflib_MockTriggerHandler.class).get(0).getMessage()
+            );
+        }
+    }
+
+    @IsTest
+    public static void testRun_ExceptionCaughtSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, CATCH_EXCEPTION);
+
+        rflib_MockSingleRunOnlyTriggerHandler.EXCEPTION_ON_RUN = EX;
+
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            rflib_TriggerManager.Args args = assertRunTriggerArgs(
+                ev,
+                rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS
+            );
+
+            Assert.isTrue(args.hasExceptions());
+            Assert.areEqual(
+                ex.getMessage(),
+                args.getCaughtExceptionsByType(rflib_MockSingleRunOnlyTriggerHandler.class).get(0).getMessage()
             );
         }
     }
@@ -130,13 +203,33 @@ private class rflib_TriggerManagerTest {
         try {
             System.runAs(STANDARD_USER) {
                 rflib_TriggerManager.dispatch(createArgs(ev));
-                System.assert(false, 'Expected exception has not been thrown');
+                Assert.fail('Expected exception has not been thrown');
             }
         } catch (Exception actualException) {
-            System.assertEquals(EX.getMessage(), actualException.getMessage());
+            Assert.areEqual(EX.getMessage(), actualException.getMessage());
         }
 
         assertRunTriggerArgs(ev);
+    }
+
+    @IsTest
+    public static void testRun_ExceptionThrownSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
+
+        rflib_MockSingleRunOnlyTriggerHandler.EXCEPTION_ON_RUN = EX;
+
+        rflib_Log_Event__e ev = createEvent();
+
+        try {
+            System.runAs(STANDARD_USER) {
+                rflib_TriggerManager.dispatch(createArgs(ev));
+                Assert.fail('Expected exception has not been thrown');
+            }
+        } catch (Exception actualException) {
+            Assert.areEqual(EX.getMessage(), actualException.getMessage());
+        }
+
+        assertRunTriggerArgs(ev, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS);
     }
 
     @IsTest
@@ -157,6 +250,43 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
+    public static void testOnConsecutiveRun_SuccessSingleRunOnly() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
+
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_MockSingleRunOnlyTriggerHandler.ACTION_WHEN_CALLED = new TriggerRecursiveRun(
+                new Set<String>{ 'run' }
+            );
+
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS);
+        }
+    }
+
+    @IsTest
+    public static void testOnConsecutiveRun_SuccessSingleRunOnlyOverride() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, ABORT_TRANSACTION);
+
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
+
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
+
+            assertConsecutiveRunTriggerArgs(
+                ev,
+                rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS
+            );
+        }
+    }
+
+    @IsTest
     public static void testOnConsecutiveRun_ExceptionCaught() {
         setup(CATCH_EXCEPTION);
 
@@ -173,10 +303,37 @@ private class rflib_TriggerManagerTest {
 
         rflib_TriggerManager.Args args = assertConsecutiveRunTriggerArgs(ev);
 
-        System.assertEquals(true, args.hasExceptions());
-        System.assertEquals(
+        Assert.isTrue(args.hasExceptions());
+        Assert.areEqual(
             ex.getMessage(),
             args.getCaughtExceptionsByType(rflib_MockTriggerHandler.class).get(0).getMessage()
+        );
+    }
+
+    @IsTest
+    public static void testOnConsecutiveRun_ExceptionCaughtSingleRunOnlyOverride() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, CATCH_EXCEPTION);
+
+        rflib_Log_Event__e ev = createEvent();
+
+        rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
+        rflib_MockSROTriggerHandlerOverride.EXCEPTION_ON_CONSECUTIVE_RUN = EX;
+
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(ev));
+
+            assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
+        }
+
+        rflib_TriggerManager.Args args = assertConsecutiveRunTriggerArgs(
+            ev,
+            rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS
+        );
+
+        Assert.isTrue(args.hasExceptions());
+        Assert.areEqual(
+            ex.getMessage(),
+            args.getCaughtExceptionsByType(rflib_MockSROTriggerHandlerOverride.class).get(0).getMessage()
         );
     }
 
@@ -192,14 +349,36 @@ private class rflib_TriggerManagerTest {
         try {
             System.runAs(STANDARD_USER) {
                 rflib_TriggerManager.dispatch(createArgs(ev));
-                System.assert(false, 'Expected exception has not been thrown');
+                Assert.fail('Expected exception has not been thrown');
             }
         } catch (Exception actualException) {
-            System.assertEquals(EX.getMessage(), actualException.getMessage());
+            Assert.areEqual(EX.getMessage(), actualException.getMessage());
         }
 
         assertRunTriggerArgs(ev);
         assertConsecutiveRunTriggerArgs(ev);
+    }
+
+    @IsTest
+    public static void testOnConsecutiveRun_ExceptionThrownSingleRunOnlyOverride() {
+        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, ABORT_TRANSACTION);
+
+        rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
+        rflib_MockSROTriggerHandlerOverride.EXCEPTION_ON_CONSECUTIVE_RUN = EX;
+
+        rflib_Log_Event__e ev = createEvent();
+
+        try {
+            System.runAs(STANDARD_USER) {
+                rflib_TriggerManager.dispatch(createArgs(ev));
+                Assert.fail('Expected exception has not been thrown');
+            }
+        } catch (Exception actualException) {
+            Assert.areEqual(EX.getMessage(), actualException.getMessage());
+        }
+
+        assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
+        assertConsecutiveRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS);
     }
 
     @IsTest
@@ -214,7 +393,7 @@ private class rflib_TriggerManagerTest {
         List<rflib_Trigger_Configuration__mdt> actualResult = new rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator()
             .getRecords(OBJECT_TYPE_NAME, AFTER_INSERT);
 
-        System.assertEquals(expectedResult.size(), actualResult.size());
+        Assert.areEqual(expectedResult.size(), actualResult.size());
     }
 
     @IsTest
@@ -264,25 +443,25 @@ private class rflib_TriggerManagerTest {
         locator.allConfigValues = configMetadata;
         List<rflib_Trigger_Configuration__mdt> actualResult = locator.getRecords(OBJECT_TYPE_NAME, AFTER_INSERT);
 
-        System.assertEquals(3, actualResult.size());
-        System.assertEquals(config1.Class_Name__c, actualResult.get(0).Class_Name__c);
-        System.assertEquals(config2.Class_Name__c, actualResult.get(1).Class_Name__c);
-        System.assertEquals(config3.Class_Name__c, actualResult.get(2).Class_Name__c);
+        Assert.areEqual(3, actualResult.size());
+        Assert.areEqual(config1.Class_Name__c, actualResult.get(0).Class_Name__c);
+        Assert.areEqual(config2.Class_Name__c, actualResult.get(1).Class_Name__c);
+        Assert.areEqual(config3.Class_Name__c, actualResult.get(2).Class_Name__c);
     }
 
     @IsTest
     public static void testConfigWrapper() {
         rflib_TriggerManager.TriggerConfigurationWrapper wrapper1 = new rflib_TriggerManager.TriggerConfigurationWrapper(
-            createConfiguration('rflib_MockTriggerHandler', 1)
+            createConfiguration(MOCK_TRIGGER_HANDLER, 1)
         );
         rflib_TriggerManager.TriggerConfigurationWrapper wrapper2 = new rflib_TriggerManager.TriggerConfigurationWrapper(
-            createConfiguration('rflib_MockTriggerHandler', 2)
+            createConfiguration(MOCK_TRIGGER_HANDLER, 2)
         );
         rflib_TriggerManager.TriggerConfigurationWrapper wrapper3 = new rflib_TriggerManager.TriggerConfigurationWrapper(
-            createConfiguration('rflib_MockTriggerHandler', 3)
+            createConfiguration(MOCK_TRIGGER_HANDLER, 3)
         );
         rflib_TriggerManager.TriggerConfigurationWrapper wrapper4 = new rflib_TriggerManager.TriggerConfigurationWrapper(
-            createConfiguration('rflib_MockTriggerHandler', 2)
+            createConfiguration(MOCK_TRIGGER_HANDLER, 2)
         );
         rflib_TriggerManager.TriggerConfigurationWrapper wrapper5 = new rflib_TriggerManager.TriggerConfigurationWrapper(
             createConfiguration('rflib_ATriggerHandler', 2)
@@ -291,18 +470,18 @@ private class rflib_TriggerManagerTest {
             null
         );
 
-        System.assertEquals(1, wrapper1.compareTo(null));
-        System.assertEquals(1, wrapper1.compareTo(noWrapper));
-        System.assertEquals(-1, noWrapper.compareTo(wrapper1));
-        System.assertEquals(0, wrapper2.compareTo(wrapper4));
-        System.assertEquals(0, noWrapper.compareTo(noWrapper));
-        System.assertEquals(-1, noWrapper.compareTo(wrapper1));
-        System.assertEquals(-1, wrapper1.compareTo(wrapper2));
-        System.assertEquals(-1, wrapper2.compareTo(wrapper3));
-        System.assertEquals(1, wrapper3.compareTo(wrapper2));
-        System.assertEquals(1, wrapper3.compareTo(wrapper1));
-        System.assertEquals(-1, wrapper5.compareTo(wrapper2));
-        System.assertEquals(1, wrapper2.compareTo(wrapper5));
+        Assert.areEqual(1, wrapper1.compareTo(null));
+        Assert.areEqual(1, wrapper1.compareTo(noWrapper));
+        Assert.areEqual(-1, noWrapper.compareTo(wrapper1));
+        Assert.areEqual(0, wrapper2.compareTo(wrapper4));
+        Assert.areEqual(0, noWrapper.compareTo(noWrapper));
+        Assert.areEqual(-1, noWrapper.compareTo(wrapper1));
+        Assert.areEqual(-1, wrapper1.compareTo(wrapper2));
+        Assert.areEqual(-1, wrapper2.compareTo(wrapper3));
+        Assert.areEqual(1, wrapper3.compareTo(wrapper2));
+        Assert.areEqual(1, wrapper3.compareTo(wrapper1));
+        Assert.areEqual(-1, wrapper5.compareTo(wrapper2));
+        Assert.areEqual(1, wrapper2.compareTo(wrapper5));
     }
 
     @IsTest
@@ -318,7 +497,7 @@ private class rflib_TriggerManagerTest {
         System.runAs(STANDARD_USER) {
             rflib_TriggerManager.dispatch(createArgs(ev));
 
-            System.assertEquals(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+            Assert.areEqual(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
         }
     }
 
@@ -355,31 +534,59 @@ private class rflib_TriggerManagerTest {
 
             assertRunTriggerArgs(ev);
 
-            System.assertEquals(true, SIMPLE_HANDLER_MOCK_RUN_INVOKED);
-            System.assertEquals(false, SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED);
+            Assert.isTrue(SIMPLE_HANDLER_MOCK_RUN_INVOKED);
+            Assert.isFalse(SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED);
         }
     }
 
     private static rflib_TriggerManager.Args assertRunTriggerArgs(rflib_Log_Event__e ev) {
-        System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
+        Assert.areEqual(1, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
 
         rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.get(0);
 
         rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0);
-        System.assertEquals(ev.Context__c, capturedEvent.Context__c);
+        Assert.areEqual(ev.Context__c, capturedEvent.Context__c);
 
         return args;
     }
 
+    private static rflib_TriggerManager.Args assertRunTriggerArgs(
+        rflib_Log_Event__e ev,
+        List<rflib_TriggerManager.Args> args
+    ) {
+        Assert.areEqual(1, args.size());
+
+        rflib_TriggerManager.Args capturedArgs = args.get(0);
+
+        rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) capturedArgs.newRecords.get(0);
+        Assert.areEqual(ev.Context__c, capturedEvent.Context__c);
+
+        return capturedArgs;
+    }
+
     private static rflib_TriggerManager.Args assertConsecutiveRunTriggerArgs(rflib_Log_Event__e ev) {
-        System.assertEquals(1, rflib_MockTriggerHandler.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.size());
+        Assert.areEqual(1, rflib_MockTriggerHandler.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.size());
 
         rflib_TriggerManager.Args args = rflib_MockTriggerHandler.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.get(0);
 
         rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) args.newRecords.get(0);
-        System.assertEquals(ev.Context__c, capturedEvent.Context__c);
+        Assert.areEqual(ev.Context__c, capturedEvent.Context__c);
 
         return args;
+    }
+
+    private static rflib_TriggerManager.Args assertConsecutiveRunTriggerArgs(
+        rflib_Log_Event__e ev,
+        List<rflib_TriggerManager.Args> args
+    ) {
+        Assert.areEqual(1, args.size());
+
+        rflib_TriggerManager.Args capturedArgs = args.get(0);
+
+        rflib_Log_Event__e capturedEvent = (rflib_Log_Event__e) capturedArgs.newRecords.get(0);
+        Assert.areEqual(ev.Context__c, capturedEvent.Context__c);
+
+        return capturedArgs;
     }
 
     private static rflib_TriggerManager.Args createArgs(rflib_Log_Event__e record) {
@@ -408,14 +615,11 @@ private class rflib_TriggerManagerTest {
     }
 
     private static rflib_Trigger_Configuration__mdt createConfiguration(String exceptionBehaviour) {
-        return createConfiguration(
-            true,
-            'rflib_MockTriggerHandler',
-            OBJECT_TYPE_NAME,
-            'AFTER_INSERT',
-            1,
-            exceptionBehaviour
-        );
+        return createConfiguration(true, MOCK_TRIGGER_HANDLER, OBJECT_TYPE_NAME, 'AFTER_INSERT', 1, exceptionBehaviour);
+    }
+
+    private static rflib_Trigger_Configuration__mdt createConfiguration(String className, String exceptionBehaviour) {
+        return createConfiguration(true, className, OBJECT_TYPE_NAME, 'AFTER_INSERT', 1, exceptionBehaviour);
     }
 
     private static rflib_Trigger_Configuration__mdt createConfiguration(String name, Integer order) {
