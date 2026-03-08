@@ -37,7 +37,7 @@ public abstract class rflib_SingleRunOnlyTriggerHandler implements rflib_Trigger
 
     public abstract void run(rflib_TriggerManager.Args args);
 
-    public virtual void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
         SINGLE_RUN_LOGGER.debug('onConsecutiveRun method is not implemented by this handler.');
     }
 }

@@ -29,7 +29,7 @@
 @IsTest
 public class rflib_MockSingleRunOnlyTriggerHandler extends rflib_SingleRunOnlyTriggerHandler {
     private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory()
-        .createLogger('rflib_MockTriggerHandler');
+        .createLogger('rflib_MockSingleRunOnlyTriggerHandler');
 
     // These fields have to be static because the class gets instantiated by the TriggerManager, not injected.
     public static List<rflib_TriggerManager.Args> CAPTURED_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();

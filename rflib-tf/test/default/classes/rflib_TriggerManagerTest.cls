@@ -34,7 +34,6 @@ private class rflib_TriggerManagerTest {
 
     private static final String MOCK_TRIGGER_HANDLER = 'rflib_MockTriggerHandler';
     private static final String MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER = 'rflib_MockSingleRunOnlyTriggerHandler';
-    private static final String MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE = 'rflib_MockSROTriggerHandlerOverride';
 
     private static final String AFTER_INSERT = TriggerOperation.AFTER_INSERT.name();
     private static final String AFTER_UPDATE = TriggerOperation.AFTER_UPDATE.name();
@@ -267,26 +266,6 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
-    public static void testOnConsecutiveRun_SuccessSingleRunOnlyOverride() {
-        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, ABORT_TRANSACTION);
-
-        rflib_Log_Event__e ev = createEvent();
-
-        System.runAs(STANDARD_USER) {
-            rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
-
-            rflib_TriggerManager.dispatch(createArgs(ev));
-
-            assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
-
-            assertConsecutiveRunTriggerArgs(
-                ev,
-                rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS
-            );
-        }
-    }
-
-    @IsTest
     public static void testOnConsecutiveRun_ExceptionCaught() {
         setup(CATCH_EXCEPTION);
 
@@ -311,33 +290,6 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
-    public static void testOnConsecutiveRun_ExceptionCaughtSingleRunOnlyOverride() {
-        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, CATCH_EXCEPTION);
-
-        rflib_Log_Event__e ev = createEvent();
-
-        rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
-        rflib_MockSROTriggerHandlerOverride.EXCEPTION_ON_CONSECUTIVE_RUN = EX;
-
-        System.runAs(STANDARD_USER) {
-            rflib_TriggerManager.dispatch(createArgs(ev));
-
-            assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
-        }
-
-        rflib_TriggerManager.Args args = assertConsecutiveRunTriggerArgs(
-            ev,
-            rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS
-        );
-
-        Assert.isTrue(args.hasExceptions());
-        Assert.areEqual(
-            ex.getMessage(),
-            args.getCaughtExceptionsByType(rflib_MockSROTriggerHandlerOverride.class).get(0).getMessage()
-        );
-    }
-
-    @IsTest
     public static void testOnConsecutiveRun_ExceptionThrown() {
         setup(ABORT_TRANSACTION);
 
@@ -357,28 +309,6 @@ private class rflib_TriggerManagerTest {
 
         assertRunTriggerArgs(ev);
         assertConsecutiveRunTriggerArgs(ev);
-    }
-
-    @IsTest
-    public static void testOnConsecutiveRun_ExceptionThrownSingleRunOnlyOverride() {
-        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER_OVERRIDE, ABORT_TRANSACTION);
-
-        rflib_MockSROTriggerHandlerOverride.ACTION_WHEN_CALLED = new TriggerRecursiveRun(new Set<String>{ 'run' });
-        rflib_MockSROTriggerHandlerOverride.EXCEPTION_ON_CONSECUTIVE_RUN = EX;
-
-        rflib_Log_Event__e ev = createEvent();
-
-        try {
-            System.runAs(STANDARD_USER) {
-                rflib_TriggerManager.dispatch(createArgs(ev));
-                Assert.fail('Expected exception has not been thrown');
-            }
-        } catch (Exception actualException) {
-            Assert.areEqual(EX.getMessage(), actualException.getMessage());
-        }
-
-        assertRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_RUN_TRIGGER_ARGS);
-        assertConsecutiveRunTriggerArgs(ev, rflib_MockSROTriggerHandlerOverride.CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS);
     }
 
     @IsTest
