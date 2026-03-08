@@ -27,14 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 @IsTest
-public class rflib_MockSingleRunOnlyTriggerHandler extends rflib_SingleRunOnlyTriggerHandler {
+public class rflib_MockSingleRunOnlyTriggerHandlerOverride extends rflib_SingleRunOnlyTriggerHandler {
     private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory()
         .createLogger('rflib_MockTriggerHandler');
 
     // These fields have to be static because the class gets instantiated by the TriggerManager, not injected.
     public static List<rflib_TriggerManager.Args> CAPTURED_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();
+    public static List<rflib_TriggerManager.Args> CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS = new List<rflib_TriggerManager.Args>();
 
     public static Exception EXCEPTION_ON_RUN = null;
+    public static Exception EXCEPTION_ON_CONSECUTIVE_RUN = null;
 
     public static Callable ACTION_WHEN_CALLED = null;
 
@@ -58,6 +60,31 @@ public class rflib_MockSingleRunOnlyTriggerHandler extends rflib_SingleRunOnlyTr
 
         if (EXCEPTION_ON_RUN != null) {
             throw EXCEPTION_ON_RUN;
+        }
+    }
+
+    /**
+     * @override for onConsecutiveRun method. Runs trigger handler, and captures the args.
+     * @param args The args passed to the trigger handler.
+     * @param numInvocation The number of times the trigger handler has been invoked.
+     * @return void
+     */
+    public void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+        CAPTURED_CONSECUTIVE_RUN_TRIGGER_ARGS.add(args);
+
+        LOGGER.info(
+            'onConsecutiveRun invoked, will run action={0}, should throw exception={1} ',
+            new List<object>{ (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_RUN != null) }
+        );
+        if (ACTION_WHEN_CALLED != null) {
+            ACTION_WHEN_CALLED.call(
+                'onConsecutiveRun',
+                new Map<String, Object>{ 'triggerArgs' => args, 'numInvocation' => numInvocation }
+            );
+        }
+
+        if (EXCEPTION_ON_CONSECUTIVE_RUN != null) {
+            throw EXCEPTION_ON_CONSECUTIVE_RUN;
         }
     }
 }

@@ -32,8 +32,12 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.EmptyStatementBlock')
 public abstract class rflib_SingleRunOnlyTriggerHandler implements rflib_TriggerHandler {
+    private static final rflib_Logger SINGLE_RUN_LOGGER = rflib_LoggerUtil.getFactory()
+        .createLogger('rflib_SingleRunOnlyTriggerHandler');
 
     public abstract void run(rflib_TriggerManager.Args args);
 
-    public virtual void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {}
+    public virtual void onConsecutiveRun(rflib_TriggerManager.Args args, Integer numInvocation) {
+        SINGLE_RUN_LOGGER.debug('onConsecutiveRun method is not implemented by this handler.');
+    }
 }
