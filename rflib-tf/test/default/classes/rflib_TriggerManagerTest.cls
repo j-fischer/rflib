@@ -237,7 +237,16 @@ private class rflib_TriggerManagerTest {
 
             assertRunTriggerArgs(ev, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS);
 
-            Assert.isTrue(rflib_LoggerUtil.getFactory().createLogger('testOnConsecutiveRun').printLogs().contains('onConsecutiveRun method is not implemented by this handler.'));
+            // Fun fact: The printLogs() method to validate that a log statement was added cannot be used 
+            // here due to a backwards compatibility issue with version 4.1.0.
+            Boolean containsMessage = false;
+            for (String msg : rflib_DefaultLogger.LOG_STATEMENTS) {
+                if (msg != null && msg.contains('onConsecutiveRun method is not implemented by this handler.')) {
+                    containsMessage = true;
+                    break;
+                }
+            }
+            Assert.isTrue(containsMessage, 'Expected log message not found.');
         }
     }
 
