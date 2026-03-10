@@ -29,8 +29,8 @@
       "path": "rflib-tf",
       "default": false,
       "package": "RFLIB-TF",
-      "versionName": "ver 3.0.2",
-      "versionNumber": "3.0.2.NEXT",
+      "versionName": "ver 3.1.0",
+      "versionNumber": "3.1.0.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
       "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
       "versionDescription": "Extension to RFLIB library adding a Trigger Framework. License: BSD-3-Clause. Dependencies: RFLIB, RFLIB-FS",
@@ -164,6 +164,7 @@
     "RFLIB-PHAROS@1.0.0-3": "04tKY000000xdPTYAY",
     "RFLIB-PHAROS@1.0.0-4": "04tKY000000xhtZYAQ",
     "RFLIB-PHAROS@1.0.0-5": "04tKY000000xhxmYAA",
-    "RFLIB@10.1.0-1": "04tKY000000ygWuYAI"
+    "RFLIB@10.1.0-1": "04tKY000000ygWuYAI",
+    "RFLIB-TF@3.1.0-1": "04tKY0000009yMKYAY"
   }
 }
