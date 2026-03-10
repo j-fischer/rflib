@@ -1,3 +1,11 @@
+### RFLIB-TF 3.1.0
+
+Package ID: 04tKY0000009yMKYAY
+Package Alias: RFLIB-TF@3.1.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000009yMKYAY
+
+- [Issue #133](https://github.com/j-fischer/rflib/issues/133) Added abstract `rflib_RunOnceOnlyTriggerHandler` class that requires only the `onRun()` method to be implemented.
+
 ### RFLIB 10.0.0
 
 Package ID: 04tKY000000ygWuYAI
