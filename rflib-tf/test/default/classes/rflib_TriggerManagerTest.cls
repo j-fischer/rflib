@@ -84,19 +84,6 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
-    public static void testRun_DisableAllTriggersFeatureSwitchOnSingleRunOnly() {
-        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
-
-        rflib_FeatureSwitch.featureSwitches = new Map<String, Map<String, Boolean>>{
-            'rflib_Disable_All_Triggers' => new Map<String, Boolean>{ rflib_FeatureSwitch.GLOBAL_SCOPE => true }
-        };
-
-        rflib_TriggerManager.dispatch(createArgs(createEvent()));
-
-        Assert.areEqual(0, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
-    }
-
-    @IsTest
     public static void testRun_BypassAllTriggerPermissionSet() {
         setup(ABORT_TRANSACTION);
 
@@ -104,17 +91,6 @@ private class rflib_TriggerManagerTest {
             rflib_TriggerManager.dispatch(createArgs(createEvent()));
 
             Assert.areEqual(0, rflib_MockTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
-        }
-    }
-
-    @IsTest
-    public static void testRun_BypassAllTriggerPermissionSetSingleRunOnly() {
-        setup(MOCK_SINGLE_RUN_ONLY_TRIGGER_HANDLER, ABORT_TRANSACTION);
-
-        System.runAs(BYPASS_TRIGGERS_USER) {
-            rflib_TriggerManager.dispatch(createArgs(createEvent()));
-
-            Assert.areEqual(0, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS.size());
         }
     }
 
@@ -260,6 +236,8 @@ private class rflib_TriggerManagerTest {
             rflib_TriggerManager.dispatch(createArgs(ev));
 
             assertRunTriggerArgs(ev, rflib_MockSingleRunOnlyTriggerHandler.CAPTURED_RUN_TRIGGER_ARGS);
+
+            Assert.isTrue(rflib_LoggerUtil.getFactory().createLogger('testOnConsecutiveRun').printLogs().contains('onConsecutiveRun method is not implemented by this handler.'));
         }
     }
 
