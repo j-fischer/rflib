@@ -1,3 +1,11 @@
+### RFLIB 10.1.1
+
+Package ID: 04tKY0000009yQwYAI
+Package Alias: RFLIB@10.1.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000009yQwYAI
+
+- [PR #136](https://github.com/j-fischer/rflib/pull/136) Fixed NullPointerException in `rflib_LoggerFlowAction` when `useBatchReporting` is null.
+
 ### RFLIB-TF 3.1.0
 
 Package ID: 04tKY0000009yMKYAY
