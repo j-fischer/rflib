@@ -43,7 +43,7 @@ public with sharing class rflib_LoggerFlowAction {
     public static void logMessage(List<LogMessageInfo> logMessages) {
 
         for (LogMessageInfo messageInfo : logMessages) {
-            rflib_Logger logger = messageInfo.useBatchReporting ? 
+            rflib_Logger logger = messageInfo.useBatchReporting == true ? 
                 loggerFactory.createBatchedLogger(messageInfo.context) :
                 loggerFactory.createLogger(messageInfo.context);
                 
