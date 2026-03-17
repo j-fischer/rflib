@@ -113,6 +113,20 @@ private class rflib_LoggerFlowActionTest {
         System.assert(debugLogFactory.debugLogCapture.containsInAnyMessage('DEBUG'), 'debugLogger did not contain DEBUG message for unknown log level');
     }
 
+    @IsTest
+    private static void testLogMessage_NullBatchReporting() {
+        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('info');
+        messages[0].useBatchReporting = null;
+
+        Test.startTest();
+        rflib_LoggerFlowAction.logMessage(messages);
+        Test.stopTest();
+
+        System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('INFO'), 'debugLogger did not contain INFO message');
+    }
+
     private static List<rflib_LoggerFlowAction.LogMessageInfo> createMessageInfo(String logLevel) {
         rflib_LoggerFlowAction.LogMessageInfo result = new rflib_LoggerFlowAction.LogMessageInfo();
 
