@@ -628,15 +628,13 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
 
         public Database.SaveResult publish(SObject event) {
             publishingCounter++;
-            BATCH_EXECUTOR.addEvent((rflib_Log_Event__e) event);
+            BATCH_EXECUTOR.addEvent(new List<SObject>{ event });
             return null;
         }
 
         public List<Database.SaveResult> publish(List<SObject> events) {
             publishingCounter++;
-            for (SObject event : events) {
-                BATCH_EXECUTOR.addEvent((rflib_Log_Event__e) event);
-            }
+            BATCH_EXECUTOR.addEvent(events);
             return null;
         }
     }
@@ -663,14 +661,42 @@ public without sharing class rflib_DefaultLogger implements rflib_Logger {
         }
 
         public void execute(QueueableContext ctx) {
-            if (lastEventToBePublished == null) {
+            if (lastEventToBePublished != null) {
+                allEventsToBePublished.add(lastEventToBePublished);
+            }
+
+            if (allEventsToBePublished.isEmpty()) {
                 System.debug(LoggingLevel.INFO, 'There is no log event to be published; exiting.');
                 return;
             }
-            Database.SaveResult result = eventBusPublisher.publish(lastEventToBePublished);
 
-            if (!result.isSuccess()) {
-                System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+            List<rflib_Log_Event__e> logEventsToPublish = new List<rflib_Log_Event__e>();
+            List<rflib_Application_Event_Occurred_Event__e> appEventsToPublish = new List<rflib_Application_Event_Occurred_Event__e>();
+
+            for (SObject evt : allEventsToBePublished) {
+                Schema.SObjectType evtType = evt.getSObjectType();
+
+                if (evtType == rflib_Log_Event__e.SObjectType) {
+                    logEventsToPublish.add((rflib_Log_Event__e) evt);
+                } else if (evtType == rflib_Application_Event_Occurred_Event__e.SObjectType) {
+                    appEventsToPublish.add((rflib_Application_Event_Occurred_Event__e) evt);
+                } else {
+                    System.debug('Unhandled event type: ' + evtType.getDescribe().getName());
+                }
+            }
+
+            List<Database.SaveResult> results = new List<Database.SaveResult>();
+            if (!logEventsToPublish.isEmpty()) {
+                results.addAll(eventBusPublisher.publish(logEventsToPublish));
+            }
+            if (!appEventsToPublish.isEmpty()) {
+                results.addAll(eventBusPublisher.publish(appEventsToPublish));
+            }
+
+            for (Database.SaveResult result : results) {
+                if (!result.isSuccess()) {
+                    System.debug(LoggingLevel.ERROR, JSON.serialize(result.getErrors()));
+                }
             }
         }
     }
