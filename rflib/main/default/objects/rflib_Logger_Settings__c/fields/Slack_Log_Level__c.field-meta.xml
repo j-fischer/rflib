@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Slack_Log_Level__c</fullName>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
+    <description>Set the log level for which a Slack notification will be sent in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Slack Log Level, a message is posted to the configured Slack channel. Requires a Named Credential named RFLIB_SLACK_WEBHOOK to be configured with the Slack Incoming Webhook URL.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which Slack notifications are sent in response to a Log Event. Valid values are NONE, INFO, WARN, ERROR, and FATAL. Any statements with a level equal or higher to the one configured here trigger the Slack notification. Requires a Named Credential named RFLIB_SLACK_WEBHOOK.</inlineHelpText>
+    <label>Slack Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
