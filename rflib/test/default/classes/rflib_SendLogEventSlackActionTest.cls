@@ -39,13 +39,14 @@ private class rflib_SendLogEventSlackActionTest {
     private static void testSendToSlack_Success() {
         setupLoggerSettings('ERROR');
 
-        HttpRequest req = createMockRequest();
+        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
+        HttpRequest req = createMockRequest(events[0]);
         HttpResponse resp = createSuccessResponse();
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('ERROR'));
+        rflib_SendLogEventSlackAction.sendToSlack(events);
         Test.stopTest();
 
         Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
@@ -80,13 +81,14 @@ private class rflib_SendLogEventSlackActionTest {
     private static void testSendToSlack_FailureResponse() {
         setupLoggerSettings('ERROR');
 
-        HttpRequest req = createMockRequest();
+        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
+        HttpRequest req = createMockRequest(events[0]);
         HttpResponse resp = createErrorResponse();
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('ERROR'));
+        rflib_SendLogEventSlackAction.sendToSlack(events);
         Test.stopTest();
 
         Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
@@ -97,13 +99,14 @@ private class rflib_SendLogEventSlackActionTest {
     private static void testSendToSlack_ThrowsException() {
         setupLoggerSettings('ERROR');
 
-        HttpRequest req = createMockRequest();
+        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
+        HttpRequest req = createMockRequest(events[0]);
         CalloutException ex = new CalloutException('Slack webhook callout failed');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, ex));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('ERROR'));
+        rflib_SendLogEventSlackAction.sendToSlack(events);
         Test.stopTest();
 
         Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
@@ -113,11 +116,6 @@ private class rflib_SendLogEventSlackActionTest {
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSendToSlack_LongMessageTruncated() {
         setupLoggerSettings('ERROR');
-
-        HttpRequest req = createMockRequest();
-        HttpResponse resp = createSuccessResponse();
-
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         String longMessage = 'X'.repeat(5000);
         List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>{
@@ -129,6 +127,11 @@ private class rflib_SendLogEventSlackActionTest {
                 Platform_Info__c = '{"CPU Time":12,"Heap Size":4080}'
             )
         };
+
+        HttpRequest req = createMockRequest(events[0]);
+        HttpResponse resp = createSuccessResponse();
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
         rflib_SendLogEventSlackAction.sendToSlack(events);
@@ -190,11 +193,12 @@ private class rflib_SendLogEventSlackActionTest {
         };
     }
 
-    private static HttpRequest createMockRequest() {
+    private static HttpRequest createMockRequest(rflib_Log_Event__e evt) {
         HttpRequest req = new HttpRequest();
         req.setEndpoint(rflib_SendLogEventSlackAction.ENDPOINT);
         req.setMethod(METHOD);
         req.setHeader('Content-Type', 'application/json');
+        req.setBody(rflib_SendLogEventSlackAction.createSlackPayload(evt));
         return req;
     }
 

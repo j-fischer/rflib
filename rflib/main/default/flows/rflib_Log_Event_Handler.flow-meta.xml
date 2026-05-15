@@ -53,7 +53,7 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
     </actionCalls>
     <actionCalls>
         <description>Sends the Log Event to a Slack channel via Incoming Webhook. Requires a Named Credential named RFLIB_SLACK_WEBHOOK and Slack_Log_Level__c to be configured in the Logger Settings.
-IMPORTANT: This element must remain before Archive_Log_Event due to callout restrictions after uncommitted DML work.</description>
+Runs in a new transaction so that any DML performed by Log_to_HTTP_Endpoint on its failure path does not block this callout.</description>
         <name>Send_Log_Event_to_Slack</name>
         <label>Send Log Event to Slack</label>
         <locationX>176</locationX>
@@ -67,7 +67,7 @@ IMPORTANT: This element must remain before Archive_Log_Event due to callout rest
             <isGoTo>true</isGoTo>
             <targetReference>Archive_Log_Event</targetReference>
         </faultConnector>
-        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <flowTransactionModel>NewTransaction</flowTransactionModel>
         <inputParameters>
             <name>events</name>
             <value>
