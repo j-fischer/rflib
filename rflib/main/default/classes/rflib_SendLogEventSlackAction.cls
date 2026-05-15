@@ -166,6 +166,10 @@ public with sharing class rflib_SendLogEventSlackAction {
         if (String.isBlank(evt.Platform_Info__c)) {
             return 'N/A';
         }
-        return JSON.serializePretty(JSON.deserializeUntyped(evt.Platform_Info__c));
+        try {
+            return JSON.serializePretty(JSON.deserializeUntyped(evt.Platform_Info__c));
+        } catch (Exception ex) {
+            return evt.Platform_Info__c;
+        }
     }
 }

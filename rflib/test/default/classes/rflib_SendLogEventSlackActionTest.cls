@@ -181,6 +181,24 @@ private class rflib_SendLogEventSlackActionTest {
         Assert.isTrue(payload.contains('N/A'), 'Payload should contain N/A for missing platform info');
     }
 
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testCreateSlackPayload_WithNonJsonPlatformInfo() {
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'WARN',
+            Context__c = 'TestContext',
+            Request_ID__c = 'TestRequestId',
+            Log_Messages__c = 'Test log message',
+            Platform_Info__c = 'N/A'
+        );
+
+        Test.startTest();
+        String payload = rflib_SendLogEventSlackAction.createSlackPayload(evt);
+        Test.stopTest();
+
+        Assert.isTrue(payload.contains('N/A'), 'Payload should contain the raw platform info value when it is not JSON');
+    }
+
     private static List<rflib_Log_Event__e> createTestLogEvents(String logLevel) {
         return new List<rflib_Log_Event__e>{
             new rflib_Log_Event__e(
