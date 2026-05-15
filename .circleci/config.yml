@@ -3,7 +3,7 @@ version: 2.1
 # Defining default values for all jobs
 defaults: &defaults
     docker:
-        - image: salesforce/cli:2.122.6-full
+        - image: salesforce/cli:2.134.6-full
 
 jobs:
     setup_project:
