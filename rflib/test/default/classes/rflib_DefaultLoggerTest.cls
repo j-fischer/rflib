@@ -402,6 +402,27 @@ public class rflib_DefaultLoggerTest {
     }
 
     @IsTest
+    private static void testBatchLogEventPublisher_MixedEventTypes() {
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+
+        rflib_Logger logger = loggerFactory.createLogger('testBatchLogEventPublisher_MixedEventTypes');
+
+        logger.setReportingLogLevel(rflib_LogLevel.WARN);
+        logger.setLogAggregationLogLevel(rflib_LogLevel.WARN);
+        logger.setBatchReportingLogLevel(rflib_LogLevel.WARN);
+
+        Test.startTest();
+        logger.warn('This message triggers BOTH a Log Event and an App Event to be batched');
+        
+        System.assertEquals(0, Limits.getPublishImmediateDML());
+
+        logger.publishBatchedLogEvents();
+        
+        System.assertEquals(2, Limits.getPublishImmediateDML());
+        Test.stopTest();
+    }
+
+    @IsTest
     private static void testFlushLogCacheLevel() {
         rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
 
