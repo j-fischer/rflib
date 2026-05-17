@@ -157,12 +157,13 @@ private class rflib_SendLogEventSlackActionTest {
     private static void testSendToSlack_InfoLevelConfigured_WarnEventSentAtWarnFloor() {
         setupLoggerSettings('INFO');
 
-        HttpRequest req = createMockRequest();
+        List<rflib_Log_Event__e> events = createTestLogEvents('WARN');
+        HttpRequest req = createMockRequest(events[0]);
         HttpResponse resp = createSuccessResponse();
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('WARN'));
+        rflib_SendLogEventSlackAction.sendToSlack(events);
         Test.stopTest();
 
         Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
