@@ -142,6 +142,34 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testSendToSlack_InfoLevelConfigured_InfoEventNotSent() {
+        setupLoggerSettings('INFO');
+
+        Test.startTest();
+        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('INFO'));
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testSendToSlack_InfoLevelConfigured_WarnEventSentAtWarnFloor() {
+        setupLoggerSettings('INFO');
+
+        HttpRequest req = createMockRequest();
+        HttpResponse resp = createSuccessResponse();
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
+
+        Test.startTest();
+        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('WARN'));
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testCreateSlackPayload_WithPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',

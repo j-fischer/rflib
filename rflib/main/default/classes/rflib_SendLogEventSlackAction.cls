@@ -48,6 +48,10 @@ public with sharing class rflib_SendLogEventSlackAction {
     // Slack Block Kit limits: section text max 3000 chars, header text max 150 chars.
     private static final Integer MAX_BLOCK_TEXT_LENGTH = 2800;
 
+    // INFO and below are never appropriate for Slack alerting; enforce WARN as the floor.
+    @TestVisible
+    private static final rflib_LogLevel MINIMUM_LOG_LEVEL = rflib_LogLevel.WARN;
+
     static {
         // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
         //       does not create an infinite loop of log events.
@@ -72,8 +76,17 @@ public with sharing class rflib_SendLogEventSlackAction {
     }
 
     private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        return rflib_LogLevel.fromString(loggerSettings.Slack_Log_Level__c)
-            .encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
+        rflib_LogLevel configuredLevel = rflib_LogLevel.fromString(loggerSettings.Slack_Log_Level__c);
+
+        // NONE means disabled; skip the floor check so it stays disabled.
+        // For any level below WARN (INFO, DEBUG, TRACE), clamp up to WARN.
+        // encompasses() returns false when either side is NONE, so we guard that first.
+        if (configuredLevel != rflib_LogLevel.NONE && !MINIMUM_LOG_LEVEL.encompasses(configuredLevel)) {
+            LOGGER.warn('Slack_Log_Level__c is configured below the minimum of WARN. Clamping to WARN.');
+            configuredLevel = MINIMUM_LOG_LEVEL;
+        }
+
+        return configuredLevel.encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
     private static void sendMessage(rflib_Log_Event__e evt) {
