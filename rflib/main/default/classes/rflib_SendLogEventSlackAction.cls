@@ -83,7 +83,9 @@ public with sharing class rflib_SendLogEventSlackAction {
     }
 
     private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        rflib_LogLevel configuredLevel = rflib_LogLevel.fromString(loggerSettings.Slack_Log_Level__c);
+        rflib_LogLevel configuredLevel = String.isBlank(loggerSettings.Slack_Log_Level__c)
+            ? MINIMUM_LOG_LEVEL
+            : rflib_LogLevel.fromString(loggerSettings.Slack_Log_Level__c);
 
         // NONE means disabled; skip the floor check so it stays disabled.
         // For any level below WARN (INFO, DEBUG, TRACE), clamp up to WARN.
