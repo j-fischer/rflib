@@ -140,8 +140,9 @@ public with sharing class rflib_SendLogEventSlackAction {
         return new Map<String, Object>{
             'type' => 'section',
             'fields' => new List<Object>{
-                createMrkdwnField('*Created By:*\n' + evt.CreatedById),
+                createMrkdwnField('*Org Name:*\n' + UserInfo.getOrganizationName()),
                 createMrkdwnField('*Log Level:*\n' + evt.Log_Level__c),
+                createMrkdwnField('*Created By:*\n' + evt.CreatedById),
                 createMrkdwnField('*Context:*\n' + evt.Context__c),
                 createMrkdwnField('*Request ID:*\n' + evt.Request_ID__c)
             }
@@ -172,7 +173,7 @@ public with sharing class rflib_SendLogEventSlackAction {
         if (value.length() <= maxLength) {
             return value;
         }
-        return value.left(maxLength) + '\n[TRUNCATED]';
+        return '[TRUNCATED]\n' + value.right(maxLength);
     }
 
     private static String getFormattedPlatformInfo(rflib_Log_Event__e evt) {

@@ -194,6 +194,28 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testCreateSlackPayload_LongMessageTruncatedFromBeginning() {
+        String beginning = 'BEGINNING_MARKER';
+        String tail = 'EXCEPTION_HERE';
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Context__c = 'TestContext',
+            Request_ID__c = 'TestRequestId',
+            Log_Messages__c = beginning + 'X'.repeat(5000) + tail,
+            Platform_Info__c = null
+        );
+
+        Test.startTest();
+        String payload = rflib_SendLogEventSlackAction.createSlackPayload(evt);
+        Test.stopTest();
+
+        Assert.isTrue(payload.contains('[TRUNCATED]'), 'Payload should contain the truncation marker');
+        Assert.isTrue(payload.contains(tail), 'Payload should preserve the end of the log message where exceptions appear');
+        Assert.isFalse(payload.contains(beginning), 'Payload should have dropped the beginning of the message');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testCreateSlackPayload_WithoutPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'WARN',
