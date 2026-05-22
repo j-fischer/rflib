@@ -171,6 +171,29 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testSendToSlack_ExceedsMaxNotifications() {
+        setupLoggerSettings('ERROR');
+        rflib_GlobalSettings.SETTINGS.put('Max_Slack_Notifications_Per_Invocation', '1');
+
+        List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>{
+            createTestLogEvents('ERROR')[0],
+            createTestLogEvents('ERROR')[0]
+        };
+        HttpRequest req = createMockRequest(events[0]);
+        HttpResponse resp = createSuccessResponse();
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
+
+        Test.startTest();
+        rflib_SendLogEventSlackAction.sendToSlack(events);
+        Integer calloutsUsed = Limits.getCallouts();
+        Test.stopTest();
+
+        Assert.areEqual(1, calloutsUsed, 'Only 1 callout should have been made due to the cap');
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testCreateSlackPayload_WithPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',

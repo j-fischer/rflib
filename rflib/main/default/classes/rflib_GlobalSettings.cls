@@ -91,6 +91,9 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final Integer APP_EVENT_ARCHIVE_CLEANUP_QUERY_LIMIT_DEFAULT_VALUE = 50000;
 
+    @TestVisible
+    private static final Integer MAX_SLACK_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE = 20;
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -214,6 +217,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('RFLIB_Development_Mode_Enabled');
             return String.isBlank(val) ? RFLIB_DEVELOPMENT_MODE_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Integer maxSlackNotificationsPerInvocationOrDefault {
+        get {
+            String val = getSetting('Max_Slack_Notifications_Per_Invocation');
+            return String.isBlank(val) ? MAX_SLACK_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 

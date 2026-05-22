@@ -249,6 +249,18 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testMaxSlackNotificationsPerInvocationOrDefault() {
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Max_Slack_Notifications_Per_Invocation',
+            rflib_GlobalSettings.MAX_SLACK_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.maxSlackNotificationsPerInvocationOrDefault);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 

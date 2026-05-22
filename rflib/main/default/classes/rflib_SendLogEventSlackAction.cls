@@ -63,10 +63,17 @@ public with sharing class rflib_SendLogEventSlackAction {
     public static void sendToSlack(List<rflib_Log_Event__e> events) {
         try {
             rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
+            Integer maxNotifications = rflib_GlobalSettings.maxSlackNotificationsPerInvocationOrDefault;
+            Integer sent = 0;
 
             for (rflib_Log_Event__e evt : events) {
+                if (sent >= maxNotifications) {
+                    LOGGER.warn('Max Slack notifications per invocation (' + maxNotifications + ') reached; remaining events skipped.');
+                    break;
+                }
                 if (matchesConfiguredLogLevel(loggerSettings, evt)) {
                     sendMessage(evt);
+                    sent++;
                 }
             }
         } catch (Exception ex) {
