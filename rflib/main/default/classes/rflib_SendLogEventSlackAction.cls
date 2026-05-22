@@ -61,6 +61,7 @@ public with sharing class rflib_SendLogEventSlackAction {
 
     @InvocableMethod(label='Send Log Event to Slack' category='RFLIB' description='Send Log Events to a Slack channel via Incoming Webhook')
     public static void sendToSlack(List<rflib_Log_Event__e> events) {
+        List<String> failures = new List<String>();
         try {
             rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
             Integer maxNotifications = rflib_GlobalSettings.maxSlackNotificationsPerInvocationOrDefault;
@@ -72,13 +73,21 @@ public with sharing class rflib_SendLogEventSlackAction {
                     break;
                 }
                 if (matchesConfiguredLogLevel(loggerSettings, evt)) {
-                    sendMessage(evt);
+                    String failure = sendMessage(evt);
+                    if (failure != null) {
+                        failures.add(failure);
+                    }
                     sent++;
                 }
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to send log event(s) to Slack', ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, LOGGER.printLogs());
+            failures.add(LOGGER.printLogs());
+        }
+
+        // Publish all failure events after the callout loop to avoid DML-before-callout errors.
+        for (String failureDetail : failures) {
+            APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, failureDetail);
         }
     }
 
@@ -96,7 +105,7 @@ public with sharing class rflib_SendLogEventSlackAction {
         return configuredLevel.encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
-    private static void sendMessage(rflib_Log_Event__e evt) {
+    private static String sendMessage(rflib_Log_Event__e evt) {
         try {
             rflib_HttpRequest req = new rflib_HttpRequest(LOGGER);
             req.setEndpoint(ENDPOINT);
@@ -107,13 +116,14 @@ public with sharing class rflib_SendLogEventSlackAction {
             HttpResponse res = req.send();
             if (res.getStatusCode() == 200) {
                 LOGGER.debug('Successfully sent log event to Slack for context: ' + evt.Context__c);
+                return null;
             } else {
                 LOGGER.debug('Failed to send log event to Slack. Status: ' + res.getStatus() + ' for context: ' + evt.Context__c);
-                APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, JSON.serialize(res));
+                return JSON.serialize(res);
             }
         } catch (Exception ex) {
             LOGGER.error('Failed to send log event to Slack for context: ' + evt.Context__c, ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, LOGGER.printLogs());
+            return LOGGER.printLogs();
         }
     }
 
