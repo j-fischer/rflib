@@ -1,3 +1,11 @@
+### RFLIB 10.2.0
+
+Package ID: 04tKY0000005RTzYAM
+Package Alias: RFLIB@10.2.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005RTzYAM
+
+- [PR #137](https://github.com/j-fischer/rflib/pull/137) Added Slack notification support for RFLIB log events. Log events at or above a configurable threshold (minimum WARN) are forwarded to a Slack channel via the `Send_Log_Event_to_Slack` flow, with the Slack log level controlled by the new `Slack_Log_Level__c` setting and the maximum notifications per invocation configurable as a Global Config value. Log messages are truncated from the beginning and include the Org Name in the Slack payload.
+
 ### RFLIB 10.1.1
 
 Package ID: 04tKY0000009yQwYAI
