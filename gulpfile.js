@@ -382,7 +382,8 @@ gulp.task('gitcommit-version', function () {
         .src(['package.json', 'sfdx-project.json'])
         .pipe(
             git.commit(
-                `Created new package for ${config.package.package}: ${config.package.configuredVersionNumber} => ${config.version.nextVersion}`
+                `Created new package for ${config.package.package}: ${config.package.configuredVersionNumber} => ${config.version.nextVersion}`,
+                { args: '--no-verify' }
             )
         );
 });
