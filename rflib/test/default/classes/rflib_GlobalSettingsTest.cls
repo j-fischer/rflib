@@ -261,6 +261,18 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testMaxTeamsNotificationsPerInvocationOrDefault() {
+        Integer expectedValue = getConfiguredIntegerValueOrDefault(
+            'Max_Teams_Notifications_Per_Invocation',
+            rflib_GlobalSettings.MAX_TEAMS_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.maxTeamsNotificationsPerInvocationOrDefault);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 
