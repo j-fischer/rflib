@@ -1,6 +1,10 @@
 ### RFLIB 10.3.0
 
-- Added Microsoft Teams notification support for RFLIB log events. Log events at or above a configurable threshold (minimum WARN) are forwarded to a Teams channel via the `Send_Log_Event_to_Teams` flow action, with the Teams log level controlled by the new `Teams_Log_Level__c` setting and the maximum notifications per invocation configurable as a Global Config value (`Max_Teams_Notifications_Per_Invocation`). Requires a Named Credential named `RFLIB_TEAMS_WEBHOOK` configured with a Microsoft Teams Incoming Webhook (Power Automate Workflow or legacy Office 365 connector). The payload is an Adaptive Card containing the Org Name, log level, context, request ID, log messages, and platform info; long log messages are truncated from the beginning to preserve the trailing exception detail.
+Package ID: 04tKY0000005RU4YAM
+Package Alias: RFLIB@10.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005RU4YAM
+
+- [PR #138](https://github.com/j-fischer/rflib/pull/138) Added Microsoft Teams notification support for RFLIB log events. Log events at or above a configurable threshold (minimum WARN) are forwarded to a Teams channel via the `Send_Log_Event_to_Teams` flow action, with the Teams log level controlled by the new `Teams_Log_Level__c` setting and the maximum notifications per invocation configurable as a Global Config value (`Max_Teams_Notifications_Per_Invocation`). Requires a Named Credential named `RFLIB_TEAMS_WEBHOOK` configured with a Microsoft Teams Incoming Webhook (Power Automate Workflow or legacy Office 365 connector). The payload is an Adaptive Card containing the Org Name, log level, context, request ID, log messages, and platform info; long log messages are truncated from the beginning to preserve the trailing exception detail.
 
 ### RFLIB 10.2.0
 
