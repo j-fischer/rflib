@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Teams_Log_Level__c</fullName>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
+    <description>Set the log level for which a Microsoft Teams notification will be sent in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Teams Log Level, a message is posted to the configured Teams channel. Requires a Named Credential named RFLIB_TEAMS_WEBHOOK to be configured with the Microsoft Teams Incoming Webhook URL (Power Automate Workflow or legacy Office 365 connector). INFO and below are never sent to Teams regardless of this setting; WARN is the enforced minimum.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which Microsoft Teams notifications are sent in response to a Log Event. Valid values are NONE, WARN, ERROR, and FATAL. WARN is the minimum enforced level — INFO, DEBUG, and TRACE events are never sent to Teams. Requires a Named Credential named RFLIB_TEAMS_WEBHOOK.</inlineHelpText>
+    <label>Teams Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

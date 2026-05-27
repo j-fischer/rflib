@@ -5,7 +5,7 @@
         <name>Archive_Log_Event</name>
         <label>Archive Log Event</label>
         <locationX>176</locationX>
-        <locationY>386</locationY>
+        <locationY>494</locationY>
         <actionName>rflib_ArchiveLogAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -61,6 +61,32 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <actionName>rflib_SendLogEventSlackAction</actionName>
         <actionType>apex</actionType>
         <connector>
+            <targetReference>Send_Log_Event_to_Teams</targetReference>
+        </connector>
+        <faultConnector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Send_Log_Event_to_Teams</targetReference>
+        </faultConnector>
+        <flowTransactionModel>NewTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_SendLogEventSlackAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
+        <description>Sends the Log Event to a Microsoft Teams channel via Incoming Webhook. Requires a Named Credential named RFLIB_TEAMS_WEBHOOK and Teams_Log_Level__c to be configured in the Logger Settings.
+Runs in a new transaction to ensure governor limit isolation from the preceding HTTP callout action.</description>
+        <name>Send_Log_Event_to_Teams</name>
+        <label>Send Log Event to Teams</label>
+        <locationX>176</locationX>
+        <locationY>386</locationY>
+        <actionName>rflib_SendLogEventTeamsAction</actionName>
+        <actionType>apex</actionType>
+        <connector>
             <targetReference>Archive_Log_Event</targetReference>
         </connector>
         <faultConnector>
@@ -74,7 +100,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
                 <elementReference>$Record</elementReference>
             </value>
         </inputParameters>
-        <nameSegment>rflib_SendLogEventSlackAction</nameSegment>
+        <nameSegment>rflib_SendLogEventTeamsAction</nameSegment>
         <offset>0</offset>
     </actionCalls>
     <actionCalls>
@@ -82,7 +108,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <name>rflib_Send_Log_Event_Emails</name>
         <label>Send Log Event Emails</label>
         <locationX>176</locationX>
-        <locationY>494</locationY>
+        <locationY>602</locationY>
         <actionName>rflib_SendLogEventEmailAction</actionName>
         <actionType>apex</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>

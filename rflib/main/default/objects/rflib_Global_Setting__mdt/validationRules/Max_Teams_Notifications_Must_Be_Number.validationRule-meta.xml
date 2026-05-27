@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Max_Teams_Notifications_Must_Be_Number</fullName>
+    <active>true</active>
+    <description>Max_Teams_Notifications_Per_Invocation value must be a positive number no greater than 100.</description>
+    <errorConditionFormula>DeveloperName = &apos;Max_Teams_Notifications_Per_Invocation&apos; &amp;&amp;
+OR(
+  NOT(ISNUMBER( Value__c )),
+  VALUE( Value__c ) &lt; 1,
+  VALUE( Value__c ) &gt; 100
+)</errorConditionFormula>
+    <errorDisplayField>Value__c</errorDisplayField>
+    <errorMessage>The value for Max Teams Notifications Per Invocation must be a number between 1 and 100.</errorMessage>
+</ValidationRule>
