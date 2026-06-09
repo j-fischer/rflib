@@ -28,24 +28,23 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_LogArchiveController {
-    
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveController');
 
     private static final Integer ARCHIVE_LOG_QUERY_LIMIT = rflib_GlobalSettings.archiveLogQueryLimitOrDefault;
-    
+
     @TestVisible
     private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();
-    
+
     @TestVisible
     private static rflib_DmlExecutor DML_EXECUTOR = new rflib_DatabaseDmlExecutor();
 
     @AuraEnabled
     public static ArchiveQueryResult getArchivedRecords(Datetime startDate, Datetime endDate) {
         try {
-            LOGGER.debug('getArchivedRecords({0}, {1})', new Object[] { startDate, endDate } );
+            LOGGER.debug('getArchivedRecords({0}, {1})', new List<Object>{ startDate, endDate });
             Datetime startDateOrDefault = startDate != null ? startDate : Datetime.now().addDays(-1);
             Datetime endDateOrDefault = endDate != null ? endDate : Datetime.now();
-            
+
             return new ArchiveQueryResult(
                 ARCHIVE_LOG_QUERY_LIMIT,
                 QUERY_LOCATOR.getRecords(startDateOrDefault, endDateOrDefault)
@@ -55,21 +54,66 @@ public with sharing class rflib_LogArchiveController {
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
-    
+
+    @AuraEnabled(cacheable=true)
+    public static LogSummaryResult getRecentLogSummary(Integer lookbackHours, String logLevels) {
+        try {
+            LOGGER.debug('getRecentLogSummary({0}, {1})', new List<Object>{ lookbackHours, logLevels });
+
+            Integer hours = (lookbackHours != null && lookbackHours > 0) ? lookbackHours : 24;
+            Set<String> levels = parseLevels(logLevels);
+
+            Datetime startDate = Datetime.now().addHours((-1) * hours);
+            Datetime endDate = Datetime.now();
+
+            List<rflib_Logs_Archive__b> records = QUERY_LOCATOR.getRecordSummaries(startDate, endDate);
+
+            Map<String, Integer> counts = new Map<String, Integer>();
+            for (String level : levels) {
+                counts.put(level, 0);
+            }
+
+            for (rflib_Logs_Archive__b record : records) {
+                String level = record.Log_Level__c != null ? record.Log_Level__c.toUpperCase() : null;
+                if (level != null && counts.containsKey(level)) {
+                    counts.put(level, counts.get(level) + 1);
+                }
+            }
+
+            return new LogSummaryResult(hours, counts);
+        } catch (Exception ex) {
+            LOGGER.error('Failed to summarize rflib_Logs_Archive__b', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    private static Set<String> parseLevels(String logLevels) {
+        Set<String> levels = new Set<String>();
+        String raw = String.isNotBlank(logLevels) ? logLevels : 'WARN,ERROR,FATAL';
+        for (String part : raw.split(',')) {
+            if (String.isNotBlank(part)) {
+                levels.add(part.trim().toUpperCase());
+            }
+        }
+        return levels;
+    }
+
     @AuraEnabled
     public static Integer clearArchive() {
         try {
             LOGGER.debug('clearArchive()');
 
-            Datetime referenceDate = Datetime.now().addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
-            
+            Datetime referenceDate = Datetime.now()
+                .addDays((-1) * rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault);
+
             List<rflib_Logs_Archive__b> records = QUERY_LOCATOR.getRecordsOlderThan(referenceDate);
-            
+
             List<Database.DeleteResult> result = DML_EXECUTOR.deleteImmediate(records);
-            
+
             Integer count = 0;
             for (Database.DeleteResult dr : result) {
-                if (dr.isSuccess()) count++;
+                if (dr.isSuccess())
+                    count++;
             }
             return count;
         } catch (Exception ex) {
@@ -80,42 +124,110 @@ public with sharing class rflib_LogArchiveController {
 
     public interface ILogArchiveQueryLocator {
         List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate);
+        List<rflib_Logs_Archive__b> getRecordSummaries(Datetime startDate, Datetime endDate);
         List<rflib_Logs_Archive__b> getRecordsOlderThan(Datetime referenceDate);
     }
 
-    public class ArchiveQueryResult {
-        @AuraEnabled public final Integer queryLimit;
-        @AuraEnabled public final List<rflib_Logs_Archive__b> records;
+    public class LogSummaryResult {
+        @AuraEnabled
+        public final Integer lookbackHours;
+        @AuraEnabled
+        public final Integer totalCount;
+        @AuraEnabled
+        public final List<LogLevelCount> levelCounts;
 
-        public ArchiveQueryResult (
-            Integer queryLimit,
-            List<rflib_Logs_Archive__b> records
-        ) {
+        public LogSummaryResult(Integer lookbackHours, Map<String, Integer> counts) {
+            this.lookbackHours = lookbackHours;
+            this.levelCounts = new List<LogLevelCount>();
+
+            Integer total = 0;
+            Set<String> orderedLevels = new Set<String>{ 'FATAL', 'ERROR', 'WARN' };
+
+            for (String level : orderedLevels) {
+                if (counts.containsKey(level) && counts.get(level) > 0) {
+                    this.levelCounts.add(new LogLevelCount(level, counts.get(level)));
+                    total += counts.get(level);
+                }
+            }
+
+            for (String level : counts.keySet()) {
+                if (!orderedLevels.contains(level) && counts.get(level) > 0) {
+                    this.levelCounts.add(new LogLevelCount(level, counts.get(level)));
+                    total += counts.get(level);
+                }
+            }
+
+            this.totalCount = total;
+        }
+    }
+
+    public class LogLevelCount {
+        @AuraEnabled
+        public final String level;
+        @AuraEnabled
+        public final Integer count;
+
+        public LogLevelCount(String level, Integer count) {
+            this.level = level;
+            this.count = count;
+        }
+    }
+
+    public class ArchiveQueryResult {
+        @AuraEnabled
+        public final Integer queryLimit;
+        @AuraEnabled
+        public final List<rflib_Logs_Archive__b> records;
+
+        public ArchiveQueryResult(Integer queryLimit, List<rflib_Logs_Archive__b> records) {
             this.queryLimit = queryLimit;
             this.records = records;
         }
     }
 
     public class DefaultLogArchiveQueryLocator implements ILogArchiveQueryLocator {
-
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
             return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
-                .with(new List<SObjectField>{
-                    rflib_Logs_Archive__b.CreatedDate__c,
-                    rflib_Logs_Archive__b.CreatedById__c,
-                    rflib_Logs_Archive__b.Context__c,
-                    rflib_Logs_Archive__b.Log_Level__c,
-                    rflib_Logs_Archive__b.Request_ID__c,
-                    rflib_Logs_Archive__b.Log_Messages__c,
-                    rflib_Logs_Archive__b.Platform_Info__c
-                })
-                .whereAre(rflib_SOQL.FilterGroup
-                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
-                    .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
+                .with(
+                    new List<SObjectField>{
+                        rflib_Logs_Archive__b.CreatedDate__c,
+                        rflib_Logs_Archive__b.CreatedById__c,
+                        rflib_Logs_Archive__b.Context__c,
+                        rflib_Logs_Archive__b.Log_Level__c,
+                        rflib_Logs_Archive__b.Request_ID__c,
+                        rflib_Logs_Archive__b.Log_Messages__c,
+                        rflib_Logs_Archive__b.Platform_Info__c
+                    }
+                )
+                .whereAre(
+                    rflib_SOQL.FilterGroup
+                        .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
+                        .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
                 )
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
                 .systemMode()
                 .mockId('DefaultLogArchiveQueryLocator.getRecords')
+                .toList();
+        }
+
+        public List<rflib_Logs_Archive__b> getRecordSummaries(Datetime startDate, Datetime endDate) {
+            return (List<rflib_Logs_Archive__b>) rflib_SOQL.of(rflib_Logs_Archive__b.SObjectType)
+                .with(
+                    new List<SObjectField>{
+                        rflib_Logs_Archive__b.CreatedDate__c,
+                        rflib_Logs_Archive__b.Log_Level__c,
+                        rflib_Logs_Archive__b.Context__c,
+                        rflib_Logs_Archive__b.Request_ID__c
+                    }
+                )
+                .whereAre(
+                    rflib_SOQL.FilterGroup
+                        .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
+                        .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
+                )
+                .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
+                .systemMode()
+                .mockId('DefaultLogArchiveQueryLocator.getRecordSummaries')
                 .toList();
         }
 
@@ -128,9 +240,7 @@ public with sharing class rflib_LogArchiveController {
                     rflib_Logs_Archive__b.Request_ID__c
                 )
                 .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
-                .whereAre(rflib_SOQL.Filter
-                    .with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate)
-                )
+                .whereAre(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate))
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
                 .systemMode()
                 .mockId('DefaultLogArchiveQueryLocator.getOldestRecords')

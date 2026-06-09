@@ -1,0 +1,18 @@
+<template>
+    <template lwc:if={hasMatches}>
+        <div class={bannerClass} role="alert">
+            <span class="slds-assistive-text">Warning</span>
+            <lightning-icon
+                icon-name="utility:warning"
+                alternative-text="Warning"
+                variant="inverse"
+                size="x-small"
+                class="slds-m-right_x-small"
+            ></lightning-icon>
+            <h2>
+                {summaryText}.
+                <a href="#" onclick={navigateToLogMonitor}>Investigate in the Log Monitor</a>
+            </h2>
+        </div>
+    </template>
+</template>

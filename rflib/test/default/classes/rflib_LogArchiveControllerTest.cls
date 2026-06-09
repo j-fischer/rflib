@@ -29,11 +29,11 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_LogArchiveControllerTest {
-
     private static final String GET_RECORDS_MOCK_ID = 'DefaultLogArchiveQueryLocator.getRecords';
+    private static final String GET_SUMMARIES_MOCK_ID = 'DefaultLogArchiveQueryLocator.getRecordSummaries';
     private static final String GET_OLDEST_RECORDS_MOCK_ID = 'DefaultLogArchiveQueryLocator.getOldestRecords';
 
-    private static final List<rflib_Logs_Archive__b> RESULT = new List<rflib_Logs_Archive__b> {
+    private static final List<rflib_Logs_Archive__b> RESULT = new List<rflib_Logs_Archive__b>{
         createLogArchiveRecord('Log1')
     };
 
@@ -44,7 +44,10 @@ private class rflib_LogArchiveControllerTest {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(RESULT, null);
 
         Test.startTest();
-        System.assertEquals(RESULT, rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()).records);
+        System.assertEquals(
+            RESULT,
+            rflib_LogArchiveController.getArchivedRecords(Datetime.now(), Datetime.now()).records
+        );
         Test.stopTest();
     }
 
@@ -62,16 +65,15 @@ private class rflib_LogArchiveControllerTest {
         Test.stopTest();
     }
 
-    
     @IsTest
     static void testClearArchive_Success() {
         // Given
         rflib_Logs_Archive__b oldLog = createLogRecord(Datetime.now().addDays(-10));
         rflib_SOQL.setMock(GET_OLDEST_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ oldLog });
-        
-        rflib_MockDmlExecutor dmlExecutor = new rflib_MockDmlExecutor(new List<Database.DeleteResult> {
-            createSuccessDeleteResult()
-        });
+
+        rflib_MockDmlExecutor dmlExecutor = new rflib_MockDmlExecutor(
+            new List<Database.DeleteResult>{ createSuccessDeleteResult() }
+        );
         rflib_LogArchiveController.DML_EXECUTOR = dmlExecutor;
 
         // When
@@ -79,7 +81,7 @@ private class rflib_LogArchiveControllerTest {
 
         // Then
         System.assertEquals(1, dmlExecutor.capturedRecords.size(), 'Should delete one record');
-        rflib_Logs_Archive__b deletedRecord = (rflib_Logs_Archive__b)dmlExecutor.capturedRecords[0];
+        rflib_Logs_Archive__b deletedRecord = (rflib_Logs_Archive__b) dmlExecutor.capturedRecords[0];
         System.assertEquals(oldLog.CreatedDate__c, deletedRecord.CreatedDate__c, 'Deleted record should match');
     }
 
@@ -102,12 +104,15 @@ private class rflib_LogArchiveControllerTest {
         // Given
         Datetime startDate = Datetime.now().addDays(-1);
         Datetime endDate = Datetime.now();
-        
+
         rflib_Logs_Archive__b logRecord = createLogRecord(startDate.addHours(1));
         rflib_SOQL.setMock(GET_RECORDS_MOCK_ID, new List<rflib_Logs_Archive__b>{ logRecord });
 
         // When
-        rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(startDate, endDate);
+        rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(
+            startDate,
+            endDate
+        );
 
         // Then
         System.assertEquals(1, result.records.size(), 'Should return one log record');
@@ -126,17 +131,91 @@ private class rflib_LogArchiveControllerTest {
         rflib_SOQL.setMock(GET_RECORDS_MOCK_ID, expectedRecords);
 
         // When
-        rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(null, null);
+        rflib_LogArchiveController.ArchiveQueryResult result = rflib_LogArchiveController.getArchivedRecords(
+            null,
+            null
+        );
 
         // Then
         System.assertEquals(expectedRecords.size(), result.records.size(), 'Should return expected number of records');
-        System.assertEquals(expectedRecords[0].CreatedDate__c, result.records[0].CreatedDate__c, 'Records should match');
+        System.assertEquals(
+            expectedRecords[0].CreatedDate__c,
+            result.records[0].CreatedDate__c,
+            'Records should match'
+        );
+    }
+
+    @IsTest
+    static void testGetRecentLogSummary_CountsMatchingLevels() {
+        // Given
+        rflib_SOQL.setMock(
+            GET_SUMMARIES_MOCK_ID,
+            new List<rflib_Logs_Archive__b>{
+                createLogRecordWithLevel('ERROR'),
+                createLogRecordWithLevel('ERROR'),
+                createLogRecordWithLevel('WARN'),
+                createLogRecordWithLevel('INFO')
+            }
+        );
+
+        // When
+        rflib_LogArchiveController.LogSummaryResult result = rflib_LogArchiveController.getRecentLogSummary(
+            24,
+            'WARN,ERROR,FATAL'
+        );
+
+        // Then
+        System.assertEquals(3, result.totalCount, 'INFO should be excluded from the total');
+        System.assertEquals(24, result.lookbackHours, 'Lookback hours should match');
+
+        Map<String, Integer> countsByLevel = new Map<String, Integer>();
+        for (rflib_LogArchiveController.LogLevelCount levelCount : result.levelCounts) {
+            countsByLevel.put(levelCount.level, levelCount.count);
+        }
+        System.assertEquals(2, countsByLevel.get('ERROR'), 'Should count two ERROR records');
+        System.assertEquals(1, countsByLevel.get('WARN'), 'Should count one WARN record');
+        System.assertEquals(false, countsByLevel.containsKey('FATAL'), 'FATAL with zero count should be omitted');
+        System.assertEquals('ERROR', result.levelCounts[0].level, 'ERROR should be ordered before WARN');
+    }
+
+    @IsTest
+    static void testGetRecentLogSummary_NoMatchesReturnsZero() {
+        // Given
+        rflib_SOQL.setMock(
+            GET_SUMMARIES_MOCK_ID,
+            new List<rflib_Logs_Archive__b>{ createLogRecordWithLevel('INFO'), createLogRecordWithLevel('DEBUG') }
+        );
+
+        // When
+        rflib_LogArchiveController.LogSummaryResult result = rflib_LogArchiveController.getRecentLogSummary(null, null);
+
+        // Then
+        System.assertEquals(0, result.totalCount, 'No matching levels should yield a zero total');
+        System.assertEquals(24, result.lookbackHours, 'Should default to 24 hours');
+        System.assertEquals(true, result.levelCounts.isEmpty(), 'No level counts should be returned');
+    }
+
+    @IsTest
+    private static void testGetRecentLogSummary_Failure() {
+        rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
+
+        Test.startTest();
+        try {
+            rflib_LogArchiveController.getRecentLogSummary(24, 'ERROR');
+            System.assert(false, 'Expected exception has not been thrown');
+        } catch (AuraHandledException actualException) {
+            System.assertEquals(EXPECTED_EXCEPTION.getMessage(), actualException.getMessage());
+        }
+        Test.stopTest();
     }
 
     private static Database.DeleteResult createSuccessDeleteResult() {
-        return (Database.DeleteResult) JSON.deserialize('{"success":true,"id":"0013000000abcde"}', Database.DeleteResult.class);
+        return (Database.DeleteResult) JSON.deserialize(
+            '{"success":true,"id":"0013000000abcde"}',
+            Database.DeleteResult.class
+        );
     }
-    
+
     private static rflib_Logs_Archive__b createLogArchiveRecord(String context) {
         return rflib_LogArchiveFactory.create(context);
     }
@@ -152,8 +231,16 @@ private class rflib_LogArchiveControllerTest {
         );
     }
 
-    public class MockLogArchiveQueryLocator implements rflib_LogArchiveController.ILogArchiveQueryLocator {
+    private static rflib_Logs_Archive__b createLogRecordWithLevel(String level) {
+        return new rflib_Logs_Archive__b(
+            CreatedDate__c = Datetime.now(),
+            Request_ID__c = '123',
+            Context__c = 'Test Context',
+            Log_Level__c = level
+        );
+    }
 
+    public class MockLogArchiveQueryLocator implements rflib_LogArchiveController.ILogArchiveQueryLocator {
         private final List<rflib_Logs_Archive__b> result;
 
         private final Exception ex;
@@ -164,6 +251,14 @@ private class rflib_LogArchiveControllerTest {
         }
 
         public List<rflib_Logs_Archive__b> getRecords(Datetime startDate, Datetime endDate) {
+            if (ex != null) {
+                throw ex;
+            }
+
+            return result;
+        }
+
+        public List<rflib_Logs_Archive__b> getRecordSummaries(Datetime startDate, Datetime endDate) {
             if (ex != null) {
                 throw ex;
             }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>RFLIB Log Archive Alert</masterLabel>
+    <description>Displays an alert on page load when recent WARN, ERROR or FATAL log events exist in the log archive.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property
+                name="lookbackHours"
+                type="Integer"
+                default="24"
+                label="Lookback Hours"
+                description="Number of hours to look back in the log archive for recent log events"
+            />
+            <property
+                name="logLevels"
+                type="String"
+                default="WARN,ERROR,FATAL"
+                label="Log Levels"
+                description="Comma-separated list of log levels to alert on (e.g. WARN,ERROR,FATAL)"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
