@@ -33,92 +33,50 @@
  *              an Incoming Webhook. Configure a Named Credential named RFLIB_SLACK_WEBHOOK
  *              with the Slack webhook URL (Authentication Protocol: No Authentication).
  *              Set Slack_Log_Level__c in the Logger Settings to control which events
- *              trigger a notification.
+ *              trigger a notification. The shared notification algorithm lives in
+ *              rflib_LogEventNotificationAction; this class only supplies the Slack specifics.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_SendLogEventSlackAction {
-
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_SendLogEventSlackAction');
-
-    private static final rflib_ApplicationEventLogger APP_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
+public with sharing class rflib_SendLogEventSlackAction extends rflib_LogEventNotificationAction {
 
     @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_SLACK_WEBHOOK';
 
-    // Slack Block Kit limits: section text max 3000 chars, header text max 150 chars.
-    private static final Integer MAX_BLOCK_TEXT_LENGTH = 2800;
-
-    // INFO and below are never appropriate for Slack alerting; enforce WARN as the floor.
-    @TestVisible
-    private static final rflib_LogLevel MINIMUM_LOG_LEVEL = rflib_LogLevel.WARN;
-
-    static {
-        // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
-        //       does not create an infinite loop of log events.
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
-        LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
-    }
-
     @InvocableMethod(label='Send Log Event to Slack' category='RFLIB' description='Send Log Events to a Slack channel via Incoming Webhook')
     public static void sendToSlack(List<rflib_Log_Event__e> events) {
-        try {
-            rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
-            Integer maxNotifications = rflib_GlobalSettings.maxSlackNotificationsPerInvocationOrDefault;
-            Integer sent = 0;
-
-            for (rflib_Log_Event__e evt : events) {
-                if (sent >= maxNotifications) {
-                    LOGGER.warn('Max Slack notifications per invocation (' + maxNotifications + ') reached; remaining events skipped.');
-                    break;
-                }
-                if (matchesConfiguredLogLevel(loggerSettings, evt)) {
-                    sendMessage(evt);
-                    sent++;
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.error('Failed to send log event(s) to Slack', ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, LOGGER.printLogs());
-        }
+        new rflib_SendLogEventSlackAction().process(events);
     }
 
-    private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        rflib_LogLevel configuredLevel = rflib_LogLevel.fromString(loggerSettings.Slack_Log_Level__c);
-
-        // NONE means disabled; skip the floor check so it stays disabled.
-        // For any level below WARN (INFO, DEBUG, TRACE), clamp up to WARN.
-        // encompasses() returns false when either side is NONE, so we guard that first.
-        if (configuredLevel != rflib_LogLevel.NONE && !MINIMUM_LOG_LEVEL.encompasses(configuredLevel)) {
-            LOGGER.warn('Slack_Log_Level__c is configured below the minimum of WARN. Clamping to WARN.');
-            configuredLevel = MINIMUM_LOG_LEVEL;
-        }
-
-        return configuredLevel.encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
+    protected override String getLoggerName() {
+        return 'rflib_SendLogEventSlackAction';
     }
 
-    private static void sendMessage(rflib_Log_Event__e evt) {
-        try {
-            rflib_HttpRequest req = new rflib_HttpRequest(LOGGER);
-            req.setEndpoint(ENDPOINT);
-            req.setMethod('POST');
-            req.setHeader('Content-Type', 'application/json');
-            req.setBody(createSlackPayload(evt));
+    protected override String getChannelName() {
+        return 'Slack';
+    }
 
-            HttpResponse res = req.send();
-            if (res.getStatusCode() == 200) {
-                LOGGER.debug('Successfully sent log event to Slack for context: ' + evt.Context__c);
-            } else {
-                LOGGER.debug('Failed to send log event to Slack. Status: ' + res.getStatus() + ' for context: ' + evt.Context__c);
-                APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, JSON.serialize(res));
-            }
-        } catch (Exception ex) {
-            LOGGER.error('Failed to send log event to Slack for context: ' + evt.Context__c, ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-slack-log-event-failed', null, LOGGER.printLogs());
-        }
+    protected override String getEndpoint() {
+        return ENDPOINT;
+    }
+
+    protected override Integer getMaxNotifications() {
+        return rflib_GlobalSettings.maxSlackNotificationsPerInvocationOrDefault;
+    }
+
+    protected override String getConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings) {
+        return loggerSettings.Slack_Log_Level__c;
+    }
+
+    protected override String getAppEventFailureName() {
+        return 'rflib-slack-log-event-failed';
+    }
+
+    protected override Boolean isSuccessStatusCode(Integer statusCode) {
+        return statusCode == 200;
     }
 
     @TestVisible
-    private static String createSlackPayload(rflib_Log_Event__e evt) {
+    protected override String createPayload(rflib_Log_Event__e evt) {
         String logMessages = truncate(evt.Log_Messages__c, MAX_BLOCK_TEXT_LENGTH);
         String platformInfo = truncate(getFormattedPlatformInfo(evt), MAX_BLOCK_TEXT_LENGTH);
 
@@ -171,26 +129,5 @@ public with sharing class rflib_SendLogEventSlackAction {
             'type' => 'mrkdwn',
             'text' => text
         };
-    }
-
-    private static String truncate(String value, Integer maxLength) {
-        if (String.isBlank(value)) {
-            return 'N/A';
-        }
-        if (value.length() <= maxLength) {
-            return value;
-        }
-        return '[TRUNCATED]\n' + value.right(maxLength);
-    }
-
-    private static String getFormattedPlatformInfo(rflib_Log_Event__e evt) {
-        if (String.isBlank(evt.Platform_Info__c)) {
-            return 'N/A';
-        }
-        try {
-            return JSON.serializePretty(JSON.deserializeUntyped(evt.Platform_Info__c));
-        } catch (Exception ex) {
-            return evt.Platform_Info__c;
-        }
     }
 }

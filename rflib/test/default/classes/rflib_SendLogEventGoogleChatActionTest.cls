@@ -28,15 +28,15 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_SendLogEventSlackActionTest {
+private class rflib_SendLogEventGoogleChatActionTest {
 
-    private static final String SUCCESS_RESPONSE = 'ok';
-    private static final String ERROR_RESPONSE = 'invalid_payload';
+    private static final String SUCCESS_RESPONSE = '{}';
+    private static final String ERROR_RESPONSE = 'Bad Request';
     private static final String METHOD = 'POST';
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_Success() {
+    private static void testSendToGoogleChat_Success() {
         setupLoggerSettings('ERROR');
 
         List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
@@ -46,39 +46,39 @@ private class rflib_SendLogEventSlackActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_LogLevelDoesNotMatch() {
+    private static void testSendToGoogleChat_LogLevelDoesNotMatch() {
         setupLoggerSettings('WARN');
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('INFO'));
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(createTestLogEvents('INFO'));
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_LogLevelNone() {
+    private static void testSendToGoogleChat_LogLevelNone() {
         setupLoggerSettings('NONE');
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('FATAL'));
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(createTestLogEvents('FATAL'));
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_FailureResponse() {
+    private static void testSendToGoogleChat_FailureResponse() {
         setupLoggerSettings('ERROR');
 
         List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
@@ -88,33 +88,33 @@ private class rflib_SendLogEventSlackActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_ThrowsException() {
+    private static void testSendToGoogleChat_ThrowsException() {
         setupLoggerSettings('ERROR');
 
         List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
         HttpRequest req = createMockRequest(events[0]);
-        CalloutException ex = new CalloutException('Slack webhook callout failed');
+        CalloutException ex = new CalloutException('Google Chat webhook callout failed');
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, ex));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_LongMessageTruncated() {
+    private static void testSendToGoogleChat_LongMessageTruncated() {
         setupLoggerSettings('ERROR');
 
         String longMessage = 'X'.repeat(5000);
@@ -134,27 +134,27 @@ private class rflib_SendLogEventSlackActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_InfoLevelConfigured_InfoEventNotSent() {
+    private static void testSendToGoogleChat_InfoLevelConfigured_InfoEventNotSent() {
         setupLoggerSettings('INFO');
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(createTestLogEvents('INFO'));
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(createTestLogEvents('INFO'));
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_InfoLevelConfigured_WarnEventSentAtWarnFloor() {
+    private static void testSendToGoogleChat_InfoLevelConfigured_WarnEventSentAtWarnFloor() {
         setupLoggerSettings('INFO');
 
         List<rflib_Log_Event__e> events = createTestLogEvents('WARN');
@@ -163,17 +163,17 @@ private class rflib_SendLogEventSlackActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testSendToSlack_ExceedsMaxNotifications() {
+    private static void testSendToGoogleChat_ExceedsMaxNotifications() {
         setupLoggerSettings('ERROR');
-        rflib_GlobalSettings.SETTINGS.put('Max_Slack_Notifications_Per_Invocation', '1');
+        rflib_GlobalSettings.SETTINGS.put('Max_Google_Chat_Notifications_Per_Invocation', '1');
 
         List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>{
             createTestLogEvents('ERROR')[0],
@@ -184,17 +184,17 @@ private class rflib_SendLogEventSlackActionTest {
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
         Test.startTest();
-        rflib_SendLogEventSlackAction.sendToSlack(events);
+        rflib_SendLogEventGoogleChatAction.sendToGoogleChat(events);
         Integer calloutsUsed = Limits.getCallouts();
         Test.stopTest();
 
         Assert.areEqual(1, calloutsUsed, 'Only 1 callout should have been made due to the cap');
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-slack-log-event-failed']);
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = 'rflib-google-chat-log-event-failed']);
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testCreateSlackPayload_WithPlatformInfo() {
+    private static void testCreateGoogleChatPayload_WithPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',
             Context__c = 'TestContext',
@@ -204,10 +204,11 @@ private class rflib_SendLogEventSlackActionTest {
         );
 
         Test.startTest();
-        String payload = new rflib_SendLogEventSlackAction().createPayload(evt);
+        String payload = new rflib_SendLogEventGoogleChatAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('RFLIB Log Event'), 'Payload should contain the header text');
+        Assert.isTrue(payload.contains('cardsV2'), 'Payload should be a cardsV2 message');
         Assert.isTrue(payload.contains('ERROR'), 'Payload should contain the log level');
         Assert.isTrue(payload.contains('TestContext'), 'Payload should contain the context');
         Assert.isTrue(payload.contains('TestRequestId'), 'Payload should contain the request ID');
@@ -217,7 +218,7 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testCreateSlackPayload_LongMessageTruncatedFromBeginning() {
+    private static void testCreateGoogleChatPayload_LongMessageTruncatedFromBeginning() {
         String beginning = 'BEGINNING_MARKER';
         String tail = 'EXCEPTION_HERE';
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
@@ -229,7 +230,7 @@ private class rflib_SendLogEventSlackActionTest {
         );
 
         Test.startTest();
-        String payload = new rflib_SendLogEventSlackAction().createPayload(evt);
+        String payload = new rflib_SendLogEventGoogleChatAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('[TRUNCATED]'), 'Payload should contain the truncation marker');
@@ -239,7 +240,7 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testCreateSlackPayload_WithoutPlatformInfo() {
+    private static void testCreateGoogleChatPayload_WithoutPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'WARN',
             Context__c = 'TestContext',
@@ -249,7 +250,7 @@ private class rflib_SendLogEventSlackActionTest {
         );
 
         Test.startTest();
-        String payload = new rflib_SendLogEventSlackAction().createPayload(evt);
+        String payload = new rflib_SendLogEventGoogleChatAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('N/A'), 'Payload should contain N/A for missing platform info');
@@ -257,7 +258,7 @@ private class rflib_SendLogEventSlackActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testCreateSlackPayload_WithNonJsonPlatformInfo() {
+    private static void testCreateGoogleChatPayload_WithNonJsonPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'WARN',
             Context__c = 'TestContext',
@@ -267,7 +268,7 @@ private class rflib_SendLogEventSlackActionTest {
         );
 
         Test.startTest();
-        String payload = new rflib_SendLogEventSlackAction().createPayload(evt);
+        String payload = new rflib_SendLogEventGoogleChatAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('N/A'), 'Payload should contain the raw platform info value when it is not JSON');
@@ -287,10 +288,10 @@ private class rflib_SendLogEventSlackActionTest {
 
     private static HttpRequest createMockRequest(rflib_Log_Event__e evt) {
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(rflib_SendLogEventSlackAction.ENDPOINT);
+        req.setEndpoint(rflib_SendLogEventGoogleChatAction.ENDPOINT);
         req.setMethod(METHOD);
         req.setHeader('Content-Type', 'application/json');
-        req.setBody(new rflib_SendLogEventSlackAction().createPayload(evt));
+        req.setBody(new rflib_SendLogEventGoogleChatAction().createPayload(evt));
         return req;
     }
 
@@ -308,9 +309,9 @@ private class rflib_SendLogEventSlackActionTest {
         return response;
     }
 
-    private static void setupLoggerSettings(String slackLogLevel) {
+    private static void setupLoggerSettings(String googleChatLogLevel) {
         rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
-        loggerSettings.Slack_Log_Level__c = slackLogLevel;
+        loggerSettings.Google_Chat_Log_Level__c = googleChatLogLevel;
         insert loggerSettings;
     }
 }
