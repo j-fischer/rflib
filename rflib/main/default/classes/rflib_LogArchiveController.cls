@@ -225,6 +225,12 @@ public with sharing class rflib_LogArchiveController {
                         .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(startDate))
                         .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(endDate))
                 )
+                // Big Objects cannot filter by Log_Level__c (the index prefix is CreatedDate__c), so level
+                // filtering happens in Apex. Order by CreatedDate__c DESC so that if the window exceeds the
+                // query limit, the most recent records are retained rather than a non-deterministic page -
+                // otherwise the limit could drop all WARN/ERROR/FATAL rows and report a false zero.
+                .orderBy(rflib_Logs_Archive__b.CreatedDate__c)
+                .sortDesc()
                 .setLimit(ARCHIVE_LOG_QUERY_LIMIT)
                 .systemMode()
                 .mockId('DefaultLogArchiveQueryLocator.getRecordSummaries')
