@@ -196,6 +196,41 @@ private class rflib_LogArchiveControllerTest {
     }
 
     @IsTest
+    static void testGetRecentLogSummary_NotTruncatedBelowLimit() {
+        // Given
+        rflib_SOQL.setMock(GET_SUMMARIES_MOCK_ID, new List<rflib_Logs_Archive__b>{ createLogRecordWithLevel('ERROR') });
+
+        // When
+        rflib_LogArchiveController.LogSummaryResult result = rflib_LogArchiveController.getRecentLogSummary(
+            24,
+            'WARN,ERROR,FATAL'
+        );
+
+        // Then
+        System.assertEquals(false, result.truncated, 'Result below the query limit should not be truncated');
+    }
+
+    @IsTest
+    static void testGetRecentLogSummary_TruncatedAtLimit() {
+        // Given - shrink the limit so a small mocked result set reaches it
+        rflib_LogArchiveController.ARCHIVE_LOG_QUERY_LIMIT = 2;
+        rflib_SOQL.setMock(
+            GET_SUMMARIES_MOCK_ID,
+            new List<rflib_Logs_Archive__b>{ createLogRecordWithLevel('INFO'), createLogRecordWithLevel('INFO') }
+        );
+
+        // When
+        rflib_LogArchiveController.LogSummaryResult result = rflib_LogArchiveController.getRecentLogSummary(
+            24,
+            'WARN,ERROR,FATAL'
+        );
+
+        // Then
+        System.assertEquals(0, result.totalCount, 'No severe levels were present in the returned slice');
+        System.assertEquals(true, result.truncated, 'Reaching the query limit should flag the result as truncated');
+    }
+
+    @IsTest
     private static void testGetRecentLogSummary_Failure() {
         rflib_LogArchiveController.QUERY_LOCATOR = new MockLogArchiveQueryLocator(null, EXPECTED_EXCEPTION);
 

@@ -30,7 +30,8 @@
 public with sharing class rflib_LogArchiveController {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_LogArchiveController');
 
-    private static final Integer ARCHIVE_LOG_QUERY_LIMIT = rflib_GlobalSettings.archiveLogQueryLimitOrDefault;
+    @TestVisible
+    private static Integer ARCHIVE_LOG_QUERY_LIMIT = rflib_GlobalSettings.archiveLogQueryLimitOrDefault;
 
     @TestVisible
     private static ILogArchiveQueryLocator QUERY_LOCATOR = new DefaultLogArchiveQueryLocator();
@@ -80,7 +81,12 @@ public with sharing class rflib_LogArchiveController {
                 }
             }
 
-            return new LogSummaryResult(hours, counts);
+            // The query is capped at the Big Object synchronous maximum and cannot filter by level. When the
+            // window fills that cap, severe records may exist beyond the returned slice, so flag the result as
+            // truncated - the LWC surfaces an advisory rather than a potentially false "all clear".
+            Boolean truncated = records.size() >= ARCHIVE_LOG_QUERY_LIMIT;
+
+            return new LogSummaryResult(hours, counts, truncated);
         } catch (Exception ex) {
             LOGGER.error('Failed to summarize rflib_Logs_Archive__b', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -134,10 +140,13 @@ public with sharing class rflib_LogArchiveController {
         @AuraEnabled
         public final Integer totalCount;
         @AuraEnabled
+        public final Boolean truncated;
+        @AuraEnabled
         public final List<LogLevelCount> levelCounts;
 
-        public LogSummaryResult(Integer lookbackHours, Map<String, Integer> counts) {
+        public LogSummaryResult(Integer lookbackHours, Map<String, Integer> counts, Boolean truncated) {
             this.lookbackHours = lookbackHours;
+            this.truncated = truncated;
             this.levelCounts = new List<LogLevelCount>();
 
             Integer total = 0;

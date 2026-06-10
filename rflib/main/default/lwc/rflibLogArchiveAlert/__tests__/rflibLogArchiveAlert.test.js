@@ -77,12 +77,49 @@ describe('c-rflib-log-archive-alert', () => {
         getRecentLogSummary.emit({
             lookbackHours: 24,
             totalCount: 0,
-            levelCounts: []
+            levelCounts: [],
+            truncated: false
         });
 
         await flushPromises();
 
         expect(element.shadowRoot.querySelector('.slds-notify_alert')).toBeNull();
+    });
+
+    it('shows an advisory banner when the window was truncated with no matches counted', async () => {
+        const element = createComponent();
+
+        getRecentLogSummary.emit({
+            lookbackHours: 24,
+            totalCount: 0,
+            levelCounts: [],
+            truncated: true
+        });
+
+        await flushPromises();
+
+        const banner = element.shadowRoot.querySelector('.slds-notify_alert');
+        expect(banner).not.toBeNull();
+        expect(banner.textContent).toContain('high volume');
+        expect(banner.classList).toContain('slds-theme_warning');
+        expect(element.shadowRoot.querySelector('a')).not.toBeNull();
+    });
+
+    it('marks the count as partial when matches exist in a truncated window', async () => {
+        const element = createComponent();
+
+        getRecentLogSummary.emit({
+            lookbackHours: 24,
+            totalCount: 2,
+            levelCounts: [{ level: 'ERROR', count: 2 }],
+            truncated: true
+        });
+
+        await flushPromises();
+
+        const banner = element.shadowRoot.querySelector('.slds-notify_alert');
+        expect(banner.textContent).toContain('2 ERROR');
+        expect(banner.textContent).toContain('partial count');
     });
 
     it('renders nothing when the summary query fails', async () => {

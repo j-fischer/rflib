@@ -58,13 +58,28 @@ export default class RflibLogArchiveAlert extends NavigationMixin(LightningEleme
         return !!this._summary && this._summary.totalCount > 0;
     }
 
+    get isTruncated() {
+        return !!this._summary && this._summary.truncated === true;
+    }
+
+    get showAlert() {
+        // Show counts when there are matches, or an advisory when the window was too large to
+        // summarize fully (so a real alert is never silently suppressed).
+        return this.hasMatches || this.isTruncated;
+    }
+
     get summaryText() {
-        if (!this.hasMatches) {
-            return '';
+        if (this.hasMatches) {
+            const parts = this._summary.levelCounts.map((levelCount) => `${levelCount.count} ${levelCount.level}`);
+            const suffix = this.isTruncated ? ' (partial count)' : '';
+            return `${parts.join(', ')} in the last ${this._summary.lookbackHours} hours${suffix}`;
         }
 
-        const parts = this._summary.levelCounts.map((levelCount) => `${levelCount.count} ${levelCount.level}`);
-        return `${parts.join(', ')} in the last ${this._summary.lookbackHours} hours`;
+        if (this.isTruncated) {
+            return `A high volume of logs in the last ${this._summary.lookbackHours} hours could not be fully checked for WARN, ERROR or FATAL events`;
+        }
+
+        return '';
     }
 
     get bannerClass() {
