@@ -240,6 +240,26 @@ private class rflib_SendLogEventGoogleChatActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testCreateGoogleChatPayload_EscapesHtmlInLogContent() {
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Context__c = 'TestContext',
+            Request_ID__c = 'TestRequestId',
+            Log_Messages__c = 'Error parsing <config> & <init> tags',
+            Platform_Info__c = null
+        );
+
+        Test.startTest();
+        String payload = new rflib_SendLogEventGoogleChatAction().createPayload(evt);
+        Test.stopTest();
+
+        Assert.isTrue(payload.contains('&lt;init&gt;'), 'Angle brackets in the log content should be HTML-escaped');
+        Assert.isTrue(payload.contains('&amp;'), 'Ampersands in the log content should be HTML-escaped');
+        Assert.isFalse(payload.contains('<init>'), 'Raw angle brackets should not appear in the Google Chat card');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testCreateGoogleChatPayload_WithoutPlatformInfo() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'WARN',

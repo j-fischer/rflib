@@ -78,13 +78,13 @@ public with sharing class rflib_SendLogEventGoogleChatAction extends rflib_LogEv
 
     @TestVisible
     protected override String createPayload(rflib_Log_Event__e evt) {
-        String logMessages = truncate(evt.Log_Messages__c, MAX_BLOCK_TEXT_LENGTH);
-        String platformInfo = truncate(getFormattedPlatformInfo(evt), MAX_BLOCK_TEXT_LENGTH);
+        String logMessages = escapeHtml(truncate(evt.Log_Messages__c, MAX_BLOCK_TEXT_LENGTH));
+        String platformInfo = escapeHtml(truncate(getFormattedPlatformInfo(evt), MAX_BLOCK_TEXT_LENGTH));
 
         Map<String, Object> card = new Map<String, Object>{
             'header' => new Map<String, Object>{
                 'title' => 'RFLIB Log Event – ' + evt.Log_Level__c,
-                'subtitle' => UserInfo.getOrganizationName()
+                'subtitle' => escapeHtml(UserInfo.getOrganizationName())
             },
             'sections' => new List<Object>{
                 new Map<String, Object>{
@@ -114,7 +114,7 @@ public with sharing class rflib_SendLogEventGoogleChatAction extends rflib_LogEv
         return new Map<String, Object>{
             'decoratedText' => new Map<String, Object>{
                 'topLabel' => topLabel,
-                'text' => String.isBlank(text) ? 'N/A' : text
+                'text' => String.isBlank(text) ? 'N/A' : escapeHtml(text)
             }
         };
     }
@@ -128,5 +128,17 @@ public with sharing class rflib_SendLogEventGoogleChatAction extends rflib_LogEv
                 }
             }
         };
+    }
+
+    // Google Chat renders textParagraph and decoratedText content as limited HTML, so raw log
+    // content containing angle brackets (XML/HTML snippets, generic type names, '<init>' stack
+    // frames) would be interpreted as markup or silently dropped. Escape the HTML-significant
+    // characters so the log text is delivered verbatim. '&' must be replaced first to avoid
+    // double-escaping the entities introduced for '<' and '>'.
+    private static String escapeHtml(String value) {
+        if (String.isBlank(value)) {
+            return value;
+        }
+        return value.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
     }
 }
