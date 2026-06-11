@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Google_Chat_Log_Level__c</fullName>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
+    <description>Set the log level for which a Google Chat notification will be sent in response to a Log Event. Whenever a Log Event is created and the level of the event is encompassed by the currently set Google Chat Log Level, a message is posted to the configured Google Chat space. Requires a Named Credential named RFLIB_GOOGLE_CHAT_WEBHOOK to be configured with the Google Chat Incoming Webhook URL. INFO and below are never sent to Google Chat regardless of this setting; WARN is the enforced minimum.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which Google Chat notifications are sent in response to a Log Event. Valid values are NONE, WARN, ERROR, and FATAL. WARN is the minimum enforced level — INFO, DEBUG, and TRACE events are never sent to Google Chat. Requires a Named Credential named RFLIB_GOOGLE_CHAT_WEBHOOK.</inlineHelpText>
+    <label>Google Chat Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

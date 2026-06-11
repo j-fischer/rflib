@@ -97,6 +97,9 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final Integer MAX_TEAMS_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE = 20;
 
+    @TestVisible
+    private static final Integer MAX_GOOGLE_CHAT_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE = 20;
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -234,6 +237,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Max_Teams_Notifications_Per_Invocation');
             return String.isBlank(val) ? MAX_TEAMS_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE : Integer.valueOf(val);
+        }
+    }
+
+    public static Integer maxGoogleChatNotificationsPerInvocationOrDefault {
+        get {
+            String val = getSetting('Max_GChat_Notifications_Per_Invocation');
+            return String.isBlank(val) ? MAX_GOOGLE_CHAT_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }
 

@@ -204,7 +204,7 @@ private class rflib_SendLogEventTeamsActionTest {
         );
 
         Test.startTest();
-        String payload = rflib_SendLogEventTeamsAction.createTeamsPayload(evt);
+        String payload = new rflib_SendLogEventTeamsAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('RFLIB Log Event'), 'Payload should contain the header text');
@@ -230,7 +230,7 @@ private class rflib_SendLogEventTeamsActionTest {
         );
 
         Test.startTest();
-        String payload = rflib_SendLogEventTeamsAction.createTeamsPayload(evt);
+        String payload = new rflib_SendLogEventTeamsAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('[TRUNCATED]'), 'Payload should contain the truncation marker');
@@ -250,7 +250,7 @@ private class rflib_SendLogEventTeamsActionTest {
         );
 
         Test.startTest();
-        String payload = rflib_SendLogEventTeamsAction.createTeamsPayload(evt);
+        String payload = new rflib_SendLogEventTeamsAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('N/A'), 'Payload should contain N/A for missing platform info');
@@ -268,7 +268,7 @@ private class rflib_SendLogEventTeamsActionTest {
         );
 
         Test.startTest();
-        String payload = rflib_SendLogEventTeamsAction.createTeamsPayload(evt);
+        String payload = new rflib_SendLogEventTeamsAction().createPayload(evt);
         Test.stopTest();
 
         Assert.isTrue(payload.contains('N/A'), 'Payload should contain the raw platform info value when it is not JSON');
@@ -311,7 +311,7 @@ private class rflib_SendLogEventTeamsActionTest {
         req.setEndpoint(rflib_SendLogEventTeamsAction.ENDPOINT);
         req.setMethod(METHOD);
         req.setHeader('Content-Type', 'application/json');
-        req.setBody(rflib_SendLogEventTeamsAction.createTeamsPayload(evt));
+        req.setBody(new rflib_SendLogEventTeamsAction().createPayload(evt));
         return req;
     }
 
