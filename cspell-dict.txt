@@ -97,3 +97,4 @@ togglefullscreen
 closeviewer
 Vabu
 rowaction
+lookback

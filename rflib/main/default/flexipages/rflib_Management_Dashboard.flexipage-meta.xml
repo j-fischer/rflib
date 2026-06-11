@@ -15,6 +15,20 @@
                 <identifier>flexipage_richText</identifier>
             </componentInstance>
         </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>logLevels</name>
+                    <value>WARN,ERROR,FATAL</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>lookbackHours</name>
+                    <value>24</value>
+                </componentInstanceProperties>
+                <componentName>rflibLogArchiveAlert</componentName>
+                <identifier>c_rflibLogArchiveAlert</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
