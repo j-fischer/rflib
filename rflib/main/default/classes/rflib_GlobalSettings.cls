@@ -242,7 +242,7 @@ public class rflib_GlobalSettings {
 
     public static Integer maxGoogleChatNotificationsPerInvocationOrDefault {
         get {
-            String val = getSetting('Max_Google_Chat_Notifications_Per_Invocation');
+            String val = getSetting('Max_GChat_Notifications_Per_Invocation');
             return String.isBlank(val) ? MAX_GOOGLE_CHAT_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE : Integer.valueOf(val);
         }
     }

@@ -43,11 +43,12 @@ public abstract with sharing class rflib_LogEventNotificationAction {
 
     // Webhook payloads have channel-specific size limits (Slack section 3000 chars, Teams ~28KB total,
     // Google Chat 32KB). Cap per-block text well below the smallest to keep the total payload safe.
-    protected static final Integer MAX_BLOCK_TEXT_LENGTH = 2800;
+    // Apex does not allow protected static members, so these are protected instance constants.
+    protected final Integer MAX_BLOCK_TEXT_LENGTH = 2800;
 
     // INFO and below are never appropriate for chat alerting; enforce WARN as the floor.
     @TestVisible
-    protected static final rflib_LogLevel MINIMUM_LOG_LEVEL = rflib_LogLevel.WARN;
+    protected final rflib_LogLevel MINIMUM_LOG_LEVEL = rflib_LogLevel.WARN;
 
     private rflib_Logger logger;
 

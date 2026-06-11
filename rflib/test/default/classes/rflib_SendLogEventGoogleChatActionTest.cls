@@ -173,7 +173,7 @@ private class rflib_SendLogEventGoogleChatActionTest {
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSendToGoogleChat_ExceedsMaxNotifications() {
         setupLoggerSettings('ERROR');
-        rflib_GlobalSettings.SETTINGS.put('Max_Google_Chat_Notifications_Per_Invocation', '1');
+        rflib_GlobalSettings.SETTINGS.put('Max_GChat_Notifications_Per_Invocation', '1');
 
         List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>{
             createTestLogEvents('ERROR')[0],
