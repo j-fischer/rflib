@@ -643,6 +643,13 @@ gulp.task(
     })
 );
 
+gulp.task('shell-test-e2e', function (done) {
+    const headed = process.argv.includes('--chrome');
+    return shell.task(`npx playwright test${headed ? ' --headed' : ''}`, {
+        env: { RFLIB_E2E_TARGET_ORG: config.alias }
+    })(done);
+});
+
 gulp.task('shell-force-test-package-install-and-upgrade',
     shellTask(function () {
         const skipBaseInstall = process.argv.includes('--skip-base-install');
@@ -855,6 +862,11 @@ gulp.task(
         'shell-test-lwc'
     )
 );
+
+// End-to-end UI test task. Prompts for the org alias (or accepts --alias <name>)
+// and runs the Playwright suite against that org. Pass --chrome to watch the
+// tests run in a visible Chrome window; the default is headless.
+gulp.task('test-e2e', gulp.series('prompt-alias', 'shell-test-e2e'));
 
 // Create event task
 gulp.task('create-event', gulp.series('prompt-alias', 'shell-force-create-log-event'));

@@ -43,10 +43,12 @@
         "@babel/eslint-parser": "^7.29.7",
         "@eslint/js": "^9.39.1",
         "@lwc/eslint-plugin-lwc": "^3.5.0",
+        "@playwright/test": "^1.60.0",
         "@salesforce/eslint-config-lwc": "^4.1.2",
         "@salesforce/eslint-plugin-aura": "^3.0.0",
         "@salesforce/eslint-plugin-lightning": "^2.0.0",
         "@salesforce/sfdx-lwc-jest": "^7.1.2",
+        "@types/node": "^25.9.3",
         "ai-digest": "^1.5.1",
         "codecov": "^3.8.3",
         "cspell": "^10.0.0",
@@ -74,7 +76,7 @@
         "time-require": "^0.1.2"
     },
     "lint-staged": {
-        "**/*.{html,js,json,yaml,yml,md,cmp,page,component}": [
+        "**/*.{html,js,ts,json,yaml,yml,md,cmp,page,component}": [
             "prettier --write"
         ],
         "**/lwc/**": [
@@ -94,8 +96,12 @@
         "test:unit:watch": "sfdx-lwc-jest --watch",
         "test:unit:debug": "sfdx-lwc-jest --debug",
         "test:unit:coverage": "sfdx-lwc-jest --coverage",
-        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,json,yaml,yml,md,cmp,page,component}'",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:headed": "playwright test --headed",
+        "test:e2e:report": "playwright show-report",
+        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,ts,json,md,page,yaml,yml}'",
+        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,ts,json,yaml,yml,md,cmp,page,component}'",
         "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
         "prepare": "husky"
     },
