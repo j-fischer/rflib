@@ -3,5 +3,7 @@
 }
 
 .slds-notify_alert {
-    border-radius: var(--lwc-borderRadiusMedium, 0.25rem);
+    /* Match the rounded corners of the decorated rich-text banner / cards above it.
+       SLDS sets its own border-radius on .slds-notify_alert, so override it directly. */
+    border-radius: 1rem !important;
 }
