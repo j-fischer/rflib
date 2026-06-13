@@ -182,6 +182,7 @@ jobs:
                   command: |
                       npx sf org delete scratch -o ciorg -p
                   when: on_fail
+
     report_coverage:
         <<: *defaults
         steps:
@@ -197,6 +198,7 @@ jobs:
                       bash <(curl -s https://codecov.io/bash)
                       rm -f test-result-codecoverage.json
                       node_modules/codecov/bin/codecov
+
     scan_flows:
         <<: *defaults
         steps:
@@ -242,10 +244,10 @@ workflows:
             - run_apex_tests:
                   requires:
                       - deploy_source
-            # Runs after the Apex tests so only one job uses the scratch org at a time
+
             - run_e2e_tests:
                   requires:
-                      - run_apex_tests
+                      - deploy_source
             - report_coverage:
                   requires:
                       - run_apex_tests
