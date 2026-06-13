@@ -7,7 +7,7 @@
     <inlineHelpText>Set the log level for which a Log Event will be forwarded to Azure Application Insights. Requires the RFLIB_APP_INSIGHTS Named Credential and the App_Insights_Instrumentation_Key Global Setting.</inlineHelpText>
     <label>App Insights Log Level</label>
     <length>5</length>
-    <required>true</required>
+    <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
