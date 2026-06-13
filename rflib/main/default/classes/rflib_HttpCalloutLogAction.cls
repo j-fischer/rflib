@@ -29,65 +29,38 @@
 
 /**
  * @group Logger
- * @description Invocable Action that will send out an HTTP request to an external system . 
- *              Please make sure to set the Org Wide Email Sender Address in the Logger Custom Settings
- *              or the email will note be sent. This is due to the fact that Platform Event based triggers
- *              are executed by the System user. 
- */ 
+ * @description Invocable Action that will send out an HTTP request to an external system, such as
+ *              AWS CloudWatch via API Gateway. The whole batch of matching Log Events is serialized
+ *              as-is and POSTed to the RFLIB_HTTP_CALLOUT_LOG Named Credential.
+ *
+ *              The shared forwarding algorithm lives in rflib_LogEventHttpForwarderAction; this class
+ *              only supplies the endpoint, configuration accessor and payload.
+ */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_HttpCalloutLogAction {
-
-    private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_HttpCalloutLogAction');
-
-    private static final rflib_ApplicationEventLogger APP_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
-
-    static {
-        // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements
-        //       does not create an infinite loop of log events. 
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
-        LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
-    }
+public with sharing class rflib_HttpCalloutLogAction extends rflib_LogEventHttpForwarderAction {
 
     @InvocableMethod(label='Log Event via HTTP to Remote System' category='RFLIB' description='Log Events in external systems such as AWS Cloudwatch')
     public static void sendToExternalService(List<rflib_Log_Event__e> events) {
-        try {
-            rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
-            
-            List<rflib_Log_Event__e> eventsToSend = new List<rflib_Log_Event__e>();
-            for (rflib_Log_Event__e evt : events) {
-                if (matchesConfiguredLogLevel(loggerSettings, evt)) {
-                    eventsToSend.add(evt);
-                }
-            }
-
-            if (eventsToSend.size() == 0) {
-                LOGGER.debug('No events to send found. Nothing to do here.');
-                return;
-            }
-
-
-            rflib_HttpRequest req = new rflib_HttpRequest(LOGGER);
-
-            req.setEndpoint('callout:RFLIB_HTTP_CALLOUT_LOG');
-            req.setMethod('POST');
-            req.setHeader('Content-Type', 'application/json');
-            req.setBody(JSON.serialize(eventsToSend));
-
-            HttpResponse res = req.send();
-            if (res.getStatusCode() == 200) {
-                LOGGER.debug('Successfully sent data to remote service');
-            } else {
-                LOGGER.debug('Failed to send data to remote service. Status: ' + res.getStatus());
-                APP_EVENT_LOGGER.logApplicationEvent('rflib-http-callout-log-event-failed', null, JSON.serialize(res));
-            }
-        } catch (Exception ex) {
-            LOGGER.error('Failed to send data to remote service', ex);
-            APP_EVENT_LOGGER.logApplicationEvent('rflib-http-callout-log-event-failed', null, LOGGER.printLogs());
-        }
+        new rflib_HttpCalloutLogAction().process(events);
     }
 
-    private static Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
-        return rflib_LogLevel.fromString(loggerSettings.HTTP_Callout_Log_Level__c).
-            encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
+    protected override String getLoggerName() {
+        return 'rflib_HttpCalloutLogAction';
+    }
+
+    protected override String getEndpoint() {
+        return 'callout:RFLIB_HTTP_CALLOUT_LOG';
+    }
+
+    protected override String getConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings) {
+        return loggerSettings.HTTP_Callout_Log_Level__c;
+    }
+
+    protected override String getAppEventFailureName() {
+        return 'rflib-http-callout-log-event-failed';
+    }
+
+    protected override String createPayload(List<rflib_Log_Event__e> events) {
+        return JSON.serialize(events);
     }
 }

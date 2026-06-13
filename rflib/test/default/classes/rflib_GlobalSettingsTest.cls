@@ -273,6 +273,43 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testAppInsightsInstrumentationKeyOrDefault() {
+        String expectedValue = rflib_Global_Setting__mdt.getInstance('App_Insights_Instrumentation_Key')?.Value__c;
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.appInsightsInstrumentationKeyOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testAppInsightsInstrumentationKeyOverride() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('App_Insights_Instrumentation_Key', 'abc-123');
+        System.assertEquals('abc-123', rflib_GlobalSettings.appInsightsInstrumentationKeyOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testOtelServiceNameOrDefault() {
+        String expectedValue = getConfiguredStringValueOrDefault(
+            'OTel_Service_Name',
+            rflib_GlobalSettings.OTEL_SERVICE_NAME_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.otelServiceNameOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testOtelServiceNameOverride() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('OTel_Service_Name', 'my-service');
+        System.assertEquals('my-service', rflib_GlobalSettings.otelServiceNameOrDefault);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 

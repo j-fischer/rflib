@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>App_Insights_Log_Level__c</fullName>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
+    <description>Set the log level for which a Log Event will be forwarded to Azure Application Insights. Whenever a Log Event is created and the level of the event is encompassed by the currently set App Insights Log Level, the event is forwarded. Otherwise, it is skipped. Requires the RFLIB_APP_INSIGHTS Named Credential and the App_Insights_Instrumentation_Key Global Setting.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which a Log Event will be forwarded to Azure Application Insights. Requires the RFLIB_APP_INSIGHTS Named Credential and the App_Insights_Instrumentation_Key Global Setting.</inlineHelpText>
+    <label>App Insights Log Level</label>
+    <length>5</length>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
