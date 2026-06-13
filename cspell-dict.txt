@@ -98,3 +98,7 @@ closeviewer
 Vabu
 rowaction
 lookback
+frontdoor
+domcontentloaded
+menuitemcheckbox
+runnability

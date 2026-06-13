@@ -11,3 +11,7 @@
 
 sfdx-project.json
 gulpfile.js
+
+playwright-report
+test-results
+e2e/.auth

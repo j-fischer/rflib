@@ -55,3 +55,8 @@ CLAUDE.md
 codex.md
 AGENTS.md
 GEMINI.md
+
+# Playwright E2E tests
+playwright-report/
+test-results/
+e2e/.auth/

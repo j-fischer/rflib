@@ -148,6 +148,41 @@ jobs:
                   name: Run LWC Tests
                   command: |
                       npm run test:unit:coverage
+
+    run_e2e_tests:
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Install Dependencies
+                  command: npm install
+            - run:
+                  name: Install Playwright Browser
+                  command: |
+                      npx playwright install --with-deps chromium
+            - run:
+                  name: Assign Permission Sets
+                  command: |
+                      npx sf org assign permset --name rflib_Ops_Center_Access --name rflib_Create_Application_Event --target-org ciorg
+            - run:
+                  name: Run E2E Tests
+                  no_output_timeout: 30m
+                  command: |
+                      export RFLIB_E2E_TARGET_ORG=ciorg
+                      npx playwright test
+            - store_artifacts:
+                  path: playwright-report
+                  destination: playwright-report
+            - store_artifacts:
+                  path: test-results
+                  destination: test-results
+            - run:
+                  name: Clean Up
+                  command: |
+                      npx sf org delete scratch -o ciorg -p
+                  when: on_fail
+
     report_coverage:
         <<: *defaults
         steps:
@@ -163,6 +198,7 @@ jobs:
                       bash <(curl -s https://codecov.io/bash)
                       rm -f test-result-codecoverage.json
                       node_modules/codecov/bin/codecov
+
     scan_flows:
         <<: *defaults
         steps:
@@ -208,6 +244,10 @@ workflows:
             - run_apex_tests:
                   requires:
                       - deploy_source
+
+            - run_e2e_tests:
+                  requires:
+                      - deploy_source
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -218,3 +258,4 @@ workflows:
             - cleanup_scratch_org:
                   requires:
                       - run_apex_tests
+                      - run_e2e_tests

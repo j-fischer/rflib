@@ -37,7 +37,10 @@
         "gulpfile.js",
         "package*.json",
         "CHANGELOG.md",
-        ".aidigest*"
+        ".aidigest*",
+        "**/playwright-report/**",
+        "**/test-results/**",
+        "e2e/.auth/**"
     ],
     "ignoreWords": ["commitcomment"],
     "ignoreRegExpList": ["/sf package install --package [\\w]{15,18} --target-org .*/g"]
