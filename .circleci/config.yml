@@ -257,4 +257,5 @@ workflows:
                           only: master
             - cleanup_scratch_org:
                   requires:
+                      - run_apex_tests
                       - run_e2e_tests
