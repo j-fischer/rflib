@@ -287,6 +287,31 @@ private class rflib_AppInsightsLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testByteSizeChunking() {
+        configure('ERROR');
+        // Lower the byte budget so a few moderate events force multiple callouts without large heap use.
+        rflib_AppInsightsLogAction.MAX_CALLOUT_BYTES = 200000;
+
+        List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>();
+        for (Integer i = 0; i < 10; i++) {
+            events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'm'.repeat(50000)));
+        }
+
+        SizeCapturingMock mock = new SizeCapturingMock();
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        rflib_AppInsightsLogAction.sendToAppInsights(events);
+        Test.stopTest();
+
+        Assert.isTrue(mock.bodySizes.size() > 1, 'Large events should be split across multiple callouts by byte size.');
+        for (Integer size : mock.bodySizes) {
+            Assert.isTrue(size <= rflib_AppInsightsLogAction.MAX_CALLOUT_BYTES, 'No callout body may exceed the byte budget; was ' + size);
+        }
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testChunking() {
         configure('ERROR');
 
@@ -329,6 +354,18 @@ private class rflib_AppInsightsLogActionTest {
         response.setStatusCode(statusCode);
         response.setBody(body);
         return response;
+    }
+
+    private class SizeCapturingMock implements HttpCalloutMock {
+        public List<Integer> bodySizes = new List<Integer>();
+
+        public HttpResponse respond(HttpRequest req) {
+            bodySizes.add(Blob.valueOf(req.getBody()).size());
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setBody('{}');
+            return res;
+        }
     }
 
     private class CountingMock implements HttpCalloutMock {

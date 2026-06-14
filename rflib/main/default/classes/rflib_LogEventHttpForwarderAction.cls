@@ -73,9 +73,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 return;
             }
 
-            for (List<rflib_Log_Event__e> batch : chunk(eventsToSend)) {
-                send(batch);
-            }
+            sendInBatches(eventsToSend);
         } catch (Exception ex) {
             getLogger().error('Failed to forward log event(s) via ' + getLoggerName(), ex);
             APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, getLogger().printLogs());
@@ -109,23 +107,41 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
     }
 
-    private List<List<rflib_Log_Event__e>> chunk(List<rflib_Log_Event__e> events) {
-        Integer maxPerCallout = getMaxEventsPerCallout();
-        if (maxPerCallout == null || maxPerCallout < 1) {
-            return new List<List<rflib_Log_Event__e>>{ events };
+    /**
+     * @description Sends the events in batches bounded by BOTH the per-callout record count
+     *              (getMaxEventsPerCallout) AND, when a forwarder defines one, the serialized byte
+     *              budget (getMaxBytesPerCallout). Bounding by bytes prevents a batch of large events
+     *              from producing a request that exceeds the Salesforce callout body limit (6 MB sync
+     *              / 12 MB async). A single event that already exceeds the byte budget is still sent on
+     *              its own — it cannot be split further.
+     */
+    private void sendInBatches(List<rflib_Log_Event__e> events) {
+        Integer maxCount = getMaxEventsPerCallout();
+        Integer maxBytes = getMaxBytesPerCallout();
+
+        List<rflib_Log_Event__e> current = new List<rflib_Log_Event__e>();
+        Integer currentBytes = 0;
+        for (rflib_Log_Event__e evt : events) {
+            // Estimate this event's serialized contribution by rendering it on its own. For NDJSON
+            // (per-line) forwarders this is exact; for envelope forwarders it slightly overcounts the
+            // shared wrapper, which only makes batches more conservative.
+            Integer evtBytes = maxBytes > 0 ? Blob.valueOf(createPayload(new List<rflib_Log_Event__e>{ evt })).size() : 0;
+
+            Boolean overCount = maxCount > 0 && current.size() >= maxCount;
+            Boolean overBytes = maxBytes > 0 && !current.isEmpty() && (currentBytes + evtBytes) > maxBytes;
+            if (!current.isEmpty() && (overCount || overBytes)) {
+                send(current);
+                current = new List<rflib_Log_Event__e>();
+                currentBytes = 0;
+            }
+
+            current.add(evt);
+            currentBytes += evtBytes;
         }
 
-        List<List<rflib_Log_Event__e>> batches = new List<List<rflib_Log_Event__e>>();
-        List<rflib_Log_Event__e> current = new List<rflib_Log_Event__e>();
-        for (rflib_Log_Event__e evt : events) {
-            if (current.size() == maxPerCallout) {
-                batches.add(current);
-                current = new List<rflib_Log_Event__e>();
-            }
-            current.add(evt);
+        if (!current.isEmpty()) {
+            send(current);
         }
-        batches.add(current);
-        return batches;
     }
 
     private rflib_Logger getLogger() {
@@ -195,6 +211,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
 
     /** @description Maximum events per callout; values &lt; 1 mean a single callout for the whole batch. Defaults to -1. */
     protected virtual Integer getMaxEventsPerCallout() {
+        return -1;
+    }
+
+    /** @description Maximum serialized request size in bytes per callout; values &lt; 1 disable the byte bound. Defaults to -1. */
+    protected virtual Integer getMaxBytesPerCallout() {
         return -1;
     }
 }

@@ -59,6 +59,10 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     @TestVisible
     private static final Integer MAX_EVENTS_PER_CALLOUT = 100;
 
+    // Keep each callout body well under the Salesforce 6 MB synchronous callout limit.
+    @TestVisible
+    private static Integer MAX_CALLOUT_BYTES = 5000000;
+
     // CreatedDate is null on events constructed directly (e.g. in tests). Use a stable fallback so
     // payloads are deterministic within a transaction.
     @TestVisible
@@ -91,6 +95,10 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
 
     protected override Integer getMaxEventsPerCallout() {
         return MAX_EVENTS_PER_CALLOUT;
+    }
+
+    protected override Integer getMaxBytesPerCallout() {
+        return MAX_CALLOUT_BYTES;
     }
 
     protected override Boolean isConfigured() {
