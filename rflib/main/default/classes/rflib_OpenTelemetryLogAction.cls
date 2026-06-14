@@ -133,7 +133,9 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
                 'attributes' => new List<Object>{
                     attribute('service.name', rflib_GlobalSettings.otelServiceNameOrDefault),
                     attribute('service.instance.id', UserInfo.getOrganizationId()),
-                    attribute('telemetry.sdk.name', 'rflib-apex')
+                    attribute('telemetry.sdk.name', 'rflib-apex'),
+                    attribute('telemetry.sdk.language', 'apex'),
+                    attribute('telemetry.sdk.version', SDK_VERSION)
                 }
             },
             'scopeLogs' => new List<Object>{
@@ -171,6 +173,7 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
 
         return new Map<String, Object>{
             'timeUnixNano' => timeUnixNano,
+            'observedTimeUnixNano' => timeUnixNano,
             'severityNumber' => toSeverityNumber(evt.Log_Level__c),
             'severityText' => evt.Log_Level__c,
             'body' => new Map<String, Object>{ 'stringValue' => truncate(evt.Log_Messages__c, MAX_BODY_LENGTH) },

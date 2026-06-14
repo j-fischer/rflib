@@ -156,6 +156,7 @@ private class rflib_OpenTelemetryLogActionTest {
         Assert.areEqual('ERROR', record.get('severityText'), 'severityText should be the log level.');
         String expectedNanos = String.valueOf(Datetime.newInstanceGmt(2026, 6, 11, 17, 30, 12).getTime() * 1000000L);
         Assert.areEqual(expectedNanos, record.get('timeUnixNano'), 'timeUnixNano should be nanoseconds as a string.');
+        Assert.areEqual(expectedNanos, record.get('observedTimeUnixNano'), 'observedTimeUnixNano should be set per the OTLP data model.');
 
         Map<String, Object> body = (Map<String, Object>) record.get('body');
         Assert.areEqual('Something failed', body.get('stringValue'), 'body.stringValue should carry the log messages.');

@@ -12,12 +12,14 @@ The destination URL and any backend-specific headers (API keys, log-group names,
 
 Each batch of log events becomes a single OTLP `resourceLogs` payload. Every event is one `logRecord`:
 
-- `timeUnixNano` — the event's created timestamp in nanoseconds
+- `timeUnixNano` / `observedTimeUnixNano` — the event's created timestamp in nanoseconds
 - `severityNumber` / `severityText` — the RFLIB level mapped to the OTel severity scale (see below)
 - `body.stringValue` — the log messages (front-truncated to keep the most recent content)
 - `attributes` — `rflib.context`, `rflib.request_id`, `rflib.source_system_id`, `rflib.log_source`, `rflib.stacktrace`, `enduser.id`, plus the event's `Platform_Info__c` flattened into typed attributes (`rflib.apex.*`, `rflib.browser.*`, `user_agent.original`)
 
-Resource attributes identify the source: `service.name` (the `OTel_Service_Name` Global Setting, default `salesforce-rflib`), `service.instance.id` (the Org Id), and `telemetry.sdk.name` (`rflib-apex`).
+Resource attributes identify the source: `service.name` (the `OTel_Service_Name` Global Setting, default `salesforce-rflib`), `service.instance.id` (the Org Id), and `telemetry.sdk.name`/`telemetry.sdk.language`/`telemetry.sdk.version` (`rflib-apex` / `apex` / the package version).
+
+> RFLIB's request id is carried as the `rflib.request_id` attribute rather than the OTLP `traceId`/`spanId` fields, because those require 16-/8-byte hex identifiers that the Salesforce request id does not satisfy. RFLIB forwards fire-and-forget and does not implement OTLP throttling/`Retry-After` backoff; rejected or failed sends are recorded as `rflib-otel-log-event-failed` application events.
 
 Events are sent in callouts of up to 100 records. A `200` with no `partialSuccess.rejectedLogRecords` is treated as success; anything else is recorded as an `rflib-otel-log-event-failed` application event with the response body for diagnosis. RFLIB does not retry (fire-and-forget).
 
