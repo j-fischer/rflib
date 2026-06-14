@@ -9,7 +9,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>fieldsToDisplay</name>
-                    <value>General_Log_Level__c, Log_Event_Reporting_Level__c, Archive_Log_Level__c, Client_Console_Log_Level__c, Client_Server_Log_Level__c, HTTP_Callout_Log_Level__c, Email_Log_Level__c, Enable_Log_Masking__c</value>
+                    <value>General_Log_Level__c, Log_Event_Reporting_Level__c, Archive_Log_Level__c, Client_Console_Log_Level__c, Client_Server_Log_Level__c, HTTP_Callout_Log_Level__c, App_Insights_Log_Level__c, OTel_Log_Level__c, Email_Log_Level__c, Enable_Log_Masking__c</value>
                 </componentInstanceProperties>
                 <componentName>rflibCustomSettingsEditor</componentName>
                 <identifier>c_rflibCustomSettingsEditor</identifier>
