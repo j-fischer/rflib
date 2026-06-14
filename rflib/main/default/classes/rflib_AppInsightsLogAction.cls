@@ -60,6 +60,10 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     @TestVisible
     private static final Integer MAX_PROPERTY_NAME_LENGTH = 150;
 
+    // Defensive bound on the message-fitting loop; it converges in 1-2 passes in practice.
+    @TestVisible
+    private static final Integer MAX_FIT_ITERATIONS = 5;
+
     @TestVisible
     private static final Integer MAX_EVENTS_PER_CALLOUT = 100;
 
@@ -196,11 +200,26 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
         }
         baseData.put('message', truncate(rawMessage, budget));
 
-        // JSON escaping of the message can inflate the serialized size; shrink once more if needed.
-        Integer total = Blob.valueOf(JSON.serialize(envelope)).size();
-        if (total > MAX_ITEM_BYTES) {
-            Integer newBudget = budget - (total - MAX_ITEM_BYTES);
-            baseData.put('message', newBudget <= 0 ? '' : truncate(rawMessage, newBudget));
+        // JSON escaping and multi-byte (UTF-8) characters make the serialized size differ from the
+        // character budget, so shrink against the ACTUAL serialized bytes until the item fits. The
+        // budget is reduced by the byte overage each pass; since every dropped character frees at
+        // least one byte, this converges quickly (the iteration guard is purely defensive).
+        for (Integer i = 0; i < MAX_FIT_ITERATIONS; i++) {
+            Integer total = Blob.valueOf(JSON.serialize(envelope)).size();
+            if (total <= MAX_ITEM_BYTES) {
+                return;
+            }
+            budget -= (total - MAX_ITEM_BYTES);
+            if (budget <= 0) {
+                baseData.put('message', '');
+                return;
+            }
+            baseData.put('message', truncate(rawMessage, budget));
+        }
+
+        // Defensive: if it still does not fit after several passes, drop the message entirely.
+        if (Blob.valueOf(JSON.serialize(envelope)).size() > MAX_ITEM_BYTES) {
+            baseData.put('message', '');
         }
     }
 

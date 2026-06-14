@@ -287,6 +287,35 @@ private class rflib_AppInsightsLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testItemSizeCapWithMultiByteMessage() {
+        configure('ERROR');
+
+        // 25,000 CJK characters = ~75 KB in UTF-8 but only 25k by String.length(); a char-based cap
+        // would leave the serialized item over the byte limit.
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = '中'.repeat(25000)
+        );
+
+        Test.startTest();
+        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Integer itemBytes = Blob.valueOf(payload).size();
+        Assert.isTrue(
+            itemBytes <= rflib_AppInsightsLogAction.MAX_ITEM_BYTES,
+            'Multi-byte messages must be shrunk by serialized bytes, not characters; item was ' + itemBytes + ' bytes.'
+        );
+
+        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        String message = (String) baseData.get('message');
+        Assert.isTrue(message.startsWith('[TRUNCATED]'), 'The message should be truncated, not dropped.');
+        Assert.isTrue(message.length() > 0, 'A fitting non-empty message should remain.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testPropertyNameCap() {
         configure('ERROR');
 
