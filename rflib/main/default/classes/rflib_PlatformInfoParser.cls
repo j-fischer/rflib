@@ -99,9 +99,14 @@ public with sharing class rflib_PlatformInfoParser {
     }
 
     private static Boolean isApexInfo(Map<String, Object> source) {
-        // The Apex limits map is flat with only scalar (numeric) values.
+        // The Apex limits map is flat with only numeric values. Requiring numbers prevents custom
+        // flat maps (e.g. {"customer":"acme"} set via rflib_Logger.setPlatformInfo) from being
+        // mislabeled as governor-limit data; those fall through to the generic rflib.platform.* branch.
+        if (source.isEmpty()) {
+            return false;
+        }
         for (Object value : source.values()) {
-            if (value instanceof Map<String, Object> || value instanceof List<Object>) {
+            if (!(value instanceof Integer || value instanceof Long || value instanceof Decimal || value instanceof Double)) {
                 return false;
             }
         }

@@ -45,10 +45,16 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_APP_INSIGHTS/v2.1/track';
 
-    // Application Insights accepts up to 64KB per item; keep the message well below that and reserve
-    // headroom for the surrounding envelope and properties.
+    // Application Insights accepts up to 64KB per telemetry item. Keep the whole envelope under that
+    // (with headroom for transport overhead) and cap the message field individually.
+    @TestVisible
+    private static final Integer MAX_ITEM_BYTES = 62000;
+
     @TestVisible
     private static final Integer MAX_MESSAGE_LENGTH = 32768;
+
+    @TestVisible
+    private static final Integer MIN_MESSAGE_LENGTH = 256;
 
     @TestVisible
     private static final Integer MAX_PROPERTY_LENGTH = 8192;
@@ -134,12 +140,12 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
 
         Map<String, Object> baseData = new Map<String, Object>{
             'ver' => 2,
-            'message' => truncate(evt.Log_Messages__c, MAX_MESSAGE_LENGTH),
+            'message' => '',
             'severityLevel' => toSeverityLevel(evt.Log_Level__c),
             'properties' => properties
         };
 
-        return new Map<String, Object>{
+        Map<String, Object> envelope = new Map<String, Object>{
             'name' => 'Microsoft.ApplicationInsights.Message',
             'time' => timestamp.formatGmt('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),
             'iKey' => instrumentationKey,
@@ -149,6 +155,30 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
                 'baseData' => baseData
             }
         };
+
+        fitMessage(envelope, baseData, evt.Log_Messages__c);
+        return envelope;
+    }
+
+    /**
+     * @description Sizes the message field to whatever space remains under the 64 KB item cap after
+     *              the rest of the envelope (tags, properties, stacktrace, platform info) is built, so
+     *              an otherwise valid event with large properties cannot push the item over the limit.
+     */
+    private void fitMessage(Map<String, Object> envelope, Map<String, Object> baseData, String rawMessage) {
+        Integer overhead = Blob.valueOf(JSON.serialize(envelope)).size();
+        Integer budget = Math.min(MAX_MESSAGE_LENGTH, MAX_ITEM_BYTES - overhead);
+        if (budget < MIN_MESSAGE_LENGTH) {
+            budget = MIN_MESSAGE_LENGTH;
+        }
+        baseData.put('message', truncate(rawMessage, budget));
+
+        // JSON escaping of the message can inflate the serialized size; shrink once more if needed.
+        Integer total = Blob.valueOf(JSON.serialize(envelope)).size();
+        if (total > MAX_ITEM_BYTES) {
+            Integer over = total - MAX_ITEM_BYTES;
+            baseData.put('message', truncate(rawMessage, Math.max(MIN_MESSAGE_LENGTH, budget - over)));
+        }
     }
 
     /**

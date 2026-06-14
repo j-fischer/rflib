@@ -66,6 +66,21 @@ private class rflib_PlatformInfoParserTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testFlatten_FlatNonNumericIsNotApex() {
+        // A flat custom map with a non-numeric value must NOT be labeled as Apex governor data.
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"customer":"acme","count":3}');
+
+        Test.startTest();
+        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Test.stopTest();
+
+        Assert.areEqual('acme', result.get('rflib.platform.customer'), 'Non-numeric flat maps should fall through to rflib.platform.*');
+        Assert.areEqual(3, result.get('rflib.platform.count'), 'Mixed flat maps should use the generic namespace, not rflib.apex.*');
+        Assert.isNull(result.get('rflib.apex.customer'), 'Non-governor data must not be emitted under rflib.apex.*');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_GenericNestedFormat() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Platform_Info__c = '{"custom":{"nestedValue":7},"flag":true}'

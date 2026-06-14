@@ -232,6 +232,33 @@ private class rflib_AppInsightsLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testItemSizeCapWithLargeProperties() {
+        configure('ERROR');
+
+        // Six large custom string properties (~48 KB once flattened/capped) plus a huge message.
+        Map<String, Object> pinfo = new Map<String, Object>();
+        for (Integer i = 0; i < 6; i++) {
+            pinfo.put('field' + i, 'p'.repeat(8000));
+        }
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'm'.repeat(40000),
+            Platform_Info__c = JSON.serialize(pinfo)
+        );
+
+        Test.startTest();
+        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Integer itemBytes = Blob.valueOf(payload).size();
+        Assert.isTrue(
+            itemBytes <= rflib_AppInsightsLogAction.MAX_ITEM_BYTES,
+            'The full telemetry item must stay under the App Insights 64 KB cap; was ' + itemBytes + ' bytes.'
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testChunking() {
         configure('ERROR');
 
