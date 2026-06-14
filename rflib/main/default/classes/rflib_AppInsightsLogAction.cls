@@ -56,6 +56,10 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     @TestVisible
     private static final Integer MAX_PROPERTY_LENGTH = 8192;
 
+    // Application Insights caps property/metric names at 150 characters.
+    @TestVisible
+    private static final Integer MAX_PROPERTY_NAME_LENGTH = 150;
+
     @TestVisible
     private static final Integer MAX_EVENTS_PER_CALLOUT = 100;
 
@@ -137,10 +141,15 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
         };
 
         Map<String, Object> platformInfo = rflib_PlatformInfoParser.flatten(evt);
-        List<String> platformKeys = new List<String>(platformInfo.keySet());
-        platformKeys.sort();
-        for (String key : platformKeys) {
-            properties.put(key, truncate(String.valueOf(platformInfo.get(key)), MAX_PROPERTY_LENGTH));
+        List<String> sourceKeys = new List<String>(platformInfo.keySet());
+        sourceKeys.sort();
+        // Track the actual (name-bounded) property keys so the item-size trimming in fitItem can
+        // remove them reliably.
+        List<String> platformPropertyNames = new List<String>();
+        for (String key : sourceKeys) {
+            String propertyName = key.length() > MAX_PROPERTY_NAME_LENGTH ? key.left(MAX_PROPERTY_NAME_LENGTH) : key;
+            properties.put(propertyName, truncate(String.valueOf(platformInfo.get(key)), MAX_PROPERTY_LENGTH));
+            platformPropertyNames.add(propertyName);
         }
 
         Map<String, Object> baseData = new Map<String, Object>{
@@ -161,7 +170,7 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
             }
         };
 
-        fitItem(envelope, baseData, properties, platformKeys, evt.Log_Messages__c);
+        fitItem(envelope, baseData, properties, platformPropertyNames, evt.Log_Messages__c);
         return envelope;
     }
 

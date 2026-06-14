@@ -287,6 +287,36 @@ private class rflib_AppInsightsLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testPropertyNameCap() {
+        configure('ERROR');
+
+        String longKey = 'k'.repeat(200);
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'x',
+            Platform_Info__c = JSON.serialize(new Map<String, Object>{ longKey => 'v' })
+        );
+
+        Test.startTest();
+        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
+
+        Boolean sawLongPlatformKey = false;
+        for (String name : properties.keySet()) {
+            Assert.isTrue(name.length() <= rflib_AppInsightsLogAction.MAX_PROPERTY_NAME_LENGTH, 'Property name exceeds the App Insights 150-char cap: ' + name.length());
+            if (name.startsWith('rflib.platform.')) {
+                sawLongPlatformKey = true;
+            }
+        }
+        Assert.isTrue(sawLongPlatformKey, 'Expected the flattened long platform key to be present (name-capped).');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testByteSizeChunking() {
         configure('ERROR');
         // Lower the byte budget so a few moderate events force multiple callouts without large heap use.
