@@ -56,7 +56,7 @@ Record the deployment outputs:
 ## Step 2 — Create the Entra app registration
 
 ```bash
-azure/scripts/setup-entra-app.sh <appInsightsResourceId>
+bash azure/scripts/setup-entra-app.sh <appInsightsResourceId>
 ```
 
 The script creates an app registration + service principal, generates a client secret, assigns the least-privilege **Monitoring Metrics Publisher** role on the resource, and prints the values you need for Salesforce: **Tenant ID, Client ID, Client Secret, Token Endpoint, OAuth Scope**.
