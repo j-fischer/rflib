@@ -371,6 +371,33 @@ private class rflib_AppInsightsLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testMultiBatchFailuresAllAttempted() {
+        configure('ERROR');
+        // Force multiple batches so a failure on an early batch must not abort the later callouts.
+        rflib_AppInsightsLogAction.MAX_CALLOUT_BYTES = 200000;
+
+        List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>();
+        for (Integer i = 0; i < 10; i++) {
+            events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'm'.repeat(50000)));
+        }
+
+        CountingMock mock = new CountingMock(401, '[{"errorCode":"INVALID_SESSION_ID"}]');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        rflib_AppInsightsLogAction.sendToAppInsights(events);
+        Test.stopTest();
+
+        Assert.isTrue(mock.callCount > 1, 'The batch should have been split across multiple callouts.');
+        Assert.areEqual(
+            mock.callCount,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Every batch should be attempted and produce a deferred failure event (none lost to uncommitted-work errors).'
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testChunking() {
         configure('ERROR');
 

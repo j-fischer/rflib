@@ -53,6 +53,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
      *              classes expose this through their own static @InvocableMethod wrapper.
      */
     protected void process(List<rflib_Log_Event__e> events) {
+        // Failures are collected here and published only AFTER every callout completes. Publishing an
+        // application event mid-loop performs DML / EventBus.publish, which marks the transaction as
+        // having uncommitted work and makes the NEXT HTTP callout in a multi-batch send fail with
+        // "You have uncommitted work pending."
+        List<String> failurePayloads = new List<String>();
         try {
             if (!isConfigured()) {
                 getLogger().debug('Forwarder ' + getLoggerName() + ' is not configured. Nothing to do here.');
@@ -73,10 +78,15 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 return;
             }
 
-            sendInBatches(eventsToSend);
+            sendInBatches(eventsToSend, failurePayloads);
         } catch (Exception ex) {
             getLogger().error('Failed to forward log event(s) via ' + getLoggerName(), ex);
-            APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, getLogger().printLogs());
+            failurePayloads.add(getLogger().printLogs());
+        }
+
+        // Safe to do DML now: all callouts for this invocation are complete.
+        for (String payload : failurePayloads) {
+            APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, payload);
         }
     }
 
@@ -86,7 +96,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             .encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
-    private void send(List<rflib_Log_Event__e> batch) {
+    private void send(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
         try {
             rflib_HttpRequest req = new rflib_HttpRequest(getLogger());
             req.setEndpoint(getEndpoint());
@@ -99,11 +109,12 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 getLogger().debug('Successfully sent data to remote service');
             } else {
                 getLogger().debug('Failed to send data to remote service. Status: ' + res.getStatus());
-                APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, JSON.serialize(res));
+                // Snapshot the failure now, but defer publishing until all callouts are done.
+                failurePayloads.add(JSON.serialize(res));
             }
         } catch (Exception ex) {
             getLogger().error('Failed to send data to remote service', ex);
-            APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, getLogger().printLogs());
+            failurePayloads.add(getLogger().printLogs());
         }
     }
 
@@ -115,7 +126,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
      *              / 12 MB async). A single event that already exceeds the byte budget is still sent on
      *              its own — it cannot be split further.
      */
-    private void sendInBatches(List<rflib_Log_Event__e> events) {
+    private void sendInBatches(List<rflib_Log_Event__e> events, List<String> failurePayloads) {
         Integer maxCount = getMaxEventsPerCallout();
         Integer maxBytes = getMaxBytesPerCallout();
 
@@ -130,7 +141,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             Boolean overCount = maxCount > 0 && current.size() >= maxCount;
             Boolean overBytes = maxBytes > 0 && !current.isEmpty() && (currentBytes + evtBytes) > maxBytes;
             if (!current.isEmpty() && (overCount || overBytes)) {
-                send(current);
+                send(current, failurePayloads);
                 current = new List<rflib_Log_Event__e>();
                 currentBytes = 0;
             }
@@ -140,7 +151,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
 
         if (!current.isEmpty()) {
-            send(current);
+            send(current, failurePayloads);
         }
     }
 

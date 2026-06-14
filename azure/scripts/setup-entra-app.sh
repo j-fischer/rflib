@@ -31,7 +31,8 @@ APP_ID=$(az ad app create --display-name "${APP_NAME}" --query appId -o tsv)
 echo "  Application (client) ID: ${APP_ID}"
 
 echo "Creating service principal..."
-az ad sp create --id "${APP_ID}" >/dev/null
+# Capture the service principal object id for a replication-safe role assignment below.
+SP_OBJECT_ID=$(az ad sp create --id "${APP_ID}" --query id -o tsv)
 
 echo "Generating a client secret (valid 1 year)..."
 # For higher security prefer a certificate credential instead of a secret:
@@ -40,12 +41,9 @@ CLIENT_SECRET=$(az ad app credential reset --id "${APP_ID}" --years 1 --query pa
 
 TENANT_ID=$(az account show --query tenantId -o tsv)
 
-echo "Assigning '${ROLE}' on the target resource (role propagation can take a few minutes)..."
-az role assignment create \
-  --assignee "${APP_ID}" \
-  --role "${ROLE}" \
-  --scope "${RESOURCE_ID}" >/dev/null
-
+# Print the credentials BEFORE the role assignment. The client secret is shown only once, and the
+# role assignment can transiently fail on a brand-new service principal due to Entra replication
+# delay; printing first ensures a failure there never leaves the operator without usable credentials.
 cat <<EOF
 
 =====================================================================================
@@ -62,3 +60,15 @@ Retrieve the IngestionEndpoint and InstrumentationKey from the Bicep deployment 
 (or the resource's Connection String) for the Named Credential and Global Setting.
 =====================================================================================
 EOF
+
+echo "Assigning '${ROLE}' on the target resource (role propagation can take a few minutes)..."
+# Assign by the service principal object id with an explicit principal type. This avoids the Graph
+# name-resolution lookup that can fail for a just-created principal during Entra replication.
+# See: https://learn.microsoft.com/azure/role-based-access-control/role-assignments-cli#assign-a-role-for-a-new-service-principal-at-a-resource-group-scope
+az role assignment create \
+  --assignee-object-id "${SP_OBJECT_ID}" \
+  --assignee-principal-type ServicePrincipal \
+  --role "${ROLE}" \
+  --scope "${RESOURCE_ID}" >/dev/null
+
+echo "Role '${ROLE}' assigned to the service principal on the target resource."
