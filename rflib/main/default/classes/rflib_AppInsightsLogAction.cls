@@ -54,9 +54,6 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     private static final Integer MAX_MESSAGE_LENGTH = 32768;
 
     @TestVisible
-    private static final Integer MIN_MESSAGE_LENGTH = 256;
-
-    @TestVisible
     private static final Integer MAX_PROPERTY_LENGTH = 8192;
 
     @TestVisible
@@ -156,29 +153,56 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
             }
         };
 
-        fitMessage(envelope, baseData, evt.Log_Messages__c);
+        fitItem(envelope, baseData, properties, platformKeys, evt.Log_Messages__c);
         return envelope;
     }
 
     /**
-     * @description Sizes the message field to whatever space remains under the 64 KB item cap after
-     *              the rest of the envelope (tags, properties, stacktrace, platform info) is built, so
-     *              an otherwise valid event with large properties cannot push the item over the limit.
+     * @description Guarantees the serialized telemetry item stays under the 64 KB App Insights cap.
+     *              First, if the item without any message already exceeds the cap (e.g. a very large
+     *              valid Platform_Info__c), flattened platform properties are dropped largest-first
+     *              until it fits. Then the message is sized to whatever space remains — which may be
+     *              zero, in which case it is left empty rather than forced to a minimum that would
+     *              push the item back over the limit.
      */
-    private void fitMessage(Map<String, Object> envelope, Map<String, Object> baseData, String rawMessage) {
+    private void fitItem(Map<String, Object> envelope, Map<String, Object> baseData, Map<String, Object> properties, List<String> platformKeys, String rawMessage) {
+        baseData.put('message', '');
+
+        while (!platformKeys.isEmpty() && Blob.valueOf(JSON.serialize(envelope)).size() > MAX_ITEM_BYTES) {
+            properties.remove(removeLargestKey(properties, platformKeys));
+        }
+
         Integer overhead = Blob.valueOf(JSON.serialize(envelope)).size();
         Integer budget = Math.min(MAX_MESSAGE_LENGTH, MAX_ITEM_BYTES - overhead);
-        if (budget < MIN_MESSAGE_LENGTH) {
-            budget = MIN_MESSAGE_LENGTH;
+        if (budget <= 0) {
+            return;
         }
         baseData.put('message', truncate(rawMessage, budget));
 
         // JSON escaping of the message can inflate the serialized size; shrink once more if needed.
         Integer total = Blob.valueOf(JSON.serialize(envelope)).size();
         if (total > MAX_ITEM_BYTES) {
-            Integer over = total - MAX_ITEM_BYTES;
-            baseData.put('message', truncate(rawMessage, Math.max(MIN_MESSAGE_LENGTH, budget - over)));
+            Integer newBudget = budget - (total - MAX_ITEM_BYTES);
+            baseData.put('message', newBudget <= 0 ? '' : truncate(rawMessage, newBudget));
         }
+    }
+
+    /**
+     * @description Removes and returns the platform property key whose value serializes longest, so
+     *              the largest contributor is dropped first when trimming an oversized item.
+     */
+    private String removeLargestKey(Map<String, Object> properties, List<String> platformKeys) {
+        String largestKey = platformKeys[0];
+        Integer largestLength = -1;
+        for (String key : platformKeys) {
+            Integer length = String.valueOf(properties.get(key)).length();
+            if (length > largestLength) {
+                largestLength = length;
+                largestKey = key;
+            }
+        }
+        platformKeys.remove(platformKeys.indexOf(largestKey));
+        return largestKey;
     }
 
     /**
