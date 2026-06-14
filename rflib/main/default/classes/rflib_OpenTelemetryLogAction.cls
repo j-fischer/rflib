@@ -168,7 +168,11 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
         List<String> platformKeys = new List<String>(platformInfo.keySet());
         platformKeys.sort();
         for (String key : platformKeys) {
-            attributes.add(attribute(key, platformInfo.get(key)));
+            Object value = platformInfo.get(key);
+            if (value instanceof String) {
+                value = truncate((String) value, MAX_ATTRIBUTE_LENGTH);
+            }
+            attributes.add(attribute(key, value));
         }
 
         return new Map<String, Object>{

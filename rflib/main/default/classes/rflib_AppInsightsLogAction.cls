@@ -129,7 +129,7 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
         List<String> platformKeys = new List<String>(platformInfo.keySet());
         platformKeys.sort();
         for (String key : platformKeys) {
-            properties.put(key, String.valueOf(platformInfo.get(key)));
+            properties.put(key, truncate(String.valueOf(platformInfo.get(key)), MAX_PROPERTY_LENGTH));
         }
 
         Map<String, Object> baseData = new Map<String, Object>{

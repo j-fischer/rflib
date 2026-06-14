@@ -207,6 +207,27 @@ private class rflib_AppInsightsLogActionTest {
         String message = (String) baseData.get('message');
         Assert.isTrue(message.startsWith('[TRUNCATED]'), 'Oversized messages should be front-truncated.');
         Assert.isTrue(message.endsWith('x'), 'The most recent content (tail) should be kept.');
+        Assert.areEqual(rflib_AppInsightsLogAction.MAX_MESSAGE_LENGTH, message.length(), 'Truncated value must not exceed the limit including the marker.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testPlatformPropertyTruncation() {
+        configure('ERROR');
+
+        // Malformed JSON makes the parser fall back to the raw Platform_Info__c string.
+        String hugePlatformInfo = 'p'.repeat(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH + 500);
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'x', Platform_Info__c = hugePlatformInfo);
+
+        Test.startTest();
+        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
+        String rawProp = (String) properties.get('rflib.platform_info');
+        Assert.areEqual(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH, rawProp.length(), 'Flattened platform properties must be capped at the property limit.');
     }
 
     @IsTest

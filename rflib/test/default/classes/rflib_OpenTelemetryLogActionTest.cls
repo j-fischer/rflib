@@ -176,6 +176,34 @@ private class rflib_OpenTelemetryLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testPlatformAttributeTruncation() {
+        configure('ERROR');
+
+        // Malformed JSON makes the parser fall back to the raw Platform_Info__c string.
+        String hugePlatformInfo = 'p'.repeat(rflib_OpenTelemetryLogAction.MAX_ATTRIBUTE_LENGTH + 500);
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'x', Platform_Info__c = hugePlatformInfo);
+
+        Test.startTest();
+        String payload = new rflib_OpenTelemetryLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Map<String, Object> root = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> record = (Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) root.get('resourceLogs')).get(0)).get('scopeLogs')).get(0)).get('logRecords')).get(0);
+
+        Boolean foundRaw = false;
+        for (Object attrObj : (List<Object>) record.get('attributes')) {
+            Map<String, Object> attr = (Map<String, Object>) attrObj;
+            if (attr.get('key') == 'rflib.platform_info') {
+                String value = (String) ((Map<String, Object>) attr.get('value')).get('stringValue');
+                Assert.areEqual(rflib_OpenTelemetryLogAction.MAX_ATTRIBUTE_LENGTH, value.length(), 'Oversized platform string attributes must be capped.');
+                foundRaw = true;
+            }
+        }
+        Assert.isTrue(foundRaw, 'Expected the raw platform_info fallback attribute.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSeverityMapping() {
         Assert.areEqual(1, rflib_OpenTelemetryLogAction.toSeverityNumber('TRACE'));
         Assert.areEqual(5, rflib_OpenTelemetryLogAction.toSeverityNumber('DEBUG'));

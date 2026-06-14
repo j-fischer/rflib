@@ -139,9 +139,13 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         return logger;
     }
 
+    @TestVisible
+    private static final String TRUNCATION_PREFIX = '[TRUNCATED]\n';
+
     /**
-     * @description Truncates a value to the given length, keeping the MOST RECENT content (the tail).
-     *              Returns 'N/A' when blank. Mirrors rflib_LogEventNotificationAction.truncate().
+     * @description Truncates a value to at most the given length (prefix included), keeping the MOST
+     *              RECENT content (the tail). Returns 'N/A' when blank. The '[TRUNCATED]\n' marker is
+     *              counted against maxLength so the result never exceeds the destination's field limit.
      */
     protected String truncate(String value, Integer maxLength) {
         if (String.isBlank(value)) {
@@ -150,7 +154,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         if (value.length() <= maxLength) {
             return value;
         }
-        return '[TRUNCATED]\n' + value.right(maxLength);
+        Integer tailLength = maxLength - TRUNCATION_PREFIX.length();
+        if (tailLength <= 0) {
+            return value.right(maxLength);
+        }
+        return TRUNCATION_PREFIX + value.right(tailLength);
     }
 
     // ---- Forwarder-specific hooks ------------------------------------------------------------
