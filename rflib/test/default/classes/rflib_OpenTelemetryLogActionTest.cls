@@ -57,6 +57,7 @@ private class rflib_OpenTelemetryLogActionTest {
         Test.stopTest();
 
         Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'No failure event expected on success.');
+        Assert.isTrue(logs().contains('Successfully sent data to remote service'), 'Expected a success diagnostic log.');
     }
 
     @IsTest
@@ -74,6 +75,7 @@ private class rflib_OpenTelemetryLogActionTest {
         Test.stopTest();
 
         Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event when records are rejected.');
+        Assert.isTrue(logs().contains('rejected 1 log record'), 'Expected a diagnostic log naming the rejected record count.');
     }
 
     @IsTest
@@ -91,6 +93,9 @@ private class rflib_OpenTelemetryLogActionTest {
         Test.stopTest();
 
         Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on HTTP failure.');
+        String logOutput = logs();
+        Assert.isTrue(logOutput.contains('Failed to send data to remote service'), 'Expected a failure diagnostic log.');
+        Assert.isTrue(logOutput.contains('Server Error'), 'Expected the response body to be logged for debugging.');
     }
 
     @IsTest
@@ -256,6 +261,12 @@ private class rflib_OpenTelemetryLogActionTest {
         Test.stopTest();
 
         Assert.areEqual(2, mock.callCount, 'Expected 150 events to be sent in two callouts of up to 100.');
+    }
+
+    private static String logs() {
+        // printLogs() returns the shared in-transaction log buffer, so any logger instance sees the
+        // messages the action wrote through its own (reporting-disabled) logger.
+        return rflib_LoggerUtil.getFactory().createLogger('rflib_OpenTelemetryLogActionTest').printLogs();
     }
 
     private static List<rflib_Log_Event__e> createTestLogEvents(String logLevel) {

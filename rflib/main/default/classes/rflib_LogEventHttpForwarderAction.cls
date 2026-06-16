@@ -59,12 +59,16 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         // "You have uncommitted work pending."
         List<String> failurePayloads = new List<String>();
         try {
+            Integer incomingCount = events == null ? 0 : events.size();
+            rflib_LoggerUtil.logInternal(getLogger(), 'Forwarder {0} received {1} log event(s)', new Object[] { getLoggerName(), incomingCount });
+
             if (!isConfigured()) {
-                getLogger().debug('Forwarder ' + getLoggerName() + ' is not configured. Nothing to do here.');
+                rflib_LoggerUtil.logInternal(getLogger(), 'Forwarder {0} is not configured. Nothing to do here.', new Object[] { getLoggerName() });
                 return;
             }
 
             rflib_Logger_Settings__c loggerSettings = rflib_Logger_Settings__c.getInstance();
+            String configuredLogLevel = getConfiguredLogLevel(loggerSettings);
 
             List<rflib_Log_Event__e> eventsToSend = new List<rflib_Log_Event__e>();
             for (rflib_Log_Event__e evt : events) {
@@ -73,8 +77,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 }
             }
 
+            rflib_LoggerUtil.logInternal(getLogger(), '{0} of {1} event(s) match the configured log level ({2}) for {3}',
+                new Object[] { eventsToSend.size(), incomingCount, configuredLogLevel, getLoggerName() });
+
             if (eventsToSend.isEmpty()) {
-                getLogger().debug('No events to send found. Nothing to do here.');
+                rflib_LoggerUtil.logInternal(getLogger(), 'No events to send found. Nothing to do here.');
                 return;
             }
 
@@ -85,6 +92,10 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
 
         // Safe to do DML now: all callouts for this invocation are complete.
+        if (!failurePayloads.isEmpty()) {
+            rflib_LoggerUtil.logInternal(getLogger(), 'Publishing {0} {1} failure application event(s)',
+                new Object[] { failurePayloads.size(), getAppEventFailureName() });
+        }
         for (String payload : failurePayloads) {
             APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, payload);
         }
@@ -98,17 +109,23 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
 
     private void send(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
         try {
+            String payload = createPayload(batch);
+            rflib_LoggerUtil.logInternal(getLogger(), 'Sending {0} event(s) ({1} bytes) to {2}',
+                new Object[] { batch.size(), Blob.valueOf(payload).size(), getEndpoint() });
+
             rflib_HttpRequest req = new rflib_HttpRequest(getLogger());
             req.setEndpoint(getEndpoint());
             req.setMethod('POST');
             req.setHeader('Content-Type', getContentType());
-            req.setBody(createPayload(batch));
+            req.setBody(payload);
 
             HttpResponse res = req.send();
             if (isSuccessResponse(res)) {
-                getLogger().debug('Successfully sent data to remote service');
+                rflib_LoggerUtil.logInternal(getLogger(), 'Successfully sent data to remote service. Status: {0}',
+                    new Object[] { res.getStatusCode() });
             } else {
-                getLogger().debug('Failed to send data to remote service. Status: ' + res.getStatus());
+                rflib_LoggerUtil.logInternal(getLogger(), 'Failed to send data to remote service. Status: {0}, Response: {1}',
+                    new Object[] { res.getStatus(), res.getBody() });
                 // Snapshot the failure now, but defer publishing until all callouts are done.
                 failurePayloads.add(JSON.serialize(res));
             }
@@ -155,7 +172,13 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
     }
 
-    private rflib_Logger getLogger() {
+    /**
+     * @description Returns the shared logger for this forwarder. Reporting is turned OFF so that
+     *              forwarder log statements (even at INFO via rflib_LoggerUtil.logInternal) are never
+     *              re-published as Log Events, which would cause an infinite forwarding loop. Subclasses
+     *              must log through this logger for the same reason.
+     */
+    protected rflib_Logger getLogger() {
         if (logger == null) {
             logger = rflib_LoggerUtil.getFactory().createLogger(getLoggerName());
             // NOTE: It is critical to turn reporting off so that a log configuration reporting INFO statements

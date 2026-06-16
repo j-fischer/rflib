@@ -110,7 +110,14 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
             return false;
         }
         // OTLP and CloudWatch signal dropped records via partialSuccess.rejectedLogRecords.
-        return getRejectedLogRecords(res.getBody()) == 0;
+        Long rejected = getRejectedLogRecords(res.getBody());
+        if (rejected > 0) {
+            rflib_LoggerUtil.logInternal(getLogger(),
+                'OTLP endpoint returned HTTP 200 but rejected {0} log record(s); response: {1}',
+                new Object[] { rejected, res.getBody() });
+            return false;
+        }
+        return true;
     }
 
     @TestVisible
