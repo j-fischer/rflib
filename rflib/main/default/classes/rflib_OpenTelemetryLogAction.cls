@@ -45,7 +45,6 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHttpForwarderAction {
-
     @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_OTEL_LOGS';
 
@@ -76,7 +75,11 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     @TestVisible
     private static Datetime fallbackTimestamp = Datetime.now();
 
-    @InvocableMethod(label='Send Log Event to OpenTelemetry' category='RFLIB' description='Forwards Log Events to an OpenTelemetry (OTLP/HTTP JSON) logs endpoint such as AWS CloudWatch or an OpenTelemetry Collector. Azure Monitor is supported only behind a Collector (its native OTLP ingestion requires protobuf).')
+    @InvocableMethod(
+        label='Send Log Event to OpenTelemetry'
+        category='RFLIB'
+        description='Forwards Log Events to an OpenTelemetry (OTLP/HTTP JSON) logs endpoint such as AWS CloudWatch or an OpenTelemetry Collector. Azure Monitor is supported only behind a Collector (its native OTLP ingestion requires protobuf).'
+    )
     public static void sendToOpenTelemetry(List<rflib_Log_Event__e> events) {
         new rflib_OpenTelemetryLogAction().process(events);
     }
@@ -106,15 +109,21 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     }
 
     protected override Boolean isSuccessResponse(HttpResponse res) {
-        if (res.getStatusCode() != 200) {
+        Integer statusCode = res.getStatusCode();
+        // OTLP/HTTP treats any 2xx as success. Backends differ: collectors typically return 200 with an
+        // ExportLogsServiceResponse body, while gateways such as Grafana Cloud return 204 No Content.
+        if (statusCode < 200 || statusCode >= 300) {
             return false;
         }
-        // OTLP and CloudWatch signal dropped records via partialSuccess.rejectedLogRecords.
+        // OTLP and CloudWatch signal dropped records via partialSuccess.rejectedLogRecords, which only
+        // appears on a 2xx response carrying a body (e.g. 200); a 204 No Content is a full success.
         Long rejected = getRejectedLogRecords(res.getBody());
         if (rejected > 0) {
-            rflib_LoggerUtil.logInternal(getLogger(),
-                'OTLP endpoint returned HTTP 200 but rejected {0} log record(s); response: {1}',
-                new Object[] { rejected, res.getBody() });
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                'OTLP endpoint returned HTTP {0} but rejected {1} log record(s); response: {2}',
+                new List<Object>{ statusCode, rejected, res.getBody() }
+            );
             return false;
         }
         return true;
@@ -166,9 +175,7 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
             }
         };
 
-        return JSON.serialize(new Map<String, Object>{
-            'resourceLogs' => new List<Object>{ resourceLogs }
-        });
+        return JSON.serialize(new Map<String, Object>{ 'resourceLogs' => new List<Object>{ resourceLogs } });
     }
 
     private Map<String, Object> createLogRecord(rflib_Log_Event__e evt) {

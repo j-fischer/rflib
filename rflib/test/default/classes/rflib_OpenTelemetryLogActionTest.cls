@@ -68,6 +68,33 @@ private class rflib_OpenTelemetryLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testSendToOpenTelemetry_NoContentSuccess() {
+        configure('ERROR');
+
+        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
+        HttpRequest req = createExpectedRequest(events);
+        // Grafana Cloud and other OTLP gateways acknowledge a successful export with 204 No Content.
+        HttpResponse resp = createResponse(204, '');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
+
+        Test.startTest();
+        rflib_OpenTelemetryLogAction.sendToOpenTelemetry(events);
+        Test.stopTest();
+
+        Assert.areEqual(
+            0,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'A 204 No Content response is a successful OTLP export, not a failure.'
+        );
+        Assert.isTrue(
+            logs().contains('Successfully sent data to remote service'),
+            'Expected a success diagnostic log for the 204 response.'
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testRequestBodyIsNotCached() {
         configure('ERROR');
 
