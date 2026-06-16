@@ -80,11 +80,6 @@ jobs:
                   no_output_timeout: 30m
                   command: |
                       npx sf project deploy start -o ciorg -w 25
-            - run:
-                  name: Clean Up
-                  command: |
-                      npx sf org delete scratch -o ciorg -p
-                  when: on_fail
 
     run_apex_tests:
         <<: *defaults
@@ -124,12 +119,6 @@ jobs:
                           echo "Log ID: $LOG_ID"
                           npx sf apex get log --log-id $LOG_ID --target-org ciorg
                       done
-                  when: on_fail
-            - run:
-                  name: Clean Up
-                  command: |
-                      # Delete the scratch org
-                      npx sf org delete scratch -o ciorg -p
                   when: on_fail
             - persist_to_workspace:
                   root: ~/
@@ -177,15 +166,21 @@ jobs:
             - store_artifacts:
                   path: test-results
                   destination: test-results
+
+    cleanup_scratch_org:
+        # Single owner of scratch org deletion. In the workflow it depends on the Apex and
+        # E2E jobs as "terminal", so it runs once both have reached a final state (pass, fail,
+        # canceled, or not-run) and never while either is still using the org. This guarantees
+        # the org is removed on every path. The delete tolerates a missing org so a failed
+        # setup/deploy run (where the tests never ran) doesn't turn this job red.
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
             - run:
                   name: Clean Up
-                  # Runs as the last step of the last job that uses the shared scratch org, so the org
-                  # is always deleted whether the E2E tests pass or fail. This is the guaranteed cleanup
-                  # for the success path (the apex-fail and deploy-fail paths are covered by the
-                  # on_fail cleanup steps in those jobs).
                   command: |
-                      npx sf org delete scratch -o ciorg -p
-                  when: always
+                      npx sf org delete scratch -o ciorg -p || true
 
     report_coverage:
         <<: *defaults
@@ -219,8 +214,15 @@ jobs:
                   name: Scan Flows
                   command: |
                       npx gulp scan-flow
-workflows:
-    build_and_test:
+# Wrapping every job in a single group lets us attach a serial-group to the whole
+# pipeline. The group acquires the serial-group lock before its first job and holds
+# it until the last job finishes, so a newer pipeline waits for the active one to
+# fully complete (including the cleanup_scratch_org job) instead of running
+# in parallel. This keeps only one CI scratch org alive at a time, which avoids
+# exhausting the DevHub scratch org limits. serial-group queues runs; it does not
+# cancel them.
+job-groups:
+    build_and_test_group:
         jobs:
             - setup_project
             - setup_dx:
@@ -238,14 +240,13 @@ workflows:
             - run_apex_tests:
                   requires:
                       - deploy_source
-
-            # E2E runs after the Apex tests (not in parallel) so the two never share the scratch org
-            # concurrently. This lets run_e2e_tests own the guaranteed "when: always" org cleanup
-            # without racing the Apex job, and fails fast (E2E is skipped if Apex tests fail, in which
-            # case run_apex_tests' on_fail step deletes the org).
             - run_e2e_tests:
                   requires:
-                      - run_apex_tests
+                      - deploy_source
+            - cleanup_scratch_org:
+                  requires:
+                      - run_apex_tests: terminal
+                      - run_e2e_tests: terminal
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -253,3 +254,9 @@ workflows:
                   filters:
                       branches:
                           only: master
+
+workflows:
+    build_and_test:
+        jobs:
+            - build_and_test_group:
+                  serial-group: << pipeline.project.slug >>/build-and-test
