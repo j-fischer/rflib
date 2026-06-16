@@ -126,10 +126,12 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
         // appears on a 2xx response carrying a body (e.g. 200); a 204 No Content is a full success.
         Long rejected = getRejectedLogRecords(res.getBody());
         if (rejected > 0) {
+            // Bound the response body: this goes through the cached logger, so a large per-record error
+            // payload could otherwise retain MBs in the shared log buffer across repeated rejected batches.
             rflib_LoggerUtil.logInternal(
                 getLogger(),
                 'OTLP endpoint returned HTTP {0} but rejected {1} log record(s); response: {2}',
-                new List<Object>{ statusCode, rejected, res.getBody() }
+                new List<Object>{ statusCode, rejected, boundDetail(res.getBody()) }
             );
             return false;
         }

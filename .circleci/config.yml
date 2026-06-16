@@ -171,8 +171,11 @@ jobs:
         # Single owner of scratch org deletion. In the workflow it depends on the Apex and
         # E2E jobs as "terminal", so it runs once both have reached a final state (pass, fail,
         # canceled, or not-run) and never while either is still using the org. This guarantees
-        # the org is removed on every path. The delete tolerates a missing org so a failed
-        # setup/deploy run (where the tests never ran) doesn't turn this job red.
+        # the org is removed on every path.
+        #
+        # Tolerate ONLY the expected "ciorg was never created" case (e.g. setup_dx failed before
+        # creating it) so that doesn't turn this job red. Any OTHER failure means the org may still
+        # be alive, so retry once and then fail loudly rather than masking a real leak with `|| true`.
         <<: *defaults
         steps:
             - attach_workspace:
@@ -180,7 +183,23 @@ jobs:
             - run:
                   name: Clean Up
                   command: |
-                      npx sf org delete scratch -o ciorg -p || true
+                      set +e
+                      EXISTS=$(npx sf org list --json | jq -r '.result.scratchOrgs[]?.alias // empty' | grep -Fx ciorg)
+                      if [ -z "$EXISTS" ]; then
+                          echo "No ciorg scratch org found; nothing to clean up."
+                          exit 0
+                      fi
+                      for attempt in 1 2; do
+                          npx sf org delete scratch -o ciorg -p
+                          if [ $? -eq 0 ]; then
+                              echo "Scratch org deleted."
+                              exit 0
+                          fi
+                          echo "Delete attempt $attempt failed; retrying in 15s..."
+                          sleep 15
+                      done
+                      echo "Scratch org deletion failed after retries; failing so the leak is visible."
+                      exit 1
 
     report_coverage:
         <<: *defaults

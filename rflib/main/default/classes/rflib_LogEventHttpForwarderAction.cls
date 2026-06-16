@@ -191,7 +191,12 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         return boundDetail(ex.getTypeName() + ': ' + ex.getMessage() + '\n' + ex.getStackTraceString());
     }
 
-    private String boundDetail(String detail) {
+    /**
+     * @description Bounds a diagnostic detail string to MAX_FAILURE_DETAIL_LENGTH so large response or
+     *              error bodies cannot accumulate in the shared log buffer / queued failure payloads.
+     *              Available to subclasses that log destination-specific failure responses.
+     */
+    protected String boundDetail(String detail) {
         if (String.isBlank(detail) || detail.length() <= MAX_FAILURE_DETAIL_LENGTH) {
             return detail;
         }
