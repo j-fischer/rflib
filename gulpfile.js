@@ -761,6 +761,7 @@ gulp.task('test-package-upgrade',
         },
         'shell-force-open',
         'shell-force-test',
+        'shell-test-e2e',
         'confirm-deleteOrg'
     )
 );
@@ -811,6 +812,7 @@ gulp.task(
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-test',
+        'shell-test-e2e',
         'shell-test-lwc',
         'shell-force-promote',
         'shell-force-delete-org',
