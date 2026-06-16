@@ -43,8 +43,16 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public abstract with sharing class rflib_LogEventHttpForwarderAction {
-
     private static final rflib_ApplicationEventLogger APP_EVENT_LOGGER = rflib_LoggerUtil.getApplicationEventLogger();
+
+    // Caps each queued failure detail. Failures are deferred into failurePayloads (see process()) and
+    // published only after every callout, so during an outage many entries are held in memory at once.
+    // getLogger().printLogs() is NOT used for them: rflib_HttpRequest logs the full request body, so the
+    // buffer it returns is MB-sized and, across multiple failed batches, would exhaust Apex heap before
+    // the application-event service truncates the detail. A bounded summary keeps each entry small while
+    // still capturing the actionable error. Matches the application event's own ~32 KB detail cap.
+    @TestVisible
+    private static final Integer MAX_FAILURE_DETAIL_LENGTH = 32768;
 
     private rflib_Logger logger;
 
@@ -60,10 +68,18 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         List<String> failurePayloads = new List<String>();
         try {
             Integer incomingCount = events == null ? 0 : events.size();
-            rflib_LoggerUtil.logInternal(getLogger(), 'Forwarder {0} received {1} log event(s)', new Object[] { getLoggerName(), incomingCount });
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                'Forwarder {0} received {1} log event(s)',
+                new List<Object>{ getLoggerName(), incomingCount }
+            );
 
             if (!isConfigured()) {
-                rflib_LoggerUtil.logInternal(getLogger(), 'Forwarder {0} is not configured. Nothing to do here.', new Object[] { getLoggerName() });
+                rflib_LoggerUtil.logInternal(
+                    getLogger(),
+                    'Forwarder {0} is not configured. Nothing to do here.',
+                    new List<Object>{ getLoggerName() }
+                );
                 return;
             }
 
@@ -77,8 +93,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 }
             }
 
-            rflib_LoggerUtil.logInternal(getLogger(), '{0} of {1} event(s) match the configured log level ({2}) for {3}',
-                new Object[] { eventsToSend.size(), incomingCount, configuredLogLevel, getLoggerName() });
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                '{0} of {1} event(s) match the configured log level ({2}) for {3}',
+                new List<Object>{ eventsToSend.size(), incomingCount, configuredLogLevel, getLoggerName() }
+            );
 
             if (eventsToSend.isEmpty()) {
                 rflib_LoggerUtil.logInternal(getLogger(), 'No events to send found. Nothing to do here.');
@@ -88,13 +107,16 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             sendInBatches(eventsToSend, failurePayloads);
         } catch (Exception ex) {
             getLogger().error('Failed to forward log event(s) via ' + getLoggerName(), ex);
-            failurePayloads.add(getLogger().printLogs());
+            failurePayloads.add(summarizeFailure(ex));
         }
 
         // Safe to do DML now: all callouts for this invocation are complete.
         if (!failurePayloads.isEmpty()) {
-            rflib_LoggerUtil.logInternal(getLogger(), 'Publishing {0} {1} failure application event(s)',
-                new Object[] { failurePayloads.size(), getAppEventFailureName() });
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                'Publishing {0} {1} failure application event(s)',
+                new List<Object>{ failurePayloads.size(), getAppEventFailureName() }
+            );
         }
         for (String payload : failurePayloads) {
             APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, payload);
@@ -110,8 +132,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     private void send(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
         try {
             String payload = createPayload(batch);
-            rflib_LoggerUtil.logInternal(getLogger(), 'Sending {0} event(s) ({1} bytes) to {2}',
-                new Object[] { batch.size(), Blob.valueOf(payload).size(), getEndpoint() });
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                'Sending {0} event(s) ({1} bytes) to {2}',
+                new List<Object>{ batch.size(), Blob.valueOf(payload).size(), getEndpoint() }
+            );
 
             rflib_HttpRequest req = new rflib_HttpRequest(getLogger());
             req.setEndpoint(getEndpoint());
@@ -121,18 +146,52 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
 
             HttpResponse res = req.send();
             if (isSuccessResponse(res)) {
-                rflib_LoggerUtil.logInternal(getLogger(), 'Successfully sent data to remote service. Status: {0}',
-                    new Object[] { res.getStatusCode() });
+                rflib_LoggerUtil.logInternal(
+                    getLogger(),
+                    'Successfully sent data to remote service. Status: {0}',
+                    new List<Object>{ res.getStatusCode() }
+                );
             } else {
-                rflib_LoggerUtil.logInternal(getLogger(), 'Failed to send data to remote service. Status: {0}, Response: {1}',
-                    new Object[] { res.getStatus(), res.getBody() });
-                // Snapshot the failure now, but defer publishing until all callouts are done.
-                failurePayloads.add(JSON.serialize(res));
+                rflib_LoggerUtil.logInternal(
+                    getLogger(),
+                    'Failed to send data to remote service. Status: {0}, Response: {1}',
+                    new List<Object>{ res.getStatus(), res.getBody() }
+                );
+                // Snapshot the failure now, but defer publishing until all callouts are done. Build the
+                // detail from the response (status + body) rather than JSON.serialize(res) — HttpResponse
+                // is not JSON-serializable (throws "Apex Type unsupported in JSON") — and bound it so a
+                // large error body cannot accumulate across batches and exhaust heap before publishing.
+                failurePayloads.add(
+                    boundDetail(
+                        'Failed to send data to remote service. Status: ' +
+                            res.getStatusCode() +
+                            ' ' +
+                            res.getStatus() +
+                            ', Response: ' +
+                            res.getBody()
+                    )
+                );
             }
         } catch (Exception ex) {
             getLogger().error('Failed to send data to remote service', ex);
-            failurePayloads.add(getLogger().printLogs());
+            failurePayloads.add(summarizeFailure(ex));
         }
+    }
+
+    /**
+     * @description Builds a heap-safe, bounded diagnostic for a forwarding failure: the exception type,
+     *              message and stack trace. Deliberately excludes the request body that the logger
+     *              buffer would carry, so queued failures stay small during a multi-batch outage.
+     */
+    private String summarizeFailure(Exception ex) {
+        return boundDetail(ex.getTypeName() + ': ' + ex.getMessage() + '\n' + ex.getStackTraceString());
+    }
+
+    private String boundDetail(String detail) {
+        if (String.isBlank(detail) || detail.length() <= MAX_FAILURE_DETAIL_LENGTH) {
+            return detail;
+        }
+        return detail.left(MAX_FAILURE_DETAIL_LENGTH);
     }
 
     /**
@@ -153,7 +212,9 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             // Estimate this event's serialized contribution by rendering it on its own. For NDJSON
             // (per-line) forwarders this is exact; for envelope forwarders it slightly overcounts the
             // shared wrapper, which only makes batches more conservative.
-            Integer evtBytes = maxBytes > 0 ? Blob.valueOf(createPayload(new List<rflib_Log_Event__e>{ evt })).size() : 0;
+            Integer evtBytes = maxBytes > 0
+                ? Blob.valueOf(createPayload(new List<rflib_Log_Event__e>{ evt })).size()
+                : 0;
 
             Boolean overCount = maxCount > 0 && current.size() >= maxCount;
             Boolean overBytes = maxBytes > 0 && !current.isEmpty() && (currentBytes + evtBytes) > maxBytes;

@@ -29,7 +29,6 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_OpenTelemetryLogActionTest {
-
     private static final String ENDPOINT = 'callout:RFLIB_OTEL_LOGS';
     private static final String METHOD = 'POST';
     private static final String FAILURE_EVENT = 'rflib-otel-log-event-failed';
@@ -56,8 +55,15 @@ private class rflib_OpenTelemetryLogActionTest {
         rflib_OpenTelemetryLogAction.sendToOpenTelemetry(events);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'No failure event expected on success.');
-        Assert.isTrue(logs().contains('Successfully sent data to remote service'), 'Expected a success diagnostic log.');
+        Assert.areEqual(
+            0,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'No failure event expected on success.'
+        );
+        Assert.isTrue(
+            logs().contains('Successfully sent data to remote service'),
+            'Expected a success diagnostic log.'
+        );
     }
 
     @IsTest
@@ -66,7 +72,10 @@ private class rflib_OpenTelemetryLogActionTest {
         configure('ERROR');
 
         HttpRequest req = createExpectedRequest(createTestLogEvents('ERROR'));
-        HttpResponse resp = createResponse(200, '{"partialSuccess":{"rejectedLogRecords":1,"errorMessage":"bad record"}}');
+        HttpResponse resp = createResponse(
+            200,
+            '{"partialSuccess":{"rejectedLogRecords":1,"errorMessage":"bad record"}}'
+        );
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
@@ -74,8 +83,20 @@ private class rflib_OpenTelemetryLogActionTest {
         rflib_OpenTelemetryLogAction.sendToOpenTelemetry(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event when records are rejected.');
-        Assert.isTrue(logs().contains('rejected 1 log record'), 'Expected a diagnostic log naming the rejected record count.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event when records are rejected.'
+        );
+        String logOutput = logs();
+        Assert.isTrue(
+            logOutput.contains('Failed to send data to remote service'),
+            'Expected the partial-success rejection to be recorded as a failure.'
+        );
+        Assert.isTrue(
+            logOutput.contains('rejectedLogRecords'),
+            'Expected the rejection detail (response body) to be captured.'
+        );
     }
 
     @IsTest
@@ -92,9 +113,16 @@ private class rflib_OpenTelemetryLogActionTest {
         rflib_OpenTelemetryLogAction.sendToOpenTelemetry(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on HTTP failure.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event on HTTP failure.'
+        );
         String logOutput = logs();
-        Assert.isTrue(logOutput.contains('Failed to send data to remote service'), 'Expected a failure diagnostic log.');
+        Assert.isTrue(
+            logOutput.contains('Failed to send data to remote service'),
+            'Expected a failure diagnostic log.'
+        );
         Assert.isTrue(logOutput.contains('Server Error'), 'Expected the response body to be logged for debugging.');
     }
 
@@ -110,7 +138,11 @@ private class rflib_OpenTelemetryLogActionTest {
         rflib_OpenTelemetryLogAction.sendToOpenTelemetry(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on callout exception.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event on callout exception.'
+        );
     }
 
     @IsTest
@@ -123,7 +155,10 @@ private class rflib_OpenTelemetryLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(
-            rflib_LoggerUtil.getFactory().createLogger('rflib_OpenTelemetryLogAction').printLogs().contains('No events to send found'),
+            rflib_LoggerUtil.getFactory()
+                .createLogger('rflib_OpenTelemetryLogAction')
+                .printLogs()
+                .contains('No events to send found'),
             'Expected the no-events short-circuit when the level does not match.'
         );
     }
@@ -161,7 +196,11 @@ private class rflib_OpenTelemetryLogActionTest {
         Assert.areEqual('ERROR', record.get('severityText'), 'severityText should be the log level.');
         String expectedNanos = String.valueOf(Datetime.newInstanceGmt(2026, 6, 11, 17, 30, 12).getTime() * 1000000L);
         Assert.areEqual(expectedNanos, record.get('timeUnixNano'), 'timeUnixNano should be nanoseconds as a string.');
-        Assert.areEqual(expectedNanos, record.get('observedTimeUnixNano'), 'observedTimeUnixNano should be set per the OTLP data model.');
+        Assert.areEqual(
+            expectedNanos,
+            record.get('observedTimeUnixNano'),
+            'observedTimeUnixNano should be set per the OTLP data model.'
+        );
 
         Map<String, Object> body = (Map<String, Object>) record.get('body');
         Assert.areEqual('Something failed', body.get('stringValue'), 'body.stringValue should carry the log messages.');
@@ -172,7 +211,11 @@ private class rflib_OpenTelemetryLogActionTest {
             Map<String, Object> attr = (Map<String, Object>) attrObj;
             if (attr.get('key') == 'rflib.apex.cpu_time') {
                 Map<String, Object> value = (Map<String, Object>) attr.get('value');
-                Assert.areEqual('12', value.get('intValue'), 'Numeric platform info should be encoded as intValue string.');
+                Assert.areEqual(
+                    '12',
+                    value.get('intValue'),
+                    'Numeric platform info should be encoded as intValue string.'
+                );
                 foundCpuTime = true;
             }
         }
@@ -186,21 +229,36 @@ private class rflib_OpenTelemetryLogActionTest {
 
         // Malformed JSON makes the parser fall back to the raw Platform_Info__c string.
         String hugePlatformInfo = 'p'.repeat(rflib_OpenTelemetryLogAction.MAX_ATTRIBUTE_LENGTH + 500);
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'x', Platform_Info__c = hugePlatformInfo);
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'x',
+            Platform_Info__c = hugePlatformInfo
+        );
 
         Test.startTest();
         String payload = new rflib_OpenTelemetryLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
         Test.stopTest();
 
         Map<String, Object> root = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> record = (Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) root.get('resourceLogs')).get(0)).get('scopeLogs')).get(0)).get('logRecords')).get(0);
+        Map<String, Object> record = (Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) root.get(
+                                'resourceLogs'
+                            ))
+                            .get(0))
+                        .get('scopeLogs'))
+                    .get(0))
+                .get('logRecords'))
+            .get(0);
 
         Boolean foundRaw = false;
         for (Object attrObj : (List<Object>) record.get('attributes')) {
             Map<String, Object> attr = (Map<String, Object>) attrObj;
             if (attr.get('key') == 'rflib.platform_info') {
                 String value = (String) ((Map<String, Object>) attr.get('value')).get('stringValue');
-                Assert.areEqual(rflib_OpenTelemetryLogAction.MAX_ATTRIBUTE_LENGTH, value.length(), 'Oversized platform string attributes must be capped.');
+                Assert.areEqual(
+                    rflib_OpenTelemetryLogAction.MAX_ATTRIBUTE_LENGTH,
+                    value.length(),
+                    'Oversized platform string attributes must be capped.'
+                );
                 foundRaw = true;
             }
         }
@@ -224,23 +282,55 @@ private class rflib_OpenTelemetryLogActionTest {
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testAttributeTyping() {
         Map<String, Object> intAttr = rflib_OpenTelemetryLogAction.attribute('k', 42);
-        Assert.areEqual('42', ((Map<String, Object>) intAttr.get('value')).get('intValue'), 'Integers should be intValue strings.');
+        Assert.areEqual(
+            '42',
+            ((Map<String, Object>) intAttr.get('value')).get('intValue'),
+            'Integers should be intValue strings.'
+        );
 
         Map<String, Object> boolAttr = rflib_OpenTelemetryLogAction.attribute('k', true);
-        Assert.areEqual(true, ((Map<String, Object>) boolAttr.get('value')).get('boolValue'), 'Booleans should be boolValue.');
+        Assert.areEqual(
+            true,
+            ((Map<String, Object>) boolAttr.get('value')).get('boolValue'),
+            'Booleans should be boolValue.'
+        );
 
         Map<String, Object> strAttr = rflib_OpenTelemetryLogAction.attribute('k', null);
-        Assert.areEqual('', ((Map<String, Object>) strAttr.get('value')).get('stringValue'), 'Null should default to an empty stringValue.');
+        Assert.areEqual(
+            '',
+            ((Map<String, Object>) strAttr.get('value')).get('stringValue'),
+            'Null should default to an empty stringValue.'
+        );
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testGetRejectedLogRecords() {
-        Assert.areEqual(0L, rflib_OpenTelemetryLogAction.getRejectedLogRecords(''), 'Blank body means nothing rejected.');
-        Assert.areEqual(0L, rflib_OpenTelemetryLogAction.getRejectedLogRecords('{}'), 'Empty object means nothing rejected.');
-        Assert.areEqual(0L, rflib_OpenTelemetryLogAction.getRejectedLogRecords('not-json'), 'Unparseable body is treated as success.');
-        Assert.areEqual(3L, rflib_OpenTelemetryLogAction.getRejectedLogRecords('{"partialSuccess":{"rejectedLogRecords":3}}'), 'rejectedLogRecords should be parsed.');
-        Assert.areEqual(3L, rflib_OpenTelemetryLogAction.getRejectedLogRecords('{"partialSuccess":{"rejectedLogRecords":"3"}}'), 'rejectedLogRecords as a string should be parsed.');
+        Assert.areEqual(
+            0L,
+            rflib_OpenTelemetryLogAction.getRejectedLogRecords(''),
+            'Blank body means nothing rejected.'
+        );
+        Assert.areEqual(
+            0L,
+            rflib_OpenTelemetryLogAction.getRejectedLogRecords('{}'),
+            'Empty object means nothing rejected.'
+        );
+        Assert.areEqual(
+            0L,
+            rflib_OpenTelemetryLogAction.getRejectedLogRecords('not-json'),
+            'Unparseable body is treated as success.'
+        );
+        Assert.areEqual(
+            3L,
+            rflib_OpenTelemetryLogAction.getRejectedLogRecords('{"partialSuccess":{"rejectedLogRecords":3}}'),
+            'rejectedLogRecords should be parsed.'
+        );
+        Assert.areEqual(
+            3L,
+            rflib_OpenTelemetryLogAction.getRejectedLogRecords('{"partialSuccess":{"rejectedLogRecords":"3"}}'),
+            'rejectedLogRecords as a string should be parsed.'
+        );
     }
 
     @IsTest
