@@ -1,10 +1,12 @@
 # Logging to OpenTelemetry (OTLP/HTTP)
 
-RFLIB can forward log events to any [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) logs endpoint using OTLP/HTTP JSON. Because OTLP is a vendor-neutral standard, the **one** `Send_Log_Event_to_OTel` action (`rflib_OpenTelemetryLogAction`) works with:
+RFLIB can forward log events to any [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otlp/) logs endpoint that accepts **OTLP/HTTP JSON**. The **one** `Send_Log_Event_to_OTel` action (`rflib_OpenTelemetryLogAction`) emits OTLP/HTTP JSON (`Content-Type: application/json`) and works with:
 
-- **Azure Monitor** native OTLP ingestion (preview)
-- **AWS CloudWatch Logs** native OTLP endpoint (a serverless, Lambda-free alternative to the API Gateway + Lambda setup in [the CloudWatch wiki](https://github.com/j-fischer/rflib/wiki/Logging-to-AWS-CloudWatch))
-- **OpenTelemetry Collectors** and any backend that accepts them (Grafana/Tempo/Loki, Datadog, Honeycomb, New Relic, Splunk, ...)
+- **AWS CloudWatch Logs** native OTLP endpoint — accepts OTLP/HTTP JSON; a serverless, Lambda-free alternative to the API Gateway + Lambda setup in [the CloudWatch wiki](https://github.com/j-fischer/rflib/wiki/Logging-to-AWS-CloudWatch).
+- **OpenTelemetry Collectors** and any backend reachable through one (Grafana/Tempo/Loki, Datadog, Honeycomb, New Relic, Splunk, ...).
+- **Azure Monitor** — only **via an OpenTelemetry Collector** in between (see the Azure recipe below). Azure Monitor's _native_ OTLP ingestion requires OTLP/HTTP **protobuf**, which this action does not emit. For direct Azure ingestion without a collector, use the **App Insights action** instead — see [`../azure/README.md`](../azure/README.md).
+
+> **Encoding note:** this action emits OTLP/HTTP **JSON**, not protobuf (Apex has no practical protobuf serializer). Any backend you target must accept the JSON encoding (or sit behind a collector that does).
 
 The destination URL and any backend-specific headers (API keys, log-group names, etc.) live entirely on the `RFLIB_OTEL_LOGS` Named Credential, so switching or adding a backend never requires a code change.
 
@@ -52,15 +54,12 @@ Events are sent in callouts of up to 100 records. A `200` with no `partialSucces
 
 ## Backend recipes
 
-### Azure Monitor (preview)
+### Azure Monitor (preview) — requires an OpenTelemetry Collector
 
-- Create an Application Insights resource with **OTLP support: On** (auto-provisions a Data Collection Endpoint and Rule).
-- Assign **Monitoring Metrics Publisher** on the **DCR** to an Entra app registration (see [`../azure/scripts/setup-entra-app.sh`](../azure/scripts/setup-entra-app.sh)).
-- External Credential: OAuth 2.0 Client Credentials, scope `https://monitor.azure.com//.default`.
-- Named Credential URL:
-    ```
-    https://<dce>.<region>.ingest.monitor.azure.com/dataCollectionRules/<dcr-immutable-id>/streams/Microsoft-OTLP-Logs/otlp/v1/logs
-    ```
+Azure Monitor's native OTLP ingestion accepts only OTLP/HTTP **protobuf**, so RFLIB cannot post to the DCR endpoint directly (it emits JSON). Two options:
+
+- **Recommended for Azure:** skip OTLP and use the **App Insights action** (`RFLIB_APP_INSIGHTS`), which ingests directly over JSON. See [`../azure/README.md`](../azure/README.md).
+- **If you specifically want the OTLP pipeline:** run an **OpenTelemetry Collector** that accepts OTLP/HTTP JSON from Salesforce and re-exports OTLP/HTTP **protobuf** to Azure Monitor. Point `RFLIB_OTEL_LOGS` at the **collector's** `/v1/logs` (not the DCR), and configure the collector with the Azure auth + DCR endpoint per Microsoft's collector docs. Flow: `Salesforce → (OTLP/JSON) → Collector → (OTLP/protobuf) → Azure Monitor`.
 
 ### AWS CloudWatch Logs (Lambda-free)
 

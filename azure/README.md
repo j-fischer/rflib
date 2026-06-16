@@ -4,10 +4,10 @@ RFLIB can forward log events to [Azure Application Insights](https://learn.micro
 
 There are two ways to land RFLIB logs in Azure:
 
-| Route                                              | Action                                                          | Status  | Where logs land             |
-| -------------------------------------------------- | --------------------------------------------------------------- | ------- | --------------------------- |
-| **A. App Insights direct ingestion** (recommended) | `Send_Log_Event_to_App_Insights` (`rflib_AppInsightsLogAction`) | GA      | App Insights `traces` table |
-| **B. Azure Monitor native OTLP ingestion**         | `Send_Log_Event_to_OTel` (`rflib_OpenTelemetryLogAction`)       | Preview | Log Analytics (OTel schema) |
+| Route                                                 | Action                                                          | Status  | Where logs land             |
+| ----------------------------------------------------- | --------------------------------------------------------------- | ------- | --------------------------- |
+| **A. App Insights direct ingestion** (recommended)    | `Send_Log_Event_to_App_Insights` (`rflib_AppInsightsLogAction`) | GA      | App Insights `traces` table |
+| **B. Azure Monitor OTLP ingestion** (via a Collector) | `Send_Log_Event_to_OTel` (`rflib_OpenTelemetryLogAction`)       | Preview | Log Analytics (OTel schema) |
 
 Route A is documented in full below. Route B is summarized at the end and shares the generic OpenTelemetry setup in [`../otel/README.md`](../otel/README.md).
 
@@ -125,12 +125,16 @@ The `customDimensions` will include `Context`, `RequestId`, `LogLevel`, and the 
 | Nothing arrives, no app events                            | `App_Insights_Log_Level__c` is `NONE` or below the Log Event Reporting Level; or the `App_Insights_Instrumentation_Key` Global Setting is missing (forwarding is skipped when blank). |
 | Daily data missing                                        | The Log Analytics daily cap was reached — raise `dailyCapGb` or the log-level threshold.                                                                                              |
 
-## Route B — Azure Monitor native OTLP ingestion (preview)
+## Route B — Azure Monitor OTLP ingestion (preview, via a Collector)
 
-If you prefer the vendor-neutral OpenTelemetry pipeline, create an Application Insights resource with **OTLP support: On** (this auto-provisions the Data Collection Endpoint/Rule), assign **Monitoring Metrics Publisher** on the **DCR** to the same app registration, and point the `RFLIB_OTEL_LOGS` Named Credential at the OTLP logs endpoint:
+If you prefer the vendor-neutral OpenTelemetry pipeline, note an important constraint: Azure Monitor's native OTLP ingestion accepts only OTLP/HTTP **protobuf**, while RFLIB's `rflib_OpenTelemetryLogAction` emits OTLP/HTTP **JSON** (Apex has no practical protobuf serializer). RFLIB therefore **cannot post to the Azure DCR endpoint directly**.
 
-```
-https://<dce>.<region>.ingest.monitor.azure.com/dataCollectionRules/<dcr-immutable-id>/streams/Microsoft-OTLP-Logs/otlp/v1/logs
-```
+To use this route, run an **OpenTelemetry Collector** between Salesforce and Azure Monitor:
 
-Then set `OTel_Log_Level__c` in the Logger Settings. Logs land in Log Analytics using the OpenTelemetry schema. Full instructions and other OTLP backends are in [`../otel/README.md`](../otel/README.md). Note this ingestion path is in **public preview** at the time of writing.
+1. Create an Application Insights resource with **OTLP support: On** (auto-provisions the Data Collection Endpoint/Rule) and assign **Monitoring Metrics Publisher** on the **DCR** to the app registration.
+2. Deploy an OpenTelemetry Collector that accepts OTLP/HTTP JSON and exports OTLP/HTTP **protobuf** to the Azure DCR endpoint (`https://<dce>.<region>.ingest.monitor.azure.com/dataCollectionRules/<dcr-immutable-id>/streams/Microsoft-OTLP-Logs/otlp/v1/logs`) using the Azure auth extension.
+3. Point the `RFLIB_OTEL_LOGS` Named Credential at the **collector's** `/v1/logs` endpoint and set `OTel_Log_Level__c` in the Logger Settings.
+
+Flow: `Salesforce → (OTLP/JSON) → Collector → (OTLP/protobuf) → Azure Monitor`. Logs land in Log Analytics using the OpenTelemetry schema. See [`../otel/README.md`](../otel/README.md) for the collector recipe and other OTLP backends.
+
+**For direct Azure ingestion without a collector, use Route A (App Insights direct ingestion) above** — it is the recommended path for most Azure users. This OTLP ingestion path is also in **public preview** at the time of writing.
