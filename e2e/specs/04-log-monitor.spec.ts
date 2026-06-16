@@ -26,9 +26,27 @@ test('starts in "New Messages" connection mode', async () => {
 });
 
 test('historic mode replays the seeded log events', async () => {
-    await monitor.setConnectionMode(CONNECTION_MODES.historicAndNew);
-    await expect.poll(() => monitor.getTotalLogEvents(), { timeout: 120_000, intervals: [5_000] }).toBeGreaterThan(0);
-    await expect(monitor.eventRows().first()).toBeVisible();
+    // Big Object archival / event-bus replay can lag several minutes in a fresh scratch org, and a
+    // historic subscription only queries when it connects — a stale one will not pick up events that
+    // surface afterwards. So poll for a while, and if nothing has replayed yet reload for a fresh
+    // subscription and try again, over several rounds, before failing.
+    const MAX_ATTEMPTS = 5;
+    for (let attempt = 1; ; attempt++) {
+        await monitor.setConnectionMode(CONNECTION_MODES.historicAndNew);
+        try {
+            await expect
+                .poll(() => monitor.getTotalLogEvents(), { timeout: 60_000, intervals: [5_000] })
+                .toBeGreaterThan(0);
+            break;
+        } catch (error) {
+            if (attempt >= MAX_ATTEMPTS) {
+                throw error;
+            }
+            await page.reload({ waitUntil: 'domcontentloaded' });
+            await expect(monitor.root).toBeVisible({ timeout: 60_000 });
+        }
+    }
+    await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
 });
 
 test('receives new log events in real time over the EMP API', async () => {
