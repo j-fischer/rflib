@@ -114,3 +114,4 @@ kusto
 enduser
 unparseable
 overcounts
+pinfo

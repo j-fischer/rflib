@@ -41,7 +41,6 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpForwarderAction {
-
     @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_APP_INSIGHTS/v2.1/track';
 
@@ -59,6 +58,14 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     // Application Insights caps property/metric names at 150 characters.
     @TestVisible
     private static final Integer MAX_PROPERTY_NAME_LENGTH = 150;
+
+    // Caps how many flattened platform properties are attached to an item. A valid but pathological
+    // Platform_Info__c (e.g. a large JSON array) can flatten into thousands of properties; without a cap
+    // the item-size trimming in fitItem would remove them one at a time, re-serializing the whole
+    // envelope on every pass and risking the Apex CPU limit before any telemetry is sent. App Insights
+    // also rejects items with excessive custom dimensions, so keeping the first N (sorted) is sufficient.
+    @TestVisible
+    private static final Integer MAX_PLATFORM_PROPERTIES = 100;
 
     // Defensive bound on the message-fitting loop; it converges in 1-2 passes in practice.
     @TestVisible
@@ -79,7 +86,11 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     @TestVisible
     private static Datetime fallbackTimestamp = Datetime.now();
 
-    @InvocableMethod(label='Send Log Event to Azure Application Insights' category='RFLIB' description='Forwards Log Events to Azure Application Insights via the telemetry ingestion endpoint')
+    @InvocableMethod(
+        label='Send Log Event to Azure Application Insights'
+        category='RFLIB'
+        description='Forwards Log Events to Azure Application Insights via the telemetry ingestion endpoint'
+    )
     public static void sendToAppInsights(List<rflib_Log_Event__e> events) {
         new rflib_AppInsightsLogAction().process(events);
     }
@@ -131,7 +142,9 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
 
         Map<String, Object> tags = new Map<String, Object>{
             'ai.cloud.role' => 'Salesforce',
-            'ai.cloud.roleInstance' => String.isNotBlank(evt.Source_System_ID__c) ? evt.Source_System_ID__c : UserInfo.getOrganizationId(),
+            'ai.cloud.roleInstance' => String.isNotBlank(evt.Source_System_ID__c)
+                ? evt.Source_System_ID__c
+                : UserInfo.getOrganizationId(),
             'ai.operation.id' => evt.Request_ID__c,
             'ai.user.id' => evt.CreatedById
         };
@@ -154,6 +167,17 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
         // remove them reliably.
         List<String> platformPropertyNames = new List<String>();
         for (String key : sourceKeys) {
+            if (platformPropertyNames.size() >= MAX_PLATFORM_PROPERTIES) {
+                properties.put(
+                    'rflib.platform_info.truncated',
+                    'Dropped ' +
+                        (sourceKeys.size() - MAX_PLATFORM_PROPERTIES) +
+                        ' of ' +
+                        sourceKeys.size() +
+                        ' platform properties'
+                );
+                break;
+            }
             String propertyName = key.length() > MAX_PROPERTY_NAME_LENGTH ? key.left(MAX_PROPERTY_NAME_LENGTH) : key;
             properties.put(propertyName, truncate(String.valueOf(platformInfo.get(key)), MAX_PROPERTY_LENGTH));
             platformPropertyNames.add(propertyName);
@@ -171,10 +195,7 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
             'time' => timestamp.formatGmt('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\''),
             'iKey' => instrumentationKey,
             'tags' => tags,
-            'data' => new Map<String, Object>{
-                'baseType' => 'MessageData',
-                'baseData' => baseData
-            }
+            'data' => new Map<String, Object>{ 'baseType' => 'MessageData', 'baseData' => baseData }
         };
 
         fitItem(envelope, baseData, properties, platformPropertyNames, evt.Log_Messages__c);
@@ -189,7 +210,13 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
      *              zero, in which case it is left empty rather than forced to a minimum that would
      *              push the item back over the limit.
      */
-    private void fitItem(Map<String, Object> envelope, Map<String, Object> baseData, Map<String, Object> properties, List<String> platformKeys, String rawMessage) {
+    private void fitItem(
+        Map<String, Object> envelope,
+        Map<String, Object> baseData,
+        Map<String, Object> properties,
+        List<String> platformKeys,
+        String rawMessage
+    ) {
         baseData.put('message', '');
 
         while (!platformKeys.isEmpty() && Blob.valueOf(JSON.serialize(envelope)).size() > MAX_ITEM_BYTES) {

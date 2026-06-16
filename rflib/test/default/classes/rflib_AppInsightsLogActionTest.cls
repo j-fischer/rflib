@@ -29,7 +29,6 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_AppInsightsLogActionTest {
-
     private static final String ENDPOINT = 'callout:RFLIB_APP_INSIGHTS/v2.1/track';
     private static final String METHOD = 'POST';
     private static final String IKEY = '00000000-0000-0000-0000-000000000000';
@@ -58,7 +57,11 @@ private class rflib_AppInsightsLogActionTest {
         rflib_AppInsightsLogAction.sendToAppInsights(events);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'No failure event expected on success.');
+        Assert.areEqual(
+            0,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'No failure event expected on success.'
+        );
     }
 
     @IsTest
@@ -75,7 +78,11 @@ private class rflib_AppInsightsLogActionTest {
         rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on HTTP failure.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event on HTTP failure.'
+        );
     }
 
     @IsTest
@@ -84,7 +91,10 @@ private class rflib_AppInsightsLogActionTest {
         configure('ERROR');
 
         HttpRequest req = createExpectedRequest(createTestLogEvents('ERROR'));
-        HttpResponse resp = createResponse(206, '{"itemsReceived":1,"itemsAccepted":0,"errors":[{"index":0,"statusCode":400}]}');
+        HttpResponse resp = createResponse(
+            206,
+            '{"itemsReceived":1,"itemsAccepted":0,"errors":[{"index":0,"statusCode":400}]}'
+        );
 
         Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
 
@@ -92,7 +102,11 @@ private class rflib_AppInsightsLogActionTest {
         rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on 206 partial success.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event on 206 partial success.'
+        );
     }
 
     @IsTest
@@ -107,7 +121,11 @@ private class rflib_AppInsightsLogActionTest {
         rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT], 'Expected a failure event on callout exception.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Expected a failure event on callout exception.'
+        );
     }
 
     @IsTest
@@ -120,7 +138,10 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(
-            rflib_LoggerUtil.getFactory().createLogger('rflib_AppInsightsLogAction').printLogs().contains('No events to send found'),
+            rflib_LoggerUtil.getFactory()
+                .createLogger('rflib_AppInsightsLogAction')
+                .printLogs()
+                .contains('No events to send found'),
             'Expected the no-events short-circuit when the level does not match.'
         );
     }
@@ -138,7 +159,10 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(
-            rflib_LoggerUtil.getFactory().createLogger('rflib_AppInsightsLogAction').printLogs().contains('is not configured'),
+            rflib_LoggerUtil.getFactory()
+                .createLogger('rflib_AppInsightsLogAction')
+                .printLogs()
+                .contains('is not configured'),
             'Expected the not-configured short-circuit when the instrumentation key is blank.'
         );
     }
@@ -163,9 +187,17 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Assert.areEqual('Microsoft.ApplicationInsights.Message', envelope.get('name'), 'Envelope name should be the Message type.');
+        Assert.areEqual(
+            'Microsoft.ApplicationInsights.Message',
+            envelope.get('name'),
+            'Envelope name should be the Message type.'
+        );
         Assert.areEqual(IKEY, envelope.get('iKey'), 'iKey should be the configured instrumentation key.');
-        Assert.areEqual('2026-06-11T17:30:12.000Z', envelope.get('time'), 'time should use the deterministic fallback timestamp.');
+        Assert.areEqual(
+            '2026-06-11T17:30:12.000Z',
+            envelope.get('time'),
+            'time should use the deterministic fallback timestamp.'
+        );
 
         Map<String, Object> data = (Map<String, Object>) envelope.get('data');
         Map<String, Object> baseData = (Map<String, Object>) data.get('baseData');
@@ -174,7 +206,11 @@ private class rflib_AppInsightsLogActionTest {
 
         Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
         Assert.areEqual('MyClass.myMethod', properties.get('Context'), 'Context should be a property.');
-        Assert.areEqual('12', properties.get('rflib.apex.cpu_time'), 'Platform info should be flattened into string properties.');
+        Assert.areEqual(
+            '12',
+            properties.get('rflib.apex.cpu_time'),
+            'Platform info should be flattened into string properties.'
+        );
     }
 
     @IsTest
@@ -203,11 +239,16 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
+            .get('baseData');
         String message = (String) baseData.get('message');
         Assert.isTrue(message.startsWith('[TRUNCATED]'), 'Oversized messages should be front-truncated.');
         Assert.isTrue(message.endsWith('x'), 'The most recent content (tail) should be kept.');
-        Assert.areEqual(rflib_AppInsightsLogAction.MAX_MESSAGE_LENGTH, message.length(), 'Truncated value must not exceed the limit including the marker.');
+        Assert.areEqual(
+            rflib_AppInsightsLogAction.MAX_MESSAGE_LENGTH,
+            message.length(),
+            'Truncated value must not exceed the limit including the marker.'
+        );
     }
 
     @IsTest
@@ -217,17 +258,69 @@ private class rflib_AppInsightsLogActionTest {
 
         // Malformed JSON makes the parser fall back to the raw Platform_Info__c string.
         String hugePlatformInfo = 'p'.repeat(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH + 500);
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'x', Platform_Info__c = hugePlatformInfo);
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'x',
+            Platform_Info__c = hugePlatformInfo
+        );
 
         Test.startTest();
         String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
         Test.stopTest();
 
         Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
+            .get('baseData');
         Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
         String rawProp = (String) properties.get('rflib.platform_info');
-        Assert.areEqual(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH, rawProp.length(), 'Flattened platform properties must be capped at the property limit.');
+        Assert.areEqual(
+            rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH,
+            rawProp.length(),
+            'Flattened platform properties must be capped at the property limit.'
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testPlatformPropertyCountCap() {
+        configure('ERROR');
+
+        // Valid JSON that flattens into far more properties than the cap. Without the cap, fitItem would
+        // remove these one at a time (re-serializing the envelope each pass) and risk the CPU limit.
+        Map<String, Object> pinfo = new Map<String, Object>();
+        for (Integer i = 0; i < rflib_AppInsightsLogAction.MAX_PLATFORM_PROPERTIES + 50; i++) {
+            pinfo.put('field' + i, i);
+        }
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'x',
+            Platform_Info__c = JSON.serialize(pinfo)
+        );
+
+        Test.startTest();
+        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
+            .get('baseData');
+        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
+
+        Integer flattenedCount = 0;
+        for (String key : properties.keySet()) {
+            if (key.startsWith('rflib.platform.')) {
+                flattenedCount++;
+            }
+        }
+        Assert.areEqual(
+            rflib_AppInsightsLogAction.MAX_PLATFORM_PROPERTIES,
+            flattenedCount,
+            'Flattened platform properties must be capped to protect against the CPU limit.'
+        );
+        Assert.isTrue(
+            properties.containsKey('rflib.platform_info.truncated'),
+            'Expected a marker property noting that platform properties were dropped.'
+        );
     }
 
     @IsTest
@@ -292,10 +385,7 @@ private class rflib_AppInsightsLogActionTest {
 
         // 25,000 CJK characters = ~75 KB in UTF-8 but only 25k by String.length(); a char-based cap
         // would leave the serialized item over the byte limit.
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(
-            Log_Level__c = 'ERROR',
-            Log_Messages__c = '中'.repeat(25000)
-        );
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = '中'.repeat(25000));
 
         Test.startTest();
         String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
@@ -308,7 +398,8 @@ private class rflib_AppInsightsLogActionTest {
         );
 
         Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
+            .get('baseData');
         String message = (String) baseData.get('message');
         Assert.isTrue(message.startsWith('[TRUNCATED]'), 'The message should be truncated, not dropped.');
         Assert.isTrue(message.length() > 0, 'A fitting non-empty message should remain.');
@@ -331,12 +422,16 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
+            .get('baseData');
         Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
 
         Boolean sawLongPlatformKey = false;
         for (String name : properties.keySet()) {
-            Assert.isTrue(name.length() <= rflib_AppInsightsLogAction.MAX_PROPERTY_NAME_LENGTH, 'Property name exceeds the App Insights 150-char cap: ' + name.length());
+            Assert.isTrue(
+                name.length() <= rflib_AppInsightsLogAction.MAX_PROPERTY_NAME_LENGTH,
+                'Property name exceeds the App Insights 150-char cap: ' + name.length()
+            );
             if (name.startsWith('rflib.platform.')) {
                 sawLongPlatformKey = true;
             }
@@ -365,7 +460,10 @@ private class rflib_AppInsightsLogActionTest {
 
         Assert.isTrue(mock.bodySizes.size() > 1, 'Large events should be split across multiple callouts by byte size.');
         for (Integer size : mock.bodySizes) {
-            Assert.isTrue(size <= rflib_AppInsightsLogAction.MAX_CALLOUT_BYTES, 'No callout body may exceed the byte budget; was ' + size);
+            Assert.isTrue(
+                size <= rflib_AppInsightsLogAction.MAX_CALLOUT_BYTES,
+                'No callout body may exceed the byte budget; was ' + size
+            );
         }
     }
 
