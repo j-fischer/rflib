@@ -81,6 +81,21 @@ private class rflib_PlatformInfoParserTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testFlatten_AllNumericCustomIsNotApex() {
+        // All-numeric custom metadata lacking the governor-limit signature keys must NOT be Apex.
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"duration_ms":42,"retries":3}');
+
+        Test.startTest();
+        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Test.stopTest();
+
+        Assert.areEqual(42, result.get('rflib.platform.duration_ms'), 'All-numeric custom metadata should use the generic namespace.');
+        Assert.areEqual(3, result.get('rflib.platform.retries'), 'All-numeric custom metadata should use the generic namespace.');
+        Assert.isNull(result.get('rflib.apex.duration_ms'), 'Custom metadata must not be emitted under rflib.apex.*');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_GenericNestedFormat() {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Platform_Info__c = '{"custom":{"nestedValue":7},"flag":true}'

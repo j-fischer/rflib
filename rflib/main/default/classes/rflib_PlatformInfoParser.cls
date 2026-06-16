@@ -49,6 +49,12 @@ public with sharing class rflib_PlatformInfoParser {
 
     private static final String USER_AGENT_KEY = 'user_agent.original';
 
+    // Distinctive keys always present in the Apex governor-limit map produced by rflib_DefaultLogger.
+    // Detecting the Apex shape by these known keys (rather than "all values are numeric") prevents
+    // all-numeric custom metadata such as {"duration_ms":42} from being misclassified as
+    // governor-limit data; unknown shapes fall through to the generic rflib.platform.* namespace.
+    private static final Set<String> APEX_SIGNATURE_KEYS = new Set<String>{ 'CPU Time', 'Heap Size' };
+
     /**
      * @description Flattens the event's Platform_Info__c into namespaced typed attributes.
      * @param  evt The log event whose Platform_Info__c should be parsed.
@@ -99,18 +105,9 @@ public with sharing class rflib_PlatformInfoParser {
     }
 
     private static Boolean isApexInfo(Map<String, Object> source) {
-        // The Apex limits map is flat with only numeric values. Requiring numbers prevents custom
-        // flat maps (e.g. {"customer":"acme"} set via rflib_Logger.setPlatformInfo) from being
-        // mislabeled as governor-limit data; those fall through to the generic rflib.platform.* branch.
-        if (source.isEmpty()) {
-            return false;
-        }
-        for (Object value : source.values()) {
-            if (!(value instanceof Integer || value instanceof Long || value instanceof Decimal || value instanceof Double)) {
-                return false;
-            }
-        }
-        return true;
+        // Classify as the Apex governor-limit map only when its distinctive limit keys are present,
+        // so arbitrary custom metadata (including all-numeric maps) is not labeled as rflib.apex.*.
+        return source.keySet().containsAll(APEX_SIGNATURE_KEYS);
     }
 
     @SuppressWarnings('PMD.ApexDoc')
