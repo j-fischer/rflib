@@ -6,9 +6,8 @@
 # provided that the conditions of the BSD 3-Clause License are met. See the project LICENSE.
 #
 # ---------------------------------------------------------------------------------------------
-# Creates the Microsoft Entra ID app registration that Salesforce uses to authenticate to Azure
-# Application Insights (or Azure Monitor OTLP) ingestion, and grants it the least-privilege
-# "Monitoring Metrics Publisher" role on the target resource.
+# Creates the Microsoft Entra ID app registration used to authenticate to Azure Monitor ingestion
+# and grants it the least-privilege "Monitoring Metrics Publisher" role on the target resource.
 #
 # Entra objects cannot be created with Bicep/ARM, so this is a companion script. Run it in the
 # Azure Cloud Shell (bash) or anywhere the Azure CLI is logged in (az login).
@@ -16,8 +15,16 @@
 # Usage:
 #   ./setup-entra-app.sh <app-insights-resource-id> [app-display-name]
 #
-# The <app-insights-resource-id> is the appInsightsResourceId output of rflib-app-insights.bicep.
-# For the Azure Monitor native OTLP route, pass the Data Collection Rule (DCR) resource ID instead.
+# Pass the appInsightsResourceId output of rflib-app-insights.bicep. This is the direct
+# Salesforce -> Application Insights route: rflib_AppInsightsLogAction authenticates with these
+# credentials via a Salesforce External Credential.
+#
+# For the Azure Monitor OTLP route, pass the Data Collection Rule (DCR) resource ID instead. That
+# route is NOT a direct Salesforce target: rflib_OpenTelemetryLogAction emits OTLP/HTTP JSON, but
+# Azure Monitor's native OTLP ingestion requires protobuf, so it must sit behind an OpenTelemetry
+# Collector. In that case these credentials configure the Collector's Azure Monitor exporter auth
+# (not a Salesforce credential); Salesforce's RFLIB_OTEL_LOGS Named Credential points at the
+# Collector. See azure/README.md and otel/README.md.
 # ---------------------------------------------------------------------------------------------
 
 set -euo pipefail
@@ -47,7 +54,7 @@ TENANT_ID=$(az account show --query tenantId -o tsv)
 cat <<EOF
 
 =====================================================================================
-RFLIB Azure ingestion - Salesforce configuration values
+RFLIB Azure ingestion - Entra app credentials
 =====================================================================================
 Tenant ID (Directory ID):  ${TENANT_ID}
 Client ID (Application ID): ${APP_ID}
@@ -55,9 +62,17 @@ Client Secret:             ${CLIENT_SECRET}   <-- store securely; shown only onc
 Token Endpoint:            https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token
 OAuth Scope:               https://monitor.azure.com//.default
 
-Use these in the Salesforce External Credential (Client Credentials with Client Secret).
-Retrieve the IngestionEndpoint and InstrumentationKey from the Bicep deployment outputs
-(or the resource's Connection String) for the Named Credential and Global Setting.
+Application Insights (direct) route - rflib_AppInsightsLogAction:
+  Use these in the Salesforce External Credential (Client Credentials with Client
+  Secret). Retrieve the IngestionEndpoint and InstrumentationKey from the Bicep
+  deployment outputs (or the resource's Connection String) for the Named Credential
+  and Global Setting.
+
+Azure Monitor OTLP route - rflib_OpenTelemetryLogAction:
+  Salesforce emits OTLP/JSON and Azure's native OTLP ingestion requires protobuf, so
+  it cannot target the DCR directly. Use these credentials to authenticate an
+  OpenTelemetry Collector's Azure Monitor exporter; the RFLIB_OTEL_LOGS Named
+  Credential then points at that Collector, not at Azure. See otel/README.md.
 =====================================================================================
 EOF
 
