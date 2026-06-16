@@ -153,10 +153,13 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                     new List<Object>{ res.getStatusCode() }
                 );
             } else {
+                // Bound the response body here too: this diagnostic goes through the cached logger, so an
+                // endpoint returning a large error body could otherwise retain MB-sized strings in the
+                // shared log buffer across several failed batches.
                 rflib_LoggerUtil.logInternal(
                     getLogger(),
                     'Failed to send data to remote service. Status: {0}, Response: {1}',
-                    new List<Object>{ res.getStatus(), res.getBody() }
+                    new List<Object>{ res.getStatus(), boundDetail(res.getBody()) }
                 );
                 // Snapshot the failure now, but defer publishing until all callouts are done. Build the
                 // detail from the response (status + body) rather than JSON.serialize(res) — HttpResponse

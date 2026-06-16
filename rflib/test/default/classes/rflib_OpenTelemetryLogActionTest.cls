@@ -274,6 +274,55 @@ private class rflib_OpenTelemetryLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testPlatformAttributeCountCap() {
+        configure('ERROR');
+
+        // Valid JSON that flattens into far more leaves than the cap. Without the cap, every leaf would
+        // become an OTLP attribute, materializing thousands of nested Maps before byte-batching runs.
+        Map<String, Object> pinfo = new Map<String, Object>();
+        for (Integer i = 0; i < rflib_OpenTelemetryLogAction.MAX_PLATFORM_ATTRIBUTES + 50; i++) {
+            pinfo.put('field' + i, i);
+        }
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Log_Level__c = 'ERROR',
+            Log_Messages__c = 'x',
+            Platform_Info__c = JSON.serialize(pinfo)
+        );
+
+        Test.startTest();
+        String payload = new rflib_OpenTelemetryLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
+        Test.stopTest();
+
+        Map<String, Object> root = (Map<String, Object>) JSON.deserializeUntyped(payload);
+        Map<String, Object> record = (Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) ((Map<String, Object>) ((List<Object>) root.get(
+                                'resourceLogs'
+                            ))
+                            .get(0))
+                        .get('scopeLogs'))
+                    .get(0))
+                .get('logRecords'))
+            .get(0);
+
+        Integer flattenedCount = 0;
+        Boolean foundMarker = false;
+        for (Object attrObj : (List<Object>) record.get('attributes')) {
+            String key = (String) ((Map<String, Object>) attrObj).get('key');
+            if (key.startsWith('rflib.platform.')) {
+                flattenedCount++;
+            } else if (key == 'rflib.platform_info.truncated') {
+                foundMarker = true;
+            }
+        }
+        Assert.areEqual(
+            rflib_OpenTelemetryLogAction.MAX_PLATFORM_ATTRIBUTES,
+            flattenedCount,
+            'Flattened platform attributes must be capped to protect against heap/CPU limits.'
+        );
+        Assert.isTrue(foundMarker, 'Expected a marker attribute noting that platform attributes were dropped.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testPlatformAttributeTruncation() {
         configure('ERROR');
 

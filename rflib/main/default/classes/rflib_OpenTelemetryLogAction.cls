@@ -60,6 +60,13 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     @TestVisible
     private static final Integer MAX_ATTRIBUTE_LENGTH = 8192;
 
+    // Caps how many flattened platform attributes are attached to a log record. A valid but pathological
+    // Platform_Info__c (e.g. a large JSON array) can flatten into thousands of leaves; emitting each as an
+    // OTLP attribute would materialize thousands of nested Maps before the byte-based batching can split
+    // anything (risking Apex heap/CPU) and would be rejected by backends that limit attributes per record.
+    @TestVisible
+    private static final Integer MAX_PLATFORM_ATTRIBUTES = 100;
+
     @TestVisible
     private static final Integer MAX_EVENTS_PER_CALLOUT = 100;
 
@@ -194,12 +201,27 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
         Map<String, Object> platformInfo = rflib_PlatformInfoParser.flatten(evt);
         List<String> platformKeys = new List<String>(platformInfo.keySet());
         platformKeys.sort();
+        Integer added = 0;
         for (String key : platformKeys) {
+            if (added >= MAX_PLATFORM_ATTRIBUTES) {
+                attributes.add(
+                    attribute(
+                        'rflib.platform_info.truncated',
+                        'Dropped ' +
+                            (platformKeys.size() - MAX_PLATFORM_ATTRIBUTES) +
+                            ' of ' +
+                            platformKeys.size() +
+                            ' platform attributes'
+                    )
+                );
+                break;
+            }
             Object value = platformInfo.get(key);
             if (value instanceof String) {
                 value = truncate((String) value, MAX_ATTRIBUTE_LENGTH);
             }
             attributes.add(attribute(key, value));
+            added++;
         }
 
         return new Map<String, Object>{
