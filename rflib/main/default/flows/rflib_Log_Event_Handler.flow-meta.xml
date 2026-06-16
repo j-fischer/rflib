@@ -78,7 +78,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <offset>0</offset>
     </actionCalls>
     <actionCalls>
-        <description>Forwards the Log Event to an OpenTelemetry (OTLP/HTTP) logs endpoint such as Azure Monitor, AWS CloudWatch, or a collector. Requires a Named Credential named RFLIB_OTEL_LOGS and OTel_Log_Level__c to be configured in the Logger Settings.
+        <description>Forwards the Log Event to an OpenTelemetry (OTLP/HTTP JSON) logs endpoint such as AWS CloudWatch or an OpenTelemetry Collector. Azure Monitor is supported only behind a Collector (its native OTLP ingestion requires protobuf). Requires a Named Credential named RFLIB_OTEL_LOGS and OTel_Log_Level__c to be configured in the Logger Settings.
 Runs in a new transaction to ensure governor limit isolation from the preceding HTTP callout action.</description>
         <name>Send_Log_Event_to_OTel</name>
         <label>Send Log Event to OTel</label>

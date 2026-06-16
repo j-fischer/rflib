@@ -37,9 +37,11 @@
  *              The endpoint is the RFLIB_OTEL_LOGS Named Credential. The full logs URL (e.g.
  *              .../v1/logs) and any backend-specific headers (such as CloudWatch's x-aws-log-group /
  *              x-aws-log-stream, or a vendor API key) are configured on the Named Credential so this
- *              one action serves Azure Monitor, AWS CloudWatch, OpenTelemetry collectors and other
- *              OTLP backends. Requires OTel_Log_Level__c configured in the Logger Settings. See
- *              otel/README.md for the full setup guide.
+ *              one action serves AWS CloudWatch, OpenTelemetry collectors and other OTLP backends that
+ *              accept the JSON encoding. Azure Monitor's native OTLP ingestion requires protobuf, so it
+ *              is supported only behind an OpenTelemetry Collector (for direct Azure ingestion use
+ *              rflib_AppInsightsLogAction instead). Requires OTel_Log_Level__c configured in the Logger
+ *              Settings. See otel/README.md for the full setup guide.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHttpForwarderAction {
@@ -74,7 +76,7 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     @TestVisible
     private static Datetime fallbackTimestamp = Datetime.now();
 
-    @InvocableMethod(label='Send Log Event to OpenTelemetry' category='RFLIB' description='Forwards Log Events to an OpenTelemetry (OTLP/HTTP) logs endpoint such as Azure Monitor, AWS CloudWatch, or a collector')
+    @InvocableMethod(label='Send Log Event to OpenTelemetry' category='RFLIB' description='Forwards Log Events to an OpenTelemetry (OTLP/HTTP JSON) logs endpoint such as AWS CloudWatch or an OpenTelemetry Collector. Azure Monitor is supported only behind a Collector (its native OTLP ingestion requires protobuf).')
     public static void sendToOpenTelemetry(List<rflib_Log_Event__e> events) {
         new rflib_OpenTelemetryLogAction().process(events);
     }
