@@ -179,9 +179,13 @@ jobs:
                   destination: test-results
             - run:
                   name: Clean Up
+                  # Runs as the last step of the last job that uses the shared scratch org, so the org
+                  # is always deleted whether the E2E tests pass or fail. This is the guaranteed cleanup
+                  # for the success path (the apex-fail and deploy-fail paths are covered by the
+                  # on_fail cleanup steps in those jobs).
                   command: |
                       npx sf org delete scratch -o ciorg -p
-                  when: on_fail
+                  when: always
 
     report_coverage:
         <<: *defaults
@@ -215,16 +219,6 @@ jobs:
                   name: Scan Flows
                   command: |
                       npx gulp scan-flow
-    cleanup_scratch_org:
-        <<: *defaults
-        steps:
-            - attach_workspace:
-                  at: ~/
-            - run:
-                  name: Clean Up
-                  command: |
-                      npx sf org delete scratch -o ciorg -p
-
 workflows:
     build_and_test:
         jobs:
@@ -245,9 +239,13 @@ workflows:
                   requires:
                       - deploy_source
 
+            # E2E runs after the Apex tests (not in parallel) so the two never share the scratch org
+            # concurrently. This lets run_e2e_tests own the guaranteed "when: always" org cleanup
+            # without racing the Apex job, and fails fast (E2E is skipped if Apex tests fail, in which
+            # case run_apex_tests' on_fail step deletes the org).
             - run_e2e_tests:
                   requires:
-                      - deploy_source
+                      - run_apex_tests
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -255,7 +253,3 @@ workflows:
                   filters:
                       branches:
                           only: master
-            - cleanup_scratch_org:
-                  requires:
-                      - run_apex_tests
-                      - run_e2e_tests
