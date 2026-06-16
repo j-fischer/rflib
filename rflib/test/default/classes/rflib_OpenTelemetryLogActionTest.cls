@@ -68,6 +68,29 @@ private class rflib_OpenTelemetryLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testRequestBodyIsNotCached() {
+        configure('ERROR');
+
+        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
+        HttpRequest req = createExpectedRequest(events);
+        HttpResponse resp = createResponse(200, '{}');
+
+        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
+
+        Test.startTest();
+        rflib_OpenTelemetryLogAction.sendToOpenTelemetry(events);
+        Test.stopTest();
+
+        // The OTLP request body always contains "resourceLogs"; the callout uses a non-caching logger so
+        // the (potentially MB-sized) body must never land in the shared in-transaction log buffer.
+        Assert.isFalse(
+            logs().contains('resourceLogs'),
+            'The request body must not be cached in the shared log buffer (heap safety).'
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSendToOpenTelemetry_PartialSuccess() {
         configure('ERROR');
 

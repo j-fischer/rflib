@@ -55,6 +55,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     private static final Integer MAX_FAILURE_DETAIL_LENGTH = 32768;
 
     private rflib_Logger logger;
+    private rflib_Logger calloutLogger;
 
     /**
      * @description Runs the shared forwarding algorithm for the given events. Concrete forwarder
@@ -138,7 +139,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 new List<Object>{ batch.size(), Blob.valueOf(payload).size(), getEndpoint() }
             );
 
-            rflib_HttpRequest req = new rflib_HttpRequest(getLogger());
+            rflib_HttpRequest req = new rflib_HttpRequest(getCalloutLogger());
             req.setEndpoint(getEndpoint());
             req.setMethod('POST');
             req.setHeader('Content-Type', getContentType());
@@ -248,6 +249,26 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             logger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
         }
         return logger;
+    }
+
+    /**
+     * @description Returns a dedicated logger for the HTTP callout. rflib_HttpRequest.send() logs the full
+     *              request and response bodies at INFO; for bulk forwarders each request body is up to ~MB,
+     *              and the logger caches INFO entries in the shared static buffer (up to 100). Across the
+     *              multiple batches of a large invocation that would leave every body in heap until the
+     *              transaction ends and can exhaust the Apex heap limit before delivery. This logger sets
+     *              the general log level to NONE so those bodies are never cached, while keeping reporting
+     *              off (loop-safe) and system debug on so the bodies remain visible in the debug log for
+     *              troubleshooting. The forwarder's own diagnostics still flow through getLogger().
+     */
+    private rflib_Logger getCalloutLogger() {
+        if (calloutLogger == null) {
+            calloutLogger = rflib_LoggerUtil.getFactory().createLogger(getLoggerName() + '.callout');
+            calloutLogger.setReportingLogLevel(rflib_LogLevel.NONE);
+            calloutLogger.setGeneralLogLevel(rflib_LogLevel.NONE);
+            calloutLogger.setSystemDebugLevel(rflib_LogLevel.DEBUG);
+        }
+        return calloutLogger;
     }
 
     @TestVisible
