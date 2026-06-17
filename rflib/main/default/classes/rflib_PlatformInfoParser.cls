@@ -46,7 +46,6 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_PlatformInfoParser {
-
     private static final String USER_AGENT_KEY = 'user_agent.original';
 
     // Distinctive keys always present in the Apex governor-limit map produced by rflib_DefaultLogger.
@@ -54,6 +53,15 @@ public with sharing class rflib_PlatformInfoParser {
     // all-numeric custom metadata such as {"duration_ms":42} from being misclassified as
     // governor-limit data; unknown shapes fall through to the generic rflib.platform.* namespace.
     private static final Set<String> APEX_SIGNATURE_KEYS = new Set<String>{ 'CPU Time', 'Heap Size' };
+
+    // Hard cap on the number of flattened leaves. A valid but pathological Platform_Info__c (e.g. a
+    // large JSON array within the 32 KB field limit) would otherwise allocate — and the callers sort —
+    // thousands of keys before any per-destination cap runs, risking Apex heap/CPU across a bulkified
+    // platform-event flow. Flattening stops (iteration and allocation both) once this many leaves exist;
+    // a rflib.platform_info.truncated marker records that some were dropped. Set above the destination
+    // caps (~100) so normal payloads are unaffected and destinations remain the output-truncation owner.
+    @TestVisible
+    private static final Integer MAX_FLATTENED_KEYS = 500;
 
     /**
      * @description Flattens the event's Platform_Info__c into namespaced typed attributes.
@@ -81,6 +89,9 @@ public with sharing class rflib_PlatformInfoParser {
 
         if (isBrowserInfo(source)) {
             for (String key : source.keySet()) {
+                if (result.size() >= MAX_FLATTENED_KEYS) {
+                    break;
+                }
                 if (key == 'userAgent') {
                     result.put(USER_AGENT_KEY, source.get(key));
                 } else {
@@ -89,12 +100,25 @@ public with sharing class rflib_PlatformInfoParser {
             }
         } else if (isApexInfo(source)) {
             for (String key : source.keySet()) {
+                if (result.size() >= MAX_FLATTENED_KEYS) {
+                    break;
+                }
                 flattenInto(result, 'rflib.apex.' + normalizeKey(key), source.get(key));
             }
         } else {
             for (String key : source.keySet()) {
+                if (result.size() >= MAX_FLATTENED_KEYS) {
+                    break;
+                }
                 flattenInto(result, 'rflib.platform.' + normalizeKey(key), source.get(key));
             }
+        }
+
+        if (result.size() >= MAX_FLATTENED_KEYS) {
+            result.put(
+                'rflib.platform_info.truncated',
+                'Platform info exceeded ' + MAX_FLATTENED_KEYS + ' attributes; remainder dropped'
+            );
         }
 
         return result;
@@ -112,14 +136,25 @@ public with sharing class rflib_PlatformInfoParser {
 
     @SuppressWarnings('PMD.ApexDoc')
     private static void flattenInto(Map<String, Object> result, String key, Object value) {
+        // Stop recursing once the cap is reached so a pathological structure cannot allocate or iterate
+        // without bound; flatten() records the truncation marker after the top-level loops complete.
+        if (result.size() >= MAX_FLATTENED_KEYS) {
+            return;
+        }
         if (value instanceof Map<String, Object>) {
             Map<String, Object> nested = (Map<String, Object>) value;
             for (String nestedKey : nested.keySet()) {
+                if (result.size() >= MAX_FLATTENED_KEYS) {
+                    return;
+                }
                 flattenInto(result, key + '.' + normalizeKey(nestedKey), nested.get(nestedKey));
             }
         } else if (value instanceof List<Object>) {
             List<Object> items = (List<Object>) value;
             for (Integer i = 0; i < items.size(); i++) {
+                if (result.size() >= MAX_FLATTENED_KEYS) {
+                    return;
+                }
                 flattenInto(result, key + '.' + i, items.get(i));
             }
         } else if (value != null) {

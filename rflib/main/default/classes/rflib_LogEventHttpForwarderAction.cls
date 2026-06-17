@@ -54,6 +54,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     @TestVisible
     private static final Integer MAX_FAILURE_DETAIL_LENGTH = 32768;
 
+    // Overrides the Apex per-transaction callout limit in tests so the budget guard in sendInBatches can
+    // be exercised without making 100 real callouts. Null in production -> Limits.getLimitCallouts().
+    @TestVisible
+    private static Integer calloutLimitOverride = null;
+
     private rflib_Logger logger;
     private rflib_Logger calloutLogger;
 
@@ -215,6 +220,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         Integer maxCount = getMaxEventsPerCallout();
         Integer maxBytes = getMaxBytesPerCallout();
 
+        Integer undelivered = 0;
         List<rflib_Log_Event__e> current = new List<rflib_Log_Event__e>();
         Integer currentBytes = 0;
         for (rflib_Log_Event__e evt : events) {
@@ -228,7 +234,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             Boolean overCount = maxCount > 0 && current.size() >= maxCount;
             Boolean overBytes = maxBytes > 0 && !current.isEmpty() && (currentBytes + evtBytes) > maxBytes;
             if (!current.isEmpty() && (overCount || overBytes)) {
-                send(current, failurePayloads);
+                undelivered += flushOrCount(current, failurePayloads);
                 current = new List<rflib_Log_Event__e>();
                 currentBytes = 0;
             }
@@ -238,8 +244,48 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
 
         if (!current.isEmpty()) {
-            send(current, failurePayloads);
+            undelivered += flushOrCount(current, failurePayloads);
         }
+
+        if (undelivered > 0) {
+            // The remaining batches would exceed the per-transaction callout limit. Rather than letting
+            // the (uncatchable) limit exception abort the whole flow element — losing the events AND the
+            // deferred failure records — surface the shortfall so it can be alerted on. Reduce volume or
+            // route through an OpenTelemetry collector for batches this large.
+            rflib_LoggerUtil.logInternal(
+                getLogger(),
+                '{0} event(s) not delivered by {1}: reached the per-transaction callout limit ({2})',
+                new List<Object>{ undelivered, getLoggerName(), calloutLimit() }
+            );
+            failurePayloads.add(
+                boundDetail(
+                    undelivered +
+                        ' log event(s) were not delivered by ' +
+                        getLoggerName() +
+                        ': reached the per-transaction callout limit (' +
+                        calloutLimit() +
+                        '). Reduce volume or route through an OpenTelemetry collector.'
+                )
+            );
+        }
+    }
+
+    /**
+     * @description Sends a batch only if the per-transaction callout budget still allows it; otherwise
+     *              returns the batch size as "undelivered" so the caller can surface the shortfall. This
+     *              keeps the sender from reaching callout 101, which would throw an uncatchable limit
+     *              exception and abort the flow element before any failure records are published.
+     */
+    private Integer flushOrCount(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
+        if (Limits.getCallouts() >= calloutLimit()) {
+            return batch.size();
+        }
+        send(batch, failurePayloads);
+        return 0;
+    }
+
+    private Integer calloutLimit() {
+        return calloutLimitOverride != null ? calloutLimitOverride : Limits.getLimitCallouts();
     }
 
     /**

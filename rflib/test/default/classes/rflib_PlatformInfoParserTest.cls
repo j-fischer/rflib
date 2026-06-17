@@ -29,7 +29,6 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_PlatformInfoParserTest {
-
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_ApexFormat() {
@@ -43,8 +42,39 @@ private class rflib_PlatformInfoParserTest {
 
         Assert.areEqual(3, result.size(), 'Expected three flattened Apex attributes.');
         Assert.areEqual(123, result.get('rflib.apex.cpu_time'), 'CPU Time should map to rflib.apex.cpu_time.');
-        Assert.areEqual(5, result.get('rflib.apex.soql_queries'), 'SOQL queries should map to rflib.apex.soql_queries.');
+        Assert.areEqual(
+            5,
+            result.get('rflib.apex.soql_queries'),
+            'SOQL queries should map to rflib.apex.soql_queries.'
+        );
         Assert.areEqual(4096, result.get('rflib.apex.heap_size'), 'Heap Size should map to rflib.apex.heap_size.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testFlatten_BoundsPathologicalInput() {
+        // A valid but pathological array that would otherwise flatten into thousands of leaves.
+        List<Object> big = new List<Object>();
+        for (Integer i = 0; i < rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 200; i++) {
+            big.add(i);
+        }
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(
+            Platform_Info__c = JSON.serialize(new Map<String, Object>{ 'a' => big })
+        );
+
+        Test.startTest();
+        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Test.stopTest();
+
+        // Cap (+1 for the truncation marker) bounds allocation and the callers' sort.
+        Assert.isTrue(
+            result.size() <= rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 1,
+            'Flattening must be bounded; got ' + result.size()
+        );
+        Assert.isTrue(
+            result.containsKey('rflib.platform_info.truncated'),
+            'Expected a truncation marker when the cap is reached.'
+        );
     }
 
     @IsTest
@@ -57,10 +87,26 @@ private class rflib_PlatformInfoParserTest {
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
         Test.stopTest();
 
-        Assert.areEqual('Mozilla/5.0 (Test)', result.get('user_agent.original'), 'userAgent should map to the OTel semantic attribute.');
-        Assert.areEqual(1699999999999L, result.get('rflib.browser.time_origin'), 'timeOrigin should be flattened and snake_cased.');
-        Assert.areEqual(1234, result.get('rflib.browser.timing.dom_complete'), 'Nested timing.domComplete should be flattened.');
-        Assert.areEqual(1000, result.get('rflib.browser.timing.navigation_start'), 'Nested timing.navigationStart should be flattened.');
+        Assert.areEqual(
+            'Mozilla/5.0 (Test)',
+            result.get('user_agent.original'),
+            'userAgent should map to the OTel semantic attribute.'
+        );
+        Assert.areEqual(
+            1699999999999L,
+            result.get('rflib.browser.time_origin'),
+            'timeOrigin should be flattened and snake_cased.'
+        );
+        Assert.areEqual(
+            1234,
+            result.get('rflib.browser.timing.dom_complete'),
+            'Nested timing.domComplete should be flattened.'
+        );
+        Assert.areEqual(
+            1000,
+            result.get('rflib.browser.timing.navigation_start'),
+            'Nested timing.navigationStart should be flattened.'
+        );
         Assert.areEqual(0, result.get('rflib.browser.navigation.type'), 'Nested navigation.type should be flattened.');
     }
 
@@ -74,8 +120,16 @@ private class rflib_PlatformInfoParserTest {
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
         Test.stopTest();
 
-        Assert.areEqual('acme', result.get('rflib.platform.customer'), 'Non-numeric flat maps should fall through to rflib.platform.*');
-        Assert.areEqual(3, result.get('rflib.platform.count'), 'Mixed flat maps should use the generic namespace, not rflib.apex.*');
+        Assert.areEqual(
+            'acme',
+            result.get('rflib.platform.customer'),
+            'Non-numeric flat maps should fall through to rflib.platform.*'
+        );
+        Assert.areEqual(
+            3,
+            result.get('rflib.platform.count'),
+            'Mixed flat maps should use the generic namespace, not rflib.apex.*'
+        );
         Assert.isNull(result.get('rflib.apex.customer'), 'Non-governor data must not be emitted under rflib.apex.*');
     }
 
@@ -89,32 +143,40 @@ private class rflib_PlatformInfoParserTest {
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
         Test.stopTest();
 
-        Assert.areEqual(42, result.get('rflib.platform.duration_ms'), 'All-numeric custom metadata should use the generic namespace.');
-        Assert.areEqual(3, result.get('rflib.platform.retries'), 'All-numeric custom metadata should use the generic namespace.');
+        Assert.areEqual(
+            42,
+            result.get('rflib.platform.duration_ms'),
+            'All-numeric custom metadata should use the generic namespace.'
+        );
+        Assert.areEqual(
+            3,
+            result.get('rflib.platform.retries'),
+            'All-numeric custom metadata should use the generic namespace.'
+        );
         Assert.isNull(result.get('rflib.apex.duration_ms'), 'Custom metadata must not be emitted under rflib.apex.*');
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_GenericNestedFormat() {
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(
-            Platform_Info__c = '{"custom":{"nestedValue":7},"flag":true}'
-        );
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"custom":{"nestedValue":7},"flag":true}');
 
         Test.startTest();
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
         Test.stopTest();
 
-        Assert.areEqual(7, result.get('rflib.platform.custom.nested_value'), 'Generic nested values should flatten under rflib.platform.');
+        Assert.areEqual(
+            7,
+            result.get('rflib.platform.custom.nested_value'),
+            'Generic nested values should flatten under rflib.platform.'
+        );
         Assert.areEqual(true, result.get('rflib.platform.flag'), 'Boolean values should be preserved.');
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_ListValues() {
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(
-            Platform_Info__c = '{"items":["a","b"],"nested":{"more":1}}'
-        );
+        rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"items":["a","b"],"nested":{"more":1}}');
 
         Test.startTest();
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
@@ -134,7 +196,11 @@ private class rflib_PlatformInfoParserTest {
         Test.stopTest();
 
         Assert.areEqual(1, result.size(), 'Malformed JSON should yield a single raw entry.');
-        Assert.areEqual('not-json', result.get('rflib.platform_info'), 'Malformed JSON should be preserved as the raw string.');
+        Assert.areEqual(
+            'not-json',
+            result.get('rflib.platform_info'),
+            'Malformed JSON should be preserved as the raw string.'
+        );
     }
 
     @IsTest
@@ -146,14 +212,26 @@ private class rflib_PlatformInfoParserTest {
         Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
         Test.stopTest();
 
-        Assert.areEqual('[1,2,3]', result.get('rflib.platform_info'), 'Non-object JSON should be preserved as the raw string.');
+        Assert.areEqual(
+            '[1,2,3]',
+            result.get('rflib.platform_info'),
+            'Non-object JSON should be preserved as the raw string.'
+        );
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_Blank() {
-        Assert.areEqual(0, rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e(Platform_Info__c = '')).size(), 'Blank info should yield an empty map.');
-        Assert.areEqual(0, rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e()).size(), 'Null info should yield an empty map.');
+        Assert.areEqual(
+            0,
+            rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e(Platform_Info__c = '')).size(),
+            'Blank info should yield an empty map.'
+        );
+        Assert.areEqual(
+            0,
+            rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e()).size(),
+            'Null info should yield an empty map.'
+        );
         Assert.areEqual(0, rflib_PlatformInfoParser.flatten(null).size(), 'Null event should yield an empty map.');
     }
 

@@ -323,6 +323,34 @@ private class rflib_OpenTelemetryLogActionTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testCalloutBudgetStopsBeforeLimit() {
+        configure('ERROR');
+        // Force the per-transaction callout budget to 1 so the second batch cannot be sent.
+        rflib_LogEventHttpForwarderAction.calloutLimitOverride = 1;
+
+        List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>();
+        for (Integer i = 0; i < rflib_OpenTelemetryLogAction.MAX_EVENTS_PER_CALLOUT + 50; i++) {
+            events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'msg ' + i));
+        }
+
+        CountingMock mock = new CountingMock(200, '{}');
+        Test.setMock(HttpCalloutMock.class, mock);
+
+        Test.startTest();
+        rflib_OpenTelemetryLogAction.sendToOpenTelemetry(events);
+        Test.stopTest();
+
+        Assert.areEqual(1, mock.callCount, 'Only one callout should be made before the budget is exhausted.');
+        Assert.areEqual(
+            1,
+            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
+            'Undelivered events must be surfaced as a failure application event, not silently dropped.'
+        );
+        Assert.isTrue(logs().contains('not delivered'), 'Expected a diagnostic naming the undelivered events.');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testPlatformAttributeTruncation() {
         configure('ERROR');
 
