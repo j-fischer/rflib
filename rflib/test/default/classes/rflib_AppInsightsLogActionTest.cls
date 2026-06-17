@@ -487,10 +487,21 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(mock.callCount > 1, 'The batch should have been split across multiple callouts.');
+        // All batches are attempted (none lost to uncommitted-work errors) and their failures are
+        // consolidated into a single deferred application event whose detail records the failure count.
+        List<rflib_Application_Event__c> failures = [
+            SELECT Additional_Details__c
+            FROM rflib_Application_Event__c
+            WHERE Event_Name__c = :FAILURE_EVENT
+        ];
         Assert.areEqual(
-            mock.callCount,
-            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
-            'Every batch should be attempted and produce a deferred failure event (none lost to uncommitted-work errors).'
+            1,
+            failures.size(),
+            'Failures should be consolidated into a single deferred application event.'
+        );
+        Assert.isTrue(
+            failures[0].Additional_Details__c.contains(mock.callCount + ' failure(s)'),
+            'The consolidated detail should record that every attempted batch failed.'
         );
     }
 

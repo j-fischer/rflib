@@ -59,19 +59,30 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     @TestVisible
     private static Integer calloutLimitOverride = null;
 
+    // Total budget for the consolidated failure detail published per invocation. Failures accumulate up
+    // to this size; beyond it only a count is retained. This caps heap during the publish phase, where
+    // rflib_DefaultApplicationEventLogger DEBUG-caches the detail in the shared 100-entry log buffer —
+    // so even 100 failed batches publish a single bounded event instead of replaying MBs of strings.
+    @TestVisible
+    private static final Integer MAX_TOTAL_FAILURE_DETAIL = 32768;
+
     private rflib_Logger logger;
     private rflib_Logger calloutLogger;
+
+    // Per-invocation failure accumulator (instance scoped: a fresh action instance handles each call).
+    private final List<String> failurePayloads = new List<String>();
+    private Integer failureDetailBytes = 0;
+    private Integer omittedFailureCount = 0;
 
     /**
      * @description Runs the shared forwarding algorithm for the given events. Concrete forwarder
      *              classes expose this through their own static @InvocableMethod wrapper.
      */
     protected void process(List<rflib_Log_Event__e> events) {
-        // Failures are collected here and published only AFTER every callout completes. Publishing an
-        // application event mid-loop performs DML / EventBus.publish, which marks the transaction as
-        // having uncommitted work and makes the NEXT HTTP callout in a multi-batch send fail with
-        // "You have uncommitted work pending."
-        List<String> failurePayloads = new List<String>();
+        // Failures are accumulated (see addFailure) and published only AFTER every callout completes.
+        // Publishing an application event mid-loop performs DML / EventBus.publish, which marks the
+        // transaction as having uncommitted work and makes the NEXT HTTP callout in a multi-batch send
+        // fail with "You have uncommitted work pending."
         try {
             Integer incomingCount = events == null ? 0 : events.size();
             rflib_LoggerUtil.logInternal(
@@ -110,22 +121,52 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 return;
             }
 
-            sendInBatches(eventsToSend, failurePayloads);
+            sendInBatches(eventsToSend);
         } catch (Exception ex) {
             getLogger().error('Failed to forward log event(s) via ' + getLoggerName(), ex);
-            failurePayloads.add(summarizeFailure(ex));
+            addFailure(summarizeFailure(ex));
         }
 
-        // Safe to do DML now: all callouts for this invocation are complete.
-        if (!failurePayloads.isEmpty()) {
-            rflib_LoggerUtil.logInternal(
-                getLogger(),
-                'Publishing {0} {1} failure application event(s)',
-                new List<Object>{ failurePayloads.size(), getAppEventFailureName() }
-            );
+        // Safe to do DML now: all callouts for this invocation are complete. Publish a SINGLE consolidated
+        // failure event (bounded detail) rather than one per failed batch — the latter would replay every
+        // detail through the application-event logger's shared cache and exhaust heap on large outages.
+        Integer totalFailures = failurePayloads.size() + omittedFailureCount;
+        if (totalFailures == 0) {
+            return;
         }
-        for (String payload : failurePayloads) {
-            APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, payload);
+        rflib_LoggerUtil.logInternal(
+            getLogger(),
+            'Publishing a consolidated {0} failure application event for {1} failure(s)',
+            new List<Object>{ getAppEventFailureName(), totalFailures }
+        );
+        String combined =
+            totalFailures +
+            ' failure(s) while forwarding via ' +
+            getLoggerName() +
+            ':\n' +
+            String.join(failurePayloads, '\n---\n');
+        if (omittedFailureCount > 0) {
+            combined += '\n---\n(' + omittedFailureCount + ' additional failure detail(s) omitted to bound heap)';
+        }
+        APP_EVENT_LOGGER.logApplicationEvent(getAppEventFailureName(), null, boundDetail(combined));
+    }
+
+    /**
+     * @description Accumulates a bounded failure detail for the single consolidated failure event
+     *              published at the end of the invocation. Stops retaining full detail once the total
+     *              budget is reached, tracking only a count thereafter, so a large multi-batch outage
+     *              cannot grow the retained detail (or the publish-phase log cache) without bound.
+     */
+    private void addFailure(String detail) {
+        String bounded = boundDetail(detail);
+        if (String.isBlank(bounded)) {
+            return;
+        }
+        if (failureDetailBytes + bounded.length() <= MAX_TOTAL_FAILURE_DETAIL) {
+            failurePayloads.add(bounded);
+            failureDetailBytes += bounded.length();
+        } else {
+            omittedFailureCount++;
         }
     }
 
@@ -135,7 +176,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
             .encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
 
-    private void send(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
+    private void send(List<rflib_Log_Event__e> batch) {
         try {
             String payload = createPayload(batch);
             rflib_LoggerUtil.logInternal(
@@ -170,20 +211,18 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 // detail from the response (status + body) rather than JSON.serialize(res) — HttpResponse
                 // is not JSON-serializable (throws "Apex Type unsupported in JSON") — and bound it so a
                 // large error body cannot accumulate across batches and exhaust heap before publishing.
-                failurePayloads.add(
-                    boundDetail(
-                        'Failed to send data to remote service. Status: ' +
-                            res.getStatusCode() +
-                            ' ' +
-                            res.getStatus() +
-                            ', Response: ' +
-                            res.getBody()
-                    )
+                addFailure(
+                    'Failed to send data to remote service. Status: ' +
+                        res.getStatusCode() +
+                        ' ' +
+                        res.getStatus() +
+                        ', Response: ' +
+                        res.getBody()
                 );
             }
         } catch (Exception ex) {
             getLogger().error('Failed to send data to remote service', ex);
-            failurePayloads.add(summarizeFailure(ex));
+            addFailure(summarizeFailure(ex));
         }
     }
 
@@ -216,14 +255,25 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
      *              / 12 MB async). A single event that already exceeds the byte budget is still sent on
      *              its own — it cannot be split further.
      */
-    private void sendInBatches(List<rflib_Log_Event__e> events, List<String> failurePayloads) {
+    private void sendInBatches(List<rflib_Log_Event__e> events) {
         Integer maxCount = getMaxEventsPerCallout();
         Integer maxBytes = getMaxBytesPerCallout();
 
         Integer undelivered = 0;
         List<rflib_Log_Event__e> current = new List<rflib_Log_Event__e>();
         Integer currentBytes = 0;
-        for (rflib_Log_Event__e evt : events) {
+        for (Integer idx = 0; idx < events.size(); idx++) {
+            // Once the per-transaction callout budget is exhausted, stop building AND serializing: the
+            // pending batch plus every remaining event are undelivered. This avoids spending CPU/heap on
+            // payloads that can never be sent (and aborting before the undelivered summary is published).
+            if (Limits.getCallouts() >= calloutLimit()) {
+                undelivered += current.size() + (events.size() - idx);
+                current = new List<rflib_Log_Event__e>();
+                currentBytes = 0;
+                break;
+            }
+
+            rflib_Log_Event__e evt = events[idx];
             // Estimate this event's serialized contribution by rendering it on its own. For NDJSON
             // (per-line) forwarders this is exact; for envelope forwarders it slightly overcounts the
             // shared wrapper, which only makes batches more conservative.
@@ -233,8 +283,9 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
 
             Boolean overCount = maxCount > 0 && current.size() >= maxCount;
             Boolean overBytes = maxBytes > 0 && !current.isEmpty() && (currentBytes + evtBytes) > maxBytes;
+            // The top-of-loop check guarantees the budget is available for this batch send.
             if (!current.isEmpty() && (overCount || overBytes)) {
-                undelivered += flushOrCount(current, failurePayloads);
+                send(current);
                 current = new List<rflib_Log_Event__e>();
                 currentBytes = 0;
             }
@@ -244,7 +295,11 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
 
         if (!current.isEmpty()) {
-            undelivered += flushOrCount(current, failurePayloads);
+            if (Limits.getCallouts() >= calloutLimit()) {
+                undelivered += current.size();
+            } else {
+                send(current);
+            }
         }
 
         if (undelivered > 0) {
@@ -257,31 +312,15 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                 '{0} event(s) not delivered by {1}: reached the per-transaction callout limit ({2})',
                 new List<Object>{ undelivered, getLoggerName(), calloutLimit() }
             );
-            failurePayloads.add(
-                boundDetail(
-                    undelivered +
-                        ' log event(s) were not delivered by ' +
-                        getLoggerName() +
-                        ': reached the per-transaction callout limit (' +
-                        calloutLimit() +
-                        '). Reduce volume or route through an OpenTelemetry collector.'
-                )
+            addFailure(
+                undelivered +
+                    ' log event(s) were not delivered by ' +
+                    getLoggerName() +
+                    ': reached the per-transaction callout limit (' +
+                    calloutLimit() +
+                    '). Reduce volume or route through an OpenTelemetry collector.'
             );
         }
-    }
-
-    /**
-     * @description Sends a batch only if the per-transaction callout budget still allows it; otherwise
-     *              returns the batch size as "undelivered" so the caller can surface the shortfall. This
-     *              keeps the sender from reaching callout 101, which would throw an uncatchable limit
-     *              exception and abort the flow element before any failure records are published.
-     */
-    private Integer flushOrCount(List<rflib_Log_Event__e> batch, List<String> failurePayloads) {
-        if (Limits.getCallouts() >= calloutLimit()) {
-            return batch.size();
-        }
-        send(batch, failurePayloads);
-        return 0;
     }
 
     private Integer calloutLimit() {
