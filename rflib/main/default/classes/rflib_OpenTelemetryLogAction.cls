@@ -45,16 +45,12 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHttpForwarderAction {
-    @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_OTEL_LOGS';
 
-    @TestVisible
     private static final String SCOPE_NAME = 'rflib';
 
-    @TestVisible
     private static final String SDK_VERSION = '10.4.0';
 
-    @TestVisible
     private static final Integer MAX_BODY_LENGTH = 32768;
 
     @TestVisible
@@ -75,7 +71,6 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     // 6 MB callout limit isn't silently rejected by the vendor. It also keeps the transient heap low
     // (rflib_HttpRequest buffers the body at INFO) while staying within the 100-callout-per-transaction
     // cap. Backends that accept larger payloads still work; for very large volumes use a collector.
-    @TestVisible
     private static Integer MAX_CALLOUT_BYTES = 1000000;
 
     // CreatedDate is null on events constructed directly (e.g. in tests). Use a stable fallback so
@@ -139,7 +134,6 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
         return true;
     }
 
-    @TestVisible
     private static Long getRejectedLogRecords(String body) {
         if (String.isBlank(body)) {
             return 0;
@@ -160,7 +154,6 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
         }
     }
 
-    @TestVisible
     protected override String createPayload(List<rflib_Log_Event__e> events) {
         List<Object> logRecords = new List<Object>();
         for (rflib_Log_Event__e evt : events) {
@@ -241,7 +234,6 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
      * @description Builds an OTLP KeyValue with the value typed per the OTLP/HTTP JSON encoding
      *              (int64 is encoded as a string).
      */
-    @TestVisible
     private static Map<String, Object> attribute(String key, Object value) {
         Map<String, Object> anyValue;
         if (value instanceof Integer || value instanceof Long) {
@@ -260,7 +252,6 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
      * @description Maps an RFLIB log level to the OpenTelemetry SeverityNumber scale
      *              (TRACE 1, DEBUG 5, INFO 9, WARN 13, ERROR 17, FATAL 21).
      */
-    @TestVisible
     private static Integer toSeverityNumber(String logLevel) {
         switch on (logLevel == null ? '' : logLevel.toUpperCase()) {
             when 'TRACE' {

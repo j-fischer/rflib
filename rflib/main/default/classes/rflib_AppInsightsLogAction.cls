@@ -41,7 +41,6 @@
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpForwarderAction {
-    @TestVisible
     private static final String ENDPOINT = 'callout:RFLIB_APP_INSIGHTS/v2.1/track';
 
     // Application Insights accepts up to 64KB per telemetry item. Keep the whole envelope under that
@@ -68,7 +67,6 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
     private static final Integer MAX_PLATFORM_PROPERTIES = 100;
 
     // Defensive bound on the message-fitting loop; it converges in 1-2 passes in practice.
-    @TestVisible
     private static final Integer MAX_FIT_ITERATIONS = 5;
 
     @TestVisible
@@ -127,7 +125,6 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
         return String.isNotBlank(rflib_GlobalSettings.appInsightsInstrumentationKeyOrDefault);
     }
 
-    @TestVisible
     protected override String createPayload(List<rflib_Log_Event__e> events) {
         String instrumentationKey = rflib_GlobalSettings.appInsightsInstrumentationKeyOrDefault;
         List<String> lines = new List<String>();
@@ -275,7 +272,6 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
      * @description Maps an RFLIB log level to the Application Insights SeverityLevel scale
      *              (0 Verbose, 1 Information, 2 Warning, 3 Error, 4 Critical).
      */
-    @TestVisible
     private static Integer toSeverityLevel(String logLevel) {
         switch on (logLevel == null ? '' : logLevel.toUpperCase()) {
             when 'TRACE', 'DEBUG' {

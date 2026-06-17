@@ -29,8 +29,6 @@
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
 private class rflib_AppInsightsLogActionTest {
-    private static final String ENDPOINT = 'callout:RFLIB_APP_INSIGHTS/v2.1/track';
-    private static final String METHOD = 'POST';
     private static final String IKEY = '00000000-0000-0000-0000-000000000000';
     private static final String FAILURE_EVENT = 'rflib-app-insights-log-event-failed';
 
@@ -45,23 +43,10 @@ private class rflib_AppInsightsLogActionTest {
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSendToAppInsights_Success() {
         configure('ERROR');
-        rflib_AppInsightsLogAction.fallbackTimestamp = Datetime.newInstanceGmt(2026, 6, 11, 17, 30, 12);
 
-        List<rflib_Log_Event__e> events = createTestLogEvents('ERROR');
-        HttpRequest req = createExpectedRequest(events);
-        HttpResponse resp = createResponse(200, '{}');
+        sendWith(createTestLogEvents('ERROR'), 200, '{}');
 
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
-
-        Test.startTest();
-        rflib_AppInsightsLogAction.sendToAppInsights(events);
-        Test.stopTest();
-
-        Assert.areEqual(
-            0,
-            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
-            'No failure event expected on success.'
-        );
+        Assert.areEqual(0, failureEventCount(), 'No failure event expected on success.');
     }
 
     @IsTest
@@ -69,20 +54,9 @@ private class rflib_AppInsightsLogActionTest {
     private static void testSendToAppInsights_HttpFailure() {
         configure('ERROR');
 
-        HttpRequest req = createExpectedRequest(createTestLogEvents('ERROR'));
-        HttpResponse resp = createResponse(401, '[{"errorCode":"INVALID_SESSION_ID"}]');
+        sendWith(createTestLogEvents('ERROR'), 401, '[{"errorCode":"INVALID_SESSION_ID"}]');
 
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
-
-        Test.startTest();
-        rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
-        Test.stopTest();
-
-        Assert.areEqual(
-            1,
-            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
-            'Expected a failure event on HTTP failure.'
-        );
+        Assert.areEqual(1, failureEventCount(), 'Expected a failure event on HTTP failure.');
     }
 
     @IsTest
@@ -90,23 +64,13 @@ private class rflib_AppInsightsLogActionTest {
     private static void testSendToAppInsights_PartialSuccess() {
         configure('ERROR');
 
-        HttpRequest req = createExpectedRequest(createTestLogEvents('ERROR'));
-        HttpResponse resp = createResponse(
+        sendWith(
+            createTestLogEvents('ERROR'),
             206,
             '{"itemsReceived":1,"itemsAccepted":0,"errors":[{"index":0,"statusCode":400}]}'
         );
 
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, resp));
-
-        Test.startTest();
-        rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
-        Test.stopTest();
-
-        Assert.areEqual(
-            1,
-            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
-            'Expected a failure event on 206 partial success.'
-        );
+        Assert.areEqual(1, failureEventCount(), 'Expected a failure event on 206 partial success.');
     }
 
     @IsTest
@@ -114,18 +78,12 @@ private class rflib_AppInsightsLogActionTest {
     private static void testSendToAppInsights_ThrowsException() {
         configure('ERROR');
 
-        HttpRequest req = createExpectedRequest(createTestLogEvents('ERROR'));
-        Test.setMock(HttpCalloutMock.class, new rflib_SimpleHttpRequestMock(req, new CalloutException('boom')));
-
+        Test.setMock(HttpCalloutMock.class, new ForwarderMock(new CalloutException('boom')));
         Test.startTest();
         rflib_AppInsightsLogAction.sendToAppInsights(createTestLogEvents('ERROR'));
         Test.stopTest();
 
-        Assert.areEqual(
-            1,
-            [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT],
-            'Expected a failure event on callout exception.'
-        );
+        Assert.areEqual(1, failureEventCount(), 'Expected a failure event on callout exception.');
     }
 
     @IsTest
@@ -138,10 +96,7 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(
-            rflib_LoggerUtil.getFactory()
-                .createLogger('rflib_AppInsightsLogAction')
-                .printLogs()
-                .contains('No events to send found'),
+            logs().contains('No events to send found'),
             'Expected the no-events short-circuit when the level does not match.'
         );
     }
@@ -159,17 +114,14 @@ private class rflib_AppInsightsLogActionTest {
         Test.stopTest();
 
         Assert.isTrue(
-            rflib_LoggerUtil.getFactory()
-                .createLogger('rflib_AppInsightsLogAction')
-                .printLogs()
-                .contains('is not configured'),
+            logs().contains('is not configured'),
             'Expected the not-configured short-circuit when the instrumentation key is blank.'
         );
     }
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testCreatePayload_Envelope() {
+    private static void testEnvelopeStructure() {
         configure('ERROR');
         rflib_AppInsightsLogAction.fallbackTimestamp = Datetime.newInstanceGmt(2026, 6, 11, 17, 30, 12);
 
@@ -182,11 +134,9 @@ private class rflib_AppInsightsLogActionTest {
             Platform_Info__c = '{"CPU Time":12,"Heap Size":4080}'
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
+        Map<String, Object> envelope = envelopes(mock.lastBody)[0];
 
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
         Assert.areEqual(
             'Microsoft.ApplicationInsights.Message',
             envelope.get('name'),
@@ -199,8 +149,7 @@ private class rflib_AppInsightsLogActionTest {
             'time should use the deterministic fallback timestamp.'
         );
 
-        Map<String, Object> data = (Map<String, Object>) envelope.get('data');
-        Map<String, Object> baseData = (Map<String, Object>) data.get('baseData');
+        Map<String, Object> baseData = baseData(envelope);
         Assert.areEqual('Something failed', baseData.get('message'), 'message should carry the log messages.');
         Assert.areEqual(3, baseData.get('severityLevel'), 'ERROR should map to severityLevel 3.');
 
@@ -216,14 +165,28 @@ private class rflib_AppInsightsLogActionTest {
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testSeverityMapping() {
-        Assert.areEqual(0, rflib_AppInsightsLogAction.toSeverityLevel('TRACE'));
-        Assert.areEqual(0, rflib_AppInsightsLogAction.toSeverityLevel('DEBUG'));
-        Assert.areEqual(1, rflib_AppInsightsLogAction.toSeverityLevel('INFO'));
-        Assert.areEqual(2, rflib_AppInsightsLogAction.toSeverityLevel('WARN'));
-        Assert.areEqual(3, rflib_AppInsightsLogAction.toSeverityLevel('ERROR'));
-        Assert.areEqual(4, rflib_AppInsightsLogAction.toSeverityLevel('FATAL'));
-        Assert.areEqual(1, rflib_AppInsightsLogAction.toSeverityLevel('SOMETHING'));
-        Assert.areEqual(1, rflib_AppInsightsLogAction.toSeverityLevel(null));
+        // Configure TRACE so every level passes the filter and lands in one NDJSON body to inspect.
+        configure('TRACE');
+
+        List<rflib_Log_Event__e> events = new List<rflib_Log_Event__e>();
+        for (String level : new List<String>{ 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL' }) {
+            events.add(new rflib_Log_Event__e(Log_Level__c = level, Log_Messages__c = 'm'));
+        }
+
+        ForwarderMock mock = sendWith(events, 200, '{}');
+
+        Map<String, Integer> bySeverity = new Map<String, Integer>();
+        for (Map<String, Object> envelope : envelopes(mock.lastBody)) {
+            Map<String, Object> properties = (Map<String, Object>) baseData(envelope).get('properties');
+            bySeverity.put((String) properties.get('LogLevel'), (Integer) baseData(envelope).get('severityLevel'));
+        }
+
+        Assert.areEqual(0, bySeverity.get('TRACE'), 'TRACE -> 0');
+        Assert.areEqual(0, bySeverity.get('DEBUG'), 'DEBUG -> 0');
+        Assert.areEqual(1, bySeverity.get('INFO'), 'INFO -> 1');
+        Assert.areEqual(2, bySeverity.get('WARN'), 'WARN -> 2');
+        Assert.areEqual(3, bySeverity.get('ERROR'), 'ERROR -> 3');
+        Assert.areEqual(4, bySeverity.get('FATAL'), 'FATAL -> 4');
     }
 
     @IsTest
@@ -234,14 +197,9 @@ private class rflib_AppInsightsLogActionTest {
         String longMessage = 'x'.repeat(rflib_AppInsightsLogAction.MAX_MESSAGE_LENGTH + 100);
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = longMessage);
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
+        String message = (String) baseData(envelopes(mock.lastBody)[0]).get('message');
 
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
-            .get('baseData');
-        String message = (String) baseData.get('message');
         Assert.isTrue(message.startsWith('[TRUNCATED]'), 'Oversized messages should be front-truncated.');
         Assert.isTrue(message.endsWith('x'), 'The most recent content (tail) should be kept.');
         Assert.areEqual(
@@ -257,21 +215,15 @@ private class rflib_AppInsightsLogActionTest {
         configure('ERROR');
 
         // Malformed JSON makes the parser fall back to the raw Platform_Info__c string.
-        String hugePlatformInfo = 'p'.repeat(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH + 500);
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',
             Log_Messages__c = 'x',
-            Platform_Info__c = hugePlatformInfo
+            Platform_Info__c = 'p'.repeat(rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH + 500)
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
+        Map<String, Object> properties = (Map<String, Object>) baseData(envelopes(mock.lastBody)[0]).get('properties');
 
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
-            .get('baseData');
-        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
         String rawProp = (String) properties.get('rflib.platform_info');
         Assert.areEqual(
             rflib_AppInsightsLogAction.MAX_PROPERTY_LENGTH,
@@ -287,24 +239,18 @@ private class rflib_AppInsightsLogActionTest {
 
         // Valid JSON that flattens into far more properties than the cap. Without the cap, fitItem would
         // remove these one at a time (re-serializing the envelope each pass) and risk the CPU limit.
-        Map<String, Object> pinfo = new Map<String, Object>();
+        Map<String, Object> platformInfo = new Map<String, Object>();
         for (Integer i = 0; i < rflib_AppInsightsLogAction.MAX_PLATFORM_PROPERTIES + 50; i++) {
-            pinfo.put('field' + i, i);
+            platformInfo.put('field' + i, i);
         }
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',
             Log_Messages__c = 'x',
-            Platform_Info__c = JSON.serialize(pinfo)
+            Platform_Info__c = JSON.serialize(platformInfo)
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
-
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
-            .get('baseData');
-        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
+        Map<String, Object> properties = (Map<String, Object>) baseData(envelopes(mock.lastBody)[0]).get('properties');
 
         Integer flattenedCount = 0;
         for (String key : properties.keySet()) {
@@ -329,21 +275,19 @@ private class rflib_AppInsightsLogActionTest {
         configure('ERROR');
 
         // Six large custom string properties (~48 KB once flattened/capped) plus a huge message.
-        Map<String, Object> pinfo = new Map<String, Object>();
+        Map<String, Object> platformInfo = new Map<String, Object>();
         for (Integer i = 0; i < 6; i++) {
-            pinfo.put('field' + i, 'p'.repeat(8000));
+            platformInfo.put('field' + i, 'p'.repeat(8000));
         }
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',
             Log_Messages__c = 'm'.repeat(40000),
-            Platform_Info__c = JSON.serialize(pinfo)
+            Platform_Info__c = JSON.serialize(platformInfo)
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
 
-        Integer itemBytes = Blob.valueOf(payload).size();
+        Integer itemBytes = Blob.valueOf(mock.lastBody).size();
         Assert.isTrue(
             itemBytes <= rflib_AppInsightsLogAction.MAX_ITEM_BYTES,
             'The full telemetry item must stay under the App Insights 64 KB cap; was ' + itemBytes + ' bytes.'
@@ -357,21 +301,19 @@ private class rflib_AppInsightsLogActionTest {
 
         // Platform properties alone (~80 KB) exceed the item cap; the item must still be bounded by
         // dropping flattened platform properties, even with a large message.
-        Map<String, Object> pinfo = new Map<String, Object>();
+        Map<String, Object> platformInfo = new Map<String, Object>();
         for (Integer i = 0; i < 12; i++) {
-            pinfo.put('field' + i, 'p'.repeat(8000));
+            platformInfo.put('field' + i, 'p'.repeat(8000));
         }
         rflib_Log_Event__e evt = new rflib_Log_Event__e(
             Log_Level__c = 'ERROR',
             Log_Messages__c = 'm'.repeat(40000),
-            Platform_Info__c = JSON.serialize(pinfo)
+            Platform_Info__c = JSON.serialize(platformInfo)
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
 
-        Integer itemBytes = Blob.valueOf(payload).size();
+        Integer itemBytes = Blob.valueOf(mock.lastBody).size();
         Assert.isTrue(
             itemBytes <= rflib_AppInsightsLogAction.MAX_ITEM_BYTES,
             'Even when properties alone exceed the cap, the item must be trimmed under it; was ' + itemBytes + ' bytes.'
@@ -387,20 +329,15 @@ private class rflib_AppInsightsLogActionTest {
         // would leave the serialized item over the byte limit.
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = '中'.repeat(25000));
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
 
-        Integer itemBytes = Blob.valueOf(payload).size();
+        Integer itemBytes = Blob.valueOf(mock.lastBody).size();
         Assert.isTrue(
             itemBytes <= rflib_AppInsightsLogAction.MAX_ITEM_BYTES,
             'Multi-byte messages must be shrunk by serialized bytes, not characters; item was ' + itemBytes + ' bytes.'
         );
 
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
-            .get('baseData');
-        String message = (String) baseData.get('message');
+        String message = (String) baseData(envelopes(mock.lastBody)[0]).get('message');
         Assert.isTrue(message.startsWith('[TRUNCATED]'), 'The message should be truncated, not dropped.');
         Assert.isTrue(message.length() > 0, 'A fitting non-empty message should remain.');
     }
@@ -417,14 +354,8 @@ private class rflib_AppInsightsLogActionTest {
             Platform_Info__c = JSON.serialize(new Map<String, Object>{ longKey => 'v' })
         );
 
-        Test.startTest();
-        String payload = new rflib_AppInsightsLogAction().createPayload(new List<rflib_Log_Event__e>{ evt });
-        Test.stopTest();
-
-        Map<String, Object> envelope = (Map<String, Object>) JSON.deserializeUntyped(payload);
-        Map<String, Object> baseData = (Map<String, Object>) ((Map<String, Object>) envelope.get('data'))
-            .get('baseData');
-        Map<String, Object> properties = (Map<String, Object>) baseData.get('properties');
+        ForwarderMock mock = sendWith(new List<rflib_Log_Event__e>{ evt }, 200, '{}');
+        Map<String, Object> properties = (Map<String, Object>) baseData(envelopes(mock.lastBody)[0]).get('properties');
 
         Boolean sawLongPlatformKey = false;
         for (String name : properties.keySet()) {
@@ -451,12 +382,7 @@ private class rflib_AppInsightsLogActionTest {
             events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'm'.repeat(50000)));
         }
 
-        SizeCapturingMock mock = new SizeCapturingMock();
-        Test.setMock(HttpCalloutMock.class, mock);
-
-        Test.startTest();
-        rflib_AppInsightsLogAction.sendToAppInsights(events);
-        Test.stopTest();
+        ForwarderMock mock = sendWith(events, 200, '{}');
 
         Assert.isTrue(mock.bodySizes.size() > 1, 'Large events should be split across multiple callouts by byte size.');
         for (Integer size : mock.bodySizes) {
@@ -479,12 +405,7 @@ private class rflib_AppInsightsLogActionTest {
             events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'm'.repeat(50000)));
         }
 
-        CountingMock mock = new CountingMock(401, '[{"errorCode":"INVALID_SESSION_ID"}]');
-        Test.setMock(HttpCalloutMock.class, mock);
-
-        Test.startTest();
-        rflib_AppInsightsLogAction.sendToAppInsights(events);
-        Test.stopTest();
+        ForwarderMock mock = sendWith(events, 401, '[{"errorCode":"INVALID_SESSION_ID"}]');
 
         Assert.isTrue(mock.callCount > 1, 'The batch should have been split across multiple callouts.');
         // All batches are attempted (none lost to uncommitted-work errors) and their failures are
@@ -515,14 +436,43 @@ private class rflib_AppInsightsLogActionTest {
             events.add(new rflib_Log_Event__e(Log_Level__c = 'ERROR', Log_Messages__c = 'msg ' + i));
         }
 
-        CountingMock mock = new CountingMock(200, '{}');
-        Test.setMock(HttpCalloutMock.class, mock);
+        ForwarderMock mock = sendWith(events, 200, '{}');
 
+        Assert.areEqual(2, mock.callCount, 'Expected 150 events to be sent in two callouts of up to 100.');
+    }
+
+    // ---- Helpers ---------------------------------------------------------------------------------
+
+    private static ForwarderMock sendWith(List<rflib_Log_Event__e> events, Integer statusCode, String body) {
+        ForwarderMock mock = new ForwarderMock(statusCode, body);
+        Test.setMock(HttpCalloutMock.class, mock);
         Test.startTest();
         rflib_AppInsightsLogAction.sendToAppInsights(events);
         Test.stopTest();
+        return mock;
+    }
 
-        Assert.areEqual(2, mock.callCount, 'Expected 150 events to be sent in two callouts of up to 100.');
+    private static Integer failureEventCount() {
+        return [SELECT COUNT() FROM rflib_Application_Event__c WHERE Event_Name__c = :FAILURE_EVENT];
+    }
+
+    // The App Insights wire format is newline-delimited JSON (one Message envelope per line).
+    private static List<Map<String, Object>> envelopes(String ndjson) {
+        List<Map<String, Object>> result = new List<Map<String, Object>>();
+        for (String line : ndjson.split('\n')) {
+            if (String.isNotBlank(line)) {
+                result.add((Map<String, Object>) JSON.deserializeUntyped(line));
+            }
+        }
+        return result;
+    }
+
+    private static Map<String, Object> baseData(Map<String, Object> envelope) {
+        return (Map<String, Object>) ((Map<String, Object>) envelope.get('data')).get('baseData');
+    }
+
+    private static String logs() {
+        return rflib_LoggerUtil.getFactory().createLogger('rflib_AppInsightsLogActionTest').printLogs();
     }
 
     private static List<rflib_Log_Event__e> createTestLogEvents(String logLevel) {
@@ -536,45 +486,30 @@ private class rflib_AppInsightsLogActionTest {
         };
     }
 
-    private static HttpRequest createExpectedRequest(List<rflib_Log_Event__e> events) {
-        HttpRequest req = new HttpRequest();
-        req.setEndpoint(ENDPOINT);
-        req.setMethod(METHOD);
-        req.setBody(new rflib_AppInsightsLogAction().createPayload(events));
-        return req;
-    }
-
-    private static HttpResponse createResponse(Integer statusCode, String body) {
-        HttpResponse response = new HttpResponse();
-        response.setStatusCode(statusCode);
-        response.setBody(body);
-        return response;
-    }
-
-    private class SizeCapturingMock implements HttpCalloutMock {
-        public List<Integer> bodySizes = new List<Integer>();
-
-        public HttpResponse respond(HttpRequest req) {
-            bodySizes.add(Blob.valueOf(req.getBody()).size());
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(200);
-            res.setBody('{}');
-            return res;
-        }
-    }
-
-    private class CountingMock implements HttpCalloutMock {
+    private class ForwarderMock implements HttpCalloutMock {
         private final Integer statusCode;
         private final String body;
+        private final CalloutException error;
         public Integer callCount = 0;
+        public String lastBody;
+        public final List<Integer> bodySizes = new List<Integer>();
 
-        public CountingMock(Integer statusCode, String body) {
+        public ForwarderMock(Integer statusCode, String body) {
             this.statusCode = statusCode;
             this.body = body;
         }
 
+        public ForwarderMock(CalloutException error) {
+            this.error = error;
+        }
+
         public HttpResponse respond(HttpRequest req) {
             callCount++;
+            lastBody = req.getBody();
+            bodySizes.add(Blob.valueOf(req.getBody()).size());
+            if (error != null) {
+                throw error;
+            }
             HttpResponse res = new HttpResponse();
             res.setStatusCode(statusCode);
             res.setBody(body);

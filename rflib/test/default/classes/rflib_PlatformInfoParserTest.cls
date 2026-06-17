@@ -53,28 +53,40 @@ private class rflib_PlatformInfoParserTest {
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_BoundsPathologicalInput() {
-        // A valid but pathological array that would otherwise flatten into thousands of leaves.
-        List<Object> big = new List<Object>();
-        for (Integer i = 0; i < rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 200; i++) {
-            big.add(i);
+        Integer over = rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 200;
+
+        // Three pathological-but-valid shapes that would each flatten into thousands of leaves: a flat
+        // map (bounds the top-level loop), a large array, and a deeply-nested map (bound in the recursion).
+        Map<String, Object> flatMap = new Map<String, Object>();
+        List<Object> bigList = new List<Object>();
+        Map<String, Object> nestedMap = new Map<String, Object>();
+        for (Integer i = 0; i < over; i++) {
+            flatMap.put('field' + i, i);
+            bigList.add(i);
+            nestedMap.put('field' + i, i);
         }
-        rflib_Log_Event__e evt = new rflib_Log_Event__e(
-            Platform_Info__c = JSON.serialize(new Map<String, Object>{ 'a' => big })
-        );
 
-        Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
-        Test.stopTest();
+        for (
+            Object shape : new List<Object>{
+                flatMap,
+                new Map<String, Object>{ 'a' => bigList },
+                new Map<String, Object>{ 'deep' => nestedMap }
+            }
+        ) {
+            Map<String, Object> result = rflib_PlatformInfoParser.flatten(
+                new rflib_Log_Event__e(Platform_Info__c = JSON.serialize(shape))
+            );
 
-        // Cap (+1 for the truncation marker) bounds allocation and the callers' sort.
-        Assert.isTrue(
-            result.size() <= rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 1,
-            'Flattening must be bounded; got ' + result.size()
-        );
-        Assert.isTrue(
-            result.containsKey('rflib.platform_info.truncated'),
-            'Expected a truncation marker when the cap is reached.'
-        );
+            // Cap (+1 for the truncation marker) bounds allocation and the callers' sort.
+            Assert.isTrue(
+                result.size() <= rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 1,
+                'Flattening must be bounded; got ' + result.size()
+            );
+            Assert.isTrue(
+                result.containsKey('rflib.platform_info.truncated'),
+                'Expected a truncation marker when the cap is reached.'
+            );
+        }
     }
 
     @IsTest
@@ -234,14 +246,6 @@ private class rflib_PlatformInfoParserTest {
         );
         Assert.areEqual(0, rflib_PlatformInfoParser.flatten(null).size(), 'Null event should yield an empty map.');
     }
-
-    @IsTest
-    @SuppressWarnings('PMD.MethodNamingConventions')
-    private static void testNormalizeKey() {
-        Assert.areEqual('cpu_time', rflib_PlatformInfoParser.normalizeKey('CPU Time'));
-        Assert.areEqual('soql_queries', rflib_PlatformInfoParser.normalizeKey('SOQL queries'));
-        Assert.areEqual('time_origin', rflib_PlatformInfoParser.normalizeKey('timeOrigin'));
-        Assert.areEqual('dom_complete', rflib_PlatformInfoParser.normalizeKey('domComplete'));
-        Assert.areEqual('redirect_count', rflib_PlatformInfoParser.normalizeKey('redirectCount'));
-    }
+    // Key normalization (space/camelCase -> snake_case) is verified through the flatten tests above
+    // (e.g. "CPU Time" -> rflib.apex.cpu_time, "domComplete" -> rflib.browser.timing.dom_complete).
 }

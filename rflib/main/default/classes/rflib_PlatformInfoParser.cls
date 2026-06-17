@@ -87,30 +87,17 @@ public with sharing class rflib_PlatformInfoParser {
         Map<String, Object> source = (Map<String, Object>) parsed;
         Map<String, Object> result = new Map<String, Object>();
 
-        if (isBrowserInfo(source)) {
-            for (String key : source.keySet()) {
-                if (result.size() >= MAX_FLATTENED_KEYS) {
-                    break;
-                }
-                if (key == 'userAgent') {
-                    result.put(USER_AGENT_KEY, source.get(key));
-                } else {
-                    flattenInto(result, 'rflib.browser.' + normalizeKey(key), source.get(key));
-                }
+        Boolean browser = isBrowserInfo(source);
+        String prefix = browser ? 'rflib.browser.' : (isApexInfo(source) ? 'rflib.apex.' : 'rflib.platform.');
+
+        for (String key : source.keySet()) {
+            if (result.size() >= MAX_FLATTENED_KEYS) {
+                break;
             }
-        } else if (isApexInfo(source)) {
-            for (String key : source.keySet()) {
-                if (result.size() >= MAX_FLATTENED_KEYS) {
-                    break;
-                }
-                flattenInto(result, 'rflib.apex.' + normalizeKey(key), source.get(key));
-            }
-        } else {
-            for (String key : source.keySet()) {
-                if (result.size() >= MAX_FLATTENED_KEYS) {
-                    break;
-                }
-                flattenInto(result, 'rflib.platform.' + normalizeKey(key), source.get(key));
+            if (browser && key == 'userAgent') {
+                result.put(USER_AGENT_KEY, source.get(key));
+            } else {
+                flattenInto(result, prefix + normalizeKey(key), source.get(key));
             }
         }
 
@@ -136,11 +123,8 @@ public with sharing class rflib_PlatformInfoParser {
 
     @SuppressWarnings('PMD.ApexDoc')
     private static void flattenInto(Map<String, Object> result, String key, Object value) {
-        // Stop recursing once the cap is reached so a pathological structure cannot allocate or iterate
-        // without bound; flatten() records the truncation marker after the top-level loops complete.
-        if (result.size() >= MAX_FLATTENED_KEYS) {
-            return;
-        }
+        // The in-loop cap checks stop iteration once MAX_FLATTENED_KEYS leaves exist, so a pathological
+        // structure cannot allocate or iterate without bound; flatten() then records a truncation marker.
         if (value instanceof Map<String, Object>) {
             Map<String, Object> nested = (Map<String, Object>) value;
             for (String nestedKey : nested.keySet()) {
@@ -167,7 +151,6 @@ public with sharing class rflib_PlatformInfoParser {
      *              any run of non-alphanumeric characters with a single underscore.
      *              "CPU Time" -> "cpu_time", "timeOrigin" -> "time_origin", "domComplete" -> "dom_complete".
      */
-    @TestVisible
     private static String normalizeKey(String key) {
         if (String.isBlank(key)) {
             return key;

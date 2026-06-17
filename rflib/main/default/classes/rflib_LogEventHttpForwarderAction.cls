@@ -51,7 +51,6 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     // buffer it returns is MB-sized and, across multiple failed batches, would exhaust Apex heap before
     // the application-event service truncates the detail. A bounded summary keeps each entry small while
     // still capturing the actionable error. Matches the application event's own ~32 KB detail cap.
-    @TestVisible
     private static final Integer MAX_FAILURE_DETAIL_LENGTH = 32768;
 
     // Overrides the Apex per-transaction callout limit in tests so the budget guard in sendInBatches can
@@ -63,7 +62,6 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
     // to this size; beyond it only a count is retained. This caps heap during the publish phase, where
     // rflib_DefaultApplicationEventLogger DEBUG-caches the detail in the shared 100-entry log buffer —
     // so even 100 failed batches publish a single bounded event instead of replaying MBs of strings.
-    @TestVisible
     private static final Integer MAX_TOTAL_FAILURE_DETAIL = 32768;
 
     private rflib_Logger logger;
@@ -170,8 +168,7 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         }
     }
 
-    @TestVisible
-    protected Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
+    private Boolean matchesConfiguredLogLevel(rflib_Logger_Settings__c loggerSettings, rflib_Log_Event__e evt) {
         return rflib_LogLevel.fromString(getConfiguredLogLevel(loggerSettings))
             .encompasses(rflib_LogLevel.fromString(evt.Log_Level__c));
     }
@@ -365,7 +362,6 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
         return calloutLogger;
     }
 
-    @TestVisible
     private static final String TRUNCATION_PREFIX = '[TRUNCATED]\n';
 
     /**
