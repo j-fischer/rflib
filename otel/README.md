@@ -23,7 +23,7 @@ Resource attributes identify the source: `service.name` (the `OTel_Service_Name`
 
 > RFLIB's request id is carried as the `rflib.request_id` attribute rather than the OTLP `traceId`/`spanId` fields, because those require 16-/8-byte hex identifiers that the Salesforce request id does not satisfy. RFLIB forwards fire-and-forget and does not implement OTLP throttling/`Retry-After` backoff; rejected or failed sends are recorded as `rflib-otel-log-event-failed` application events.
 
-Events are sent in callouts of up to 100 records. A `200` with no `partialSuccess.rejectedLogRecords` is treated as success; anything else is recorded as an `rflib-otel-log-event-failed` application event with the response body for diagnosis. RFLIB does not retry (fire-and-forget).
+Events are sent in callouts of up to 100 records, and each request body is also capped at ~1,000,000 bytes so it stays within the strictest documented OTLP/HTTP vendor limit (e.g. New Relic caps payloads at 1,000,000 bytes); larger volumes are split across multiple callouts. Backends that accept bigger payloads still work, and for very high volume an OpenTelemetry collector in front of RFLIB is recommended. Any `2xx` response with no `partialSuccess.rejectedLogRecords` is treated as success (collectors typically return `200`, gateways such as Grafana Cloud return `204 No Content`); anything else is recorded as an `rflib-otel-log-event-failed` application event with the response body for diagnosis. RFLIB does not retry (fire-and-forget).
 
 ### Severity mapping
 

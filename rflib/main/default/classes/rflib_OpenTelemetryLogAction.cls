@@ -70,12 +70,13 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
     @TestVisible
     private static final Integer MAX_EVENTS_PER_CALLOUT = 100;
 
-    // Bound each callout body for HEAP safety, not just the 6 MB callout-body limit:
-    // rflib_HttpRequest logs the body at INFO (buffered by the logger), so the transaction briefly
-    // holds the payload plus a formatted copy (~2x). 2 MB keeps that peak well under the Apex heap
-    // limit while still batching efficiently and staying within the 100-callout-per-transaction cap.
+    // Bound each callout body to 1,000,000 bytes. This is driven by the strictest documented OTLP/HTTP
+    // backend limit (e.g. New Relic caps payloads at 1,000,000 bytes), so a batch that passes Salesforce's
+    // 6 MB callout limit isn't silently rejected by the vendor. It also keeps the transient heap low
+    // (rflib_HttpRequest buffers the body at INFO) while staying within the 100-callout-per-transaction
+    // cap. Backends that accept larger payloads still work; for very large volumes use a collector.
     @TestVisible
-    private static Integer MAX_CALLOUT_BYTES = 2000000;
+    private static Integer MAX_CALLOUT_BYTES = 1000000;
 
     // CreatedDate is null on events constructed directly (e.g. in tests). Use a stable fallback so
     // payloads are deterministic within a transaction.
