@@ -184,8 +184,20 @@ jobs:
                   name: Clean Up
                   command: |
                       set +e
-                      EXISTS=$(npx sf org list --json | jq -r '.result.scratchOrgs[]?.alias // empty' | grep -Fx ciorg)
-                      if [ -z "$EXISTS" ]; then
+                      # Probe for ciorg. If the probe itself fails (transient CLI/API/auth, or unparseable
+                      # output) we must NOT treat that as "no org" — that would mask a possibly-live org.
+                      ORG_LIST=$(npx sf org list --json)
+                      if [ $? -ne 0 ]; then
+                          echo "$ORG_LIST"
+                          echo "sf org list failed; cannot verify ciorg state. Failing so a possible leak is visible."
+                          exit 1
+                      fi
+                      ALIASES=$(echo "$ORG_LIST" | jq -r '.result.scratchOrgs[]?.alias // empty')
+                      if [ $? -ne 0 ]; then
+                          echo "Could not parse sf org list output; cannot verify ciorg state. Failing."
+                          exit 1
+                      fi
+                      if ! echo "$ALIASES" | grep -Fxq ciorg; then
                           echo "No ciorg scratch org found; nothing to clean up."
                           exit 0
                       fi
