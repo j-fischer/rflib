@@ -199,25 +199,26 @@ public abstract with sharing class rflib_LogEventHttpForwarderAction {
                     new List<Object>{ res.getStatusCode() }
                 );
             } else {
-                // Bound the response body here too: this diagnostic goes through the cached logger, so an
-                // endpoint returning a large error body could otherwise retain MB-sized strings in the
-                // shared log buffer across several failed batches.
+                // Bound the response body ONCE, before composing any diagnostic. An endpoint can return a
+                // multi-MB error page; concatenating the raw body (even if addFailure truncates afterwards)
+                // would materialize another multi-MB string on top of the request payload and response
+                // already held, risking Apex heap. The bounded copy is reused for the log and the failure.
+                String boundedBody = boundDetail(res.getBody());
                 rflib_LoggerUtil.logInternal(
                     getLogger(),
                     'Failed to send data to remote service. Status: {0}, Response: {1}',
-                    new List<Object>{ res.getStatus(), boundDetail(res.getBody()) }
+                    new List<Object>{ res.getStatus(), boundedBody }
                 );
                 // Snapshot the failure now, but defer publishing until all callouts are done. Build the
                 // detail from the response (status + body) rather than JSON.serialize(res) — HttpResponse
-                // is not JSON-serializable (throws "Apex Type unsupported in JSON") — and bound it so a
-                // large error body cannot accumulate across batches and exhaust heap before publishing.
+                // is not JSON-serializable (throws "Apex Type unsupported in JSON").
                 addFailure(
                     'Failed to send data to remote service. Status: ' +
                         res.getStatusCode() +
                         ' ' +
                         res.getStatus() +
                         ', Response: ' +
-                        res.getBody()
+                        boundedBody
                 );
             }
         } catch (Exception ex) {
