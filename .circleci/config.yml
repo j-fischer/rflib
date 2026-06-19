@@ -60,6 +60,16 @@ jobs:
                   when: always
                   command: |
                       rm assets/server.key
+            - run:
+                  name: Clean Up Scratch Org On Failure
+                  when: on_fail
+                  # If this job created ciorg but then failed before persist_to_workspace, the org's auth
+                  # is never persisted, so the terminal cleanup_scratch_org job cannot see it and would
+                  # leave it alive. Delete it here, in the same container where the auth still exists.
+                  # Best-effort: the org may never have been created (e.g. Define CI Org failed), so a
+                  # failed delete is tolerated — this runs only on an already-failing job.
+                  command: |
+                      npx sf org delete scratch -o ciorg -p || true
             - persist_to_workspace:
                   # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
                   # we'd have to re-run installation for every workflow step.
