@@ -5,7 +5,7 @@
         <name>Archive_Log_Event</name>
         <label>Archive Log Event</label>
         <locationX>176</locationX>
-        <locationY>602</locationY>
+        <locationY>818</locationY>
         <actionName>rflib_ArchiveLogAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -35,11 +35,11 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
         <actionName>rflib_HttpCalloutLogAction</actionName>
         <actionType>apex</actionType>
         <connector>
-            <targetReference>Send_Log_Event_to_Slack</targetReference>
+            <targetReference>Send_Log_Event_to_App_Insights</targetReference>
         </connector>
         <faultConnector>
             <isGoTo>true</isGoTo>
-            <targetReference>Send_Log_Event_to_Slack</targetReference>
+            <targetReference>Send_Log_Event_to_App_Insights</targetReference>
         </faultConnector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
@@ -52,12 +52,64 @@ IMPORTANT: This element must be first in this flow due to callout errors as a re
         <offset>0</offset>
     </actionCalls>
     <actionCalls>
+        <description>Forwards the Log Event to Azure Application Insights via the telemetry ingestion endpoint. Requires a Named Credential named RFLIB_APP_INSIGHTS, the App_Insights_Instrumentation_Key Global Setting, and App_Insights_Log_Level__c to be configured in the Logger Settings.
+Runs in a new transaction to ensure governor limit isolation from the preceding HTTP callout action.</description>
+        <name>Send_Log_Event_to_App_Insights</name>
+        <label>Send Log Event to App Insights</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <actionName>rflib_AppInsightsLogAction</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Send_Log_Event_to_OTel</targetReference>
+        </connector>
+        <faultConnector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Send_Log_Event_to_OTel</targetReference>
+        </faultConnector>
+        <flowTransactionModel>NewTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_AppInsightsLogAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
+        <description>Forwards the Log Event to an OpenTelemetry (OTLP/HTTP JSON) logs endpoint such as AWS CloudWatch or an OpenTelemetry Collector. Azure Monitor is supported only behind a Collector (its native OTLP ingestion requires protobuf). Requires a Named Credential named RFLIB_OTEL_LOGS and OTel_Log_Level__c to be configured in the Logger Settings.
+Runs in a new transaction to ensure governor limit isolation from the preceding HTTP callout action.</description>
+        <name>Send_Log_Event_to_OTel</name>
+        <label>Send Log Event to OTel</label>
+        <locationX>176</locationX>
+        <locationY>386</locationY>
+        <actionName>rflib_OpenTelemetryLogAction</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Send_Log_Event_to_Slack</targetReference>
+        </connector>
+        <faultConnector>
+            <isGoTo>true</isGoTo>
+            <targetReference>Send_Log_Event_to_Slack</targetReference>
+        </faultConnector>
+        <flowTransactionModel>NewTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_OpenTelemetryLogAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
         <description>Sends the Log Event to a Slack channel via Incoming Webhook. Requires a Named Credential named RFLIB_SLACK_WEBHOOK and Slack_Log_Level__c to be configured in the Logger Settings.
 Runs in a new transaction to ensure governor limit isolation from the preceding HTTP callout action.</description>
         <name>Send_Log_Event_to_Slack</name>
         <label>Send Log Event to Slack</label>
         <locationX>176</locationX>
-        <locationY>278</locationY>
+        <locationY>494</locationY>
         <actionName>rflib_SendLogEventSlackAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -83,7 +135,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <name>Send_Log_Event_to_Teams</name>
         <label>Send Log Event to Teams</label>
         <locationX>176</locationX>
-        <locationY>386</locationY>
+        <locationY>602</locationY>
         <actionName>rflib_SendLogEventTeamsAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -109,7 +161,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <name>Send_Log_Event_to_Google_Chat</name>
         <label>Send Log Event to Google Chat</label>
         <locationX>176</locationX>
-        <locationY>494</locationY>
+        <locationY>710</locationY>
         <actionName>rflib_SendLogEventGoogleChatAction</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -134,7 +186,7 @@ Runs in a new transaction to ensure governor limit isolation from the preceding 
         <name>rflib_Send_Log_Event_Emails</name>
         <label>Send Log Event Emails</label>
         <locationX>176</locationX>
-        <locationY>710</locationY>
+        <locationY>926</locationY>
         <actionName>rflib_SendLogEventEmailAction</actionName>
         <actionType>apex</actionType>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>

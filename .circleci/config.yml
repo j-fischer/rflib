@@ -60,6 +60,16 @@ jobs:
                   when: always
                   command: |
                       rm assets/server.key
+            - run:
+                  name: Clean Up Scratch Org On Failure
+                  when: on_fail
+                  # If this job created ciorg but then failed before persist_to_workspace, the org's auth
+                  # is never persisted, so the terminal cleanup_scratch_org job cannot see it and would
+                  # leave it alive. Delete it here, in the same container where the auth still exists.
+                  # Best-effort: the org may never have been created (e.g. Define CI Org failed), so a
+                  # failed delete is tolerated — this runs only on an already-failing job.
+                  command: |
+                      npx sf org delete scratch -o ciorg -p || true
             - persist_to_workspace:
                   # This is an important step. If we don't store the project data (cloned GitHub source and node_modules from the CLI installation)
                   # we'd have to re-run installation for every workflow step.
@@ -80,11 +90,6 @@ jobs:
                   no_output_timeout: 30m
                   command: |
                       npx sf project deploy start -o ciorg -w 25
-            - run:
-                  name: Clean Up
-                  command: |
-                      npx sf org delete scratch -o ciorg -p
-                  when: on_fail
 
     run_apex_tests:
         <<: *defaults
@@ -124,12 +129,6 @@ jobs:
                           echo "Log ID: $LOG_ID"
                           npx sf apex get log --log-id $LOG_ID --target-org ciorg
                       done
-                  when: on_fail
-            - run:
-                  name: Clean Up
-                  command: |
-                      # Delete the scratch org
-                      npx sf org delete scratch -o ciorg -p
                   when: on_fail
             - persist_to_workspace:
                   root: ~/
@@ -177,11 +176,52 @@ jobs:
             - store_artifacts:
                   path: test-results
                   destination: test-results
+
+    cleanup_scratch_org:
+        # Single owner of scratch org deletion. In the workflow it depends on the Apex and
+        # E2E jobs as "terminal", so it runs once both have reached a final state (pass, fail,
+        # canceled, or not-run) and never while either is still using the org. This guarantees
+        # the org is removed on every path.
+        #
+        # Tolerate ONLY the expected "ciorg was never created" case (e.g. setup_dx failed before
+        # creating it) so that doesn't turn this job red. Any OTHER failure means the org may still
+        # be alive, so retry once and then fail loudly rather than masking a real leak with `|| true`.
+        <<: *defaults
+        steps:
+            - attach_workspace:
+                  at: ~/
             - run:
                   name: Clean Up
                   command: |
-                      npx sf org delete scratch -o ciorg -p
-                  when: on_fail
+                      set +e
+                      # Probe for ciorg. If the probe itself fails (transient CLI/API/auth, or unparseable
+                      # output) we must NOT treat that as "no org" — that would mask a possibly-live org.
+                      ORG_LIST=$(npx sf org list --json)
+                      if [ $? -ne 0 ]; then
+                          echo "$ORG_LIST"
+                          echo "sf org list failed; cannot verify ciorg state. Failing so a possible leak is visible."
+                          exit 1
+                      fi
+                      ALIASES=$(echo "$ORG_LIST" | jq -r '.result.scratchOrgs[]?.alias // empty')
+                      if [ $? -ne 0 ]; then
+                          echo "Could not parse sf org list output; cannot verify ciorg state. Failing."
+                          exit 1
+                      fi
+                      if ! echo "$ALIASES" | grep -Fxq ciorg; then
+                          echo "No ciorg scratch org found; nothing to clean up."
+                          exit 0
+                      fi
+                      for attempt in 1 2; do
+                          npx sf org delete scratch -o ciorg -p
+                          if [ $? -eq 0 ]; then
+                              echo "Scratch org deleted."
+                              exit 0
+                          fi
+                          echo "Delete attempt $attempt failed; retrying in 15s..."
+                          sleep 15
+                      done
+                      echo "Scratch org deletion failed after retries; failing so the leak is visible."
+                      exit 1
 
     report_coverage:
         <<: *defaults
@@ -215,18 +255,15 @@ jobs:
                   name: Scan Flows
                   command: |
                       npx gulp scan-flow
-    cleanup_scratch_org:
-        <<: *defaults
-        steps:
-            - attach_workspace:
-                  at: ~/
-            - run:
-                  name: Clean Up
-                  command: |
-                      npx sf org delete scratch -o ciorg -p
-
-workflows:
-    build_and_test:
+# Wrapping every job in a single group lets us attach a serial-group to the whole
+# pipeline. The group acquires the serial-group lock before its first job and holds
+# it until the last job finishes, so a newer pipeline waits for the active one to
+# fully complete (including the cleanup_scratch_org job) instead of running
+# in parallel. This keeps only one CI scratch org alive at a time, which avoids
+# exhausting the DevHub scratch org limits. serial-group queues runs; it does not
+# cancel them.
+job-groups:
+    build_and_test_group:
         jobs:
             - setup_project
             - setup_dx:
@@ -244,10 +281,13 @@ workflows:
             - run_apex_tests:
                   requires:
                       - deploy_source
-
             - run_e2e_tests:
                   requires:
                       - deploy_source
+            - cleanup_scratch_org:
+                  requires:
+                      - run_apex_tests: terminal
+                      - run_e2e_tests: terminal
             - report_coverage:
                   requires:
                       - run_apex_tests
@@ -255,7 +295,9 @@ workflows:
                   filters:
                       branches:
                           only: master
-            - cleanup_scratch_org:
-                  requires:
-                      - run_apex_tests
-                      - run_e2e_tests
+
+workflows:
+    build_and_test:
+        jobs:
+            - build_and_test_group:
+                  serial-group: << pipeline.project.slug >>/build-and-test

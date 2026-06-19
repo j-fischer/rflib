@@ -100,6 +100,9 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final Integer MAX_GOOGLE_CHAT_NOTIFICATIONS_PER_INVOCATION_DEFAULT_VALUE = 20;
 
+    @TestVisible
+    private static final String OTEL_SERVICE_NAME_DEFAULT_VALUE = 'salesforce-rflib';
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -251,6 +254,19 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('App_Event_Masking_Enabled');
             return String.isBlank(val) ? APP_EVENT_MASKING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static String appInsightsInstrumentationKeyOrDefault {
+        get {
+            return getSetting('App_Insights_Instrumentation_Key');
+        }
+    }
+
+    public static String otelServiceNameOrDefault {
+        get {
+            String val = getSetting('OTel_Service_Name');
+            return String.isBlank(val) ? OTEL_SERVICE_NAME_DEFAULT_VALUE : val;
         }
     }
 

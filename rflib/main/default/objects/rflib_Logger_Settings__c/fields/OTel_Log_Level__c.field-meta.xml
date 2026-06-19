@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>OTel_Log_Level__c</fullName>
+    <defaultValue>&quot;NONE&quot;</defaultValue>
+    <description>Set the log level for which a Log Event will be forwarded to an OpenTelemetry (OTLP/HTTP) logs endpoint. Whenever a Log Event is created and the level of the event is encompassed by the currently set OTel Log Level, the event is forwarded. Otherwise, it is skipped. Requires the RFLIB_OTEL_LOGS Named Credential.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set the log level for which a Log Event will be forwarded to an OpenTelemetry (OTLP/HTTP) logs endpoint. Requires the RFLIB_OTEL_LOGS Named Credential.</inlineHelpText>
+    <label>OTel Log Level</label>
+    <length>5</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

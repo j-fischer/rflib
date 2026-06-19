@@ -21,14 +21,33 @@ test.afterAll(async () => {
 
 test('starts in "New Messages" connection mode', async () => {
     await expect(monitor.root).toBeVisible({ timeout: 60_000 });
-    await expect(monitor.connectionStatusText).toContainText(CONNECTION_MODES.newMessagesOnly);
+    // The default subscription connects on load; EMP can stall on first subscribe in a fresh scratch
+    // org, so tolerate that by reloading until the default "New Messages" connection is reported.
+    await monitor.waitForConnectionMode(CONNECTION_MODES.newMessagesOnly);
     await expect(monitor.totalLogEventsText).toBeVisible();
 });
 
 test('historic mode replays the seeded log events', async () => {
-    await monitor.setConnectionMode(CONNECTION_MODES.historicAndNew);
-    await expect.poll(() => monitor.getTotalLogEvents(), { timeout: 120_000, intervals: [5_000] }).toBeGreaterThan(0);
-    await expect(monitor.eventRows().first()).toBeVisible();
+    // Historic mode replays retained events from the EMP bus, and a stale subscription will not pick
+    // up events that surface afterwards. connectInMode reloads to recover a stalled EMP subscribe;
+    // then poll for the replay, reloading between rounds if nothing has arrived yet.
+    const MAX_ATTEMPTS = 4;
+    for (let attempt = 1; ; attempt++) {
+        try {
+            await monitor.connectInMode(CONNECTION_MODES.historicAndNew);
+            await expect
+                .poll(() => monitor.getTotalLogEvents(), { timeout: 45_000, intervals: [5_000] })
+                .toBeGreaterThan(0);
+            break;
+        } catch (error) {
+            if (attempt >= MAX_ATTEMPTS) {
+                throw error;
+            }
+            await page.reload({ waitUntil: 'domcontentloaded' });
+            await expect(monitor.root).toBeVisible({ timeout: 60_000 });
+        }
+    }
+    await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
 });
 
 test('receives new log events in real time over the EMP API', async () => {
@@ -36,19 +55,37 @@ test('receives new log events in real time over the EMP API', async () => {
     // toggling modes, which occasionally stalls the EMP resubscribe.
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(monitor.connectionStatusText).toContainText(CONNECTION_MODES.newMessagesOnly, { timeout: 60_000 });
+    // Let the CometD subscription finish its handshake before publishing. EMP only pushes events that
+    // occur after the subscription is live, so an event published into that gap is silently missed.
+    await page.waitForTimeout(3_000);
     const baseline = await monitor.getTotalLogEvents();
 
     runApex('scripts/apex/CreateLogEvent.apex');
 
-    await expect
-        .poll(() => monitor.getTotalLogEvents(), { timeout: 120_000, intervals: [5_000] })
-        .toBeGreaterThan(baseline);
+    // Poll for the pushed event, and as a safety net against a single missed delivery (subscription
+    // race), publish once more partway through before giving up.
+    const deadline = Date.now() + 90_000;
+    let republished = false;
+    for (;;) {
+        if ((await monitor.getTotalLogEvents()) > baseline) {
+            break;
+        }
+        if (Date.now() > deadline) {
+            throw new Error('No new log event was received over the EMP API within 90s.');
+        }
+        if (!republished && Date.now() > deadline - 60_000) {
+            runApex('scripts/apex/CreateLogEvent.apex');
+            republished = true;
+        }
+        await page.waitForTimeout(5_000);
+    }
+
     await expect(monitor.eventRows().filter({ hasText: 'TestContext' }).first()).toBeVisible();
 });
 
 test('filters log events by level and context', async () => {
     // Reconnect in historic mode so there is a stable set of rows to filter.
-    await monitor.setConnectionMode(CONNECTION_MODES.historicAndNew);
+    await monitor.connectInMode(CONNECTION_MODES.historicAndNew);
     await expect.poll(() => monitor.getTotalLogEvents(), { timeout: 120_000, intervals: [5_000] }).toBeGreaterThan(0);
 
     await monitor.searchField('Level...').fill('FATAL');

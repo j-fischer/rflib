@@ -29,17 +29,17 @@ async function queryArchiveAndCountRows(): Promise<number> {
 }
 
 test('archive mode queries the seeded archived log events', async () => {
-    await monitor.setConnectionMode(CONNECTION_MODES.archive);
+    await monitor.connectInMode(CONNECTION_MODES.archive);
     await expect(monitor.queryArchiveButton).toBeVisible();
 
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await monitor.setArchiveDateRange(yesterday, tomorrow);
 
-    // Big Object writes are asynchronous; the seeded events from global setup
-    // have had the runtime of specs 01-04 to land. Re-query until rows appear.
+    // Global setup seeds the Big Object directly, so rows are present; specs 01-04 give them ample time
+    // to be queryable. Re-query a few times to absorb any residual Big Object read lag.
     await pollUntil(queryArchiveAndCountRows, (count) => count > 0, {
-        timeoutMs: 240_000,
+        timeoutMs: 90_000,
         intervalMs: 10_000,
         description: 'archived log events'
     });
@@ -64,7 +64,7 @@ test('clear archive removes expired records after confirmation', async () => {
     await expect(monitor.totalLogEventsText).toContainText('0 Total Log Events');
 
     await pollUntil(queryArchiveAndCountRows, (count) => count > 0, {
-        timeoutMs: 120_000,
+        timeoutMs: 90_000,
         intervalMs: 10_000,
         description: 'recent records to remain after clearing expired ones'
     });
