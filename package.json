@@ -26,7 +26,8 @@
         "salesforce",
         "logging",
         "reliability",
-        "functions",
+        "lwr",
+        "node",
         "lwc",
         "aura",
         "apex"
@@ -35,9 +36,7 @@
         "node": ">= 20.0.0",
         "npm": ">= 8.0.0"
     },
-    "dependencies": {
-        "sf-fx-sdk-nodejs": "^3.1.0"
-    },
+    "dependencies": {},
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/eslint-parser": "^7.29.7",
@@ -72,7 +71,6 @@
         "prettier": "3.8.3",
         "prettier-plugin-apex": "2.2.6",
         "semver": "^7.8.1",
-        "sf-fx-sdk-nodejs": "^3.1.0",
         "time-require": "^0.1.2"
     },
     "lint-staged": {

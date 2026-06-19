@@ -27,7 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-const createApplicationEventLogger = (context, logger) => {
+const createApplicationEventLogger = (dataApi, context, logger) => {
+    const user = (context && context.user) || {};
+
     const logApplicationEvent = (eventName, relatedRecordId, additionalDetails) => {
         logger.info(
             'Logging Application Event "{0}" for record "{1}" with details: {2}',
@@ -35,7 +37,7 @@ const createApplicationEventLogger = (context, logger) => {
             relatedRecordId,
             additionalDetails
         );
-        context.org.dataApi
+        dataApi
             .create({
                 type: 'rflib_Application_Event_Occurred_Event__e',
                 fields: {
@@ -43,7 +45,7 @@ const createApplicationEventLogger = (context, logger) => {
                     Occurred_On__c: new Date().toISOString(),
                     Related_Record_ID__c: relatedRecordId || 'NO_RECORD_ID',
                     Additional_Details__c: JSON.stringify(additionalDetails),
-                    Created_By_ID__c: context.org.user.onBehalfOfUserId || context.org.user.id || 'NO_USER_ID'
+                    Created_By_ID__c: user.onBehalfOfUserId || user.id || 'NO_USER_ID'
                 }
             })
             .then(() => {
