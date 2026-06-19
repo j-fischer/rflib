@@ -181,18 +181,20 @@ test('apex job schedulers can schedule, refresh, and delete jobs', async () => {
 });
 
 test('log archive alert appears for recent high-severity logs and links to the Log Monitor', async () => {
-    test.setTimeout(420_000);
-    // Archive rows are written asynchronously after global setup published the
-    // seeded WARN/ERROR/FATAL events; reload until the alert renders.
+    // Global setup seeds recent WARN/ERROR/FATAL rows straight into the Big Object, so the alert is
+    // deterministic. The summary is @wire-fetched on component load, so reload to re-fire the wire and
+    // wait for the banner each round rather than blind-sleeping; with seeded data this resolves quickly.
     await pollUntil(
         async () => {
             await page.reload({ waitUntil: 'domcontentloaded' });
             await expect(console_.banner).toBeVisible({ timeout: 60_000 });
-            await page.waitForTimeout(5_000);
-            return console_.archiveAlert.isVisible();
+            return console_.archiveAlert
+                .waitFor({ state: 'visible', timeout: 10_000 })
+                .then(() => true)
+                .catch(() => false);
         },
         (visible) => visible,
-        { timeoutMs: 300_000, intervalMs: 5_000, description: 'log archive alert banner' }
+        { timeoutMs: 120_000, intervalMs: 2_000, description: 'log archive alert banner' }
     );
 
     await console_.archiveAlertLink.click();

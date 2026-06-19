@@ -54,6 +54,41 @@ export class LogMonitorPage {
         }
     }
 
+    // EMP/CometD can stall its first subscribe in a fresh scratch org, leaving the connection status
+    // stuck on "Not Connected". A full page reload re-establishes the subscription far more reliably
+    // than re-selecting the menu, so reload and retry the whole mode switch before giving up.
+    async connectInMode(modeLabel: string, attempts = 4): Promise<void> {
+        for (let attempt = 1; ; attempt++) {
+            try {
+                await this.setConnectionMode(modeLabel);
+                return;
+            } catch (error) {
+                if (attempt >= attempts) {
+                    throw error;
+                }
+                await this.page.reload({ waitUntil: 'domcontentloaded' });
+                await expect(this.root).toBeVisible({ timeout: 60_000 });
+            }
+        }
+    }
+
+    // Waits for the monitor to report the given connection mode without changing it, reloading to
+    // re-establish a stalled EMP subscription. Use for the default ("New Messages") connection.
+    async waitForConnectionMode(modeLabel: string, attempts = 4): Promise<void> {
+        for (let attempt = 1; ; attempt++) {
+            try {
+                await expect(this.connectionStatusText).toContainText(modeLabel, { timeout: 30_000 });
+                return;
+            } catch (error) {
+                if (attempt >= attempts) {
+                    throw error;
+                }
+                await this.page.reload({ waitUntil: 'domcontentloaded' });
+                await expect(this.root).toBeVisible({ timeout: 60_000 });
+            }
+        }
+    }
+
     async getTotalLogEvents(): Promise<number> {
         const text = (await this.totalLogEventsText.textContent()) ?? '0';
         return parseInt(text.trim().split(' ')[0], 10);

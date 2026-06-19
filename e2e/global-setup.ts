@@ -35,5 +35,9 @@ export default async function globalSetup(): Promise<void> {
     runApex('scripts/apex/ConfigureCustomSettings.apex');
     runApex('scripts/apex/CreateLogEvent.apex');
     runApex('scripts/apex/CreateApplicationEvent.apex');
+    // Seed the Big Object archive directly so archive-dependent specs (Management Console alert,
+    // Log Monitor Archive mode) have deterministic, recent rows instead of racing the async
+    // platform-event archival pipeline, which can lag minutes in a fresh scratch org.
+    runApex('scripts/apex/SeedLogArchive.apex');
     console.log('Global setup complete.');
 }
