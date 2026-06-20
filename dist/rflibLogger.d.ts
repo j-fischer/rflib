@@ -169,9 +169,9 @@ export interface RflibApplicationEventLogger {
      * Log an Application Event.
      * @param eventName The name of the application event.
      * @param relatedRecordId A Salesforce record ID the event is related to.
-     * @param additionalDetails Any additional details related to the event.
+     * @param additionalDetails Any additional details related to the event; serialized with JSON.stringify, so a string or any serializable object may be passed.
      */
-    logApplicationEvent(eventName: string, relatedRecordId?: string, additionalDetails?: string): void;
+    logApplicationEvent(eventName: string, relatedRecordId?: string, additionalDetails?: unknown): void;
 }
 
 /**
