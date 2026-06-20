@@ -34,7 +34,9 @@
  */
 export interface DataApi {
     /**
-     * Runs a SOQL query and resolves the first matching record (or undefined).
+     * Runs a SOQL query and resolves the matching records. Return the records array so the logger can
+     * resolve the Logger Settings hierarchy (org / profile / user); a single record is also accepted
+     * for org-only configuration.
      * @param soql The SOQL query string.
      */
     query(soql: string): Promise<any>;
@@ -51,12 +53,13 @@ export interface DataApi {
  * an instance across users.
  * @property id The request/transaction id, recorded as Request_Id__c.
  * @property org The org whose rflib_Logger_Settings__c hierarchy applies (SetupOwnerId = org.id).
- * @property user The acting user, recorded as Created_By_ID__c on application events.
+ * @property user The acting user, recorded as Created_By_ID__c on application events. Supply `id`
+ *           (and optionally `profileId`) so user/profile-level Logger Settings overrides are resolved.
  */
 export interface LoggerContext {
     readonly id: string;
     readonly org?: { readonly id: string };
-    readonly user?: { readonly id?: string; readonly onBehalfOfUserId?: string };
+    readonly user?: { readonly id?: string; readonly profileId?: string; readonly onBehalfOfUserId?: string };
 }
 
 /**

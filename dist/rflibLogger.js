@@ -97,9 +97,10 @@ const collectPlatformInfo = () => ({
  * user/request and must not reuse a single instance across users.
  *
  * @param {{query: Function, create: Function}} dataApi Host-supplied Salesforce data adapter. `query`
- *        runs SOQL and resolves the first record; `create` publishes a platform event
- *        ({ type, fields }). The host typically adapts a jsforce Connection to this shape.
- * @param {object} context Per-request context: { id, org: { id }, user: { id, onBehalfOfUserId } }.
+ *        runs SOQL and resolves the matching records (return the records array to enable profile/user
+ *        hierarchy resolution; a single record is also accepted for org-only config); `create`
+ *        publishes a platform event ({ type, fields }). The host typically adapts a jsforce Connection.
+ * @param {object} context Per-request context: { id, org: { id }, user: { id, profileId, onBehalfOfUserId } }.
  * @param {string} loggerName The name of the current logger instance.
  * @param {object} [options] { computeLogger = console, shouldClearLogs = false, platformInfoProvider }.
  */
@@ -172,38 +173,64 @@ const createLogger = (dataApi, context, loggerName, options) => {
         }
     };
 
-    const loggerSettingsQuery = `SELECT Client_Console_Log_Level__c, Client_Server_Log_Level__c, Client_Log_Size__c, Archive_Log_Level__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId = '${context.org && context.org.id}'`;
+    // rflib_Logger_Settings__c is a Hierarchy custom setting. Resolve the effective values the way
+    // Apex getInstance() would: read the org, profile, and user rows and let the most specific
+    // existing row win. The host supplies the ids it knows through the context (org always; profile
+    // and user when available), so profile/user-level overrides are honored — not just org defaults.
+    const orgId = context.org && context.org.id;
+    const profileId = context.user && context.user.profileId;
+    const userId = context.user && context.user.id;
+    const ownerPrecedence = [orgId, profileId, userId].filter(Boolean);
 
-    initializationPromise =
-        context.org && context.org.id
-            ? dataApi
-                  .query(loggerSettingsQuery)
-                  .then((result) => {
-                      log(
-                          LogLevel.DEBUG,
-                          'rflibLogger',
-                          'Retrieved settings for user: result=' +
-                              JSON.stringify(result) +
-                              ', current config=' +
-                              JSON.stringify(config)
-                      );
+    const applySettings = (records) => {
+        const rows = Array.isArray(records) ? records : [];
+        const byOwner = {};
+        rows.forEach((row) => {
+            if (row && row.SetupOwnerId) {
+                byOwner[row.SetupOwnerId] = row;
+            }
+        });
 
-                      config.stackSize = result.Client_Log_Size__c || config.stackSize;
-                      config.computeLogLevel =
-                          LogLevel[toUpperCase(result.Client_Console_Log_Level__c)] || config.computeLogLevel;
-                      config.serverLogLevel =
-                          LogLevel[toUpperCase(result.Client_Server_Log_Level__c)] || config.serverLogLevel;
-                      config.archiveLogLevel =
-                          LogLevel[toUpperCase(result.Archive_Log_Level__c)] || config.archiveLogLevel;
+        // Most specific existing row wins. Fall back to a single record returned without a
+        // SetupOwnerId (an adapter that resolves one org-level row directly).
+        let resolved = !Array.isArray(records) && records ? records : {};
+        ownerPrecedence.forEach((id) => {
+            if (byOwner[id]) {
+                resolved = byOwner[id];
+            }
+        });
 
-                      applyServerLogLevelFloor();
-                  })
-                  .catch((error) => {
-                      computeLogger.error('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
-                  })
-            : Promise.resolve().then(() => {
-                  computeLogger.warn('>>> No org ID found: ' + JSON.stringify(context));
-              });
+        log(
+            LogLevel.DEBUG,
+            'rflibLogger',
+            'Retrieved settings for user: result=' +
+                JSON.stringify(resolved) +
+                ', current config=' +
+                JSON.stringify(config)
+        );
+
+        config.stackSize = resolved.Client_Log_Size__c || config.stackSize;
+        config.computeLogLevel = LogLevel[toUpperCase(resolved.Client_Console_Log_Level__c)] || config.computeLogLevel;
+        config.serverLogLevel = LogLevel[toUpperCase(resolved.Client_Server_Log_Level__c)] || config.serverLogLevel;
+        config.archiveLogLevel = LogLevel[toUpperCase(resolved.Archive_Log_Level__c)] || config.archiveLogLevel;
+
+        applyServerLogLevelFloor();
+    };
+
+    const loggerSettingsQuery = `SELECT SetupOwnerId, Client_Console_Log_Level__c, Client_Server_Log_Level__c, Client_Log_Size__c, Archive_Log_Level__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId IN (${ownerPrecedence
+        .map((id) => `'${id}'`)
+        .join(', ')})`;
+
+    initializationPromise = orgId
+        ? dataApi
+              .query(loggerSettingsQuery)
+              .then(applySettings)
+              .catch((error) => {
+                  computeLogger.error('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
+              })
+        : Promise.resolve().then(() => {
+              computeLogger.warn('>>> No org ID found: ' + JSON.stringify(context));
+          });
 
     if (opts.shouldClearLogs) {
         messages = [];

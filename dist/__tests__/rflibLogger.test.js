@@ -247,6 +247,40 @@ describe('Logger Tests', () => {
         });
     });
 
+    describe('settings hierarchy', () => {
+        it('should resolve the most specific row (user overrides org)', async () => {
+            mockDataApi.query.mockResolvedValue([
+                {
+                    SetupOwnerId: 'org-id-123',
+                    Client_Console_Log_Level__c: 'NONE',
+                    Client_Server_Log_Level__c: 'ERROR',
+                    Client_Log_Size__c: 100
+                },
+                {
+                    SetupOwnerId: 'user-id-123',
+                    Client_Console_Log_Level__c: 'NONE',
+                    Client_Server_Log_Level__c: 'INFO',
+                    Client_Log_Size__c: 100
+                }
+            ]);
+
+            const logger = require('../rflibLogger').createLogger(mockDataApi, context, 'hierarchy', {
+                computeLogger: mockComputeLogger
+            });
+            await flushPromises();
+
+            // The user row sets serverLogLevel INFO; an INFO statement publishes. With only the
+            // org-level ERROR default it would not, proving the user override was resolved.
+            logger.info('user override applies');
+            await flushPromises();
+
+            const logEvents = mockDataApi.create.mock.calls
+                .map((call) => call[0])
+                .filter((record) => record.type === 'rflib_Log_Event__e');
+            expect(logEvents.some((record) => record.fields.Log_Level__c === 'INFO')).toBe(true);
+        });
+    });
+
     describe('log timer', () => {
         let logger;
         let logFactory;

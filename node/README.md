@@ -36,8 +36,11 @@ in-memory log stack and configuration.
 - **Injected data adapter.** `dataApi` is any object exposing `query(soql)` (resolves the first
   record) and `create({ type, fields })` (publishes a Platform Event). The logger reads its settings
   via `query` and publishes via `create`. You typically adapt a jsforce `Connection` (see below).
-- **Configuration** comes from `rflib_Logger_Settings__c` (hierarchical: org / profile / user),
-  reusing the existing client-logging fields:
+- **Configuration** comes from `rflib_Logger_Settings__c` (a Hierarchy custom setting), reusing the
+  existing client-logging fields. The logger resolves the hierarchy the way Apex `getInstance()`
+  does — the most specific row wins — using the ids on the context: pass `context.user.id` (and
+  optionally `context.user.profileId`) to honor user/profile-level overrides; with only
+  `context.org.id` it uses org defaults.
 
     | Logger config     | Logger Settings field         |
     | ----------------- | ----------------------------- |
@@ -74,11 +77,13 @@ async function createConnection() {
 }
 
 // Adapt a jsforce Connection to the minimal { query, create } shape the logger expects.
+// Return the full `records` array so the logger can resolve the Logger Settings hierarchy
+// (org / profile / user) — returning a single record limits it to org-level defaults.
 function toDataApi(conn) {
     return {
         query: async (soql) => {
             const result = await conn.query(soql);
-            return result.records[0] || {};
+            return result.records;
         },
         create: ({ type, fields }) => conn.sobject(type).create(fields)
     };
@@ -101,8 +106,8 @@ export async function getServerData() {
         toDataApi(conn),
         {
             id: this.request.id, // recorded as Request_Id__c
-            org: { id: user.organizationId }, // SetupOwnerId for the Logger Settings lookup
-            user: { id: user.userId } // recorded as Created_By_ID__c on application events
+            org: { id: user.organizationId }, // org-default Logger Settings row
+            user: { id: user.userId, profileId: user.profileId } // resolves user/profile-level overrides
         },
         'home-route'
     );
