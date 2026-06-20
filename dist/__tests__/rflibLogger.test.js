@@ -127,6 +127,26 @@ describe('Logger Tests', () => {
             logger.setConfig({ computeLogLevel: 'INFO' });
             executeComputeLogLevelTest(['FATAL', 'ERROR', 'WARN', 'INFO']);
         });
+
+        it('should not throw when the compute logger omits an optional method', async () => {
+            const partialComputeLogger = {
+                // no `trace` — satisfies the optional ComputeLogger type but lacks the method
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn()
+            };
+            const partialLogger = require('../rflibLogger').createLogger(mockDataApi, context, 'partial', {
+                computeLogger: partialComputeLogger
+            });
+            await flushPromises();
+
+            partialLogger.setConfig({ computeLogLevel: 'TRACE' });
+
+            expect(() => partialLogger.trace('no trace sink')).not.toThrow();
+            partialLogger.error('present sink');
+            expect(partialComputeLogger.error).toHaveBeenCalledWith(expect.stringContaining('present sink'));
+        });
     });
 
     describe('server logging', () => {

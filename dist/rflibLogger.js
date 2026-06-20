@@ -134,8 +134,12 @@ const createLogger = (dataApi, context, loggerName, options) => {
     const log = (level, component, message) => {
         const msgToLog = level.label + '|' + context.id + '|' + component + '|' + message;
         if (level.index >= config.computeLogLevel.index) {
-            const computeLogLevel = level.label === 'FATAL' ? 'error' : level.label.toLowerCase();
-            computeLogger[computeLogLevel](msgToLog);
+            const computeMethod = level.label === 'FATAL' ? 'error' : level.label.toLowerCase();
+            // The compute sink may omit optional methods (e.g. a custom logger without `trace`).
+            // Skip stdout logging rather than throwing and breaking the request.
+            if (typeof computeLogger[computeMethod] === 'function') {
+                computeLogger[computeMethod](msgToLog);
+            }
         }
 
         addMessage(msgToLog);
