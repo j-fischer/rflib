@@ -187,22 +187,35 @@ const createLogger = (dataApi, context, loggerName, options) => {
     const ownerPrecedence = [orgId, profileId, userId].filter(Boolean);
 
     const applySettings = (records) => {
-        const rows = Array.isArray(records) ? records : [];
+        const rows = Array.isArray(records) ? records : records ? [records] : [];
         const byOwner = {};
+        // A single record returned without a SetupOwnerId (an adapter that resolves one org-level
+        // row directly) seeds the base so org-only configs still work.
+        let orphan = {};
         rows.forEach((row) => {
             if (row && row.SetupOwnerId) {
                 byOwner[row.SetupOwnerId] = row;
+            } else if (row) {
+                orphan = row;
             }
         });
 
-        // Most specific existing row wins. Fall back to a single record returned without a
-        // SetupOwnerId (an adapter that resolves one org-level row directly).
-        let resolved = !Array.isArray(records) && records ? records : {};
-        ownerPrecedence.forEach((id) => {
-            if (byOwner[id]) {
-                resolved = byOwner[id];
+        // Merge field-by-field in hierarchy order (base -> org -> profile -> user): a non-null value
+        // at a more specific level overrides less specific ones, and null fields inherit from the
+        // level above, matching Apex rflib_Logger_Settings__c.getInstance() semantics.
+        const resolved = {};
+        const mergeRow = (row) => {
+            if (!row) {
+                return;
             }
-        });
+            Object.keys(row).forEach((key) => {
+                if (row[key] !== null && row[key] !== undefined) {
+                    resolved[key] = row[key];
+                }
+            });
+        };
+        mergeRow(orphan);
+        ownerPrecedence.forEach((id) => mergeRow(byOwner[id]));
 
         log(
             LogLevel.DEBUG,

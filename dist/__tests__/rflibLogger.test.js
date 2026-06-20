@@ -299,6 +299,41 @@ describe('Logger Tests', () => {
                 .filter((record) => record.type === 'rflib_Log_Event__e');
             expect(logEvents.some((record) => record.fields.Log_Level__c === 'INFO')).toBe(true);
         });
+
+        it('should merge rows field-by-field so null overrides inherit from less specific rows', async () => {
+            mockDataApi.query.mockResolvedValue([
+                {
+                    SetupOwnerId: 'org-id-123',
+                    Client_Console_Log_Level__c: 'NONE',
+                    Client_Server_Log_Level__c: 'INFO',
+                    Client_Log_Size__c: 100
+                },
+                {
+                    // Sparse user override: only raises the console level; server level / size are null.
+                    SetupOwnerId: 'user-id-123',
+                    Client_Console_Log_Level__c: 'TRACE',
+                    Client_Server_Log_Level__c: null,
+                    Client_Log_Size__c: null
+                }
+            ]);
+
+            const logger = require('../rflibLogger').createLogger(mockDataApi, context, 'merge', {
+                computeLogger: mockComputeLogger
+            });
+            await flushPromises();
+
+            logger.info('inherited server level');
+            await flushPromises();
+
+            const logEvents = mockDataApi.create.mock.calls
+                .map((call) => call[0])
+                .filter((record) => record.type === 'rflib_Log_Event__e');
+            // serverLogLevel inherits INFO from the org row (user field is null); had the whole user
+            // row replaced it, serverLogLevel would default to WARN and the INFO event would not publish.
+            expect(logEvents.some((record) => record.fields.Log_Level__c === 'INFO')).toBe(true);
+            // computeLogLevel comes from the user row (TRACE), so the INFO statement also reached stdout.
+            expect(mockComputeLogger.info).toHaveBeenCalledWith(expect.stringContaining('inherited server level'));
+        });
     });
 
     describe('log timer', () => {
