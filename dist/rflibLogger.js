@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+const os = require('os');
 const appEventLogger = require('./rflibApplicationEventLogger');
 
 const LogLevel = Object.freeze({
@@ -38,16 +39,6 @@ const LogLevel = Object.freeze({
     FATAL: { index: 5, label: 'FATAL' },
     NONE: { index: 100, label: 'NONE' }
 });
-
-const state = {
-    config: {
-        stackSize: 100,
-        computeLogLevel: LogLevel.DEBUG,
-        serverLogLevel: LogLevel.WARN
-    },
-
-    messages: []
-};
 
 const convertToString = (arg) => {
     if (arg === undefined) return 'undefined';
@@ -77,46 +68,6 @@ const format = (strToFormat, ...args) => {
     });
 };
 
-const addMessage = (message) => {
-    if (state.messages.length >= state.config.stackSize) {
-        state.messages.shift();
-    }
-
-    const fullMessage = new Date().toISOString() + '|' + message;
-    state.messages.push(fullMessage);
-};
-
-const log = (level, component, message, context, computeLogger) => {
-    const msgToLog = level.label + '|' + context.id + '|' + component + '|' + message;
-    if (level.index >= state.config.computeLogLevel.index) {
-        const computeLogLevel = level.label === 'FATAL' ? 'error' : level.label.toLowerCase();
-        computeLogger[computeLogLevel](msgToLog);
-    }
-
-    addMessage(msgToLog);
-
-    initializationPromise.then(() => {
-        if (level.index >= state.config.serverLogLevel.index) {
-            const platformInfo = Object.assign({}, process.resourceUsage(), process.memoryUsage());
-
-            context.org.dataApi
-                .create({
-                    type: 'rflib_Log_Event__e',
-                    fields: {
-                        Log_Level__c: level.label,
-                        Context__c: component.slice(-40),
-                        Log_Messages__c: state.messages.join('\n'),
-                        Request_Id__c: context.id.slice(-40),
-                        Platform_Info__c: JSON.stringify(platformInfo)
-                    }
-                })
-                .catch((error) => {
-                    computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
-                });
-        }
-    });
-};
-
 const toUpperCase = (text) => {
     if (text) {
         return text.toUpperCase();
@@ -124,92 +75,221 @@ const toUpperCase = (text) => {
     return text;
 };
 
-let initializationPromise = null;
+// Default Platform_Info__c payload for a Node/LWR runtime. The data is nested under a single
+// "node" key so the Apex rflib_PlatformInfoParser flattens it generically to rflib.platform.node.*,
+// the same way it flattens the browser performance payload. A host can pass options.platformInfoProvider
+// to replace or extend this (e.g. to add LWR request route, SSR flag, or request duration).
+const collectPlatformInfo = () => ({
+    node: {
+        version: process.version,
+        pid: process.pid,
+        hostname: os.hostname(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        cpu: process.cpuUsage()
+    }
+});
 
-const createLogger = (context, computeLogger, loggerName, shouldClearLogs) => {
-    const loggerSettingsQuery = `SELECT Archive_Log_Level__c, Functions_Log_Size__c, Functions_Compute_Log_Level__c, Functions_Server_Log_Level__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId = '${context.org.id}'`;
+/**
+ * Creates an RFLIB logger bound to a single request/user context. Each invocation returns an
+ * isolated instance with its own in-memory log stack and configuration; instances never share
+ * state, so a long-running, multi-user host (such as LWR on Node.js) must create one logger per
+ * user/request and must not reuse a single instance across users.
+ *
+ * @param {{query: Function, create: Function}} dataApi Host-supplied Salesforce data adapter. `query`
+ *        runs SOQL and resolves the matching records (return the records array to enable profile/user
+ *        hierarchy resolution; a single record is also accepted for org-only config); `create`
+ *        publishes a platform event ({ type, fields }). The host typically adapts a jsforce Connection.
+ * @param {object} context Per-request context: { id, org: { id }, user: { id, profileId, onBehalfOfUserId } }.
+ * @param {string} loggerName The name of the current logger instance.
+ * @param {object} [options] { computeLogger = console, shouldClearLogs = false, platformInfoProvider }.
+ */
+const createLogger = (dataApi, context, loggerName, options) => {
+    const opts = options || {};
+    const computeLogger = opts.computeLogger || console;
+    const platformInfoProvider =
+        typeof opts.platformInfoProvider === 'function' ? opts.platformInfoProvider : collectPlatformInfo;
 
-    initializationPromise =
-        context.org && context.org.id
-            ? context.org.dataApi
-                  .query(loggerSettingsQuery)
-                  .then((result) => {
-                      log(
-                          LogLevel.DEBUG,
-                          'rflibLogger',
-                          'Retrieved settings for user: result=' +
-                              JSON.stringify(result) +
-                              ', current state.config=' +
-                              JSON.stringify(state.config),
-                          context,
-                          computeLogger
-                      );
+    // Per-instance state. A fresh stack and config per context is what keeps one user's log
+    // messages from leaking into another user's published Log Event on a shared server.
+    const config = {
+        stackSize: 100,
+        computeLogLevel: LogLevel.DEBUG,
+        serverLogLevel: LogLevel.WARN,
+        archiveLogLevel: LogLevel.NONE
+    };
+    let messages = [];
 
-                      state.config.stackSize = result.Functions_Log_Size__c || state.config.stackSize;
-                      state.config.computeLogLevel =
-                          LogLevel[toUpperCase(result.Functions_Compute_Log_Level__c)] || state.config.computeLogLevel;
-                      state.config.serverLogLevel =
-                          LogLevel[toUpperCase(result.Functions_Server_Log_Level__c)] || state.config.serverLogLevel;
-                      state.config.archiveLogLevel =
-                          LogLevel[toUpperCase(result.Archive_Log_Level__c)] || state.config.archiveLogLevel;
+    const addMessage = (message) => {
+        if (messages.length >= config.stackSize) {
+            messages.shift();
+        }
 
-                      if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
-                          state.config.serverLogLevel = LogLevel.INFO;
-                      }
-                  })
-                  .catch((error) => {
-                      computeLogger.error('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
-                  })
-            : new Promise(() => {
-                  computeLogger.warn('>>> No org ID found: ' + JSON.stringify(context));
-                  return {};
-              });
+        const fullMessage = new Date().toISOString() + '|' + message;
+        messages.push(fullMessage);
+    };
 
-    if (shouldClearLogs) {
-        state.messages = [];
-        log(LogLevel.DEBUG, 'rflibLogger', 'Cleared log messages', context, computeLogger);
+    let initializationPromise = null;
+
+    const log = (level, component, message) => {
+        const msgToLog = level.label + '|' + context.id + '|' + component + '|' + message;
+        if (level.index >= config.computeLogLevel.index) {
+            const computeMethod = level.label === 'FATAL' ? 'error' : level.label.toLowerCase();
+            // The compute sink may omit optional methods (e.g. a custom logger without `trace`).
+            // Skip stdout logging rather than throwing and breaking the request.
+            if (typeof computeLogger[computeMethod] === 'function') {
+                computeLogger[computeMethod](msgToLog);
+            }
+        }
+
+        addMessage(msgToLog);
+
+        initializationPromise.then(() => {
+            if (level.index >= config.serverLogLevel.index) {
+                let platformInfo;
+                try {
+                    platformInfo = platformInfoProvider();
+                } catch (error) {
+                    platformInfo = {};
+                }
+
+                dataApi
+                    .create({
+                        type: 'rflib_Log_Event__e',
+                        fields: {
+                            Log_Level__c: level.label,
+                            Context__c: component.slice(-40),
+                            Log_Messages__c: messages.join('\n'),
+                            Request_Id__c: context.id.slice(-40),
+                            Platform_Info__c: JSON.stringify(platformInfo)
+                        }
+                    })
+                    .catch((error) => {
+                        computeLogger.error('>>> Failed to log message to server for: ' + JSON.stringify(error));
+                    });
+            }
+        });
+    };
+
+    const applyServerLogLevelFloor = () => {
+        if (config.serverLogLevel.index <= LogLevel.DEBUG.index) {
+            config.serverLogLevel = LogLevel.INFO;
+        }
+    };
+
+    // rflib_Logger_Settings__c is a Hierarchy custom setting. Resolve the effective values the way
+    // Apex getInstance() would: read the org, profile, and user rows and let the most specific
+    // existing row win. The host supplies the ids it knows through the context (org always; profile
+    // and user when available), so profile/user-level overrides are honored — not just org defaults.
+    const orgId = context.org && context.org.id;
+    const profileId = context.user && context.user.profileId;
+    const userId = context.user && context.user.id;
+    const ownerPrecedence = [orgId, profileId, userId].filter(Boolean);
+
+    const applySettings = (records) => {
+        const rows = Array.isArray(records) ? records : records ? [records] : [];
+        const byOwner = {};
+        // A single record returned without a SetupOwnerId (an adapter that resolves one org-level
+        // row directly) seeds the base so org-only configs still work.
+        let orphan = {};
+        rows.forEach((row) => {
+            if (row && row.SetupOwnerId) {
+                byOwner[row.SetupOwnerId] = row;
+            } else if (row) {
+                orphan = row;
+            }
+        });
+
+        // Merge field-by-field in hierarchy order (base -> org -> profile -> user): a non-null value
+        // at a more specific level overrides less specific ones, and null fields inherit from the
+        // level above, matching Apex rflib_Logger_Settings__c.getInstance() semantics.
+        const resolved = {};
+        const mergeRow = (row) => {
+            if (!row) {
+                return;
+            }
+            Object.keys(row).forEach((key) => {
+                if (row[key] !== null && row[key] !== undefined) {
+                    resolved[key] = row[key];
+                }
+            });
+        };
+        mergeRow(orphan);
+        ownerPrecedence.forEach((id) => mergeRow(byOwner[id]));
+
+        log(
+            LogLevel.DEBUG,
+            'rflibLogger',
+            'Retrieved settings for user: result=' +
+                JSON.stringify(resolved) +
+                ', current config=' +
+                JSON.stringify(config)
+        );
+
+        config.stackSize = resolved.Client_Log_Size__c || config.stackSize;
+        config.computeLogLevel = LogLevel[toUpperCase(resolved.Client_Console_Log_Level__c)] || config.computeLogLevel;
+        config.serverLogLevel = LogLevel[toUpperCase(resolved.Client_Server_Log_Level__c)] || config.serverLogLevel;
+        config.archiveLogLevel = LogLevel[toUpperCase(resolved.Archive_Log_Level__c)] || config.archiveLogLevel;
+
+        applyServerLogLevelFloor();
+    };
+
+    const loggerSettingsQuery = `SELECT SetupOwnerId, Client_Console_Log_Level__c, Client_Server_Log_Level__c, Client_Log_Size__c, Archive_Log_Level__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId IN (${ownerPrecedence
+        .map((id) => `'${id}'`)
+        .join(', ')})`;
+
+    initializationPromise = orgId
+        ? dataApi
+              .query(loggerSettingsQuery)
+              .then(applySettings)
+              .catch((error) => {
+                  computeLogger.error('>>> Failed to retrieve settings from server: ' + JSON.stringify(error));
+              })
+        : Promise.resolve().then(() => {
+              computeLogger.warn('>>> No org ID found: ' + JSON.stringify(context));
+          });
+
+    if (opts.shouldClearLogs) {
+        messages = [];
+        log(LogLevel.DEBUG, 'rflibLogger', 'Cleared log messages');
     }
 
     const setConfig = (newConfig) => {
         log(
             LogLevel.DEBUG,
             loggerName,
-            format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig)),
-            context,
-            computeLogger
+            format('Setting new logger configuration for {0}, {1}', loggerName, JSON.stringify(newConfig))
         );
 
-        state.config.stackSize = newConfig.stackSize || state.config.stackSize;
-        state.config.computeLogLevel = LogLevel[toUpperCase(newConfig.computeLogLevel)] || state.config.computeLogLevel;
-        state.config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || state.config.serverLogLevel;
+        config.stackSize = newConfig.stackSize || config.stackSize;
+        config.computeLogLevel = LogLevel[toUpperCase(newConfig.computeLogLevel)] || config.computeLogLevel;
+        config.serverLogLevel = LogLevel[toUpperCase(newConfig.serverLogLevel)] || config.serverLogLevel;
 
-        if (state.config.serverLogLevel.index <= LogLevel.DEBUG.index) {
-            state.config.serverLogLevel = LogLevel.INFO;
-        }
+        applyServerLogLevelFloor();
     };
 
     const trace = (...args) => {
-        log(LogLevel.TRACE, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.TRACE, loggerName, format(...args));
     };
 
     const debug = (...args) => {
-        log(LogLevel.DEBUG, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.DEBUG, loggerName, format(...args));
     };
 
     const info = (...args) => {
-        log(LogLevel.INFO, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.INFO, loggerName, format(...args));
     };
 
     const warn = (...args) => {
-        log(LogLevel.WARN, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.WARN, loggerName, format(...args));
     };
 
     const error = (...args) => {
-        log(LogLevel.ERROR, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.ERROR, loggerName, format(...args));
     };
 
     const fatal = (...args) => {
-        log(LogLevel.FATAL, loggerName, format(...args), context, computeLogger);
+        log(LogLevel.FATAL, loggerName, format(...args));
     };
 
     return {
@@ -258,10 +338,10 @@ const startLogTimer = (logger, threshold, timerName, logLevelStr) => {
     };
 };
 
-const createApplicationEventLogger = (context, computeLogger) => {
-    const logger = createLogger(context, computeLogger, 'rflib-application-event-logger');
+const createApplicationEventLogger = (dataApi, context, options) => {
+    const logger = createLogger(dataApi, context, 'rflib-application-event-logger', options);
 
-    return appEventLogger.createApplicationEventLogger(context, logger);
+    return appEventLogger.createApplicationEventLogger(dataApi, context, logger);
 };
 
 module.exports = {

@@ -28,6 +28,7 @@ The following lists describe some of the key features of rflib.
 - Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
 - Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
 - [HTTP Request mocking framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) to speed up integration development
+- [Server-side logging for Node.js and Lightning Web Runtime (LWR)](node/README.md) apps via the `rflib` npm package
 
 #### Feature Switches (package RFLIB-FS):
 
@@ -90,7 +91,9 @@ To deploy code:
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
-See the [NPM Package Registry record for more details](https://www.npmjs.com/package/rflib).
+See the [NPM Package Registry record for more details](https://www.npmjs.com/package/rflib). For
+server-side logging from Node.js or Lightning Web Runtime (LWR) apps, see the
+[RFLIB Node Logger guide](node/README.md).
 
 ## Documentation
 
