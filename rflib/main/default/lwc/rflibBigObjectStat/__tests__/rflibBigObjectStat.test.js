@@ -242,9 +242,11 @@ describe('c-rflib-big-object-stat', () => {
         expect(refreshStats).toHaveBeenCalledTimes(2); // 2 configs in MOCK_CONFIGS
 
         // Check parameters for one of the calls
-        expect(refreshStats).toHaveBeenCalledWith(expect.objectContaining({
-            bigObjectName: 'BigObject1'
-        }));
+        expect(refreshStats).toHaveBeenCalledWith(
+            expect.objectContaining({
+                bigObjectName: 'BigObject1'
+            })
+        );
 
         // Should show success toast
         expect(handler).toHaveBeenCalled();
@@ -301,16 +303,20 @@ describe('c-rflib-big-object-stat', () => {
 
         // Trigger row action
         const row = { Name: 'BigObject1' };
-        datatable.dispatchEvent(new CustomEvent('rowaction', {
-            detail: {
-                action: { name: 'refresh' },
-                row: row
-            }
-        }));
+        datatable.dispatchEvent(
+            new CustomEvent('rowaction', {
+                detail: {
+                    action: { name: 'refresh' },
+                    row: row
+                }
+            })
+        );
 
-        expect(refreshStats).toHaveBeenCalledWith(expect.objectContaining({
-            bigObjectName: 'BigObject1'
-        }));
+        expect(refreshStats).toHaveBeenCalledWith(
+            expect.objectContaining({
+                bigObjectName: 'BigObject1'
+            })
+        );
     });
 
     it('handles error during row action refresh', async () => {
@@ -333,12 +339,14 @@ describe('c-rflib-big-object-stat', () => {
 
         // Trigger row action
         const row = { Name: 'BigObject1' };
-        datatable.dispatchEvent(new CustomEvent('rowaction', {
-            detail: {
-                action: { name: 'refresh' },
-                row: row
-            }
-        }));
+        datatable.dispatchEvent(
+            new CustomEvent('rowaction', {
+                detail: {
+                    action: { name: 'refresh' },
+                    row: row
+                }
+            })
+        );
 
         // Wait for async handling
         await Promise.resolve();

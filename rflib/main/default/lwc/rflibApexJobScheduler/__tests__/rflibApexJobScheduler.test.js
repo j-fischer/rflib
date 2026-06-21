@@ -77,7 +77,6 @@ Object.defineProperty(global, 'import', {
     }
 });
 
-
 describe('c-rflib-apex-job-scheduler', () => {
     afterEach(() => {
         while (document.body.firstChild) {
@@ -118,15 +117,15 @@ describe('c-rflib-apex-job-scheduler', () => {
         await Promise.resolve();
 
         const pTags = element.shadowRoot.querySelectorAll('p');
-        const statusText = Array.from(pTags).find(p => p.textContent.includes('Status:'));
+        const statusText = Array.from(pTags).find((p) => p.textContent.includes('Status:'));
         expect(statusText).toBeDefined();
         expect(statusText.textContent).toBe('Status: Queued');
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const deleteBtn = Array.from(buttons).find(btn => btn.label === 'Delete Job');
+        const deleteBtn = Array.from(buttons).find((btn) => btn.label === 'Delete Job');
         expect(deleteBtn).toBeDefined();
 
-        const refreshBtn = Array.from(buttons).find(btn => btn.label === 'Refresh');
+        const refreshBtn = Array.from(buttons).find((btn) => btn.label === 'Refresh');
         expect(refreshBtn).toBeDefined();
     });
 
@@ -150,7 +149,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         expect(input).not.toBeNull();
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const scheduleBtn = Array.from(buttons).find(btn => btn.label === 'Schedule Job');
+        const scheduleBtn = Array.from(buttons).find((btn) => btn.label === 'Schedule Job');
         expect(scheduleBtn).toBeDefined();
     });
 
@@ -208,7 +207,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         input.dispatchEvent(new CustomEvent('change'));
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const scheduleBtn = Array.from(buttons).find(btn => btn.label === 'Schedule Job');
+        const scheduleBtn = Array.from(buttons).find((btn) => btn.label === 'Schedule Job');
         scheduleBtn.click();
 
         await Promise.resolve();
@@ -241,7 +240,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         input.dispatchEvent(new CustomEvent('change'));
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const scheduleBtn = Array.from(buttons).find(btn => btn.label === 'Schedule Job');
+        const scheduleBtn = Array.from(buttons).find((btn) => btn.label === 'Schedule Job');
         scheduleBtn.click();
 
         await Promise.resolve();
@@ -277,7 +276,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         input.dispatchEvent(new CustomEvent('change'));
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const scheduleBtn = Array.from(buttons).find(btn => btn.label === 'Schedule Job');
+        const scheduleBtn = Array.from(buttons).find((btn) => btn.label === 'Schedule Job');
         scheduleBtn.click();
 
         await Promise.resolve(); // Wait for promise chain
@@ -291,7 +290,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         });
 
         expect(toastHandler).toHaveBeenCalled();
-        const successCall = toastHandler.mock.calls.find(call => call[0].detail.variant === 'success');
+        const successCall = toastHandler.mock.calls.find((call) => call[0].detail.variant === 'success');
         expect(successCall).toBeDefined();
 
         expect(refreshApex).toHaveBeenCalled();
@@ -321,7 +320,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         input.dispatchEvent(new CustomEvent('change'));
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const scheduleBtn = Array.from(buttons).find(btn => btn.label === 'Schedule Job');
+        const scheduleBtn = Array.from(buttons).find((btn) => btn.label === 'Schedule Job');
         scheduleBtn.click();
 
         await Promise.resolve();
@@ -329,7 +328,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         await Promise.resolve();
 
         expect(toastHandler).toHaveBeenCalled();
-        const errorCall = toastHandler.mock.calls.find(call => call[0].detail.message === 'Scheduling failed');
+        const errorCall = toastHandler.mock.calls.find((call) => call[0].detail.message === 'Scheduling failed');
         expect(errorCall).toBeDefined();
         expect(errorCall[0].detail.variant).toBe('error');
     });
@@ -350,7 +349,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         await Promise.resolve();
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const deleteBtn = Array.from(buttons).find(btn => btn.label === 'Delete Job');
+        const deleteBtn = Array.from(buttons).find((btn) => btn.label === 'Delete Job');
         deleteBtn.click();
 
         await Promise.resolve();
@@ -377,7 +376,7 @@ describe('c-rflib-apex-job-scheduler', () => {
 
         // Simulate delete click
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const deleteBtn = Array.from(buttons).find(btn => btn.label === 'Delete Job');
+        const deleteBtn = Array.from(buttons).find((btn) => btn.label === 'Delete Job');
         deleteBtn.click();
         await Promise.resolve();
 
@@ -396,7 +395,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         expect(deleteScheduledJob).toHaveBeenCalledWith({ jobName: 'Test Job' });
 
         expect(toastHandler).toHaveBeenCalled();
-        const successCall = toastHandler.mock.calls.find(call => call[0].detail.variant === 'success');
+        const successCall = toastHandler.mock.calls.find((call) => call[0].detail.variant === 'success');
         expect(successCall).toBeDefined();
 
         expect(refreshApex).toHaveBeenCalled();
@@ -419,7 +418,7 @@ describe('c-rflib-apex-job-scheduler', () => {
 
         // Simulate delete click
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const deleteBtn = Array.from(buttons).find(btn => btn.label === 'Delete Job');
+        const deleteBtn = Array.from(buttons).find((btn) => btn.label === 'Delete Job');
         deleteBtn.click();
         await Promise.resolve();
 
@@ -449,7 +448,7 @@ describe('c-rflib-apex-job-scheduler', () => {
 
         // Simulate delete click
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const deleteBtn = Array.from(buttons).find(btn => btn.label === 'Delete Job');
+        const deleteBtn = Array.from(buttons).find((btn) => btn.label === 'Delete Job');
         deleteBtn.click();
         await Promise.resolve();
 
@@ -466,7 +465,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         await Promise.resolve();
 
         expect(toastHandler).toHaveBeenCalled();
-        const errorCall = toastHandler.mock.calls.find(call => call[0].detail.message === 'Delete failed');
+        const errorCall = toastHandler.mock.calls.find((call) => call[0].detail.message === 'Delete failed');
         expect(errorCall).toBeDefined();
         expect(errorCall[0].detail.variant).toBe('error');
     });
@@ -490,7 +489,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         element.addEventListener('lightning__showtoastevent', toastHandler);
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const refreshBtn = Array.from(buttons).find(btn => btn.label === 'Refresh');
+        const refreshBtn = Array.from(buttons).find((btn) => btn.label === 'Refresh');
         refreshBtn.click();
 
         await Promise.resolve();
@@ -500,7 +499,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         expect(refreshApex).toHaveBeenCalled();
 
         expect(toastHandler).toHaveBeenCalled();
-        const successCall = toastHandler.mock.calls.find(call => call[0].detail.variant === 'success');
+        const successCall = toastHandler.mock.calls.find((call) => call[0].detail.variant === 'success');
         expect(successCall).toBeDefined();
     });
 
@@ -524,7 +523,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         element.addEventListener('lightning__showtoastevent', toastHandler);
 
         const buttons = element.shadowRoot.querySelectorAll('lightning-button');
-        const refreshBtn = Array.from(buttons).find(btn => btn.label === 'Refresh');
+        const refreshBtn = Array.from(buttons).find((btn) => btn.label === 'Refresh');
         refreshBtn.click();
 
         await Promise.resolve();
@@ -532,7 +531,7 @@ describe('c-rflib-apex-job-scheduler', () => {
         await Promise.resolve();
 
         expect(toastHandler).toHaveBeenCalled();
-        const errorCall = toastHandler.mock.calls.find(call => call[0].detail.message === 'Refresh failed');
+        const errorCall = toastHandler.mock.calls.find((call) => call[0].detail.message === 'Refresh failed');
         expect(errorCall).toBeDefined();
         expect(errorCall[0].detail.variant).toBe('error');
     });

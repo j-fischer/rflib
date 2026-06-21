@@ -126,7 +126,7 @@ describe('c-rflib-custom-settings-editor', () => {
     });
 
     async function flushPromises() {
-        return new Promise(resolve => setTimeout(resolve, 0));
+        return new Promise((resolve) => setTimeout(resolve, 0));
     }
 
     it('initializes correctly with data and permissions', async () => {
@@ -258,7 +258,7 @@ describe('c-rflib-custom-settings-editor', () => {
         recordPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: 'newOwnerId' } }));
 
         const inputs = element.shadowRoot.querySelectorAll('input');
-        inputs.forEach(input => {
+        inputs.forEach((input) => {
             if (input.dataset.fieldName === 'Field1__c') {
                 input.value = 'New Value';
                 input.dispatchEvent(new Event('change'));
@@ -297,19 +297,21 @@ describe('c-rflib-custom-settings-editor', () => {
         await flushPromises();
 
         const datatable = element.shadowRoot.querySelector('lightning-datatable');
-        datatable.dispatchEvent(new CustomEvent('rowaction', {
-            detail: {
-                action: { name: 'edit' },
-                row: MOCK_SETTINGS_DATA[0]
-            }
-        }));
+        datatable.dispatchEvent(
+            new CustomEvent('rowaction', {
+                detail: {
+                    action: { name: 'edit' },
+                    row: MOCK_SETTINGS_DATA[0]
+                }
+            })
+        );
 
         await flushPromises();
 
         expect(element.shadowRoot.querySelector('section.slds-modal')).not.toBeNull();
 
         const inputs = element.shadowRoot.querySelectorAll('input');
-        inputs.forEach(input => {
+        inputs.forEach((input) => {
             if (input.dataset.fieldName === 'Field1__c') {
                 input.value = 'Updated Value';
                 input.dispatchEvent(new Event('change'));
@@ -344,12 +346,14 @@ describe('c-rflib-custom-settings-editor', () => {
         await flushPromises();
 
         const datatable = element.shadowRoot.querySelector('lightning-datatable');
-        datatable.dispatchEvent(new CustomEvent('rowaction', {
-            detail: {
-                action: { name: 'delete' },
-                row: MOCK_SETTINGS_DATA[0]
-            }
-        }));
+        datatable.dispatchEvent(
+            new CustomEvent('rowaction', {
+                detail: {
+                    action: { name: 'delete' },
+                    row: MOCK_SETTINGS_DATA[0]
+                }
+            })
+        );
 
         await flushPromises();
 
@@ -357,9 +361,11 @@ describe('c-rflib-custom-settings-editor', () => {
         expect(confirmDialog).not.toBeNull();
         expect(confirmDialog.visible).toBe(true);
 
-        confirmDialog.dispatchEvent(new CustomEvent('modalaction', {
-            detail: { status: 'confirm' }
-        }));
+        confirmDialog.dispatchEvent(
+            new CustomEvent('modalaction', {
+                detail: { status: 'confirm' }
+            })
+        );
 
         await flushPromises();
 
@@ -385,19 +391,23 @@ describe('c-rflib-custom-settings-editor', () => {
         await flushPromises();
 
         const datatable = element.shadowRoot.querySelector('lightning-datatable');
-        datatable.dispatchEvent(new CustomEvent('rowaction', {
-            detail: {
-                action: { name: 'delete' },
-                row: MOCK_SETTINGS_DATA[0]
-            }
-        }));
+        datatable.dispatchEvent(
+            new CustomEvent('rowaction', {
+                detail: {
+                    action: { name: 'delete' },
+                    row: MOCK_SETTINGS_DATA[0]
+                }
+            })
+        );
 
         await flushPromises();
 
         const confirmDialog = element.shadowRoot.querySelector('c-rflib-confirmation-dialog');
-        confirmDialog.dispatchEvent(new CustomEvent('modalaction', {
-            detail: { status: 'cancel' }
-        }));
+        confirmDialog.dispatchEvent(
+            new CustomEvent('modalaction', {
+                detail: { status: 'cancel' }
+            })
+        );
 
         await flushPromises();
         expect(deleteCustomSettingRecord).not.toHaveBeenCalled();
