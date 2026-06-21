@@ -49,7 +49,10 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
 
     private static final String SCOPE_NAME = 'rflib';
 
-    private static final String SDK_VERSION = '10.4.0';
+    // Sourced from the RFLIB_Version custom label (the same value shown on the Management Dashboard
+    // and bumped by the gulp packaging step) so telemetry.sdk.version tracks the package version
+    // instead of drifting from a hard-coded literal.
+    private static final String SDK_VERSION = System.Label.RFLIB_Version;
 
     private static final Integer MAX_BODY_LENGTH = 32768;
 
@@ -194,7 +197,7 @@ public with sharing class rflib_OpenTelemetryLogAction extends rflib_LogEventHtt
             attribute('enduser.id', evt.CreatedById)
         };
 
-        Map<String, Object> platformInfo = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> platformInfo = rflib_PlatformInfoTransformer.flatten(evt);
         List<String> platformKeys = new List<String>(platformInfo.keySet());
         platformKeys.sort();
         Integer added = 0;

@@ -28,7 +28,7 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ClassNamingConventions')
-private class rflib_PlatformInfoParserTest {
+private class rflib_PlatformInfoTransformerTest {
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_ApexFormat() {
@@ -37,7 +37,7 @@ private class rflib_PlatformInfoParserTest {
         );
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(3, result.size(), 'Expected three flattened Apex attributes.');
@@ -53,7 +53,7 @@ private class rflib_PlatformInfoParserTest {
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testFlatten_BoundsPathologicalInput() {
-        Integer over = rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 200;
+        Integer over = rflib_PlatformInfoTransformer.MAX_FLATTENED_KEYS + 200;
 
         // Three pathological-but-valid shapes that would each flatten into thousands of leaves: a flat
         // map (bounds the top-level loop), a large array, and a deeply-nested map (bound in the recursion).
@@ -73,13 +73,13 @@ private class rflib_PlatformInfoParserTest {
                 new Map<String, Object>{ 'deep' => nestedMap }
             }
         ) {
-            Map<String, Object> result = rflib_PlatformInfoParser.flatten(
+            Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(
                 new rflib_Log_Event__e(Platform_Info__c = JSON.serialize(shape))
             );
 
             // Cap (+1 for the truncation marker) bounds allocation and the callers' sort.
             Assert.isTrue(
-                result.size() <= rflib_PlatformInfoParser.MAX_FLATTENED_KEYS + 1,
+                result.size() <= rflib_PlatformInfoTransformer.MAX_FLATTENED_KEYS + 1,
                 'Flattening must be bounded; got ' + result.size()
             );
             Assert.isTrue(
@@ -96,7 +96,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = browserInfo);
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(
@@ -129,7 +129,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"customer":"acme","count":3}');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(
@@ -152,7 +152,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"duration_ms":42,"retries":3}');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(
@@ -174,7 +174,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"custom":{"nestedValue":7},"flag":true}');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(
@@ -191,7 +191,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '{"items":["a","b"],"nested":{"more":1}}');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual('a', result.get('rflib.platform.items.0'), 'List items should be indexed.');
@@ -204,7 +204,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = 'not-json');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(1, result.size(), 'Malformed JSON should yield a single raw entry.');
@@ -221,7 +221,7 @@ private class rflib_PlatformInfoParserTest {
         rflib_Log_Event__e evt = new rflib_Log_Event__e(Platform_Info__c = '[1,2,3]');
 
         Test.startTest();
-        Map<String, Object> result = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> result = rflib_PlatformInfoTransformer.flatten(evt);
         Test.stopTest();
 
         Assert.areEqual(
@@ -236,15 +236,15 @@ private class rflib_PlatformInfoParserTest {
     private static void testFlatten_Blank() {
         Assert.areEqual(
             0,
-            rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e(Platform_Info__c = '')).size(),
+            rflib_PlatformInfoTransformer.flatten(new rflib_Log_Event__e(Platform_Info__c = '')).size(),
             'Blank info should yield an empty map.'
         );
         Assert.areEqual(
             0,
-            rflib_PlatformInfoParser.flatten(new rflib_Log_Event__e()).size(),
+            rflib_PlatformInfoTransformer.flatten(new rflib_Log_Event__e()).size(),
             'Null info should yield an empty map.'
         );
-        Assert.areEqual(0, rflib_PlatformInfoParser.flatten(null).size(), 'Null event should yield an empty map.');
+        Assert.areEqual(0, rflib_PlatformInfoTransformer.flatten(null).size(), 'Null event should yield an empty map.');
     }
     // Key normalization (space/camelCase -> snake_case) is verified through the flatten tests above
     // (e.g. "CPU Time" -> rflib.apex.cpu_time, "domComplete" -> rflib.browser.timing.dom_complete).

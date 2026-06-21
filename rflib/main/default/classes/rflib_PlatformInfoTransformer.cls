@@ -29,7 +29,7 @@
 
 /**
  * @group Logger
- * @description Parses the Platform_Info__c JSON of an rflib_Log_Event__e into a flat map of
+ * @description Flattens the Platform_Info__c JSON of an rflib_Log_Event__e into a flat map of
  *              namespaced, typed telemetry attributes so log destinations (OpenTelemetry,
  *              Application Insights) can index and filter on individual values.
  *
@@ -45,7 +45,7 @@
  *              (or an empty map when blank).
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
-public with sharing class rflib_PlatformInfoParser {
+public with sharing class rflib_PlatformInfoTransformer {
     private static final String USER_AGENT_KEY = 'user_agent.original';
 
     // Distinctive keys always present in the Apex governor-limit map produced by rflib_DefaultLogger.

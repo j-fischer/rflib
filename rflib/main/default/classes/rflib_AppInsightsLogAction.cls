@@ -157,7 +157,7 @@ public with sharing class rflib_AppInsightsLogAction extends rflib_LogEventHttpF
             'OrgId' => UserInfo.getOrganizationId()
         };
 
-        Map<String, Object> platformInfo = rflib_PlatformInfoParser.flatten(evt);
+        Map<String, Object> platformInfo = rflib_PlatformInfoTransformer.flatten(evt);
         List<String> sourceKeys = new List<String>(platformInfo.keySet());
         sourceKeys.sort();
         // Track the actual (name-bounded) property keys so the item-size trimming in fitItem can

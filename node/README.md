@@ -53,7 +53,7 @@ in-memory log stack and configuration.
 
 - **Platform info.** Each published event includes a `Platform_Info__c` payload. By default the logger
   collects Node runtime telemetry (process memory, cpu, uptime, version) under a `node` key, which the
-  Apex `rflib_PlatformInfoParser` flattens to `rflib.platform.node.*`. Provide
+  Apex `rflib_PlatformInfoTransformer` flattens to `rflib.platform.node.*`. Provide
   `options.platformInfoProvider` to override or extend it (e.g. add the LWR route, SSR flag, or request
   duration).
 
