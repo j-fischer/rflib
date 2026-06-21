@@ -88,7 +88,10 @@ describe('c-rflib-log-event-viewer', () => {
             is: RflibLogEventViewer
         });
 
-        getApexLogsForRequestId.mockResolvedValue(['Log1', 'Log2']);
+        getApexLogsForRequestId.mockResolvedValue([
+            { id: '07L000000000001AAA', menuLabel: 'Apex Debug Log 0', menuTitle: 'Apex debug log details' },
+            { id: '07L000000000002AAA', menuLabel: 'Apex Debug Log 1', menuTitle: 'Apex debug log details' }
+        ]);
 
         const logEvent = {
             Request_ID__c: 'REQ-123',
@@ -111,7 +114,9 @@ describe('c-rflib-log-event-viewer', () => {
         });
 
         // We need apex logs to show the menu
-        getApexLogsForRequestId.mockResolvedValue(['LogId1']);
+        getApexLogsForRequestId.mockResolvedValue([
+            { id: '07L000000000001AAA', menuLabel: 'Apex Debug Log 0', menuTitle: 'Apex debug log details' }
+        ]);
 
         const logEvent = {
             Request_ID__c: 'REQ-123',
