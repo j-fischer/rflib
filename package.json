@@ -1,110 +1,110 @@
 {
-    "name": "rflib",
-    "version": "11.0.0",
-    "description": "Salesforce library for improving the reliability of your org",
-    "type": "commonjs",
-    "main": "./dist/rflibLogger.js",
-    "types": "./dist/rflibLogger.d.ts",
-    "files": [
-        "dist/*.js",
-        "dist/*.ts",
-        "node/*.md",
-        "LICENSE",
-        "README.md",
-        "CHANGELOG.md"
+  "name": "rflib",
+  "version": "11.0.0",
+  "description": "Salesforce library for improving the reliability of your org",
+  "type": "commonjs",
+  "main": "./dist/rflibLogger.js",
+  "types": "./dist/rflibLogger.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/*.ts",
+    "node/*.md",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "author": {
+    "name": "Johannes Fischer",
+    "email": "fischer.jh@gmail.com",
+    "url": "https://github.com/j_fischer/rflib"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j_fischer/rflib"
+  },
+  "keywords": [
+    "salesforce",
+    "logging",
+    "reliability",
+    "lwr",
+    "node",
+    "lwc",
+    "aura",
+    "apex"
+  ],
+  "engines": {
+    "node": ">= 20.0.0",
+    "npm": ">= 8.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/eslint-parser": "^7.29.7",
+    "@eslint/js": "^9.39.1",
+    "@lwc/eslint-plugin-lwc": "^3.5.0",
+    "@playwright/test": "^1.60.0",
+    "@salesforce/eslint-config-lwc": "^4.1.2",
+    "@salesforce/eslint-plugin-aura": "^3.0.0",
+    "@salesforce/eslint-plugin-lightning": "^2.0.0",
+    "@salesforce/sfdx-lwc-jest": "^7.1.2",
+    "@types/node": "^25.9.3",
+    "ai-digest": "^1.5.1",
+    "codecov": "^3.8.3",
+    "cspell": "^10.0.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-compat": "^7.0.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jest": "^29.15.2",
+    "globals": "^17.6.0",
+    "gulp": "^5.0.1",
+    "gulp-confirm": "^1.0.8",
+    "gulp-git": "^2.11.0",
+    "gulp-prompt": "^1.2.0",
+    "gulp-rename": "^2.1.0",
+    "gulp-shell": "^0.8.0",
+    "gulp-util": "^3.0.8",
+    "hamjest": "^4.1.1",
+    "husky": "^9.1.7",
+    "jit-grunt": "^0.10.0",
+    "lint-staged": "^17.0.5",
+    "lodash": "^4.18.1",
+    "prettier": "3.8.3",
+    "prettier-plugin-apex": "2.2.6",
+    "semver": "^7.8.1",
+    "time-require": "^0.1.2"
+  },
+  "lint-staged": {
+    "**/*.{html,js,ts,json,yaml,yml,md,cmp,page,component}": [
+      "prettier --write"
     ],
-    "author": {
-        "name": "Johannes Fischer",
-        "email": "fischer.jh@gmail.com",
-        "url": "https://github.com/j_fischer/rflib"
-    },
-    "license": "BSD-3-Clause",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/j_fischer/rflib"
-    },
-    "keywords": [
-        "salesforce",
-        "logging",
-        "reliability",
-        "lwr",
-        "node",
-        "lwc",
-        "aura",
-        "apex"
+    "**/lwc/**": [
+      "eslint"
     ],
-    "engines": {
-        "node": ">= 20.0.0",
-        "npm": ">= 8.0.0"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "@babel/core": "^7.29.7",
-        "@babel/eslint-parser": "^7.29.7",
-        "@eslint/js": "^9.39.1",
-        "@lwc/eslint-plugin-lwc": "^3.5.0",
-        "@playwright/test": "^1.60.0",
-        "@salesforce/eslint-config-lwc": "^4.1.2",
-        "@salesforce/eslint-plugin-aura": "^3.0.0",
-        "@salesforce/eslint-plugin-lightning": "^2.0.0",
-        "@salesforce/sfdx-lwc-jest": "^7.1.2",
-        "@types/node": "^25.9.3",
-        "ai-digest": "^1.5.1",
-        "codecov": "^3.8.3",
-        "cspell": "^10.0.0",
-        "eslint": "^9.39.1",
-        "eslint-plugin-compat": "^7.0.2",
-        "eslint-plugin-import": "^2.32.0",
-        "eslint-plugin-jest": "^29.15.2",
-        "globals": "^17.6.0",
-        "gulp": "^5.0.1",
-        "gulp-confirm": "^1.0.8",
-        "gulp-git": "^2.11.0",
-        "gulp-prompt": "^1.2.0",
-        "gulp-rename": "^2.1.0",
-        "gulp-shell": "^0.8.0",
-        "gulp-util": "^3.0.8",
-        "hamjest": "^4.1.1",
-        "husky": "^9.1.7",
-        "jit-grunt": "^0.10.0",
-        "lint-staged": "^17.0.5",
-        "lodash": "^4.18.1",
-        "prettier": "3.8.3",
-        "prettier-plugin-apex": "2.2.6",
-        "semver": "^7.8.1",
-        "time-require": "^0.1.2"
-    },
-    "lint-staged": {
-        "**/*.{html,js,ts,json,yaml,yml,md,cmp,page,component}": [
-            "prettier --write"
-        ],
-        "**/lwc/**": [
-            "eslint"
-        ],
-        "*.{cls,apex,js,cjs,ts,html,md,xml,sql,py,yml,yaml}": [
-            "cspell --no-must-find-files"
-        ]
-    },
-    "scripts": {
-        "lint": "npm run lint:lwc && npm run lint:aura && npm run lint:node",
-        "lint:node": "eslint dist/*.js dist/**/*.js",
-        "lint:lwc": "eslint **/lwc/**",
-        "lint:aura": "eslint **/aura/**/*.js",
-        "test": "npm run lint && npm run test:unit",
-        "test:unit": "sfdx-lwc-jest",
-        "test:unit:watch": "sfdx-lwc-jest --watch",
-        "test:unit:debug": "sfdx-lwc-jest --debug",
-        "test:unit:coverage": "sfdx-lwc-jest --coverage",
-        "test:e2e": "playwright test",
-        "test:e2e:ui": "playwright test --ui",
-        "test:e2e:headed": "playwright test --headed",
-        "test:e2e:report": "playwright show-report",
-        "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,ts,json,md,page,yaml,yml}'",
-        "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,ts,json,yaml,yml,md,cmp,page,component}'",
-        "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
-        "prepare": "husky"
-    },
-    "volta": {
-        "node": "24.12.0"
-    }
+    "*.{cls,apex,js,cjs,ts,html,md,xml,sql,py,yml,yaml}": [
+      "cspell --no-must-find-files"
+    ]
+  },
+  "scripts": {
+    "lint": "npm run lint:lwc && npm run lint:aura && npm run lint:node",
+    "lint:node": "eslint dist/*.js dist/**/*.js",
+    "lint:lwc": "eslint **/lwc/**",
+    "lint:aura": "eslint **/aura/**/*.js",
+    "test": "npm run lint && npm run test:unit",
+    "test:unit": "sfdx-lwc-jest",
+    "test:unit:watch": "sfdx-lwc-jest --watch",
+    "test:unit:debug": "sfdx-lwc-jest --debug",
+    "test:unit:coverage": "sfdx-lwc-jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "prettier": "prettier --write '**/*.{cmp,component,css,html,js,cjs,ts,json,md,page,yaml,yml}'",
+    "prettier:verify": "prettier --list-different '**/*.{html,js,cjs,ts,json,yaml,yml,md,cmp,page,component}'",
+    "cspell": "cspell \"**/*.js\" \"**/*.cls\" \"**/*.html\" \"**/*.css\" \"**/*.md\" \"**/*.cjs\" \"**/*.ts\"",
+    "prepare": "husky"
+  },
+  "volta": {
+    "node": "24.12.0"
+  }
 }
