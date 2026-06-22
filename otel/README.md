@@ -38,7 +38,7 @@ Events are sent in callouts of up to 100 records, and each request body is also 
 
 ## Common Salesforce setup
 
-1. Install RFLIB **10.4.0** or later.
+1. Install RFLIB **11.0.0** or later.
 2. Create a Named Credential named exactly `RFLIB_OTEL_LOGS` whose **URL is the full OTLP logs endpoint** (including the `/v1/logs` path or the backend's equivalent). Configure authentication and any required custom headers per the recipe below.
 3. (Optional) Create an RFLIB Global Setting `OTel_Service_Name` to override the default `service.name` of `salesforce-rflib`.
 4. In **Logger Settings**, set **OTel Log Level** to `ERROR` (or higher-verbosity as needed). It must be at or above the Log Event Reporting Level. Default is `NONE` (disabled).

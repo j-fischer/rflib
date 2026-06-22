@@ -38,7 +38,7 @@ Each log event becomes a `Microsoft.ApplicationInsights.Message` envelope. The R
 
 - An Azure subscription and permission to create resources and Entra app registrations.
 - The Azure CLI (`az`) — the Azure Cloud Shell has everything pre-installed.
-- RFLIB **10.4.0** or later installed in your Salesforce org.
+- RFLIB **11.0.0** or later installed in your Salesforce org.
 
 ## Step 1 — Deploy the Application Insights resource
 
