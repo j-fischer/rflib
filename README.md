@@ -27,6 +27,8 @@ The following lists describe some of the key features of rflib.
 - Supports logging in Flow and Process Builder
 - Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
 - Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
+- Real-time log notifications to [Slack](https://github.com/j-fischer/rflib/wiki), [Microsoft Teams](https://github.com/j-fischer/rflib/wiki), and [Google Chat](https://github.com/j-fischer/rflib/wiki) for log events at or above a configurable threshold
+- Vendor-neutral log forwarding to [Azure Application Insights](azure/README.md) and [OpenTelemetry (OTLP/HTTP)](otel/README.md) backends such as AWS CloudWatch and OpenTelemetry collectors
 - [HTTP Request mocking framework](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Salesforce-Functions) to speed up integration development
 - [Server-side logging for Node.js and Lightning Web Runtime (LWR)](node/README.md) apps via the `rflib` npm package
 
@@ -71,8 +73,8 @@ sf package install --package <Package ID> --target-org <your org alias>
 Here are the commands for the latest versions:
 
 ```
-rem RFLIB 10.3.0
-sf package install --package 04tKY0000005RU4YAM --target-org <your org alias>
+rem RFLIB 11.0.0
+sf package install --package 04tKY0000005RZ5YAM --target-org <your org alias>
 
 rem RFLIB-FS 3.0.1
 sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>

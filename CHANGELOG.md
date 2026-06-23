@@ -1,6 +1,8 @@
 ### RFLIB 11.0.0
 
-Package ID: _pending release_
+Package ID: 04tKY0000005RZ5YAM
+Package Alias: RFLIB@11.0.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005RZ5YAM
 
 - **BREAKING:** Removed the three deprecated Salesforce Functions Logger Settings fields (`Functions_Compute_Log_Level__c`, `Functions_Server_Log_Level__c`, `Functions_Log_Size__c`), which were deprecated in 7.2.0 after Salesforce Functions reached end of life (31 Jan 2025). On upgrade to 11.x these fields are hard-deleted from subscriber orgs. Customers still relying on the Salesforce Functions logger should remain on the RFLIB 10.x line.
 - **BREAKING:** Repurposed the `rflib` npm logger from Salesforce Functions to a runtime-agnostic Node.js logger whose primary host is Lightning Web Runtime (LWR) on Node.js. `createLogger`/`createApplicationEventLogger` now take an injected `dataApi` (`{ query, create }`) adapter — supplied by the host (e.g. a jsforce connection backed by a JWT Bearer integration user) — instead of the Functions `context.org.dataApi`. Each call returns a per-request/per-user instance with its own log stack (the previous module-level singleton, which would have interleaved users' logs on a shared server, is gone). The logger now reads the standard `Client_Console_Log_Level__c` / `Client_Server_Log_Level__c` / `Client_Log_Size__c` settings and defaults `Platform_Info__c` to Node runtime telemetry (process memory, cpu, uptime, version) under a `node` key. The `sf-fx-sdk-nodejs` dependency has been removed. See [`node/README.md`](node/README.md). Existing Salesforce Functions users should stay on the RFLIB 10.x line.
