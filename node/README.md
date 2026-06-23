@@ -33,9 +33,11 @@ in-memory log stack and configuration.
   concurrently, you must create a logger per request (or per authenticated user) and must **not**
   reuse a single instance across users. Each instance keeps its own stack, so one user's messages can
   never leak into another user's published Log Event — matching RFLIB's per-context convention.
-- **Injected data adapter.** `dataApi` is any object exposing `query(soql)` (resolves the first
-  record) and `create({ type, fields })` (publishes a Platform Event). The logger reads its settings
-  via `query` and publishes via `create`. You typically adapt a jsforce `Connection` (see below).
+- **Injected data adapter.** `dataApi` is any object exposing `query(soql)` (resolves the matching
+  records as an array) and `create({ type, fields })` (publishes a Platform Event). The logger reads
+  its settings via `query` and publishes via `create`. Returning only a single record limits the
+  logger to org-level defaults, so the adapter must return the full records array for the
+  user/profile/org hierarchy to resolve. You typically adapt a jsforce `Connection` (see below).
 - **Configuration** comes from `rflib_Logger_Settings__c` (a Hierarchy custom setting), reusing the
   existing client-logging fields. The logger resolves the hierarchy the way Apex `getInstance()`
   does — the most specific row wins — using the ids on the context: pass `context.user.id` (and
