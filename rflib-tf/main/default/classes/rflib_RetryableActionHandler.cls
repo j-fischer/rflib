@@ -34,8 +34,8 @@
 public interface rflib_RetryableActionHandler {
 
     /**
-     * Method to be invoked by the Retryable Action Framework when an Action Platform Event is executed in the main event context. 
-     * @param  actions The rflib_Retryable_Action__e object containing all action details.
+     * Method to be invoked by the Retryable Action Framework when an Action Platform Event is executed in the main event context.
+     * @param  actions The rflib_RetryableAction objects containing all action details, including the source Platform Event record.
      */
-    void execute(List<rflib_Retryable_Action__e> actions);
+    void execute(List<rflib_RetryableAction> actions);
 }

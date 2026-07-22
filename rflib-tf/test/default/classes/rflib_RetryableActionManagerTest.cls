@@ -85,8 +85,46 @@ private class rflib_RetryableActionManagerTest {
         Test.stopTest();
 
         Assert.areEqual(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
-        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID);
+    }
+
+    @IsTest
+    public static void testExecute_OneHandler_AfterCommitEvents() {
+        setup();
+
+        List<rflib_Retryable_Action_After_Commit__e> events = createAfterCommitEvents();
+
+        Test.startTest();
+        rflib_RetryableActionManager.dispatch(events);
+        Test.stopTest();
+
+        Assert.areEqual(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID);
+        Assert.isInstanceOfType(rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).event, rflib_Retryable_Action_After_Commit__e.class);
+    }
+
+    @IsTest
+    public static void testExecute_AfterCommitEventDeliveredThroughEventBus() {
+        setup();
+
+        Test.startTest();
+        EventBus.publish(new rflib_Retryable_Action_After_Commit__e(
+            Record_ID__c = 'recId1',
+            Action__c = 'Action_One'
+        ));
+        Test.getEventBus().deliver();
+        Test.stopTest();
+
+        Assert.areEqual(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+
+        rflib_RetryableAction action = rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0);
+        Assert.areEqual('Action_One', action.Action);
+        Assert.areEqual('recId1', action.Record_ID);
+        Assert.isNotNull(action.ReplayId);
+        Assert.isNotNull(action.EventUuid);
+        Assert.isInstanceOfType(action.event, rflib_Retryable_Action_After_Commit__e.class);
     }
 
     @IsTest
@@ -106,10 +144,10 @@ private class rflib_RetryableActionManagerTest {
 
         // It would be expected that each handler is a different class, but the test scenario was simplified with a single mock.
         Assert.areEqual(4, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
-        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
-        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(2).Record_ID__c);
-        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(3).Record_ID__c);
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID);
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(2).Record_ID);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(3).Record_ID);
     }
 
     @IsTest
@@ -128,7 +166,7 @@ private class rflib_RetryableActionManagerTest {
         Test.stopTest();
 
         Assert.areEqual(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        Assert.areEqual('recId2', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
+        Assert.areEqual('recId2', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID);
     }
 
     @IsTest
@@ -149,8 +187,28 @@ private class rflib_RetryableActionManagerTest {
         Test.stopTest();
 
         Assert.areEqual(2, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
-        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID__c);
-        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID__c);
+        Assert.areEqual('recId1', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0).Record_ID);
+        Assert.areEqual('recId3', rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(1).Record_ID);
+    }
+
+    @IsTest
+    public static void testRetryableActionConfigurationWrapper_CompareTo() {
+        setup();
+
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper firstOrder = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 1));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper secondOrder = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 2));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper nullOrder = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', null));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper nullConfig = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(null);
+
+        Assert.areEqual(1, firstOrder.compareTo(null));
+        Assert.areEqual(0, nullConfig.compareTo(new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(null)));
+        Assert.areEqual(-1, nullConfig.compareTo(firstOrder));
+        Assert.areEqual(1, firstOrder.compareTo(nullConfig));
+        Assert.areEqual(-1, firstOrder.compareTo(secondOrder));
+        Assert.areEqual(1, secondOrder.compareTo(firstOrder));
+        Assert.areEqual(0, firstOrder.compareTo(firstOrder));
+        Assert.areEqual(-1, nullOrder.compareTo(firstOrder));
+        Assert.areEqual(1, firstOrder.compareTo(nullOrder));
     }
 
     private static List<rflib_Retryable_Action__e> createEvents() {
@@ -164,6 +222,23 @@ private class rflib_RetryableActionManagerTest {
                 Action__c = 'Action_Two'
             ),
             new rflib_Retryable_Action__e(
+                Record_ID__c = 'recId3',
+                Action__c = 'Action_One'
+            )
+        };
+    }
+
+    private static List<rflib_Retryable_Action_After_Commit__e> createAfterCommitEvents() {
+        return new List<rflib_Retryable_Action_After_Commit__e> {
+            new rflib_Retryable_Action_After_Commit__e(
+                Record_ID__c = 'recId1',
+                Action__c = 'Action_One'
+            ),
+            new rflib_Retryable_Action_After_Commit__e(
+                Record_ID__c = 'recId2',
+                Action__c = 'Action_Two'
+            ),
+            new rflib_Retryable_Action_After_Commit__e(
                 Record_ID__c = 'recId3',
                 Action__c = 'Action_One'
             )
