@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Johannes Fischer <fischer.jh@gmail.com>
+ * Copyright (c) 2026 Johannes Fischer <fischer.jh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,29 +26,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-@IsTest
-@SuppressWarnings('PMD.ClassNamingConventions')
-public class rflib_MockRetryableActionHandler implements rflib_RetryableActionHandler {
-    
-    private static final rflib_Logger LOGGER = new rflib_DefaultLoggerFactory().createLogger('rflib_MockRetryableActionHandler');
-
-    public static List<rflib_RetryableAction> CAPTURED_ACTION_EVENTS = new List<rflib_RetryableAction>();
-
-    public static Exception EXCEPTION_ON_EXECUTE = null;
-    public static Callable ACTION_WHEN_CALLED = null;
-
-    public void execute(List<rflib_RetryableAction> actions) {
-        LOGGER.info('run() invoked');
-
-        CAPTURED_ACTION_EVENTS.addAll(actions);
-
-        LOGGER.info('will run action={0}, should throw exception={1} ', new object[] { (ACTION_WHEN_CALLED != null), (EXCEPTION_ON_EXECUTE != null) });
-        if (ACTION_WHEN_CALLED != null) {
-            ACTION_WHEN_CALLED.call('run', new Map<String, Object> { 'actions' => actions });
-        }
-
-        if (EXCEPTION_ON_EXECUTE != null) {
-            throw EXCEPTION_ON_EXECUTE;
-        }
-    }
+trigger rflib_RetryableActionAfterCommitTrigger on rflib_Retryable_Action_After_Commit__e (after insert) {
+    rflib_RetryableActionManager.dispatch(Trigger.new);
 }

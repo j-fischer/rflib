@@ -1,3 +1,8 @@
+### RFLIB-TF 4.0.0
+
+- Added the `rflib_Retryable_Action_After_Commit__e` Platform Event, a variant of `rflib_Retryable_Action__e` with identical fields but with the `Publish After Commit` behavior. Publish this event instead of the original when handlers depend on the records of the publishing transaction being committed (e.g. record lookups in the subscriber); the original event keeps its `Publish Immediately` behavior, which delivers events even if the publishing transaction rolls back. Both events share the same `rflib_Retryable_Action_Config__mdt` configuration, handler interface, retry behavior, and the `rflib_Disable_All_Retryable_Actions` feature switch.
+- **BREAKING:** `rflib_RetryableActionHandler.execute()` now receives a `List<rflib_RetryableAction>` instead of a `List<rflib_Retryable_Action__e>`. The new read-only `rflib_RetryableAction` data object works for both Platform Events and exposes the custom fields as properties named after the field API names without the `__c` suffix (`Action`, `Record_ID`, `Additional_Record_ID`, `Additional_Details`), the standard event fields (`ReplayId`, `EventUuid`), and the raw event record via the `event` property. To migrate a handler, change the parameter type of `execute()` and drop the `__c` suffix from field accesses, e.g. `evt.Record_ID__c` becomes `action.Record_ID`.
+
 ### RFLIB 11.0.0
 
 Package ID: 04tKY0000005RZ5YAM

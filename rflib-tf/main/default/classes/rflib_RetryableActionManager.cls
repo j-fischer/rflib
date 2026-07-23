@@ -41,10 +41,11 @@ public inherited sharing class rflib_RetryableActionManager {
     private static List<rflib_Retryable_Action_Config__mdt> ALL_CONFIG_VALUES = rflib_Retryable_Action_Config__mdt.getAll().values();
 
     /**
-     * This is the dispatch function that is invoked from the Retryable Action trigger.
-     * @param  List<rflib_Retryable_Action__e> List of events to be processed.
+     * This is the dispatch function that is invoked from the Retryable Action triggers. It supports
+     * both the `rflib_Retryable_Action__e` and the `rflib_Retryable_Action_After_Commit__e` events.
+     * @param  List<SObject> List of Retryable Action events to be processed.
      */
-    public static void dispatch(List<rflib_Retryable_Action__e> events) {
+    public static void dispatch(List<SObject> events) {
         LOGGER.info('Dispatching actions: ' + events);
 
         if (rflib_FeatureSwitch.isTurnedOn('rflib_Disable_All_Retryable_Actions')) {
@@ -52,19 +53,19 @@ public inherited sharing class rflib_RetryableActionManager {
             return;
         }
 
-        Map<String, List<rflib_Retryable_Action__e>> actionsByName = new Map<String, List<rflib_Retryable_Action__e>> (); 
-        for (rflib_Retryable_Action__e evt : events) {
-            if (!actionsByName.containsKey(evt.Action__c)) {
-                actionsByName.put(evt.Action__c, new List<rflib_Retryable_Action__e>());
+        Map<String, List<rflib_RetryableAction>> actionsByName = new Map<String, List<rflib_RetryableAction>> ();
+        for (rflib_RetryableAction action : rflib_RetryableAction.fromEvents(events)) {
+            if (!actionsByName.containsKey(action.Action)) {
+                actionsByName.put(action.Action, new List<rflib_RetryableAction>());
             }
 
-            actionsByName.get(evt.Action__c).add(evt);
+            actionsByName.get(action.Action).add(action);
         }
 
         dispatch(actionsByName);
     }
-    
-    public static void dispatch(Map<String, List<rflib_Retryable_Action__e>> actionsByName) {
+
+    public static void dispatch(Map<String, List<rflib_RetryableAction>> actionsByName) {
         LOGGER.info('Dispatching actions by name: ' + actionsByName);
 
         Map<String, List<RetryableActionHandlerInfo>> handlersByName = getHandlers(actionsByName.keySet());
@@ -72,12 +73,12 @@ public inherited sharing class rflib_RetryableActionManager {
         runHandlers(actionsByName, handlersByName);
     }
 
-    private static void runHandlers(Map<String, List<rflib_Retryable_Action__e>> actionsByName, Map<String, List<RetryableActionHandlerInfo>> handlersByName) {
+    private static void runHandlers(Map<String, List<rflib_RetryableAction>> actionsByName, Map<String, List<RetryableActionHandlerInfo>> handlersByName) {
         for (String actionName : handlersByName.keySet()) {
 
             for (RetryableActionHandlerInfo handlerInfo : handlersByName.get(actionName)) {
                 rflib_RetryableActionHandler handler = handlerInfo.handler;
-                List<rflib_Retryable_Action__e> actions = actionsByName.get(actionName);
+                List<rflib_RetryableAction> actions = actionsByName.get(actionName);
 
                 try {
                     LOGGER.debug('Executing handler {0} with events: {1}', new Object[] { handlerInfo.handlerType.getName(), actions } );
