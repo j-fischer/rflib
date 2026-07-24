@@ -21,7 +21,7 @@
       "versionDescription": "Extension to RFLIB library adding Feature Switches. License: BSD-3-Clause. Dependencies: RFLIB",
       "dependencies": [
         {
-          "package": "RFLIB@4.1.0-1"
+          "package": "RFLIB@10.0.0-1"
         }
       ]
     },
@@ -36,7 +36,7 @@
       "versionDescription": "Extension to RFLIB library adding a Trigger Framework. License: BSD-3-Clause. Dependencies: RFLIB, RFLIB-FS",
       "dependencies": [
         {
-          "package": "RFLIB@4.1.0-1"
+          "package": "RFLIB@10.0.0-1"
         },
         {
           "package": "RFLIB-FS@2.0.0-1"
