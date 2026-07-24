@@ -79,8 +79,8 @@ sf package install --package 04tKY0000005RZ5YAM --target-org <your org alias>
 rem RFLIB-FS 3.0.1
 sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
 
-rem RFLIB-TF 3.1.0
-sf package install --package 04tKY0000009yMKYAY --target-org <your org alias>
+rem RFLIB-TF 4.0.0
+sf package install --package 04tKY0000005SfjYAE --target-org <your org alias>
 
 rem RFLIB-PHAROS 1.0.0
 sf package install --package 04tKY000000xhxmYAA --target-org <your org alias>
