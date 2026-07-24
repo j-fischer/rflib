@@ -186,7 +186,6 @@ jest.mock(
 
 async function flushPromises(times = 1) {
     for (let i = 0; i < times; i++) {
-        // eslint-disable-next-line no-await-in-loop
         await Promise.resolve();
     }
 }
