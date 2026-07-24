@@ -76,8 +76,8 @@ Here are the commands for the latest versions:
 rem RFLIB 11.0.0
 sf package install --package 04tKY0000005RZ5YAM --target-org <your org alias>
 
-rem RFLIB-FS 3.0.1
-sf package install --package 04t3h000004pOeLAAU --target-org <your org alias>
+rem RFLIB-FS 4.0.0
+sf package install --package 04tKY0000005SfyYAE --target-org <your org alias>
 
 rem RFLIB-TF 4.0.0
 sf package install --package 04tKY0000005SfjYAE --target-org <your org alias>
