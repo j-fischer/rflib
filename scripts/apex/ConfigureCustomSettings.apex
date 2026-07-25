@@ -15,9 +15,16 @@ if (loggerSettingsFields.containsKey('log_aggregation_log_level__c')) {
     settings.put('Log_Aggregation_Log_Level__c', 'WARN');
 }
 
-// Required field; records created before the field was introduced may hold null.
-if (loggerSettingsFields.containsKey('google_chat_log_level__c') && settings.get('Google_Chat_Log_Level__c') == null) {
-    settings.put('Google_Chat_Log_Level__c', 'NONE');
+// Required fields; records created before the field was introduced may hold null.
+for (String requiredLevelField : new List<String>{
+    'google_chat_log_level__c',
+    'pharos_log_level__c',
+    'slack_log_level__c',
+    'teams_log_level__c'
+}) {
+    if (loggerSettingsFields.containsKey(requiredLevelField) && settings.get(requiredLevelField) == null) {
+        settings.put(requiredLevelField, 'NONE');
+    }
 }
 
 upsert settings;
