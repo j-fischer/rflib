@@ -198,55 +198,49 @@
             <div class="slds-page-header__col-actions">
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
-                        <ul class="slds-button-group-list">
-                            <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu
-                                    label={currentPermissionType.label}
-                                    menu-alignment="right"
-                                    onselect={changePermissionType}
-                                >
-                                    <template for:each={permissionTypes} for:item="menuItem">
-                                        <lightning-menu-item
-                                            key={menuItem.id}
-                                            value={menuItem.value}
-                                            label={menuItem.label}
-                                            disabled={menuItem.disabled}
-                                        >
-                                        </lightning-menu-item>
-                                    </template>
-                                </lightning-button-menu>
-                            </li>
-                            <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu
-                                    label="Export to CSV"
-                                    menu-alignment="right"
-                                    onselect={handleExportSelection}
-                                    disabled={isPermissionRecordsEmpty}
-                                >
-                                    <lightning-menu-item value="all" label="All"></lightning-menu-item>
-                                    <lightning-menu-item value="filtered" label="Filtered"></lightning-menu-item>
-                                </lightning-button-menu>
-                            </li>
-                            <li class="slds-m-horizontal_xx-small">
-                                <lightning-button-menu
-                                    variant="border-filled"
-                                    icon-name="utility:settings"
-                                    menu-alignment="right"
-                                    onselect={handlePageSizeChanged}
-                                    alternative-text="Select page size"
-                                >
-                                    <template for:each={pageSizes} for:item="menuItem">
-                                        <lightning-menu-item
-                                            key={menuItem.id}
-                                            value={menuItem.value}
-                                            label={menuItem.label}
-                                            checked={menuItem.checked}
-                                        >
-                                        </lightning-menu-item>
-                                    </template>
-                                </lightning-button-menu>
-                            </li>
-                        </ul>
+                        <lightning-button-group>
+                            <lightning-button-menu
+                                label={currentPermissionType.label}
+                                menu-alignment="right"
+                                onselect={changePermissionType}
+                            >
+                                <template for:each={permissionTypes} for:item="menuItem">
+                                    <lightning-menu-item
+                                        key={menuItem.id}
+                                        value={menuItem.value}
+                                        label={menuItem.label}
+                                        disabled={menuItem.disabled}
+                                    >
+                                    </lightning-menu-item>
+                                </template>
+                            </lightning-button-menu>
+                            <lightning-button-menu
+                                label="Export to CSV"
+                                menu-alignment="right"
+                                onselect={handleExportSelection}
+                                disabled={isPermissionRecordsEmpty}
+                            >
+                                <lightning-menu-item value="all" label="All"></lightning-menu-item>
+                                <lightning-menu-item value="filtered" label="Filtered"></lightning-menu-item>
+                            </lightning-button-menu>
+                            <lightning-button-menu
+                                variant="border-filled"
+                                icon-name="utility:settings"
+                                menu-alignment="right"
+                                onselect={handlePageSizeChanged}
+                                alternative-text="Select page size"
+                            >
+                                <template for:each={pageSizes} for:item="menuItem">
+                                    <lightning-menu-item
+                                        key={menuItem.id}
+                                        value={menuItem.value}
+                                        label={menuItem.label}
+                                        checked={menuItem.checked}
+                                    >
+                                    </lightning-menu-item>
+                                </template>
+                            </lightning-button-menu>
+                        </lightning-button-group>
                     </div>
                 </div>
             </div>

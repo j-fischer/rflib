@@ -30,22 +30,22 @@
  * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -->
 <template>
-    <lightning-layout>
+    <lightning-layout vertical-align="center">
         <lightning-layout-item>
-            <lightning-button
-                label="First"
-                icon-name="utility:chevronleft"
-                onclick={handleFirst}
-                disabled={shouldDisableFirstButton}
-            ></lightning-button>
-        </lightning-layout-item>
-        <lightning-layout-item>
-            <lightning-button
-                label="Previous"
-                icon-name="utility:chevronleft"
-                onclick={handlePrevious}
-                disabled={shouldDisableFirstButton}
-            ></lightning-button>
+            <lightning-button-group>
+                <lightning-button
+                    label="First"
+                    icon-name="utility:chevronleft"
+                    onclick={handleFirst}
+                    disabled={shouldDisableFirstButton}
+                ></lightning-button>
+                <lightning-button
+                    label="Previous"
+                    icon-name="utility:chevronleft"
+                    onclick={handlePrevious}
+                    disabled={shouldDisableFirstButton}
+                ></lightning-button>
+            </lightning-button-group>
         </lightning-layout-item>
         <lightning-layout-item flexibility="grow">
             <template lwc:if={shouldDisplayPageSelection}>
@@ -65,22 +65,22 @@
             </template>
         </lightning-layout-item>
         <lightning-layout-item>
-            <lightning-button
-                label="Next"
-                icon-name="utility:chevronright"
-                icon-position="right"
-                onclick={handleNext}
-                disabled={shouldDisableLastButton}
-            ></lightning-button>
-        </lightning-layout-item>
-        <lightning-layout-item>
-            <lightning-button
-                label="Last"
-                icon-name="utility:chevronright"
-                icon-position="right"
-                onclick={handleLast}
-                disabled={shouldDisableLastButton}
-            ></lightning-button>
+            <lightning-button-group>
+                <lightning-button
+                    label="Next"
+                    icon-name="utility:chevronright"
+                    icon-position="right"
+                    onclick={handleNext}
+                    disabled={shouldDisableLastButton}
+                ></lightning-button>
+                <lightning-button
+                    label="Last"
+                    icon-name="utility:chevronright"
+                    icon-position="right"
+                    onclick={handleLast}
+                    disabled={shouldDisableLastButton}
+                ></lightning-button>
+            </lightning-button-group>
         </lightning-layout-item>
     </lightning-layout>
 </template>
