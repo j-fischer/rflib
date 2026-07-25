@@ -187,6 +187,12 @@
         </div>
         <div class="export-text">Exporting records...</div>
     </div>
+    <div lwc:if={isSwitchingConnection} class="connection-switch-overlay">
+        <div class="spinner-wrapper">
+            <lightning-spinner size="large" alternative-text="Switching connection..."> </lightning-spinner>
+        </div>
+        <div class="connection-switch-text">Switching connection...</div>
+    </div>
     <div class="download-container" lwc:dom="manual"></div>
 
     <div class="slds-grid slds-m-top_x-small">

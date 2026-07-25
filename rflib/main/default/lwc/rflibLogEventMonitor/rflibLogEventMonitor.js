@@ -42,6 +42,10 @@ const FIELD_VISIBILITY_KEY = 'rflib_log_viewer_field_visibility';
 
 const CHANNEL = '/event/rflib_Log_Event__e';
 const DEFAULT_PAGE_SIZE = 10;
+// Delay between a confirmed unsubscribe and the resubscribe to the same channel. CometD needs this
+// grace period to release the channel; resubscribing sooner produces a dead subscription that
+// receives no events (empirically ~immediate resubscribes fail, a short delay reliably works).
+const RESUBSCRIBE_SETTLE_DELAY_MS = 2500;
 const CONNECTION_MODE = {
     HISTORIC_AND_NEW_MESSAGES: {
         id: '1',
@@ -85,6 +89,7 @@ export default class LogEventMonitor extends LightningElement {
     subscription = null;
     showLeftColumn = true;
     isExporting = false;
+    isSwitchingConnection = false;
 
     fieldVisibility = {
         showDate: true,
@@ -292,29 +297,30 @@ export default class LogEventMonitor extends LightningElement {
                 logger.debug('Unsubscribing current connection: ' + _this.currentConnectionMode.value);
 
                 let settled = false;
-                const settle = (source) => {
+                const settle = (source, confirmed) => {
                     if (settled) {
                         return;
                     }
                     settled = true;
-                    logger.debug('unsubscribe() settled via {0}', source);
+                    logger.debug('unsubscribe() settled via {0} (confirmed={1})', source, confirmed);
                     _this.subscription = null;
-                    resolve();
+                    resolve(confirmed);
                 };
 
                 unsubscribe(_this.subscription, (response) => {
                     logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
-                    settle('callback');
+                    settle('callback', true);
                 });
 
-                // EMP/CometD can stall the unsubscribe callback on a slow connection. Since the
-                // pending resubscribe is chained off this promise, a stalled callback would leave the
-                // component permanently stuck on the current connection mode. Fall back after a short
-                // timeout so a mode switch always proceeds.
-                setTimeout(() => settle('timeout'), 5000);
+                // EMP/CometD can stall the unsubscribe callback on a slow connection, which would
+                // otherwise leave the component permanently stuck on the current mode. Resolve after
+                // a bounded wait so the UI never hangs, but report the teardown as NOT confirmed:
+                // re-subscribing to the same channel before it is fully torn down silently drops the
+                // new replayId (the historic replay never happens), so the caller must not resubscribe.
+                setTimeout(() => settle('timeout', false), 5000);
             } else {
                 logger.debug('No current subscription');
-                resolve();
+                resolve(true);
             }
         });
     }
@@ -387,6 +393,8 @@ export default class LogEventMonitor extends LightningElement {
             return;
         }
 
+        _this.isSwitchingConnection = true;
+
         const connectToServer = function () {
             logger.debug('connectToServer()');
             if (newConnectionMode) {
@@ -410,6 +418,7 @@ export default class LogEventMonitor extends LightningElement {
                 subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback).then((response) => {
                     logger.debug('Successfully subscribed to: ' + response.channel);
                     _this.subscription = response;
+                    _this.isSwitchingConnection = false;
 
                     const evt = new ShowToastEvent({
                         title: 'Connection Mode Changed',
@@ -436,7 +445,30 @@ export default class LogEventMonitor extends LightningElement {
 
         if (this.subscription) {
             logger.debug('Unsubscribing from current subscription');
-            this.unsubscribeConnection().then(connectToServer);
+            this.unsubscribeConnection().then((confirmed) => {
+                if (!confirmed) {
+                    // The previous subscription did not confirm its teardown. Re-subscribing to the
+                    // same channel now would silently ignore the new replayId, so abort the switch
+                    // and drop to a clean Disconnected state rather than showing a broken connection.
+                    logger.debug('Unsubscribe not confirmed; skipping resubscribe to avoid a stale replay');
+                    _this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
+                    _this.isSwitchingConnection = false;
+                    const evt = new ShowToastEvent({
+                        title: 'Connection reset needed',
+                        message:
+                            'The previous subscription did not close in time. Please select the connection mode again.',
+                        variant: 'warning'
+                    });
+                    if (!import.meta.env.SSR) {
+                        _this.dispatchEvent(evt);
+                    }
+                    return;
+                }
+                // After a confirmed unsubscribe, CometD still needs a moment to fully release the
+                // channel. Re-subscribing to the same channel immediately yields a dead subscription
+                // that receives neither replayed nor new events, so wait before reconnecting.
+                setTimeout(connectToServer, RESUBSCRIBE_SETTLE_DELAY_MS);
+            });
         } else {
             logger.debug('No current subscription');
             connectToServer();
@@ -544,6 +576,13 @@ export default class LogEventMonitor extends LightningElement {
         logger.debug('Registering Error Listener');
         onError((error) => {
             logger.debug('Received error from server: {0}', JSON.stringify(error));
+            // The platform shares this CometD client for its own channels (e.g. /s/notifications/*).
+            // Only react to errors affecting our log event channel; an unrelated channel's error must
+            // not flip our status to "Not Connected" while our subscription is still live.
+            if (error && error.subscription && error.subscription !== CHANNEL) {
+                logger.debug('Ignoring error for unrelated channel: {0}', error.subscription);
+                return;
+            }
             this.currentConnectionMode = CONNECTION_MODE.DISCONNECTED;
         });
     }

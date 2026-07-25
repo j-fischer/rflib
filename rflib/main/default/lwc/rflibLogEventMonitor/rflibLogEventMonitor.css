@@ -54,7 +54,8 @@
     align-items: center;
 }
 
-.export-overlay {
+.export-overlay,
+.connection-switch-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -75,7 +76,8 @@
     margin-bottom: 1rem;
 }
 
-.export-text {
+.export-text,
+.connection-switch-text {
     font-size: 1.5rem;
     font-weight: bold;
     color: #3e3e3c;

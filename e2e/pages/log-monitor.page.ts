@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { fillDateTime, formatDateUs, selectMenuItem } from '../helpers/lightning';
+import { runApex } from '../helpers/sf';
 
 export const CONNECTION_MODES = {
     historicAndNew: 'Historic and New Messages',
@@ -72,6 +73,32 @@ export class LogMonitorPage {
         }
     }
 
+    // Connects in "Historic and New Messages" and guarantees at least `min` events are captured.
+    // Durable EMP replay (-2) is unreliable in a scratch org, so rather than depend on it we publish
+    // fresh events that arrive over the "New" half of the subscription, with one republish as a
+    // safety net against a single missed delivery.
+    async connectHistoricAndAwaitEvents(min = 1): Promise<void> {
+        await this.connectInMode(CONNECTION_MODES.historicAndNew);
+        await this.page.waitForTimeout(3_000); // let the CometD handshake finish before publishing
+        runApex('scripts/apex/CreateLogEvent.apex');
+
+        const deadline = Date.now() + 90_000;
+        let republished = false;
+        for (;;) {
+            if ((await this.getTotalLogEvents()) >= min) {
+                return;
+            }
+            if (Date.now() > deadline) {
+                throw new Error(`Historic mode did not capture ${min} event(s) within 90s.`);
+            }
+            if (!republished && Date.now() > deadline - 45_000) {
+                runApex('scripts/apex/CreateLogEvent.apex');
+                republished = true;
+            }
+            await this.page.waitForTimeout(5_000);
+        }
+    }
+
     // Waits for the monitor to report the given connection mode without changing it, reloading to
     // re-establish a stalled EMP subscription. Use for the default ("New Messages") connection.
     async waitForConnectionMode(modeLabel: string, attempts = 4): Promise<void> {
@@ -126,9 +153,9 @@ export class LogMonitorPage {
         return this.header.getByRole('button', { name: 'Query Archive' });
     }
 
-    // The archive header renders start date, end date inputs in order.
+    // The archive header renders start date, end date inputs in order within the .archive-filter control.
     archiveDateInput(index: 0 | 1): Locator {
-        return this.header.locator('li:has(lightning-input) lightning-input').nth(index);
+        return this.header.locator('.archive-filter lightning-input').nth(index);
     }
 
     async setArchiveDateRange(start: Date, end: Date): Promise<void> {

@@ -209,41 +209,49 @@ describe('c-rflib-log-event-monitor', () => {
             });
     });
 
-    it('handles connection mode change to Historic and New Messages', () => {
-        const element = createElement('c-rflib-log-event-monitor', {
-            is: RflibLogEventMonitor
-        });
-
-        isEmpEnabled.mockResolvedValue(true);
-        subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
-        loadStyle.mockResolvedValue();
-
-        document.body.appendChild(element);
-
-        return flushPromises()
-            .then(() => {
-                // Change connection mode to Historic and New Messages (value -2)
-                const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
-                let targetMenu;
-                menus.forEach((m) => {
-                    if (m.label === 'New Messages') targetMenu = m;
-                });
-                if (!targetMenu && menus.length > 1) targetMenu = menus[1];
-
-                if (targetMenu) {
-                    targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: -2 } }));
-                }
-
-                return flushPromises();
-            })
-            .then(() => {
-                expect(unsubscribe).toHaveBeenCalled();
-                expect(subscribe).toHaveBeenCalledTimes(2); // Initial + New mode
-                expect(subscribe.mock.calls[1][1]).toBe(-2); // replayId
+    it('handles connection mode change to Historic and New Messages', async () => {
+        jest.useFakeTimers();
+        try {
+            const element = createElement('c-rflib-log-event-monitor', {
+                is: RflibLogEventMonitor
             });
+
+            isEmpEnabled.mockResolvedValue(true);
+            subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
+            loadStyle.mockResolvedValue();
+
+            document.body.appendChild(element);
+            await jest.advanceTimersByTimeAsync(0); // flush connectedCallback subscribe
+
+            // Change connection mode to Historic and New Messages (value -2)
+            const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
+            let targetMenu;
+            menus.forEach((m) => {
+                if (m.label === 'New Messages') targetMenu = m;
+            });
+            if (!targetMenu && menus.length > 1) targetMenu = menus[1];
+
+            targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: -2 } }));
+
+            // The unsubscribe confirms, but the resubscribe is deferred behind the settle delay so
+            // CometD can release the channel before we re-subscribe. A spinner overlay covers the
+            // component for that gap so the menu click doesn't look like it did nothing.
+            await jest.advanceTimersByTimeAsync(0);
+            expect(unsubscribe).toHaveBeenCalled();
+            expect(subscribe).toHaveBeenCalledTimes(1); // resubscribe still pending behind the delay
+            expect(element.shadowRoot.querySelector('.connection-switch-overlay')).not.toBeNull();
+
+            await jest.advanceTimersByTimeAsync(2500);
+            expect(subscribe).toHaveBeenCalledTimes(2); // Initial + New mode
+            expect(subscribe.mock.calls[1][1]).toBe(-2); // replayId
+            await jest.advanceTimersByTimeAsync(0); // flush the post-subscribe rerender
+            expect(element.shadowRoot.querySelector('.connection-switch-overlay')).toBeNull();
+        } finally {
+            jest.useRealTimers();
+        }
     });
 
-    it('completes a mode switch even when the unsubscribe callback stalls', async () => {
+    it('aborts the switch instead of subscribing with a stale replay when the unsubscribe stalls', async () => {
         jest.useFakeTimers();
         try {
             const element = createElement('c-rflib-log-event-monitor', {
@@ -272,10 +280,15 @@ describe('c-rflib-log-event-monitor', () => {
             await jest.advanceTimersByTimeAsync(0);
             expect(subscribe).toHaveBeenCalledTimes(1); // still only the initial subscription
 
-            // The timeout fallback fires and lets the resubscribe proceed.
+            // The timeout fallback fires. Re-subscribing to a not-yet-torn-down channel would
+            // silently drop the historic replayId, so the switch is aborted and the component drops
+            // to a clean Disconnected state instead of resubscribing.
             await jest.advanceTimersByTimeAsync(5000);
-            expect(subscribe).toHaveBeenCalledTimes(2);
-            expect(subscribe.mock.calls[1][1]).toBe(-2); // Historic replayId
+            await jest.advanceTimersByTimeAsync(0); // flush the abort branch's rerender
+            expect(subscribe).toHaveBeenCalledTimes(1); // no resubscribe onto a dirty channel
+
+            const statusText = element.shadowRoot.querySelectorAll('p.slds-page-header__name-meta')[1];
+            expect(statusText.textContent).toContain('Not Connected');
         } finally {
             jest.useRealTimers();
         }
