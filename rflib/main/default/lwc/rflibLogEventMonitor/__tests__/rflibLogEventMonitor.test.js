@@ -243,6 +243,44 @@ describe('c-rflib-log-event-monitor', () => {
             });
     });
 
+    it('completes a mode switch even when the unsubscribe callback stalls', async () => {
+        jest.useFakeTimers();
+        try {
+            const element = createElement('c-rflib-log-event-monitor', {
+                is: RflibLogEventMonitor
+            });
+
+            isEmpEnabled.mockResolvedValue(true);
+            subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
+            loadStyle.mockResolvedValue();
+            // Simulate a stalled EMP/CometD unsubscribe: the callback never fires.
+            unsubscribe.mockImplementation(() => {});
+
+            document.body.appendChild(element);
+            await jest.advanceTimersByTimeAsync(0); // flush connectedCallback subscribe
+
+            const menus = element.shadowRoot.querySelectorAll('lightning-button-menu');
+            let targetMenu;
+            menus.forEach((m) => {
+                if (m.label === 'New Messages') targetMenu = m;
+            });
+            if (!targetMenu && menus.length > 1) targetMenu = menus[1];
+
+            targetMenu.dispatchEvent(new CustomEvent('select', { detail: { value: -2 } }));
+
+            // The resubscribe is chained off the stalled unsubscribe, so nothing happens yet.
+            await jest.advanceTimersByTimeAsync(0);
+            expect(subscribe).toHaveBeenCalledTimes(1); // still only the initial subscription
+
+            // The timeout fallback fires and lets the resubscribe proceed.
+            await jest.advanceTimersByTimeAsync(5000);
+            expect(subscribe).toHaveBeenCalledTimes(2);
+            expect(subscribe.mock.calls[1][1]).toBe(-2); // Historic replayId
+        } finally {
+            jest.useRealTimers();
+        }
+    });
+
     it('exports logs to CSV', () => {
         const element = createElement('c-rflib-log-event-monitor', {
             is: RflibLogEventMonitor

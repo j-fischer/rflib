@@ -290,11 +290,28 @@ export default class LogEventMonitor extends LightningElement {
         return new Promise((resolve) => {
             if (_this.subscription) {
                 logger.debug('Unsubscribing current connection: ' + _this.currentConnectionMode.value);
-                unsubscribe(_this.subscription, (response) => {
-                    logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
+
+                let settled = false;
+                const settle = (source) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    logger.debug('unsubscribe() settled via {0}', source);
                     _this.subscription = null;
                     resolve();
+                };
+
+                unsubscribe(_this.subscription, (response) => {
+                    logger.debug('unsubscribe() response: {0}', JSON.stringify(response));
+                    settle('callback');
                 });
+
+                // EMP/CometD can stall the unsubscribe callback on a slow connection. Since the
+                // pending resubscribe is chained off this promise, a stalled callback would leave the
+                // component permanently stuck on the current connection mode. Fall back after a short
+                // timeout so a mode switch always proceeds.
+                setTimeout(() => settle('timeout'), 5000);
             } else {
                 logger.debug('No current subscription');
                 resolve();
