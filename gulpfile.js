@@ -762,7 +762,15 @@ gulp.task('test-package-upgrade',
         'shell-force-open',
         'shell-force-test',
         'shell-force-assign-permset',
-        'shell-test-e2e',
+        function runE2ETests(done) {
+            // The E2E suite exercises the RFLIB Ops Center; it only applies when the RFLIB package
+            // itself is being upgraded, not the extension packages (which pull RFLIB as a dependency).
+            if (config.package.package === 'RFLIB') {
+                gulp.series('shell-test-e2e')(done);
+            } else {
+                done();
+            }
+        },
         'confirm-deleteOrg'
     )
 );
