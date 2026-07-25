@@ -80,7 +80,7 @@ rem RFLIB-FS 4.0.0
 sf package install --package 04tKY0000005SfyYAE --target-org <your org alias>
 
 rem RFLIB-TF 4.0.0
-sf package install --package 04tKY0000005SfjYAE --target-org <your org alias>
+sf package install --package 04tKY0000005SoJYAU --target-org <your org alias>
 
 rem RFLIB-PHAROS 1.0.0
 sf package install --package 04tKY000000xhxmYAA --target-org <your org alias>
