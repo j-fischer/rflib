@@ -113,7 +113,9 @@ export default class LogEventMonitor extends LightningElement {
 
     debugEnabled = false;
     isClearArchiveDialogVisible = false;
-    currentConnectionMode = DEFAULT_CONNECTION_MODE;
+    // Stays null until the configured default connection mode has been resolved, so the header never
+    // renders a mode the component is not actually in.
+    currentConnectionMode = null;
     capturedEvents = [];
     selectedLogEvent = null;
     selectedLogEventCreatedById = null;

@@ -123,6 +123,30 @@ describe('c-rflib-log-event-monitor', () => {
             subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
         });
 
+        it('renders no connection mode until the setting resolves', async () => {
+            let resolveSetting;
+            getDefaultConnectionMode.mockReturnValue(
+                new Promise((resolve) => {
+                    resolveSetting = resolve;
+                })
+            );
+
+            const element = createMonitor();
+            await Promise.resolve();
+
+            // The default must not be rendered speculatively — the monitor is not in any mode yet.
+            expect(element.shadowRoot.querySelectorAll('p.slds-page-header__name-meta')[1]).toBeUndefined();
+            expect(
+                Array.from(element.shadowRoot.querySelectorAll('lightning-button-menu')).find((menu) => menu.label)
+            ).toBeUndefined();
+
+            resolveSetting('Not Connected');
+            await flushPromises();
+
+            expect(connectionStatus(element)).toContain('Not Connected');
+            expect(connectionModeButtonLabel(element)).toBe('Not Connected');
+        });
+
         it('starts in Archive mode and matches labels case-insensitively', () => {
             getDefaultConnectionMode.mockResolvedValue('archive');
             getArchivedRecords.mockResolvedValue({ records: [{ CreatedById: 'ArchivedUser' }], queryLimit: 100 });

@@ -100,7 +100,11 @@
                     </div>
                     <div class="slds-page-header__control">
                         <div class="action-group" role="group">
-                            <lightning-button-menu label={currentConnectionMode.label} onselect={changeConnectionMode}>
+                            <lightning-button-menu
+                                lwc:if={currentConnectionMode}
+                                label={currentConnectionMode.label}
+                                onselect={changeConnectionMode}
+                            >
                                 <template for:each={connectionModes} for:item="menuItem">
                                     <lightning-menu-item
                                         key={menuItem.id}
@@ -125,7 +129,9 @@
         <div class="slds-page-header__row slds-m-top_x-small">
             <div class="slds-page-header__col-meta">
                 <p class="slds-page-header__name-meta">{numTotalRecords} Total Log Events</p>
-                <p class="slds-page-header__name-meta">Connection Status • {currentConnectionMode.label}</p>
+                <p class="slds-page-header__name-meta" lwc:if={currentConnectionMode}>
+                    Connection Status • {currentConnectionMode.label}
+                </p>
             </div>
             <div class="slds-page-header__col-controls">
                 <div class="slds-page-header__controls">
