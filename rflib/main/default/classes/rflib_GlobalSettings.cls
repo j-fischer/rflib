@@ -103,6 +103,9 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final String OTEL_SERVICE_NAME_DEFAULT_VALUE = 'salesforce-rflib';
 
+    @TestVisible
+    private static final String LOG_MONITOR_DEFAULT_CONNECTION_DEFAULT_VALUE = 'New Messages';
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -267,6 +270,13 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('OTel_Service_Name');
             return String.isBlank(val) ? OTEL_SERVICE_NAME_DEFAULT_VALUE : val;
+        }
+    }
+
+    public static String logMonitorDefaultConnectionOrDefault {
+        get {
+            String val = getSetting('Log_Monitor_Default_Connection');
+            return String.isBlank(val) ? LOG_MONITOR_DEFAULT_CONNECTION_DEFAULT_VALUE : val;
         }
     }
 

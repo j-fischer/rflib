@@ -1,3 +1,7 @@
+### RFLIB 11.1.0
+
+- Added the optional `Log_Monitor_Default_Connection` Global Setting, which selects the connection mode the Log Monitor starts in. Set the value to one of the connection mode labels — `New Messages`, `Historic and New Messages`, `Not Connected`, or `Archive` (matched case-insensitively). Without the setting the Log Monitor keeps starting in `New Messages` mode, and an unrecognized value falls back to the same default.
+
 ### RFLIB-TF 4.0.0
 
 Package ID: 04tKY0000005SoJYAU

@@ -34,6 +34,7 @@ import { CurrentPageReference } from 'lightning/navigation';
 
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
+import getDefaultConnectionMode from '@salesforce/apex/rflib_LogMonitorController.getDefaultConnectionMode';
 
 import { loadStyle } from 'lightning/platformResourceLoader';
 import hideHeaderCSS from '@salesforce/resourceUrl/rflib_HidePageHeader';
@@ -69,7 +70,40 @@ const CONNECTION_MODE = {
     }
 };
 
+// Menu order of the connection mode picker. Also the set of labels accepted by the
+// Log_Monitor_Default_Connection Global Setting.
+const CONNECTION_MODES = [
+    CONNECTION_MODE.NEW_MESSAGES_ONLY,
+    CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES,
+    CONNECTION_MODE.DISCONNECTED,
+    CONNECTION_MODE.ARCHIVE
+];
+
+const DEFAULT_CONNECTION_MODE = CONNECTION_MODE.NEW_MESSAGES_ONLY;
+
 const logger = createLogger('LogEventMonitor');
+
+async function resolveDefaultConnectionMode() {
+    try {
+        const configuredLabel = await getDefaultConnectionMode();
+        const normalizedLabel = (configuredLabel || '').trim().toLowerCase();
+        const mode = CONNECTION_MODES.find((candidate) => candidate.label.toLowerCase() === normalizedLabel);
+
+        if (mode) {
+            return mode;
+        }
+
+        logger.warn(
+            'Unknown default connection mode "{0}", falling back to {1}',
+            configuredLabel,
+            DEFAULT_CONNECTION_MODE.label
+        );
+    } catch (error) {
+        logger.error('Failed to retrieve the default connection mode: {0}', JSON.stringify(error));
+    }
+
+    return DEFAULT_CONNECTION_MODE;
+}
 
 export default class LogEventMonitor extends LightningElement {
     page = 1;
@@ -79,7 +113,7 @@ export default class LogEventMonitor extends LightningElement {
 
     debugEnabled = false;
     isClearArchiveDialogVisible = false;
-    currentConnectionMode = CONNECTION_MODE.NEW_MESSAGES_ONLY;
+    currentConnectionMode = DEFAULT_CONNECTION_MODE;
     capturedEvents = [];
     selectedLogEvent = null;
     selectedLogEventCreatedById = null;
@@ -210,14 +244,7 @@ export default class LogEventMonitor extends LightningElement {
     }
 
     get connectionModes() {
-        const connectionModes = JSON.parse(
-            JSON.stringify([
-                CONNECTION_MODE.NEW_MESSAGES_ONLY,
-                CONNECTION_MODE.HISTORIC_AND_NEW_MESSAGES,
-                CONNECTION_MODE.DISCONNECTED,
-                CONNECTION_MODE.ARCHIVE
-            ])
-        );
+        const connectionModes = JSON.parse(JSON.stringify(CONNECTION_MODES));
 
         let i,
             len = connectionModes.length;
@@ -229,11 +256,57 @@ export default class LogEventMonitor extends LightningElement {
         return connectionModes;
     }
 
-    connectedCallback() {
-        let _this = this;
+    async connectedCallback() {
+        const _this = this;
 
         logger.debug('Initializing LogEventMonitor component');
         this.registerErrorListener();
+
+        loadStyle(this, hideHeaderCSS).catch((error) => {
+            logger.error('Error loading custom CSS for header hiding: {0}', error.message);
+        });
+
+        this.loadFieldVisibilitySettings();
+
+        // The Log_Monitor_Default_Connection Global Setting decides which mode the monitor
+        // starts in; it is optional and defaults to New Messages.
+        this.currentConnectionMode = await resolveDefaultConnectionMode();
+        logger.debug('Initializing with connection mode {0}', this.currentConnectionMode.label);
+
+        if (this.currentConnectionMode === CONNECTION_MODE.DISCONNECTED) {
+            return;
+        }
+
+        if (this.currentConnectionMode === CONNECTION_MODE.ARCHIVE) {
+            this.queryArchive();
+            return;
+        }
+
+        if (this.debugEnabled) {
+            setDebugFlag(true).then((result) => {
+                logger.debug('setDebugFlag() successful: ' + result);
+            });
+        }
+
+        isEmpEnabled().then((result) => {
+            logger.debug('isEmpEnabled? ' + result);
+            if (result === false) {
+                const evt = new ShowToastEvent({
+                    title: 'EMP API not enabled',
+                    message: 'Log Monitor will not work without EMP API enabled.',
+                    variant: 'error'
+                });
+                if (!import.meta.env.SSR) {
+                    _this.dispatchEvent(evt);
+                }
+            }
+
+            return _this.subscribeToLogEvents();
+        });
+    }
+
+    subscribeToLogEvents() {
+        const _this = this;
 
         const messageCallback = function (msg) {
             logger.debug('New message received: ' + JSON.stringify(msg));
@@ -242,46 +315,20 @@ export default class LogEventMonitor extends LightningElement {
             logger.debug('Updated total records count to {0}', _this.numTotalRecords);
         };
 
-        if (_this.debugEnabled) {
-            setDebugFlag(true).then((result) => {
-                logger.debug('setDebugFlag() successful: ' + result);
+        logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
+        return subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback).then((response) => {
+            logger.debug('Successfully subscribed to: ' + response.channel);
+            _this.subscription = response;
+
+            const evt = new ShowToastEvent({
+                title: 'Connection Mode Changed',
+                message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
+                variant: 'success'
             });
-        }
-
-        isEmpEnabled()
-            .then((result) => {
-                logger.debug('isEmpEnabled? ' + result);
-                if (result === false) {
-                    const evt = new ShowToastEvent({
-                        title: 'EMP API not enabled',
-                        message: 'Log Monitor will not work without EMP API enabled.',
-                        variant: 'error'
-                    });
-                    if (!import.meta.env.SSR) {
-                        _this.dispatchEvent(evt);
-                    }
-                }
-
-                return subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback);
-            })
-            .then((response) => {
-                logger.debug('Successfully subscribed to: ' + response.channel);
-                _this.subscription = response;
-                const evt = new ShowToastEvent({
-                    title: 'Connection Mode Changed',
-                    message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
-                    variant: 'success'
-                });
-                if (!import.meta.env.SSR) {
-                    _this.dispatchEvent(evt);
-                }
-            });
-
-        loadStyle(this, hideHeaderCSS).catch((error) => {
-            logger.error('Error loading custom CSS for header hiding: {0}', error.message);
+            if (!import.meta.env.SSR) {
+                _this.dispatchEvent(evt);
+            }
         });
-
-        this.loadFieldVisibilitySettings();
     }
 
     disconnectedCallback() {
@@ -407,27 +454,8 @@ export default class LogEventMonitor extends LightningElement {
                     _this.clearLogs();
                 }
 
-                const messageCallback = function (msg) {
-                    logger.debug('New message received: ' + JSON.stringify(msg));
-                    _this.capturedEvents = [msg.data.payload, ..._this.capturedEvents];
-                    _this.numTotalRecords = _this.capturedEvents.length;
-                    logger.debug('Updated total records count to {0}', _this.numTotalRecords);
-                };
-
-                logger.debug('this.currentConnectionMode: ' + JSON.stringify(_this.currentConnectionMode));
-                subscribe(CHANNEL, _this.currentConnectionMode.value, messageCallback).then((response) => {
-                    logger.debug('Successfully subscribed to: ' + response.channel);
-                    _this.subscription = response;
+                _this.subscribeToLogEvents().then(() => {
                     _this.isSwitchingConnection = false;
-
-                    const evt = new ShowToastEvent({
-                        title: 'Connection Mode Changed',
-                        message: 'You are now connected to receive ' + _this.currentConnectionMode.label,
-                        variant: 'success'
-                    });
-                    if (!import.meta.env.SSR) {
-                        _this.dispatchEvent(evt);
-                    }
                 });
             } else {
                 logger.debug('Connection deactivated');

@@ -310,6 +310,26 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testLogMonitorDefaultConnectionOrDefault() {
+        String expectedValue = getConfiguredStringValueOrDefault(
+            'Log_Monitor_Default_Connection',
+            rflib_GlobalSettings.LOG_MONITOR_DEFAULT_CONNECTION_DEFAULT_VALUE
+        );
+
+        Test.startTest();
+        System.assertEquals(expectedValue, rflib_GlobalSettings.logMonitorDefaultConnectionOrDefault);
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testLogMonitorDefaultConnectionOverride() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Log_Monitor_Default_Connection', 'Archive');
+        System.assertEquals('Archive', rflib_GlobalSettings.logMonitorDefaultConnectionOrDefault);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 

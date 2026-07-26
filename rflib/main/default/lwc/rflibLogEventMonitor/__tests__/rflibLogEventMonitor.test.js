@@ -4,6 +4,7 @@ import { subscribe, unsubscribe, onError, setDebugFlag, isEmpEnabled } from 'lig
 import { loadStyle } from 'lightning/platformResourceLoader';
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
+import getDefaultConnectionMode from '@salesforce/apex/rflib_LogMonitorController.getDefaultConnectionMode';
 
 // Mock c/rflibLogger
 jest.mock('c/rflibLogger', () => {
@@ -61,6 +62,16 @@ jest.mock(
     { virtual: true }
 );
 
+jest.mock(
+    '@salesforce/apex/rflib_LogMonitorController.getDefaultConnectionMode',
+    () => {
+        return {
+            default: jest.fn()
+        };
+    },
+    { virtual: true }
+);
+
 // Mock resourceUrl
 jest.mock(
     '@salesforce/resourceUrl/rflib_HidePageHeader',
@@ -76,11 +87,102 @@ function flushPromises() {
 }
 
 describe('c-rflib-log-event-monitor', () => {
+    beforeEach(() => {
+        loadStyle.mockResolvedValue();
+        getDefaultConnectionMode.mockResolvedValue('New Messages');
+    });
+
     afterEach(() => {
         while (document.body.firstChild) {
             document.body.removeChild(document.body.firstChild);
         }
         jest.clearAllMocks();
+    });
+
+    describe('default connection mode from the global config', () => {
+        // Label rendered on the connection mode button; the other menus are icon-only.
+        function connectionModeButtonLabel(element) {
+            const menus = Array.from(element.shadowRoot.querySelectorAll('lightning-button-menu'));
+            return menus.find((menu) => menu.label).label;
+        }
+
+        function connectionStatus(element) {
+            return element.shadowRoot.querySelectorAll('p.slds-page-header__name-meta')[1].textContent;
+        }
+
+        function createMonitor() {
+            const element = createElement('c-rflib-log-event-monitor', {
+                is: RflibLogEventMonitor
+            });
+            document.body.appendChild(element);
+            return element;
+        }
+
+        beforeEach(() => {
+            isEmpEnabled.mockResolvedValue(true);
+            subscribe.mockResolvedValue({ channel: '/event/rflib_Log_Event__e' });
+        });
+
+        it('starts in Archive mode and matches labels case-insensitively', () => {
+            getDefaultConnectionMode.mockResolvedValue('archive');
+            getArchivedRecords.mockResolvedValue({ records: [{ CreatedById: 'ArchivedUser' }], queryLimit: 100 });
+
+            const element = createMonitor();
+
+            return flushPromises().then(() => {
+                expect(getArchivedRecords).toHaveBeenCalled();
+                expect(subscribe).not.toHaveBeenCalled();
+                expect(connectionStatus(element)).toContain('Archive');
+                expect(connectionModeButtonLabel(element)).toBe('Archive');
+            });
+        });
+
+        it('starts in Historic and New Messages mode', () => {
+            getDefaultConnectionMode.mockResolvedValue('Historic and New Messages');
+
+            const element = createMonitor();
+
+            return flushPromises().then(() => {
+                expect(subscribe).toHaveBeenCalledWith('/event/rflib_Log_Event__e', -2, expect.any(Function));
+                expect(connectionStatus(element)).toContain('Historic and New Messages');
+                expect(connectionModeButtonLabel(element)).toBe('Historic and New Messages');
+            });
+        });
+
+        it('starts disconnected without subscribing or querying the archive', () => {
+            getDefaultConnectionMode.mockResolvedValue('Not Connected');
+
+            const element = createMonitor();
+
+            return flushPromises().then(() => {
+                expect(subscribe).not.toHaveBeenCalled();
+                expect(getArchivedRecords).not.toHaveBeenCalled();
+                expect(connectionStatus(element)).toContain('Not Connected');
+                expect(connectionModeButtonLabel(element)).toBe('Not Connected');
+            });
+        });
+
+        it('falls back to New Messages for an unrecognized value', () => {
+            getDefaultConnectionMode.mockResolvedValue('Invalid Connection Value');
+
+            const element = createMonitor();
+
+            return flushPromises().then(() => {
+                expect(subscribe).toHaveBeenCalledWith('/event/rflib_Log_Event__e', -1, expect.any(Function));
+                expect(connectionModeButtonLabel(element)).toBe('New Messages');
+            });
+        });
+
+        it('falls back to New Messages when the setting cannot be retrieved', () => {
+            getDefaultConnectionMode.mockRejectedValue(new Error('no access'));
+
+            const element = createMonitor();
+
+            return flushPromises().then(() => {
+                expect(subscribe).toHaveBeenCalledWith('/event/rflib_Log_Event__e', -1, expect.any(Function));
+                expect(connectionModeButtonLabel(element)).toBe('New Messages');
+            });
+        });
     });
 
     it('subscribes to event channel on initialization', () => {

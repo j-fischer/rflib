@@ -21,6 +21,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>rflib_LogMonitorController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_OrgLimitsController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
