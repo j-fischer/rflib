@@ -4,8 +4,8 @@
       "path": "rflib",
       "default": true,
       "package": "RFLIB",
-      "versionName": "ver 11.0.0",
-      "versionNumber": "11.0.0.NEXT",
+      "versionName": "ver 11.1.0",
+      "versionNumber": "11.1.0.NEXT",
       "postInstallUrl": "https://github.com/j-fischer/rflib#how-tos",
       "releaseNotesUrl": "https://github.com/j-fischer/rflib/blob/master/CHANGELOG.md",
       "versionDescription": "Open source library with logging framework and advanced monitoring capabilities. License: BSD-3-Clause."
@@ -172,6 +172,7 @@
     "RFLIB@11.0.0-1": "04tKY0000005RZ5YAM",
     "RFLIB-TF@4.0.0-1": "04tKY0000005SfjYAE",
     "RFLIB-FS@4.0.0-1": "04tKY0000005SfyYAE",
-    "RFLIB-TF@4.0.0-2": "04tKY0000005SoJYAU"
+    "RFLIB-TF@4.0.0-2": "04tKY0000005SoJYAU",
+    "RFLIB@11.1.0-1": "04tKY0000005SoOYAU"
   }
 }
