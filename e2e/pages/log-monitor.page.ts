@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { fillDateTime, formatDateUs, selectMenuItem } from '../helpers/lightning';
+import { LogEventListComponent, LogEventViewerComponent, PaginatorComponent } from '../components';
+import { LightningButtonMenu, LightningDateTimeInput, formatDateUs } from '../components/base';
 import { runApex } from '../helpers/sf';
 
 export const CONNECTION_MODES = {
@@ -8,6 +9,8 @@ export const CONNECTION_MODES = {
     disconnected: 'Not Connected',
     archive: 'Archive'
 } as const;
+
+const CONNECTION_MODE_LABELS = /Historic and New Messages|New Messages|Not Connected|Archive/;
 
 export class LogMonitorPage {
     constructor(readonly page: Page) {}
@@ -28,21 +31,89 @@ export class LogMonitorPage {
         return this.header.locator('p').filter({ hasText: 'Connection Status' });
     }
 
-    get connectionModeMenu(): Locator {
-        // The connection mode menu is the lightning-button-menu with the mode label.
-        return this.header
-            .locator('lightning-button-menu')
-            .filter({
-                hasText: /Historic and New Messages|New Messages|Not Connected|Archive/
-            })
-            .first();
+    // The connection mode menu is the only header menu labelled with a mode.
+    get connectionModeMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(
+            this.header.locator('lightning-button-menu').filter({ hasText: CONNECTION_MODE_LABELS }).first()
+        );
+    }
+
+    // The archive settings menu ("Clear Archive") is the icon-only menu that shares
+    // an action group with the Query Archive button.
+    get archiveSettingsMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(
+            this.header.locator('.action-group').filter({ hasText: 'Query Archive' }).locator('lightning-button-menu')
+        );
+    }
+
+    // alternative-text="Log visibility settings" is the icon-only menu's accessible
+    // name; fall back to the header controls column if a release stops rendering it.
+    get fieldVisibilityMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(
+            this.header
+                .getByRole('button', { name: 'Log visibility settings' })
+                .or(this.header.locator('.slds-page-header__col-controls lightning-button-menu'))
+                .first()
+        );
+    }
+
+    // The only button-icon in the second header row.
+    get fullscreenToggle(): Locator {
+        return this.header.locator('.slds-page-header__col-controls lightning-button-icon').first();
+    }
+
+    get exportButton(): Locator {
+        return this.header.getByRole('button', { name: 'Export to CSV' });
+    }
+
+    get clearLogsButton(): Locator {
+        return this.header.getByRole('button', { name: 'Clear Logs' });
+    }
+
+    get queryArchiveButton(): Locator {
+        return this.header.getByRole('button', { name: 'Query Archive' });
+    }
+
+    get eventList(): LogEventListComponent {
+        return LogEventListComponent.within(this.root);
+    }
+
+    // Convenience for the many assertions that count or filter rows.
+    eventRows(): Locator {
+        return this.eventList.rows;
+    }
+
+    get viewer(): LogEventViewerComponent {
+        return LogEventViewerComponent.within(this.root);
+    }
+
+    get paginator(): PaginatorComponent {
+        return PaginatorComponent.within(this.root);
+    }
+
+    // Placeholders are authored in rflibLogEventMonitor.html; "Enter a end date" is
+    // the literal template text. Both branches resolve to the same element, so the
+    // positional fallback only takes over if the placeholders stop rendering.
+    private archiveDateInput(placeholder: string, index: 0 | 1): LightningDateTimeInput {
+        const inputs = this.header.locator('.archive-filter lightning-input');
+        return new LightningDateTimeInput(
+            inputs
+                .filter({ has: this.page.getByPlaceholder(placeholder) })
+                .or(inputs.nth(index))
+                .first()
+        );
+    }
+
+    async setArchiveDateRange(start: Date, end: Date): Promise<void> {
+        await this.archiveDateInput('Enter a start date', 0).fill(formatDateUs(start), '12:00 AM');
+        await this.archiveDateInput('Enter a end date', 1).fill(formatDateUs(end), '11:59 PM');
     }
 
     // The status label only updates once the EMP (un)subscribe round trip
     // completes; that can stall, so retry the menu selection a few times.
     async setConnectionMode(modeLabel: string): Promise<void> {
         for (let attempt = 1; ; attempt++) {
-            await selectMenuItem(this.connectionModeMenu, modeLabel);
+            await this.connectionModeMenu.select(modeLabel);
             try {
                 await expect(this.connectionStatusText).toContainText(modeLabel, { timeout: 20_000 });
                 return;
@@ -50,7 +121,7 @@ export class LogMonitorPage {
                 if (attempt >= 3) {
                     throw error;
                 }
-                await this.page.keyboard.press('Escape'); // close a possibly stuck menu
+                await this.connectionModeMenu.close(); // close a possibly stuck menu
             }
         }
     }
@@ -119,62 +190,5 @@ export class LogMonitorPage {
     async getTotalLogEvents(): Promise<number> {
         const text = (await this.totalLogEventsText.textContent()) ?? '0';
         return parseInt(text.trim().split(' ')[0], 10);
-    }
-
-    get eventList(): Locator {
-        return this.root.locator('c-rflib-log-event-list');
-    }
-
-    eventRows(): Locator {
-        return this.eventList.locator('c-rflib-log-event-list-row');
-    }
-
-    searchField(placeholder: string): Locator {
-        return this.eventList.getByPlaceholder(placeholder);
-    }
-
-    get searchButton(): Locator {
-        return this.eventList.getByRole('button', { name: 'Search' });
-    }
-
-    get viewer(): Locator {
-        return this.root.locator('c-rflib-log-event-viewer');
-    }
-
-    get exportButton(): Locator {
-        return this.header.getByRole('button', { name: 'Export to CSV' });
-    }
-
-    get clearLogsButton(): Locator {
-        return this.header.getByRole('button', { name: 'Clear Logs' });
-    }
-
-    get queryArchiveButton(): Locator {
-        return this.header.getByRole('button', { name: 'Query Archive' });
-    }
-
-    // The archive header renders start date, end date inputs in order within the .archive-filter control.
-    archiveDateInput(index: 0 | 1): Locator {
-        return this.header.locator('.archive-filter lightning-input').nth(index);
-    }
-
-    async setArchiveDateRange(start: Date, end: Date): Promise<void> {
-        await fillDateTime(this.archiveDateInput(0), formatDateUs(start), '12:00 AM');
-        await fillDateTime(this.archiveDateInput(1), formatDateUs(end), '11:59 PM');
-    }
-
-    // Settings menu in archive mode (contains "Clear Archive"). It precedes the
-    // connection mode menu in the actions button group.
-    get archiveSettingsMenu(): Locator {
-        return this.header.locator('.slds-page-header__col-actions lightning-button-menu').first();
-    }
-
-    // Field visibility menu lives in the second header row's controls area.
-    get fieldVisibilityMenu(): Locator {
-        return this.header.locator('.slds-page-header__col-controls lightning-button-menu').first();
-    }
-
-    get fullscreenToggle(): Locator {
-        return this.header.locator('.slds-page-header__col-controls lightning-button-icon').first();
     }
 }

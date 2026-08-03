@@ -118,3 +118,7 @@ pinfo
 uncatchable
 bulkified
 jsforce
+UTAM
+utam
+pageobjects
+wdio

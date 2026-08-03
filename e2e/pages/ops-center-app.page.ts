@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { orgInfo } from '../helpers/sf';
 
 export const APP_NAME = 'RFLIB Ops Center';
@@ -11,6 +11,19 @@ export const TABS = {
     appEventsDashboard: 'Application Events Dashboard',
     applicationEvents: 'Application Events'
 } as const;
+
+// Root custom elements the Ops Center tabs mount. The navigation smoke test asserts
+// on these tags directly - that a tab mounts its component at all is the assertion.
+// Add an entry here when a new tab is introduced.
+export const ROOT_COMPONENT_TAGS = {
+    orgLimitStat: 'c-rflib-org-limit-stat',
+    bigObjectStat: 'c-rflib-big-object-stat',
+    customSettingsEditor: 'c-rflib-custom-settings-editor',
+    logEventMonitor: 'c-rflib-log-event-monitor',
+    permissionsExplorer: 'c-rflib-permissions-explorer'
+} as const;
+
+export type RootComponentTag = (typeof ROOT_COMPONENT_TAGS)[keyof typeof ROOT_COMPONENT_TAGS];
 
 export class OpsCenterApp {
     constructor(readonly page: Page) {}
@@ -52,10 +65,14 @@ export class OpsCenterApp {
         await this.page.waitForLoadState('domcontentloaded');
     }
 
-    tabLink(label: string) {
+    tabLink(label: string): Locator {
         return this.page
             .locator(`one-appnav a[title="${label}"]`)
             .or(this.page.getByRole('navigation').getByRole('link', { name: label, exact: true }))
             .first();
+    }
+
+    rootComponent(tag: RootComponentTag): Locator {
+        return this.page.locator(tag);
     }
 }

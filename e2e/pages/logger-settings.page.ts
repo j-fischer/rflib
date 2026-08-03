@@ -1,4 +1,6 @@
 import { Locator, Page } from '@playwright/test';
+import { SettingsModalComponent } from '../components';
+import { LightningDatatable } from '../components/base';
 
 export class LoggerSettingsPage {
     constructor(readonly page: Page) {}
@@ -15,19 +17,15 @@ export class LoggerSettingsPage {
         return this.root.getByRole('button', { name: 'New', exact: true });
     }
 
-    get datatable(): Locator {
-        return this.root.locator('lightning-datatable');
+    get table(): LightningDatatable {
+        return LightningDatatable.within(this.root);
     }
 
     row(text: string | RegExp): Locator {
-        return this.datatable.locator('tbody tr').filter({ hasText: text }).first();
+        return this.table.row(text);
     }
 
-    get modal(): Locator {
-        return this.root.locator('section[role="dialog"]');
-    }
-
-    modalField(apiName: string): Locator {
-        return this.modal.locator(`[data-field-name="${apiName}"]`);
+    get modal(): SettingsModalComponent {
+        return SettingsModalComponent.within(this.root);
     }
 }

@@ -1,9 +1,9 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import { PERMISSIONS_SEARCH } from '../components';
 import { createOpsCenterSession } from '../fixtures';
-import { pickRecord, selectMenuItem } from '../helpers/lightning';
 import { orgInfo } from '../helpers/sf';
 import { TABS } from '../pages/ops-center-app.page';
-import { PERMISSION_TYPES, PermissionsExplorerPage } from '../pages/permissions-explorer.page';
+import { EXPORT_FILTERS, PERMISSION_TYPES, PermissionsExplorerPage } from '../pages/permissions-explorer.page';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -42,9 +42,9 @@ test('switches between permission types', async () => {
 
 test('user mode aggregates and resets permissions', async () => {
     await explorer.selectPermissionType(PERMISSION_TYPES.objectUser);
-    await expect(explorer.userPicker).toBeVisible();
+    await expect(explorer.userPicker.root).toBeVisible();
 
-    await pickRecord(explorer.userPicker, orgInfo().adminName);
+    await explorer.userPicker.pick(orgInfo().adminName);
     await expect(explorer.aggregateButton).toBeEnabled();
     await explorer.aggregateButton.click();
     await explorer.waitForLoad();
@@ -59,62 +59,57 @@ test('search filters the permissions table', async () => {
     await explorer.selectPermissionType(PERMISSION_TYPES.objectProfiles);
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
 
-    const searchInput = explorer.table.getByPlaceholder('Search Object/Class/Page...');
-    await searchInput.fill('Account');
-    await searchInput.press('Enter');
+    await explorer.table.search(PERMISSIONS_SEARCH.object, 'Account');
     await expect(explorer.tableRows.first()).toBeVisible({ timeout: 30_000 });
     await expect(explorer.tableRows.first()).toContainText('Account');
 
-    await searchInput.fill('');
-    await searchInput.press('Enter');
+    await explorer.table.search(PERMISSIONS_SEARCH.object, '');
 });
 
 test('page size selection shows more rows per page', async () => {
     const rowsAtTen = await explorer.tableRows.count();
     expect(rowsAtTen).toBeLessThanOrEqual(10);
 
-    await selectMenuItem(explorer.pageSizeMenu, '50');
+    await explorer.pageSizeMenu.select('50');
     await expect.poll(() => explorer.tableRows.count(), { timeout: 60_000 }).toBeGreaterThan(10);
 
-    await selectMenuItem(explorer.pageSizeMenu, '10');
+    await explorer.pageSizeMenu.select('10');
     await expect.poll(() => explorer.tableRows.count(), { timeout: 60_000 }).toBeLessThanOrEqual(10);
 });
 
 test('paginator navigates pages including go-to-page', async () => {
-    const pageInput = explorer.paginator.locator('input');
-    await expect(pageInput).toHaveValue('1');
+    const paginator = explorer.paginator;
+    await expect(paginator.pageInput).toHaveValue('1');
 
-    await explorer.paginator.getByRole('button', { name: 'Next' }).click();
-    await expect(pageInput).toHaveValue('2');
+    await paginator.button('Next').click();
+    await expect(paginator.pageInput).toHaveValue('2');
 
-    await explorer.paginator.getByRole('button', { name: 'Last' }).click();
-    const lastPage = await pageInput.inputValue();
-    expect(parseInt(lastPage, 10)).toBeGreaterThan(1);
+    await paginator.button('Last').click();
+    expect(await paginator.currentPage()).toBeGreaterThan(1);
 
-    await pageInput.fill('1');
-    await pageInput.press('Enter');
-    await expect(pageInput).toHaveValue('1');
+    await paginator.goTo(1);
+    await expect(paginator.pageInput).toHaveValue('1');
 });
 
 test('exports all permissions to CSV', async () => {
     const downloadPromise = page.waitForEvent('download', { timeout: 120_000 });
-    await selectMenuItem(explorer.exportMenu, 'All');
+    await explorer.exportMenu.select('All');
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.csv$/i);
 });
 
 test('exports filtered permissions through the filter modal with help text', async () => {
-    await selectMenuItem(explorer.exportMenu, 'Filtered');
+    await explorer.exportMenu.select('Filtered');
     const modal = explorer.exportFilterModal;
     await expect(modal).toBeVisible();
 
     // Collapsible help section explains the filter logic.
-    await modal.getByText('Click to learn how filtering works').click();
+    await explorer.exportFilterHelpToggle.click();
     await expect(modal.getByText('Values within the same field are combined with OR logic')).toBeVisible();
 
-    await modal.getByPlaceholder('Enter comma-separated names...').nth(1).fill('Account');
+    await explorer.exportFilterInput(EXPORT_FILTERS.object).fill('Account');
     const downloadPromise = page.waitForEvent('download', { timeout: 120_000 });
-    await modal.getByRole('button', { name: 'Export', exact: true }).click();
+    await explorer.exportFilterExportButton.click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.csv$/i);
     await expect(modal).toBeHidden({ timeout: 30_000 });
