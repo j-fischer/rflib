@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { selectMenuItem, waitForSpinners } from '../helpers/lightning';
+import { PaginatorComponent, PermissionsTableComponent } from '../components';
+import { LightningButtonMenu, LightningRecordPicker, waitForSpinners } from '../components/base';
 
 export const PERMISSION_TYPES = {
     objectProfiles: 'Object Permission For Profiles',
@@ -8,6 +9,19 @@ export const PERMISSION_TYPES = {
     apexPermissionSets: 'Apex Permissions for Permission Sets',
     objectUser: 'Object Permission for a User'
 } as const;
+
+// Labels of the export filter fields, taken from the form element labels in
+// rflibPermissionsExplorer.html. The two name inputs share a placeholder, so the
+// label is the only thing that tells them apart.
+export const EXPORT_FILTERS = {
+    securityObject: 'Profile/Permission Set Name',
+    object: 'Object/Class/Page Name',
+    field: 'Field Name'
+} as const;
+
+export type ExportFilterLabel = (typeof EXPORT_FILTERS)[keyof typeof EXPORT_FILTERS];
+
+const PERMISSION_TYPE_LABELS = new RegExp(Object.values(PERMISSION_TYPES).join('|'));
 
 export class PermissionsExplorerPage {
     constructor(readonly page: Page) {}
@@ -28,22 +42,33 @@ export class PermissionsExplorerPage {
         return this.header.locator('p').filter({ hasText: 'Permission Type' });
     }
 
-    // Header button group renders three menus in fixed order: permission type,
-    // export, page size.
-    get permissionTypeMenu(): Locator {
-        return this.header.locator('lightning-button-menu').nth(0);
+    // The three header menus are distinguished by what they announce, not by order:
+    // the permission type menu is labelled with the selected type, the export menu
+    // with "Export to CSV", and the icon-only page size menu by its alternative-text.
+    get permissionTypeMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(
+            this.header.locator('lightning-button-menu').filter({ hasText: PERMISSION_TYPE_LABELS }).first()
+        );
     }
 
-    get exportMenu(): Locator {
-        return this.header.locator('lightning-button-menu').nth(1);
+    get exportMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(this.header.getByRole('button', { name: 'Export to CSV' }));
     }
 
-    get pageSizeMenu(): Locator {
-        return this.header.locator('lightning-button-menu').nth(2);
+    // The page size menu is icon-only, so alternative-text is its only label. Falls
+    // back to its position in the header button group (type, export, page size) if a
+    // release stops rendering the assistive text.
+    get pageSizeMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(
+            this.header
+                .getByRole('button', { name: 'Select page size' })
+                .or(this.header.locator('lightning-button-menu').nth(2))
+                .first()
+        );
     }
 
     async selectPermissionType(label: string): Promise<void> {
-        await selectMenuItem(this.permissionTypeMenu, label);
+        await this.permissionTypeMenu.select(label);
         await expect(this.permissionTypeText).toContainText(label, { timeout: 30_000 });
         await this.waitForLoad();
     }
@@ -58,16 +83,16 @@ export class PermissionsExplorerPage {
         return parseInt(text.trim().split(' ')[0], 10);
     }
 
-    get table(): Locator {
-        return this.root.locator('c-rflib-permissions-table');
+    get table(): PermissionsTableComponent {
+        return PermissionsTableComponent.within(this.root);
     }
 
     get tableRows(): Locator {
-        return this.table.locator('tbody tr');
+        return this.table.rows;
     }
 
-    get userPicker(): Locator {
-        return this.root.locator('lightning-record-picker');
+    get userPicker(): LightningRecordPicker {
+        return LightningRecordPicker.within(this.root);
     }
 
     get aggregateButton(): Locator {
@@ -78,11 +103,27 @@ export class PermissionsExplorerPage {
         return this.root.getByRole('button', { name: 'Reset Permissions' });
     }
 
+    get paginator(): PaginatorComponent {
+        return PaginatorComponent.within(this.root);
+    }
+
     get exportFilterModal(): Locator {
         return this.root.locator('section[role="dialog"]').filter({ hasText: 'Export Filters' });
     }
 
-    get paginator(): Locator {
-        return this.root.locator('c-rflib-paginator');
+    // Each filter input sits in its own .slds-form-element next to its label.
+    exportFilterInput(label: ExportFilterLabel): Locator {
+        return this.exportFilterModal
+            .locator('.slds-form-element')
+            .filter({ hasText: label })
+            .locator('lightning-input input');
+    }
+
+    get exportFilterHelpToggle(): Locator {
+        return this.exportFilterModal.getByText('Click to learn how filtering works');
+    }
+
+    get exportFilterExportButton(): Locator {
+        return this.exportFilterModal.getByRole('button', { name: 'Export', exact: true });
     }
 }

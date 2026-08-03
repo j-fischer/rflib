@@ -1,6 +1,7 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import { ConfirmationDialogComponent } from '../components';
+import { waitForToastsToClear } from '../components/base';
 import { createOpsCenterSession } from '../fixtures';
-import { clickDialogButton, clickRowAction, pickRecord, waitForToastsToClear } from '../helpers/lightning';
 import { orgInfo } from '../helpers/sf';
 import { LoggerSettingsPage } from '../pages/logger-settings.page';
 import { TABS } from '../pages/ops-center-app.page';
@@ -20,6 +21,11 @@ test.afterAll(async () => {
     await context?.close();
 });
 
+async function deleteSetting(rowText: string): Promise<void> {
+    await settings.table.rowAction(rowText, 'Delete');
+    await ConfirmationDialogComponent.visibleIn(page).confirm();
+}
+
 test('shows the org default settings configured by the setup script', async () => {
     const orgRow = settings.row('Organization');
     await expect(orgRow).toBeVisible({ timeout: 60_000 });
@@ -32,27 +38,23 @@ test('creates a new user-level logger setting', async () => {
     const adminName = orgInfo().adminName;
 
     // Re-runnability: delete a leftover row from a previous run.
-    const leftoverRow = settings.row(adminName);
-    if (await leftoverRow.isVisible()) {
-        await clickRowAction(leftoverRow, 'Delete');
-        await clickDialogButton(page, 'Delete');
+    if (await settings.row(adminName).isVisible()) {
+        await deleteSetting(adminName);
         await expect(settings.row(adminName)).toBeHidden({ timeout: 60_000 });
         await waitForToastsToClear(page);
     }
 
     await settings.newButton.click();
-    await expect(settings.modal).toBeVisible();
+    const modal = settings.modal;
+    await expect(modal.root).toBeVisible();
 
-    const typeSelector = settings.modal.locator('lightning-combobox');
-    await typeSelector.locator('button, input').first().click();
-    await typeSelector.getByRole('option', { name: 'User', exact: true }).click();
+    await modal.typeSelector.select('User', true);
+    await modal.ownerPicker.pick(adminName);
 
-    await pickRecord(settings.modal.locator('lightning-record-picker'), adminName);
+    await modal.field('General_Log_Level__c').fill('DEBUG');
+    await modal.field('Client_Console_Log_Level__c').fill('TRACE');
 
-    await settings.modalField('General_Log_Level__c').fill('DEBUG');
-    await settings.modalField('Client_Console_Log_Level__c').fill('TRACE');
-
-    await settings.modal.getByRole('button', { name: 'Save' }).click();
+    await modal.saveButton.click();
     const newRow = settings.row(adminName);
     await expect(newRow).toBeVisible({ timeout: 60_000 });
     await expect(newRow).toContainText('DEBUG');
@@ -60,12 +62,12 @@ test('creates a new user-level logger setting', async () => {
 });
 
 test('edits the user-level setting through the row action', async () => {
-    const row = settings.row(orgInfo().adminName);
-    await clickRowAction(row, 'Edit');
-    await expect(settings.modal).toBeVisible();
+    await settings.table.rowAction(orgInfo().adminName, 'Edit');
+    const modal = settings.modal;
+    await expect(modal.root).toBeVisible();
 
-    await settings.modalField('General_Log_Level__c').fill('WARN');
-    await settings.modal.getByRole('button', { name: 'Save' }).click();
+    await modal.field('General_Log_Level__c').fill('WARN');
+    await modal.saveButton.click();
 
     await expect(settings.row(orgInfo().adminName)).toContainText('WARN', { timeout: 60_000 });
     await waitForToastsToClear(page);
@@ -79,8 +81,7 @@ test('refresh reloads the settings table', async () => {
 
 test('deletes the user-level setting with confirmation', async () => {
     const adminName = orgInfo().adminName;
-    await clickRowAction(settings.row(adminName), 'Delete');
-    await clickDialogButton(page, 'Delete');
+    await deleteSetting(adminName);
     await expect(settings.row(adminName)).toBeHidden({ timeout: 60_000 });
     // The org default row must never be deleted by the test.
     await expect(settings.row('Organization')).toBeVisible();

@@ -1,6 +1,6 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
 import { createOpsCenterSession } from '../fixtures';
-import { OpsCenterApp, TABS } from '../pages/ops-center-app.page';
+import { OpsCenterApp, ROOT_COMPONENT_TAGS, TABS } from '../pages/ops-center-app.page';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -31,5 +31,5 @@ test('the Application Events Dashboard tab activates without breaking the app', 
 
     // Navigation away still works after visiting the dashboard tab.
     await app.gotoTab(TABS.managementConsole);
-    await expect(page.locator('c-rflib-org-limit-stat').first()).toBeVisible({ timeout: 60_000 });
+    await expect(app.rootComponent(ROOT_COMPONENT_TAGS.orgLimitStat).first()).toBeVisible({ timeout: 60_000 });
 });

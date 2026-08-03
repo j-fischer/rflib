@@ -1,4 +1,5 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import { VIEWER_TABS } from '../components';
 import { createOpsCenterSession } from '../fixtures';
 import { runApex } from '../helpers/sf';
 import { CONNECTION_MODES, LogMonitorPage } from '../pages/log-monitor.page';
@@ -71,20 +72,18 @@ test('receives new log events in real time over the EMP API', async () => {
 test('filters log events by level and context', async () => {
     // Reconnect in historic mode with a guaranteed set of rows to filter.
     await monitor.connectHistoricAndAwaitEvents();
+    const eventList = monitor.eventList;
 
-    await monitor.searchField('Level...').fill('FATAL');
-    await monitor.searchButton.click();
+    await eventList.search('level', 'FATAL');
     await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
     await expect(monitor.eventRows().filter({ hasText: 'DEBUG' })).toHaveCount(0);
 
-    await monitor.searchField('Level...').fill('');
-    await monitor.searchField('Context...').fill('TestContext');
-    await monitor.searchButton.click();
+    await eventList.searchField('level').fill('');
+    await eventList.search('context', 'TestContext');
     await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
     await expect(monitor.eventRows().filter({ hasText: 'TestContext' }).first()).toBeVisible();
 
-    await monitor.searchField('Context...').fill('');
-    await monitor.searchButton.click();
+    await eventList.search('context', '');
 });
 
 test('paginates when more than one page of events exists', async () => {
@@ -100,58 +99,52 @@ test('paginates when more than one page of events exists', async () => {
     }
     expect(total).toBeGreaterThan(10);
 
-    const footer = monitor.eventList.locator('p').filter({ hasText: 'Page' });
-    await expect(footer).toContainText('Page 1');
-    await monitor.root.locator('c-rflib-paginator').getByRole('button', { name: 'Next' }).click();
-    await expect(footer).toContainText('Page 2');
-    await monitor.root.locator('c-rflib-paginator').getByRole('button', { name: 'First' }).click();
-    await expect(footer).toContainText('Page 1');
+    const pageInfo = monitor.eventList.pageInfo;
+    await expect(pageInfo).toContainText('Page 1');
+    await monitor.paginator.button('Next').click();
+    await expect(pageInfo).toContainText('Page 2');
+    await monitor.paginator.button('First').click();
+    await expect(pageInfo).toContainText('Page 1');
 });
 
 test('selecting an event opens the viewer with details, platform info, and stacktrace', async () => {
-    await expect(monitor.viewer).toBeHidden();
+    const viewer = monitor.viewer;
+    await expect(viewer.root).toBeHidden();
     await monitor.eventRows().first().click();
-    await expect(monitor.viewer).toBeVisible({ timeout: 30_000 });
+    await expect(viewer.root).toBeVisible({ timeout: 30_000 });
 
-    await expect(monitor.viewer.getByText('Log Messages')).toBeVisible();
-    await monitor.viewer.getByRole('tab', { name: 'Platform Info' }).click();
-    await expect(monitor.viewer.locator('table').first()).toBeVisible();
-    await monitor.viewer.getByRole('tab', { name: 'Stacktrace' }).click();
-    await expect(monitor.viewer.locator('pre').first()).toBeVisible();
-    await monitor.viewer.getByRole('tab', { name: 'Log Event' }).click();
+    await expect(viewer.root.getByText('Log Messages')).toBeVisible();
+    await viewer.openTab(VIEWER_TABS.platformInfo);
+    await expect(viewer.platformInfoTable).toBeVisible();
+    await viewer.openTab(VIEWER_TABS.stacktrace);
+    await expect(viewer.stacktrace).toBeVisible();
+    await viewer.openTab(VIEWER_TABS.logEvent);
 
     // Download menu offers the RFLIB log file entry.
-    await monitor.viewer.locator('lightning-button-menu button').first().click();
-    await expect(page.getByRole('menuitem', { name: 'RFLIB Log File' })).toBeVisible();
-    await page.keyboard.press('Escape');
+    await viewer.downloadMenu.open();
+    await expect(viewer.downloadMenu.item('RFLIB Log File')).toBeVisible();
+    await viewer.downloadMenu.close();
 });
 
 test('field visibility settings toggle', async () => {
     const menu = monitor.fieldVisibilityMenu;
-    await menu.click();
-    const requestIdItem = page
-        .getByRole('menuitemcheckbox', { name: 'Show Request ID' })
-        .or(page.getByRole('menuitem', { name: 'Show Request ID' }))
-        .first();
+    await menu.open();
+    const requestIdItem = menu.item('Show Request ID');
     await expect(requestIdItem).toBeVisible();
     await requestIdItem.click();
 
     // Re-open and toggle back.
-    await menu.click();
-    await page
-        .getByRole('menuitemcheckbox', { name: 'Show Request ID' })
-        .or(page.getByRole('menuitem', { name: 'Show Request ID' }))
-        .first()
-        .click();
+    await menu.open();
+    await menu.item('Show Request ID').click();
 });
 
 test('fullscreen toggle hides and restores the event list', async () => {
     // The toggle is only enabled when an event is selected (done in prior test).
-    await expect(monitor.eventList).toBeVisible();
+    await expect(monitor.eventList.root).toBeVisible();
     await monitor.fullscreenToggle.click();
-    await expect(monitor.eventList).toBeHidden();
+    await expect(monitor.eventList.root).toBeHidden();
     await monitor.fullscreenToggle.click();
-    await expect(monitor.eventList).toBeVisible();
+    await expect(monitor.eventList.root).toBeVisible();
 });
 
 test('exports captured events to CSV', async () => {

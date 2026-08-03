@@ -1,4 +1,6 @@
 import { Locator, Page } from '@playwright/test';
+import { LogArchiveAlertComponent } from '../components';
+import { LightningCombobox, LightningDatatable, LightningRecordPicker } from '../components/base';
 
 export class ManagementConsolePage {
     constructor(readonly page: Page) {}
@@ -10,24 +12,40 @@ export class ManagementConsolePage {
             .first();
     }
 
-    get archiveAlert(): Locator {
-        return this.page.locator('c-rflib-log-archive-alert div[role="alert"]');
-    }
-
-    get archiveAlertLink(): Locator {
-        return this.archiveAlert.getByRole('link', { name: 'Investigate in the Log Monitor' });
+    get archiveAlert(): LogArchiveAlertComponent {
+        return LogArchiveAlertComponent.on(this.page);
     }
 
     permissionAssignmentList(title: string): Locator {
         return this.page.locator('c-rflib-user-permission-assignment-list').filter({ hasText: title }).first();
     }
 
+    permissionAssignmentTable(title: string): LightningDatatable {
+        return LightningDatatable.within(this.permissionAssignmentList(title));
+    }
+
     get publicGroupManager(): Locator {
         return this.page.locator('c-rflib-public-group-member-manager').first();
     }
 
+    get publicGroupMembers(): LightningDatatable {
+        return LightningDatatable.within(this.publicGroupManager);
+    }
+
+    get publicGroupUserPicker(): LightningRecordPicker {
+        return LightningRecordPicker.within(this.publicGroupManager);
+    }
+
     get permissionSetManager(): Locator {
         return this.page.locator('c-rflib-user-permission-set-manager').first();
+    }
+
+    get permissionSets(): LightningDatatable {
+        return LightningDatatable.within(this.permissionSetManager);
+    }
+
+    get permissionSetSelector(): LightningCombobox {
+        return LightningCombobox.within(this.permissionSetManager);
     }
 
     orgLimitCard(title: string): Locator {
@@ -38,11 +56,20 @@ export class ManagementConsolePage {
         return this.page.locator('c-rflib-big-object-stat').first();
     }
 
+    get bigObjectStats(): LightningDatatable {
+        return LightningDatatable.within(this.bigObjectStat);
+    }
+
     // Job scheduler cards are titled "Job Status for: <jobName>".
     jobScheduler(jobName: string): Locator {
         return this.page
             .locator('c-rflib-apex-job-scheduler')
             .filter({ hasText: `Job Status for: ${jobName}` })
             .first();
+    }
+
+    // The card renders a single lightning-input, holding the CRON expression.
+    jobSchedulerCronInput(jobName: string): Locator {
+        return this.jobScheduler(jobName).locator('lightning-input input');
     }
 }

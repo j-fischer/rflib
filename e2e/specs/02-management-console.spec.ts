@@ -1,8 +1,10 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import { ConfirmationDialogComponent } from '../components';
+import { clickDialogButton, waitForToastsToClear } from '../components/base';
 import { createOpsCenterSession } from '../fixtures';
-import { clickDialogButton, datatableRow, pickRecord, waitForToastsToClear } from '../helpers/lightning';
 import { pollUntil } from '../helpers/polling';
 import { orgInfo } from '../helpers/sf';
+import { LogMonitorPage } from '../pages/log-monitor.page';
 import { ManagementConsolePage } from '../pages/management-console.page';
 import { OpsCenterApp, TABS } from '../pages/ops-center-app.page';
 
@@ -56,13 +58,15 @@ test('org limit cards show usage values and can refresh', async () => {
 });
 
 test('lists users with Ops Center access and users without client logging', async () => {
-    const opsCenterList = console_.permissionAssignmentList('User Who Do Have Ops Center Access');
-    await expect(opsCenterList).toBeVisible({ timeout: 60_000 });
-    await expect(datatableRow(opsCenterList, orgInfo().adminName)).toBeVisible({ timeout: 60_000 });
+    const opsCenterAccess = 'User Who Do Have Ops Center Access';
+    await expect(console_.permissionAssignmentList(opsCenterAccess)).toBeVisible({ timeout: 60_000 });
+    await expect(console_.permissionAssignmentTable(opsCenterAccess).row(orgInfo().adminName)).toBeVisible({
+        timeout: 60_000
+    });
 
-    const noLoggingList = console_.permissionAssignmentList('Users Who Do Not Have Client Logging Enabled');
-    await expect(noLoggingList).toBeVisible();
-    await expect(noLoggingList.locator('lightning-datatable')).toBeVisible();
+    const noClientLogging = 'Users Who Do Not Have Client Logging Enabled';
+    await expect(console_.permissionAssignmentList(noClientLogging)).toBeVisible();
+    await expect(console_.permissionAssignmentTable(noClientLogging).root).toBeVisible();
 });
 
 test('Big Object statistics can count all big objects', async () => {
@@ -78,7 +82,7 @@ test('Big Object statistics can count all big objects', async () => {
             await page.reload({ waitUntil: 'domcontentloaded' });
             await expect(console_.bigObjectStat).toBeVisible({ timeout: 60_000 });
             await page.waitForTimeout(5_000);
-            return console_.bigObjectStat.locator('lightning-datatable tbody tr').count();
+            return console_.bigObjectStats.rowCount();
         },
         (count) => count > 0,
         { timeoutMs: 300_000, intervalMs: 5_000, description: 'big object statistics rows' }
@@ -89,30 +93,25 @@ test('public group manager adds and removes a member', async () => {
     const manager = console_.publicGroupManager;
     await expect(manager).toBeVisible({ timeout: 60_000 });
     const adminName = orgInfo().adminName;
+    const members = console_.publicGroupMembers;
 
     // Re-runnability: remove the admin first if a previous run left it behind.
-    const existingRow = datatableRow(manager, adminName);
-    if (await existingRow.isVisible()) {
-        await removeGroupMember(existingRow);
+    if (await members.row(adminName).isVisible()) {
+        await removeGroupMember(adminName);
     }
 
-    await pickRecord(manager.locator('lightning-record-picker'), adminName);
+    await console_.publicGroupUserPicker.pick(adminName);
     await manager.getByRole('button', { name: 'Add User' }).click();
-    await expect(datatableRow(manager, adminName)).toBeVisible({ timeout: 60_000 });
+    await expect(members.row(adminName)).toBeVisible({ timeout: 60_000 });
     await waitForToastsToClear(page);
 
-    await removeGroupMember(datatableRow(manager, adminName));
-    await expect(datatableRow(manager, adminName)).toBeHidden({ timeout: 60_000 });
+    await removeGroupMember(adminName);
+    await expect(members.row(adminName)).toBeHidden({ timeout: 60_000 });
 });
 
-async function removeGroupMember(row: ReturnType<typeof datatableRow>): Promise<void> {
-    const menuButton = row
-        .getByRole('button', { name: /show actions/i })
-        .or(row.locator('lightning-primitive-cell-actions button'))
-        .first();
-    await menuButton.click();
-    await page.getByRole('menuitem', { name: 'Remove' }).first().click();
-    await clickDialogButton(page, 'Remove');
+async function removeGroupMember(memberName: string): Promise<void> {
+    await console_.publicGroupMembers.rowAction(memberName, 'Remove');
+    await ConfirmationDialogComponent.visibleIn(page).confirm();
     await waitForToastsToClear(page);
 }
 
@@ -124,32 +123,31 @@ test('permission set manager assigns and removes a permission set for autoproc',
     // others (e.g. Ops Center Access) grant ApiEnabled, which the Automated
     // Process user license rejects.
     const permSetName = 'rflib_Archive_Application_Events';
+    const permissionSets = console_.permissionSets;
 
     // Cover both delete and assign while restoring the initial assignment
     // state (the assignment may be intentional org setup).
-    const initiallyAssigned = await datatableRow(manager, permSetName).isVisible();
+    const initiallyAssigned = await permissionSets.row(permSetName).isVisible();
     if (initiallyAssigned) {
         // Delete is a bare button-icon on the row, which opens the confirm modal.
-        await datatableRow(manager, permSetName).getByRole('button', { name: 'Delete' }).first().click();
+        await permissionSets.row(permSetName).getByRole('button', { name: 'Delete' }).first().click();
         await clickDialogButton(page, 'Delete');
-        await expect(datatableRow(manager, permSetName)).toBeHidden({ timeout: 60_000 });
+        await expect(permissionSets.row(permSetName)).toBeHidden({ timeout: 60_000 });
         await waitForToastsToClear(page);
     }
 
-    const combobox = manager.locator('lightning-combobox');
-    await combobox.locator('button, input').first().click();
-    await combobox.getByRole('option', { name: permSetName }).first().click();
+    await console_.permissionSetSelector.select(permSetName);
 
     await manager.getByRole('button', { name: 'Assign', exact: true }).click();
     await clickDialogButton(page, 'Assign');
-    const newRow = datatableRow(manager, permSetName);
+    const newRow = permissionSets.row(permSetName);
     await expect(newRow).toBeVisible({ timeout: 60_000 });
     await waitForToastsToClear(page);
 
     if (!initiallyAssigned) {
         await newRow.getByRole('button', { name: 'Delete' }).first().click();
         await clickDialogButton(page, 'Delete');
-        await expect(datatableRow(manager, permSetName)).toBeHidden({ timeout: 60_000 });
+        await expect(permissionSets.row(permSetName)).toBeHidden({ timeout: 60_000 });
     }
 });
 
@@ -168,13 +166,13 @@ test('apex job schedulers can schedule, refresh, and delete jobs', async () => {
         }
 
         await expect(card.getByText('No job is currently scheduled')).toBeVisible();
-        await card.locator('lightning-input input').fill('0 0 3 * * ?');
+        await console_.jobSchedulerCronInput(jobName).fill('0 0 3 * * ?');
         await card.getByRole('button', { name: 'Schedule Job' }).click();
         await expect(card.getByText('Next Run:')).toBeVisible({ timeout: 60_000 });
         await waitForToastsToClear(page);
 
         await card.getByRole('button', { name: 'Delete Job' }).click();
-        await clickDialogButton(page, 'Delete');
+        await ConfirmationDialogComponent.visibleIn(page).confirm();
         await expect(card.getByText('No job is currently scheduled')).toBeVisible({ timeout: 60_000 });
         await waitForToastsToClear(page);
     }
@@ -188,7 +186,7 @@ test('log archive alert appears for recent high-severity logs and links to the L
         async () => {
             await page.reload({ waitUntil: 'domcontentloaded' });
             await expect(console_.banner).toBeVisible({ timeout: 60_000 });
-            return console_.archiveAlert
+            return console_.archiveAlert.banner
                 .waitFor({ state: 'visible', timeout: 10_000 })
                 .then(() => true)
                 .catch(() => false);
@@ -197,7 +195,7 @@ test('log archive alert appears for recent high-severity logs and links to the L
         { timeoutMs: 120_000, intervalMs: 2_000, description: 'log archive alert banner' }
     );
 
-    await console_.archiveAlertLink.click();
-    await expect(page.locator('c-rflib-log-event-monitor')).toBeVisible({ timeout: 60_000 });
+    await console_.archiveAlert.investigateLink.click();
+    await expect(new LogMonitorPage(page).root).toBeVisible({ timeout: 60_000 });
     await app.gotoTab(TABS.managementConsole);
 });

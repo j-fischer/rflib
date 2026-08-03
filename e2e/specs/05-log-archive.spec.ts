@@ -1,6 +1,7 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import { ConfirmationDialogComponent } from '../components';
+import { expectToast } from '../components/base';
 import { createOpsCenterSession } from '../fixtures';
-import { clickDialogButton, expectToast, selectMenuItem } from '../helpers/lightning';
 import { pollUntil } from '../helpers/polling';
 import { CONNECTION_MODES, LogMonitorPage } from '../pages/log-monitor.page';
 import { TABS } from '../pages/ops-center-app.page';
@@ -48,14 +49,15 @@ test('archive mode queries the seeded archived log events', async () => {
 
 test('archived events open in the log event viewer', async () => {
     await monitor.eventRows().first().click();
-    await expect(monitor.viewer).toBeVisible({ timeout: 30_000 });
-    await expect(monitor.viewer.getByText('Log Messages')).toBeVisible();
+    await expect(monitor.viewer.root).toBeVisible({ timeout: 30_000 });
+    await expect(monitor.viewer.root.getByText('Log Messages')).toBeVisible();
 });
 
 test('clear archive removes expired records after confirmation', async () => {
-    await selectMenuItem(monitor.archiveSettingsMenu, 'Clear Archive');
-    await expect(page.getByText('Are you sure you want to clear the archive?')).toBeVisible();
-    await clickDialogButton(page, 'Clear');
+    await monitor.archiveSettingsMenu.select('Clear Archive');
+    const confirmation = ConfirmationDialogComponent.visibleIn(page);
+    await expect(confirmation.message).toContainText('Are you sure you want to clear the archive?');
+    await confirmation.confirm();
 
     // Clearing resets the displayed list immediately and reports the count of
     // deleted records via toast. Only records older than the configured
