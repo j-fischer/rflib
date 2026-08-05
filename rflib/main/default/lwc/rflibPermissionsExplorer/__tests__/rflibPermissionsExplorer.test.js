@@ -530,6 +530,48 @@ describe('c-rflib-permissions-explorer', () => {
         const toastDetail = toastHandler.mock.calls[0][0].detail;
         expect(toastDetail.title).toBe('Permissions Incomplete');
         expect(toastDetail.variant).toBe('warning');
+
+        // The header must report the records actually loaded, not the server-side total
+        const header = element.shadowRoot.querySelector('.slds-page-header__title');
+        expect(header.textContent).toContain('1 Total Permission Records');
+    });
+
+    // --- Partial load failure ---
+
+    it('reports the loaded record count when a chained page fetch fails', async () => {
+        const page1Response = {
+            records: [MOCK_RECORDS[0]],
+            totalNumOfRecords: 10,
+            nextRecordsUrl: '/services/data/v65.0/query/next',
+            nextPosition: 0
+        };
+
+        getObjectLevelSecurityForAllProfiles
+            .mockResolvedValueOnce(page1Response)
+            .mockRejectedValueOnce(new Error('Apex Error'));
+
+        const element = createElement('c-rflib-permissions-explorer', {
+            is: RflibPermissionsExplorer
+        });
+
+        const toastHandler = jest.fn();
+        element.addEventListener(ShowToastEventName, toastHandler);
+
+        document.body.appendChild(element);
+
+        jest.runAllTimers();
+        await flushPromises(4);
+
+        expect(getObjectLevelSecurityForAllProfiles).toHaveBeenCalledTimes(2);
+        expect(toastHandler).toHaveBeenCalled();
+        expect(toastHandler.mock.calls[0][0].detail.variant).toBe('error');
+
+        // Only the first page made it into the browser, so that is what the header must show
+        const table = element.shadowRoot.querySelector('c-rflib-permissions-table');
+        expect(table.permissionRecords).toHaveLength(1);
+
+        const header = element.shadowRoot.querySelector('.slds-page-header__title');
+        expect(header.textContent).toContain('1 Total Permission Records');
     });
 
     // --- Caching test ---
@@ -845,6 +887,47 @@ describe('c-rflib-permissions-explorer', () => {
         const phoneRecord = table.permissionRecords.find((r) => r.Field === 'Phone');
         expect(phoneRecord.PermissionsRead).toBe(true);
         expect(phoneRecord.PermissionsEdit).toBe(false);
+    });
+
+    it('aggregates permissions when fewer records were loaded than the total record count', async () => {
+        // Server reports 10 total records, but only 3 made it into the browser
+        const partialResponse = {
+            records: MOCK_MULTI_OBJECT_RECORDS,
+            totalNumOfRecords: 10,
+            nextRecordsUrl: null,
+            nextPosition: 9
+        };
+
+        getObjectLevelSecurityForUser.mockResolvedValueOnce(partialResponse);
+
+        const element = await createAndLoad();
+
+        // Switch to user mode
+        await switchPermissionTypeAndLoad(element, 'ObjectPermissionsUser');
+
+        jest.clearAllMocks();
+        getObjectLevelSecurityForUser.mockResolvedValueOnce(partialResponse);
+
+        // Select a user
+        const userPicker = element.shadowRoot.querySelector('lightning-record-picker');
+        userPicker.dispatchEvent(new CustomEvent('change', { detail: { recordId: '005xx000001XUser' } }));
+
+        jest.runAllTimers();
+        await flushPromises(2);
+
+        // Click Aggregate button
+        const buttons = element.shadowRoot.querySelectorAll('lightning-button');
+        const aggregateBtn = Array.from(buttons).find((btn) => btn.label === 'Aggregate Permissions');
+        aggregateBtn.click();
+        await flushPromises();
+
+        // Aggregation must complete over the loaded records only, without throwing
+        const table = element.shadowRoot.querySelector('c-rflib-permissions-table');
+        expect(table.permissionRecords).toHaveLength(2);
+
+        const accountRecord = table.permissionRecords.find((r) => r.SobjectType === 'Account');
+        expect(accountRecord.PermissionsRead).toBe(true);
+        expect(accountRecord.PermissionsEdit).toBe(true);
     });
 
     // --- Reset permissions test ---
