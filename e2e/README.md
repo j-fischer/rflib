@@ -100,6 +100,20 @@ before relying on it - `npx playwright test <spec> --headed`, or `--ui` to inspe
 If you cannot confirm it, keep the previous locator as an `.or()` fallback rather
 than guessing.
 
+`tools/inspect.mjs` does the same check without a browser window: it opens a tab in
+the default org using this suite's storage state and prints the ladder rungs it finds,
+plus the match count for any candidate selector.
+
+```bash
+node e2e/tools/inspect.mjs auth                       # refresh .auth/ (once per session)
+node e2e/tools/inspect.mjs url "lightning/n/rflib_Log_Monitor" \
+    --scope "c-rflib-log-event-list" \
+    --probe 'lightning-input[data-field="context"] input'
+```
+
+`node e2e/tools/inspect.mjs help` lists the rest (`tab <label>`, `--shot`, `--settle`,
+`--json`, `--headed`).
+
 ### Accepted exceptions
 
 - `01-app-navigation.spec.ts` asserts on root custom element tags via
