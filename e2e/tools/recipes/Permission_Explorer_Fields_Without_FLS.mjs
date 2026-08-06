@@ -5,7 +5,7 @@
  *   screenshots/Permission_Explorer_Fields_Without_FLS_Menu.png  - the menu open on Hidden/Shown
  *   screenshots/Permission_Explorer_Fields_Without_FLS.png       - the synthesized rows in the table
  *
- * Run: node .claude/skills/rflib-docs/capture.mjs recipe e2e/tools/recipes/Permission_Explorer_Fields_Without_FLS.mjs
+ * Run: node e2e/tools/capture.mjs recipe e2e/tools/recipes/Permission_Explorer_Fields_Without_FLS.mjs
  */
 export const target = { tab: 'Permissions Explorer', settle: 20000 };
 
