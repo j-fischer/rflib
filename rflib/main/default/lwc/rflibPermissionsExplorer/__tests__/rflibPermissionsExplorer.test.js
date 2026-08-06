@@ -1288,6 +1288,31 @@ describe('c-rflib-permissions-explorer', () => {
             expect(getCheckedDefaultFieldsOption(element)[0].value).toBe('hidden');
         });
 
+        it('marks default fields in the CSV export so they cannot read as stored grants', async () => {
+            const element = await loadFieldPermissions();
+            await showDefaultFields(element);
+
+            const mockLink = document.createElement('a');
+            const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
+
+            getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
+            await flushPromises();
+
+            const csv = decodeURIComponent(mockLink.getAttribute('href').replace('data:text/csv;charset=utf-8,', ''));
+            createElementSpy.mockRestore();
+
+            const rows = csv.trim().split('\r\n');
+            expect(rows[0]).toContain('"DEFAULT FIELD"');
+
+            // A stored grant and a default field carry the same access values, so the flag is the
+            // only thing separating them once the table styling is gone.
+            const storedGrant = rows.find((row) => row.includes('"Name"'));
+            expect(storedGrant).toContain('"false"');
+
+            const defaultField = rows.find((row) => row.includes('"CreatedById"'));
+            expect(defaultField).toBe('"Admin","Account","CreatedById","true","false","true"');
+        });
+
         it('reverts to hidden and warns when the describe call fails', async () => {
             const element = await loadFieldPermissions();
 

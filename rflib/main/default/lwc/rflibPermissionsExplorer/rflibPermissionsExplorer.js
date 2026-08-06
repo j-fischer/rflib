@@ -161,7 +161,10 @@ const PERMISSION_TYPES = {
 
 const OBJECT_PERMISSIONS_CSV_HEADER =
     '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL FIELDS","VIEW ALL RECORDS","MODIFY ALL RECORDS"\r\n';
-const FIELD_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS"\r\n';
+// A default field row carries real access values, so without the trailing column it would read as a
+// stored grant once the styling and tooltip of the table are gone.
+const FIELD_PERMISSIONS_CSV_HEADER =
+    '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","DEFAULT FIELD"\r\n';
 
 const logger = createLogger('PermissionsExplorer');
 
@@ -689,6 +692,24 @@ export default class PermissionsExplorer extends LightningElement {
         }
     }
 
+    buildFieldPermissionCsvRow(permission) {
+        return (
+            '"' +
+            permission.SecurityObjectName +
+            '","' +
+            permission.SobjectType +
+            '","' +
+            permission.Field +
+            '","' +
+            permission.PermissionsRead +
+            '","' +
+            permission.PermissionsEdit +
+            '","' +
+            (permission.IsFlsControlled === false) +
+            '"\r\n'
+        );
+    }
+
     exportAllToCsv() {
         logger.debug(
             'Export all to CSV: type={0}, numRecords={1}',
@@ -700,18 +721,7 @@ export default class PermissionsExplorer extends LightningElement {
         if (this.isFieldPermissions) {
             csvContent += FIELD_PERMISSIONS_CSV_HEADER;
             this.permissionRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.Field +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '"\r\n';
+                csvContent += this.buildFieldPermissionCsvRow(permission);
             });
         } else {
             csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
@@ -822,18 +832,7 @@ export default class PermissionsExplorer extends LightningElement {
         if (this.isFieldPermissions) {
             csvContent += FIELD_PERMISSIONS_CSV_HEADER;
             filteredRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.Field +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '"\r\n';
+                csvContent += this.buildFieldPermissionCsvRow(permission);
             });
         } else {
             csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
