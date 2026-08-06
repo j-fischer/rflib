@@ -51,6 +51,9 @@ public class rflib_GlobalSettings {
     
     @TestVisible
     private static final Boolean PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE = false;
+
+    @TestVisible
+    private static final Boolean PERMISSIONS_EXPLORER_SHOW_FIELDS_WITHOUT_FLS_DEFAULT_VALUE = false;
     
     @TestVisible
     private static final Integer PUBLISH_PLATFORM_EVENT_TRANSACTION_LIMIT_DEFAULT_VALUE = 150;
@@ -145,6 +148,15 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Permissions_Explorer_REST_API_Enabled');
             return String.isBlank(val) ? PERMISSIONS_EXPLORER_REST_API_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Boolean showFieldsWithoutFlsInPermissionsExplorerOrDefault {
+        get {
+            String val = getSetting('Permissions_Explorer_Show_Fields_Without_FLS');
+            return String.isBlank(val)
+                ? PERMISSIONS_EXPLORER_SHOW_FIELDS_WITHOUT_FLS_DEFAULT_VALUE
+                : Boolean.valueOf(val);
         }
     }
         

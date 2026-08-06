@@ -910,6 +910,18 @@ private class rflib_PermissionsExplorerControllerTest {
 
     @IsTest
     @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetShowFieldsWithoutFlsByDefault() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', null);
+        System.assertEquals(false, rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault());
+
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', 'true');
+        System.assertEquals(true, rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault());
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
     private static void testGetNonPermissionableFields_StopsBeforeHeapLimit() {
         // A heap LimitException cannot be caught, so the guard has to trip first. Lowering the ratio
         // to effectively zero makes any describe exceed it.

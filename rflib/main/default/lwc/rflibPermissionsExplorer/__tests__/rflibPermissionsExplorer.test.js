@@ -16,6 +16,7 @@ import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExp
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
 import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
+import getShowFieldsWithoutFlsByDefault from '@salesforce/apex/rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault';
 
 // Mock rflibLogger
 jest.mock(
@@ -189,6 +190,11 @@ jest.mock(
     () => ({ default: jest.fn() }),
     { virtual: true }
 );
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
 
 async function flushPromises(times = 1) {
     for (let i = 0; i < times; i++) {
@@ -201,7 +207,7 @@ function selectPermissionType(element, permissionTypeValue) {
     menu.dispatchEvent(new CustomEvent('select', { detail: { value: permissionTypeValue } }));
 }
 
-// Looked up by label rather than position: the Default Fields menu only renders for the field
+// Looked up by label rather than position: the Fields Without FLS menu only renders for the field
 // permission types, so the button group's indices are not stable across permission types.
 function getMenus(element) {
     return [...element.shadowRoot.querySelectorAll('lightning-button-menu')];
@@ -215,8 +221,8 @@ function getSettingsMenu(element) {
     return getMenus(element).find((menu) => menu.alternativeText === 'Select page size');
 }
 
-function getDefaultFieldsMenu(element) {
-    return element.shadowRoot.querySelector('lightning-button-menu[data-id="default-fields-menu"]');
+function getFieldsWithoutFlsMenu(element) {
+    return element.shadowRoot.querySelector('lightning-button-menu[data-id="fields-without-fls-menu"]');
 }
 
 describe('c-rflib-permissions-explorer', () => {
@@ -238,6 +244,8 @@ describe('c-rflib-permissions-explorer', () => {
     beforeEach(() => {
         jest.useFakeTimers();
         ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_APEX_RESPONSE));
+        // Without the Global Setting the views start with fields without FLS hidden.
+        getShowFieldsWithoutFlsByDefault.mockResolvedValue(false);
     });
 
     afterEach(() => {
@@ -983,19 +991,19 @@ describe('c-rflib-permissions-explorer', () => {
             return element.shadowRoot.querySelector('c-rflib-permissions-table');
         }
 
-        async function selectDefaultFields(element, value) {
-            getDefaultFieldsMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value } }));
+        async function selectFieldsWithoutFls(element, value) {
+            getFieldsWithoutFlsMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value } }));
 
             jest.runAllTimers();
             await flushPromises(4);
         }
 
-        const showDefaultFields = (element) => selectDefaultFields(element, 'shown');
-        const hideDefaultFields = (element) => selectDefaultFields(element, 'hidden');
+        const showFieldsWithoutFls = (element) => selectFieldsWithoutFls(element, 'shown');
+        const hideFieldsWithoutFls = (element) => selectFieldsWithoutFls(element, 'hidden');
 
         // The menu marks the active mode with a checked item, so that is what the state assertions read.
-        function getCheckedDefaultFieldsOption(element) {
-            const items = [...getDefaultFieldsMenu(element).querySelectorAll('lightning-menu-item')];
+        function getCheckedFieldsWithoutFlsOption(element) {
+            const items = [...getFieldsWithoutFlsMenu(element).querySelectorAll('lightning-menu-item')];
             return items.filter((item) => item.checked);
         }
 
@@ -1017,17 +1025,17 @@ describe('c-rflib-permissions-explorer', () => {
             const element = await createAndLoad();
 
             // Default is Object Permissions for Profiles.
-            expect(getDefaultFieldsMenu(element)).toBeNull();
+            expect(getFieldsWithoutFlsMenu(element)).toBeNull();
 
             await switchPermissionTypeAndLoad(element, 'FieldPermissionsProfiles');
 
-            expect(getDefaultFieldsMenu(element)).not.toBeNull();
+            expect(getFieldsWithoutFlsMenu(element)).not.toBeNull();
         });
 
         it('defaults to hidden on load', async () => {
             const element = await loadFieldPermissions();
 
-            const checkedOptions = getCheckedDefaultFieldsOption(element);
+            const checkedOptions = getCheckedFieldsWithoutFlsOption(element);
             expect(checkedOptions).toHaveLength(1);
             expect(checkedOptions[0].value).toBe('hidden');
             expect(getNonPermissionableFields).not.toHaveBeenCalled();
@@ -1035,7 +1043,7 @@ describe('c-rflib-permissions-explorer', () => {
 
         it('goes back to hidden when the permission type changes', async () => {
             const element = await loadFieldPermissions();
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
             expect(getTable(element).permissionRecords).toHaveLength(7);
 
             ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
@@ -1043,7 +1051,78 @@ describe('c-rflib-permissions-explorer', () => {
             jest.runAllTimers();
             await flushPromises(2);
 
-            expect(getCheckedDefaultFieldsOption(element)[0].value).toBe('hidden');
+            expect(getCheckedFieldsWithoutFlsOption(element)[0].value).toBe('hidden');
+            expect(getTable(element).permissionRecords).toHaveLength(3);
+        });
+
+        // Loads with the Global Setting asking for fields without FLS up front. The setting is read once
+        // in connectedCallback, so it has to be in place before the element is created.
+        async function loadWithFieldsWithoutFlsShown() {
+            getShowFieldsWithoutFlsByDefault.mockResolvedValue(true);
+
+            const element = await createAndLoad();
+
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
+            getNonPermissionableFields.mockResolvedValue(ACCOUNT_NON_PERMISSIONABLE);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(8);
+
+            return element;
+        }
+
+        it('shows fields without FLS after the primary load when the Global Setting requests it', async () => {
+            getShowFieldsWithoutFlsByDefault.mockResolvedValue(true);
+
+            const element = await createAndLoad();
+
+            // The default view is object permissions, which has no fields without FLS to add.
+            expect(getNonPermissionableFields).not.toHaveBeenCalled();
+
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
+            getNonPermissionableFields.mockResolvedValue(ACCOUNT_NON_PERMISSIONABLE);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(8);
+
+            expect(getNonPermissionableFields).toHaveBeenCalled();
+            expect(getTable(element).permissionRecords).toHaveLength(7);
+            expect(getCheckedFieldsWithoutFlsOption(element)[0].value).toBe('shown');
+        });
+
+        it('caches the pristine records when fields without FLS load automatically', async () => {
+            const element = await loadWithFieldsWithoutFlsShown();
+            expect(getTable(element).permissionRecords).toHaveLength(7);
+
+            // Leaving and returning replays the cache. If the augmented array had been cached, the
+            // synthesized rows would be appended a second time.
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_APEX_RESPONSE));
+            selectPermissionType(element, 'ObjectPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(8);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(8);
+
+            expect(getTable(element).permissionRecords).toHaveLength(7);
+        });
+
+        it('keeps fields without FLS hidden when the setting cannot be read', async () => {
+            getShowFieldsWithoutFlsByDefault.mockRejectedValue(new Error('no access'));
+
+            const element = await createAndLoad();
+
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
+            getNonPermissionableFields.mockResolvedValue(ACCOUNT_NON_PERMISSIONABLE);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(8);
+
+            expect(getNonPermissionableFields).not.toHaveBeenCalled();
             expect(getTable(element).permissionRecords).toHaveLength(3);
         });
 
@@ -1052,7 +1131,7 @@ describe('c-rflib-permissions-explorer', () => {
 
             expect(getTable(element).permissionRecords).toHaveLength(3);
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             expect(getNonPermissionableFields).toHaveBeenCalledWith({ objectApiNames: ['Account'] });
 
@@ -1076,9 +1155,9 @@ describe('c-rflib-permissions-explorer', () => {
             ]);
         });
 
-        it('reports default fields as readable with Edit access from the field definition', async () => {
+        it('reports fields without FLS as readable with Edit access from the field definition', async () => {
             const element = await loadFieldPermissions();
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             const synthesized = getTable(element).permissionRecords.filter((rec) => rec.IsFlsControlled === false);
 
@@ -1098,10 +1177,10 @@ describe('c-rflib-permissions-explorer', () => {
             const element = await loadFieldPermissions();
             const before = getTable(element).permissionRecords;
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
             expect(getTable(element).permissionRecords).toHaveLength(7);
 
-            await hideDefaultFields(element);
+            await hideFieldsWithoutFls(element);
 
             expect(getTable(element).permissionRecords).toBe(before);
         });
@@ -1109,10 +1188,10 @@ describe('c-rflib-permissions-explorer', () => {
         it('ignores re-selecting the mode that is already active', async () => {
             const element = await loadFieldPermissions();
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
             expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
             expect(getTable(element).permissionRecords).toHaveLength(7);
@@ -1121,7 +1200,7 @@ describe('c-rflib-permissions-explorer', () => {
         it('reuses the object cache across permission types', async () => {
             const element = await loadFieldPermissions();
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
             expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
 
             // A different permission type covering the same object must not re-describe it.
@@ -1130,7 +1209,7 @@ describe('c-rflib-permissions-explorer', () => {
             jest.runAllTimers();
             await flushPromises(2);
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
             expect(getTable(element).permissionRecords).toHaveLength(7);
@@ -1165,7 +1244,7 @@ describe('c-rflib-permissions-explorer', () => {
             jest.runAllTimers();
             await flushPromises(2);
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             // 150 objects at the describeSObjects() batch cap of 100.
             expect(getNonPermissionableFields).toHaveBeenCalledTimes(2);
@@ -1188,7 +1267,7 @@ describe('c-rflib-permissions-explorer', () => {
                 })
             );
 
-            getDefaultFieldsMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'shown' } }));
+            getFieldsWithoutFlsMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'shown' } }));
             jest.runAllTimers();
             await flushPromises(2);
 
@@ -1249,7 +1328,7 @@ describe('c-rflib-permissions-explorer', () => {
         it('asks before building an oversized set instead of freezing the page', async () => {
             const element = await loadOversizedFieldPermissions();
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             const dialog = getConfirmationDialog(element);
             expect(dialog.visible).toBe(true);
@@ -1261,7 +1340,7 @@ describe('c-rflib-permissions-explorer', () => {
 
         it('builds the oversized set once confirmed', async () => {
             const element = await loadOversizedFieldPermissions();
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             getConfirmationDialog(element).dispatchEvent(
                 new CustomEvent('modalaction', { detail: { status: 'confirm' } })
@@ -1276,7 +1355,7 @@ describe('c-rflib-permissions-explorer', () => {
             const element = await loadOversizedFieldPermissions();
             const before = getTable(element).permissionRecords;
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             getConfirmationDialog(element).dispatchEvent(
                 new CustomEvent('modalaction', { detail: { status: 'cancel' } })
@@ -1285,12 +1364,12 @@ describe('c-rflib-permissions-explorer', () => {
 
             expect(getConfirmationDialog(element).visible).toBe(false);
             expect(getTable(element).permissionRecords).toBe(before);
-            expect(getCheckedDefaultFieldsOption(element)[0].value).toBe('hidden');
+            expect(getCheckedFieldsWithoutFlsOption(element)[0].value).toBe('hidden');
         });
 
-        it('marks default fields in the CSV export so they cannot read as stored grants', async () => {
+        it('flags fields without FLS in the CSV export so they cannot read as stored grants', async () => {
             const element = await loadFieldPermissions();
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             const mockLink = document.createElement('a');
             const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
@@ -1302,15 +1381,16 @@ describe('c-rflib-permissions-explorer', () => {
             createElementSpy.mockRestore();
 
             const rows = csv.trim().split('\r\n');
-            expect(rows[0]).toContain('"DEFAULT FIELD"');
+            expect(rows[0]).toContain('"FLS CONTROLLED"');
 
-            // A stored grant and a default field carry the same access values, so the flag is the
-            // only thing separating them once the table styling is gone.
+            // A stored grant and a field without FLS carry the same access values, so the flag is the
+            // only thing separating them once the table styling is gone. The column reads positively:
+            // true means a stored FieldPermissions record backs the row.
             const storedGrant = rows.find((row) => row.includes('"Name"'));
-            expect(storedGrant).toContain('"false"');
+            expect(storedGrant).toBe('"Admin","Account","Name","true","true","true"');
 
-            const defaultField = rows.find((row) => row.includes('"CreatedById"'));
-            expect(defaultField).toBe('"Admin","Account","CreatedById","true","false","true"');
+            const fieldWithoutFls = rows.find((row) => row.includes('"CreatedById"'));
+            expect(fieldWithoutFls).toBe('"Admin","Account","CreatedById","true","false","false"');
         });
 
         it('reverts to hidden and warns when the describe call fails', async () => {
@@ -1321,10 +1401,10 @@ describe('c-rflib-permissions-explorer', () => {
 
             getNonPermissionableFields.mockRejectedValue({ body: { message: 'Describe failed' } });
 
-            await showDefaultFields(element);
+            await showFieldsWithoutFls(element);
 
             expect(toastHandler).toHaveBeenCalled();
-            expect(getCheckedDefaultFieldsOption(element)[0].value).toBe('hidden');
+            expect(getCheckedFieldsWithoutFlsOption(element)[0].value).toBe('hidden');
             expect(getTable(element).permissionRecords).toHaveLength(3);
         });
     });

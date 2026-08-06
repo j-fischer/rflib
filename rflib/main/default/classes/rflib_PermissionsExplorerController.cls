@@ -40,7 +40,7 @@ public with sharing class rflib_PermissionsExplorerController {
 
     // Schema.describeSObjects() accepts at most 100 objects per call, and that API cap is the real
     // constraint: describe results come from the platform's describe cache rather than the
-    // transaction heap, so 23 of the widest standard objects (673 default fields) measured at only
+    // transaction heap, so 23 of the widest standard objects (673 fields without FLS) measured at only
     // 29 KB - about 1% of the 6 MB heap.
     @TestVisible private static final Integer MAX_DESCRIBE_BATCH_SIZE = 100;
 
@@ -229,6 +229,28 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryPermissionsApex(APEX_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails) + APEX_CONDITIONS, position);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    /**
+     * @description Returns whether the field permission views should start with fields without FLS shown, taken
+     *              from the optional `Permissions_Explorer_Show_Fields_Without_FLS` Global Setting. Without the
+     *              setting they stay hidden.
+     *
+     *              Deliberately not `cacheable=true`: the Lightning action cache would keep serving the
+     *              previous value after an admin changes the setting, so the new default would not apply on
+     *              the next page load. This runs once per component initialization.
+     * @return      True when the views should show fields without FLS without the user asking.
+     */
+    @AuraEnabled
+    public static Boolean getShowFieldsWithoutFlsByDefault() {
+        try {
+            Boolean result = rflib_GlobalSettings.showFieldsWithoutFlsInPermissionsExplorerOrDefault;
+            rflib_LoggerUtil.logInternal(LOGGER, 'getShowFieldsWithoutFlsByDefault: {0}', new Object[] { result });
+            return result;
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve the fields without FLS setting', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }

@@ -216,13 +216,13 @@
                             </lightning-button-menu>
                             <template lwc:if={isFieldPermissions}>
                                 <lightning-button-menu
-                                    data-id="default-fields-menu"
-                                    label="Default Fields"
+                                    data-id="fields-without-fls-menu"
+                                    label="Fields Without FLS"
                                     tooltip="Fields that Field Level Security cannot control, such as required, master-detail and system fields. Showing them loads field metadata only for the objects already listed in the current results."
                                     menu-alignment="right"
-                                    onselect={handleDefaultFieldsSelection}
+                                    onselect={handleFieldsWithoutFlsSelection}
                                 >
-                                    <template for:each={defaultFieldsOptions} for:item="menuItem">
+                                    <template for:each={fieldsWithoutFlsOptions} for:item="menuItem">
                                         <lightning-menu-item
                                             key={menuItem.id}
                                             value={menuItem.value}

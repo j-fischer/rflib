@@ -42,6 +42,7 @@ import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExp
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
 import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
+import getShowFieldsWithoutFlsByDefault from '@salesforce/apex/rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault';
 
 // Must not exceed MAX_DESCRIBE_BATCH_SIZE in rflib_PermissionsExplorerController, which is capped
 // by Schema.describeSObjects() rather than by heap.
@@ -53,9 +54,9 @@ const SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD = 50000;
 
 // A field that Field Level Security cannot control is always readable once the parent can read the
 // object - the same condition that governs a granted field permission - so only Edit access varies.
-const DEFAULT_FIELD_READ_ACCESS = true;
+const FIELD_WITHOUT_FLS_READ_ACCESS = true;
 
-const DEFAULT_FIELDS_OPTIONS = {
+const FIELDS_WITHOUT_FLS_OPTIONS = {
     HIDDEN: { id: '1', value: 'hidden', label: 'Hidden' },
     SHOWN: { id: '2', value: 'shown', label: 'Shown' }
 };
@@ -161,10 +162,10 @@ const PERMISSION_TYPES = {
 
 const OBJECT_PERMISSIONS_CSV_HEADER =
     '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL FIELDS","VIEW ALL RECORDS","MODIFY ALL RECORDS"\r\n';
-// A default field row carries real access values, so without the trailing column it would read as a
-// stored grant once the styling and tooltip of the table are gone.
+// A row for a field without FLS carries real access values, so without the trailing column it would
+// read as a stored grant once the styling and tooltip of the table are gone.
 const FIELD_PERMISSIONS_CSV_HEADER =
-    '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","DEFAULT FIELD"\r\n';
+    '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","FLS CONTROLLED"\r\n';
 
 const logger = createLogger('PermissionsExplorer');
 
@@ -188,7 +189,7 @@ export default class PermissionsExplorer extends LightningElement {
     basePermissionRecords = [];
     baseTotalRecords = 0;
     syntheticRecords = [];
-    includeNonPermissionableFields = false;
+    includeFieldsWithoutFls = false;
 
     // Keyed by object API name rather than by permission type: which fields are non-FLS-controllable
     // is a property of the object, so one lookup serves every permission type for the whole session.
@@ -217,7 +218,33 @@ export default class PermissionsExplorer extends LightningElement {
     exportFieldSearch = '';
 
     connectedCallback() {
+        // Resolved once per component lifetime and awaited after each load, so a slow round trip
+        // never delays the records themselves.
+        this.fieldsWithoutFlsPreference = this.resolveFieldsWithoutFlsPreference();
         this.loadPermissions();
+    }
+
+    async resolveFieldsWithoutFlsPreference() {
+        try {
+            return (await getShowFieldsWithoutFlsByDefault()) === true;
+        } catch (error) {
+            logger.error('Failed to retrieve the fields without FLS setting: {0}', JSON.stringify(error));
+            return false;
+        }
+    }
+
+    // Applied once the primary load has finished, because the synthesized rows are derived from the
+    // objects those records reference.
+    applyFieldsWithoutFlsPreference() {
+        return Promise.resolve(this.fieldsWithoutFlsPreference).then((showByDefault) => {
+            // The permission type may have changed while the setting was in flight.
+            if (!showByDefault || !this.isFieldPermissions || this.includeFieldsWithoutFls) {
+                return;
+            }
+
+            logger.debug('Showing fields without FLS because the Global Setting requests it');
+            this.loadNonPermissionableFields();
+        });
     }
 
     get permissionType() {
@@ -262,10 +289,10 @@ export default class PermissionsExplorer extends LightningElement {
         return pageSizes;
     }
 
-    get defaultFieldsOptions() {
-        return [DEFAULT_FIELDS_OPTIONS.HIDDEN, DEFAULT_FIELDS_OPTIONS.SHOWN].map((option) => ({
+    get fieldsWithoutFlsOptions() {
+        return [FIELDS_WITHOUT_FLS_OPTIONS.HIDDEN, FIELDS_WITHOUT_FLS_OPTIONS.SHOWN].map((option) => ({
             ...option,
-            checked: this.includeNonPermissionableFields === (option.value === DEFAULT_FIELDS_OPTIONS.SHOWN.value)
+            checked: this.includeFieldsWithoutFls === (option.value === FIELDS_WITHOUT_FLS_OPTIONS.SHOWN.value)
         }));
     }
 
@@ -394,7 +421,7 @@ export default class PermissionsExplorer extends LightningElement {
 
         this.permissionRecords = [];
         this.numTotalRecords = 0;
-        this.resetNonPermissionableFields();
+        this.resetFieldsWithoutFls();
 
         if (remoteAction === null) {
             return;
@@ -449,7 +476,7 @@ export default class PermissionsExplorer extends LightningElement {
 
             this.page = 1;
 
-            return Promise.resolve();
+            return this.applyFieldsWithoutFlsPreference();
         };
 
         this.isLoadingRecords = true;
@@ -469,6 +496,7 @@ export default class PermissionsExplorer extends LightningElement {
                 this.baseTotalRecords = cachedRecords.length;
                 this.isLoadingRecords = false;
                 this.page = 1;
+                this.applyFieldsWithoutFlsPreference();
                 return;
             }
 
@@ -476,7 +504,9 @@ export default class PermissionsExplorer extends LightningElement {
                 .then(retrievePermissionsCallback)
                 .then(() => {
                     logger.debug('Caching result');
-                    this.cache[cacheKey] = this.permissionRecords;
+                    // The pristine server result, never the synthesized rows, which the default
+                    // fields setting may already have appended to permissionRecords by now.
+                    this.cache[cacheKey] = this.basePermissionRecords;
                 })
                 .catch((error) => {
                     logger.error(
@@ -503,16 +533,16 @@ export default class PermissionsExplorer extends LightningElement {
         }
     }
 
-    handleDefaultFieldsSelection(event) {
-        const isEnabled = event.detail.value === DEFAULT_FIELDS_OPTIONS.SHOWN.value;
-        logger.debug('Default fields selection changed: {0}', event.detail.value);
+    handleFieldsWithoutFlsSelection(event) {
+        const isEnabled = event.detail.value === FIELDS_WITHOUT_FLS_OPTIONS.SHOWN.value;
+        logger.debug('Fields without FLS selection changed: {0}', event.detail.value);
 
-        if (isEnabled === this.includeNonPermissionableFields) {
+        if (isEnabled === this.includeFieldsWithoutFls) {
             return;
         }
 
         if (!isEnabled) {
-            this.includeNonPermissionableFields = false;
+            this.includeFieldsWithoutFls = false;
             this.syntheticRecords = [];
             this.applyPermissionRecords();
             return;
@@ -582,7 +612,7 @@ export default class PermissionsExplorer extends LightningElement {
             .catch((error) => {
                 logger.error('Failed to retrieve non-permissionable fields. Error={0}', JSON.stringify(error));
                 this.isLoadingRecords = false;
-                this.includeNonPermissionableFields = false;
+                this.includeFieldsWithoutFls = false;
                 this.dispatchErrorToast('Failed to retrieve field metadata', error);
             });
     }
@@ -631,7 +661,7 @@ export default class PermissionsExplorer extends LightningElement {
                     Label: rec.Label,
                     SobjectType: rec.SobjectType,
                     Field: field.apiName,
-                    PermissionsRead: DEFAULT_FIELD_READ_ACCESS,
+                    PermissionsRead: FIELD_WITHOUT_FLS_READ_ACCESS,
                     PermissionsEdit: field.isUpdateable,
                     IsFlsControlled: false
                 });
@@ -641,7 +671,7 @@ export default class PermissionsExplorer extends LightningElement {
         logger.debug('Built {0} synthetic permission records', records.length);
 
         this.syntheticRecords = records;
-        this.includeNonPermissionableFields = true;
+        this.includeFieldsWithoutFls = true;
         this.applyPermissionRecords();
     }
 
@@ -657,11 +687,11 @@ export default class PermissionsExplorer extends LightningElement {
         }
 
         logger.debug('Field coverage cancelled by user');
-        this.includeNonPermissionableFields = false;
+        this.includeFieldsWithoutFls = false;
     }
 
     applyPermissionRecords() {
-        if (this.includeNonPermissionableFields) {
+        if (this.includeFieldsWithoutFls) {
             this.permissionRecords = this.basePermissionRecords.concat(this.syntheticRecords);
             this.numTotalRecords = this.permissionRecords.length;
         } else {
@@ -672,11 +702,11 @@ export default class PermissionsExplorer extends LightningElement {
         this.page = 1;
     }
 
-    resetNonPermissionableFields() {
+    resetFieldsWithoutFls() {
         this.basePermissionRecords = [];
         this.baseTotalRecords = 0;
         this.syntheticRecords = [];
-        this.includeNonPermissionableFields = false;
+        this.includeFieldsWithoutFls = false;
         this.showFieldCoverageConfirmation = false;
         this.pendingSyntheticSources = null;
     }
@@ -705,7 +735,7 @@ export default class PermissionsExplorer extends LightningElement {
             '","' +
             permission.PermissionsEdit +
             '","' +
-            (permission.IsFlsControlled === false) +
+            (permission.IsFlsControlled !== false) +
             '"\r\n'
         );
     }

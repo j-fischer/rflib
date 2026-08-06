@@ -117,16 +117,16 @@ test('exports filtered permissions through the filter modal with help text', asy
 
 // Account.CreatedById is never subject to Field Level Security, so Salesforce cannot store a
 // FieldPermissions record for it. That makes it a stable probe in any org: it can only reach the
-// table through the Default Fields menu, and being an audit field it is readable but not writable,
+// table through the Fields Without FLS menu, and being an audit field it is readable but not writable,
 // which proves the Edit value comes from the field definition rather than being hardcoded.
-test('shows default fields for Account through the Default Fields menu', async () => {
+test('shows fields without FLS for Account through the Fields Without FLS menu', async () => {
     await explorer.selectPermissionType(PERMISSION_TYPES.fieldProfiles);
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
 
     const baseline = await explorer.getTotalRecords();
 
     // Offered only for the field permission types.
-    await expect(explorer.defaultFieldsMenu.root).toBeVisible();
+    await expect(explorer.fieldsWithoutFlsMenu.root).toBeVisible();
 
     await explorer.table.search(PERMISSIONS_SEARCH.object, 'Account');
     await explorer.table.search(PERMISSIONS_SEARCH.field, 'CreatedById');
@@ -134,7 +134,7 @@ test('shows default fields for Account through the Default Fields menu', async (
     // Default on load is Hidden, so the field is absent until the mode is switched.
     await expect(explorer.tableRows).toHaveCount(0);
 
-    await explorer.selectDefaultFields('Shown');
+    await explorer.selectFieldsWithoutFls('Shown');
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(baseline);
 
     const createdByRow = explorer.tableRows.first();
@@ -148,7 +148,7 @@ test('shows default fields for Account through the Default Fields menu', async (
     await expect(cells.nth(4)).toHaveText('false');
 
     // Hiding again has to restore the untouched result set, not a rebuilt approximation.
-    await explorer.selectDefaultFields('Hidden');
+    await explorer.selectFieldsWithoutFls('Hidden');
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 60_000 }).toBe(baseline);
     await expect(explorer.tableRows).toHaveCount(0);
 

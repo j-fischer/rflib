@@ -330,6 +330,26 @@ private class rflib_GlobalSettingsTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testShowFieldsWithoutFlsInPermissionsExplorerDefaultsToHidden() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', null);
+        System.assertEquals(
+            false,
+            rflib_GlobalSettings.showFieldsWithoutFlsInPermissionsExplorerOrDefault,
+            'Fields without FLS stay hidden without the setting'
+        );
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testShowFieldsWithoutFlsInPermissionsExplorerOverride() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', 'true');
+        System.assertEquals(true, rflib_GlobalSettings.showFieldsWithoutFlsInPermissionsExplorerOrDefault);
+        Test.stopTest();
+    }
+
     private static String getConfiguredStringValueOrDefault(String settingName, String defaultValue) {
         String value = rflib_Global_Setting__mdt.getInstance(settingName)?.Value__c;
 

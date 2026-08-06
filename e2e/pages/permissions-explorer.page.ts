@@ -109,12 +109,12 @@ export class PermissionsExplorerPage {
 
     // Only rendered for the field permission types (rflibPermissionsExplorer.html), so it is
     // addressed by its data-id rather than by position in the header button group.
-    get defaultFieldsMenu(): LightningButtonMenu {
-        return new LightningButtonMenu(this.header.locator('lightning-button-menu[data-id="default-fields-menu"]'));
+    get fieldsWithoutFlsMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(this.header.locator('lightning-button-menu[data-id="fields-without-fls-menu"]'));
     }
 
-    async selectDefaultFields(mode: 'Hidden' | 'Shown'): Promise<void> {
-        await this.defaultFieldsMenu.select(mode);
+    async selectFieldsWithoutFls(mode: 'Hidden' | 'Shown'): Promise<void> {
+        await this.fieldsWithoutFlsMenu.select(mode);
         await this.waitForLoad();
     }
 
