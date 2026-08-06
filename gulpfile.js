@@ -35,6 +35,7 @@ const prompt = require('gulp-prompt');
 const confirm = require('gulp-confirm');
 
 const fs = require('fs');
+const { spawn } = require('child_process');
 const _ = require('lodash');
 const semver = require('semver');
 
@@ -517,12 +518,65 @@ gulp.task(
     })
 );
 
-gulp.task(
-    'shell-force-test',
-    shellTask(function () {
-        return `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w 4 --concise`;
-    })
-);
+// A full RunLocalTests pass takes about three minutes on a healthy org, so the previous four
+// minute wait left almost no margin.
+const APEX_TEST_WAIT_MINUTES = 30;
+
+/**
+ * `sf apex run test` exits 0 when it only manages to enqueue the run: once the --wait window
+ * lapses it prints "Run with --synchronous or increase --wait timeout to wait for results" and
+ * returns success with no results at all. Trusting the exit code therefore turns a lapsed wait
+ * into a green build, and a genuine test failure that never got reported looks identical. The
+ * summary has to be present for the run to count as passing.
+ */
+function apexTestTask() {
+    return function (done) {
+        const command = `sf apex run test -l RunLocalTests -c -r human -o ${config.alias} -w ${APEX_TEST_WAIT_MINUTES} --concise`;
+        gutil.log('Running: ' + command);
+
+        const child = spawn(command, { shell: true });
+        let output = '';
+
+        const capture = function (source, target) {
+            source.on('data', function (chunk) {
+                const text = chunk.toString();
+                output += text;
+                target.write(text);
+            });
+        };
+
+        capture(child.stdout, process.stdout);
+        capture(child.stderr, process.stderr);
+
+        child.on('error', done);
+        child.on('close', function (code) {
+            if (code !== 0) {
+                done(new Error(`Apex tests failed with exit code ${code}`));
+                return;
+            }
+
+            if (output.includes('Pass Rate')) {
+                done();
+                return;
+            }
+
+            const runIdMatch = output.match(/sf apex get test -i (\w+)/);
+            const retrieval = runIdMatch
+                ? `sf apex get test -i ${runIdMatch[1]} -c -o ${config.alias}`
+                : `sf apex get test -i <testRunId> -c -o ${config.alias}`;
+
+            done(
+                new Error(
+                    `Apex tests reported no results within ${APEX_TEST_WAIT_MINUTES} minutes. The run was ` +
+                        `enqueued but never awaited, so the outcome is unknown rather than passing. ` +
+                        `Retrieve it with: ${retrieval}`
+                )
+            );
+        });
+    };
+}
+
+gulp.task('shell-force-test', apexTestTask());
 
 gulp.task(
     'shell-force-open',
