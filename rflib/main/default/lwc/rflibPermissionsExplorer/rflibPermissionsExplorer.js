@@ -199,6 +199,10 @@ export default class PermissionsExplorer extends LightningElement {
     fieldCoverageConfirmationMessage = '';
     pendingSyntheticSources = null;
 
+    // Incremented on every load. The describe chain runs for a while on a large org, so it has to be
+    // able to tell that the permission type moved on and its result is no longer wanted.
+    loadToken = 0;
+
     userFilter = {
         criteria: [
             {
@@ -236,9 +240,16 @@ export default class PermissionsExplorer extends LightningElement {
     // Applied once the primary load has finished, because the synthesized rows are derived from the
     // objects those records reference.
     applyFieldsWithoutFlsPreference() {
+        const token = this.loadToken;
+
         return Promise.resolve(this.fieldsWithoutFlsPreference).then((showByDefault) => {
-            // The permission type may have changed while the setting was in flight.
-            if (!showByDefault || !this.isFieldPermissions || this.includeFieldsWithoutFls) {
+            // Another load may have started while the setting was in flight.
+            if (
+                token !== this.loadToken ||
+                !showByDefault ||
+                !this.isFieldPermissions ||
+                this.includeFieldsWithoutFls
+            ) {
                 return;
             }
 
@@ -421,6 +432,7 @@ export default class PermissionsExplorer extends LightningElement {
 
         this.permissionRecords = [];
         this.numTotalRecords = 0;
+        this.loadToken += 1;
         this.resetFieldsWithoutFls();
 
         if (remoteAction === null) {
@@ -552,6 +564,7 @@ export default class PermissionsExplorer extends LightningElement {
     }
 
     loadNonPermissionableFields() {
+        const token = this.loadToken;
         const objectNames = [...new Set(this.basePermissionRecords.map((rec) => rec.SobjectType))];
         const uncachedObjectNames = objectNames.filter((name) => !this.fieldMetadataCache[name]);
 
@@ -606,11 +619,24 @@ export default class PermissionsExplorer extends LightningElement {
 
         loadChunk(0)
             .then(() => {
+                // The metadata itself stays cached - it is keyed by object and independent of the
+                // permission type - but applying it to a view the user has already left would clear
+                // the spinner of the load now running and rebuild the wrong records.
+                if (token !== this.loadToken) {
+                    logger.debug('Discarding field metadata for a superseded load');
+                    return;
+                }
+
                 this.isLoadingRecords = false;
                 this.buildSyntheticRecords();
             })
             .catch((error) => {
                 logger.error('Failed to retrieve non-permissionable fields. Error={0}', JSON.stringify(error));
+
+                if (token !== this.loadToken) {
+                    return;
+                }
+
                 this.isLoadingRecords = false;
                 this.includeFieldsWithoutFls = false;
                 this.dispatchErrorToast('Failed to retrieve field metadata', error);

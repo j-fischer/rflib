@@ -1393,6 +1393,37 @@ describe('c-rflib-permissions-explorer', () => {
             expect(fieldWithoutFls).toBe('"Admin","Account","CreatedById","true","false","false"');
         });
 
+        it('discards an in-flight describe when the permission type changes', async () => {
+            const element = await loadFieldPermissions();
+
+            // Hold the describe open, then leave the view before it resolves.
+            let resolveDescribe;
+            getNonPermissionableFields.mockReturnValueOnce(
+                new Promise((resolve) => {
+                    resolveDescribe = resolve;
+                })
+            );
+
+            getFieldsWithoutFlsMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'shown' } }));
+            jest.runAllTimers();
+            await flushPromises(2);
+
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_APEX_RESPONSE));
+            selectPermissionType(element, 'ObjectPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(4);
+
+            const recordsAfterSwitch = getTable(element).permissionRecords;
+
+            resolveDescribe(ACCOUNT_NON_PERMISSIONABLE);
+            jest.runAllTimers();
+            await flushPromises(4);
+
+            // The stale result must not rebuild records for the view the user moved to.
+            expect(getTable(element).permissionRecords).toEqual(recordsAfterSwitch);
+            expect(getFieldsWithoutFlsMenu(element)).toBeNull();
+        });
+
         it('reverts to hidden and warns when the describe call fails', async () => {
             const element = await loadFieldPermissions();
 

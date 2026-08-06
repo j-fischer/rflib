@@ -537,6 +537,17 @@ function apexTestTask() {
         const child = spawn(command, { shell: true });
         let output = '';
 
+        // Node emits both 'error' and 'close' when a process fails to start, and gulp treats a
+        // second callback as a task error that would mask the real failure.
+        let settled = false;
+        const finish = function (error) {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            done(error);
+        };
+
         const capture = function (source, target) {
             source.on('data', function (chunk) {
                 const text = chunk.toString();
@@ -548,15 +559,15 @@ function apexTestTask() {
         capture(child.stdout, process.stdout);
         capture(child.stderr, process.stderr);
 
-        child.on('error', done);
+        child.on('error', finish);
         child.on('close', function (code) {
             if (code !== 0) {
-                done(new Error(`Apex tests failed with exit code ${code}`));
+                finish(new Error(`Apex tests failed with exit code ${code}`));
                 return;
             }
 
             if (output.includes('Pass Rate')) {
-                done();
+                finish();
                 return;
             }
 
@@ -565,7 +576,7 @@ function apexTestTask() {
                 ? `sf apex get test -i ${runIdMatch[1]} -c -o ${config.alias}`
                 : `sf apex get test -i <testRunId> -c -o ${config.alias}`;
 
-            done(
+            finish(
                 new Error(
                     `Apex tests reported no results within ${APEX_TEST_WAIT_MINUTES} minutes. The run was ` +
                         `enqueued but never awaited, so the outcome is unknown rather than passing. ` +
