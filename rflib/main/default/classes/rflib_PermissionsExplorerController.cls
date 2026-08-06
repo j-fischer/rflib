@@ -38,8 +38,16 @@ public with sharing class rflib_PermissionsExplorerController {
     @TestVisible private static final Integer APEX_CURSOR_RESULT_SIZE = 2000;
     @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 24995;
 
-    // Schema.describeSObjects() accepts at most 100 objects per call.
+    // Schema.describeSObjects() accepts at most 100 objects per call, and that API cap is the real
+    // constraint: describe results come from the platform's describe cache rather than the
+    // transaction heap, so 23 of the widest standard objects (673 default fields) measured at only
+    // 29 KB - about 1% of the 6 MB heap.
     @TestVisible private static final Integer MAX_DESCRIBE_BATCH_SIZE = 100;
+
+    // Insurance rather than a routine limit: measured usage is nowhere near the heap, but an org
+    // with pathologically wide objects should get a real error instead of an uncatchable heap
+    // LimitException. Mutable so a test can lower it far enough to exercise the guard.
+    @TestVisible private static Decimal describeHeapSafetyRatio = 0.6;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
@@ -231,7 +239,8 @@ public with sharing class rflib_PermissionsExplorerController {
      *              stores a `FieldPermissions` record for those fields, so they are invisible to the FLS queries
      *              above. Their access is determined by the object permission instead.
      * @param  objectApiNames The objects to inspect, limited to `MAX_DESCRIBE_BATCH_SIZE` per invocation.
-     * @return                One entry per resolvable object, each listing its non-permissionable field names.
+     * @return                One entry per resolvable object, each listing its non-permissionable fields
+     *                        and whether each of them can be written.
      */
     @AuraEnabled(cacheable = true)
     public static List<ObjectFieldInfo> getNonPermissionableFields(List<String> objectApiNames) {
@@ -265,19 +274,38 @@ public with sharing class rflib_PermissionsExplorerController {
                 return result;
             }
 
-            for (Schema.DescribeSObjectResult objectDescribe : Schema.describeSObjects(resolvableNames)) {
+            Integer heapThreshold = (Limits.getLimitHeapSize() * describeHeapSafetyRatio).intValue();
+
+            // DEFERRED keeps child relationships and record types out of the describe; only the
+            // field map below is actually needed and it is by far the cheaper half.
+            for (
+                Schema.DescribeSObjectResult objectDescribe : Schema.describeSObjects(
+                    resolvableNames,
+                    SObjectDescribeOptions.DEFERRED
+                )
+            ) {
                 ObjectFieldInfo info = new ObjectFieldInfo(objectDescribe.getName());
 
                 for (Schema.SObjectField field : objectDescribe.fields.getMap().values()) {
                     Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
 
                     if (!fieldDescribe.isPermissionable() && fieldDescribe.getName() != 'Id') {
-                        info.fieldApiNames.add(fieldDescribe.getName());
+                        info.fields.add(new FieldAccessInfo(fieldDescribe.getName(), fieldDescribe.isUpdateable()));
                     }
                 }
 
-                info.fieldApiNames.sort();
+                info.fields.sort();
                 result.add(info);
+
+                if (Limits.getHeapSize() > heapThreshold) {
+                    throw new rflib_InvalidArgumentException(
+                        'objectApiNames',
+                        'Describing these objects would exceed the available heap. ' +
+                        result.size() + ' of ' + resolvableNames.size() +
+                        ' objects were processed before reaching ' + Limits.getHeapSize() +
+                        ' of ' + Limits.getLimitHeapSize() + ' bytes. Retry with fewer objects.'
+                    );
+                }
             }
 
             rflib_LoggerUtil.logInternal(LOGGER, 'getNonPermissionableFields: resolved {0} objects', new Object[] { result.size() });
@@ -653,10 +681,28 @@ public with sharing class rflib_PermissionsExplorerController {
 
     public class ObjectFieldInfo {
         @AuraEnabled public String objectApiName;
-        @AuraEnabled public List<String> fieldApiNames = new List<String>();
+        @AuraEnabled public List<FieldAccessInfo> fields = new List<FieldAccessInfo>();
 
         public ObjectFieldInfo(String objectApiName) {
             this.objectApiName = objectApiName;
+        }
+    }
+
+    /**
+     * @description A field that Field Level Security cannot control. Such a field is always readable
+     *              when the parent can read the object, so only whether it can be written varies.
+     */
+    public class FieldAccessInfo implements Comparable {
+        @AuraEnabled public String apiName;
+        @AuraEnabled public Boolean isUpdateable;
+
+        public FieldAccessInfo(String apiName, Boolean isUpdateable) {
+            this.apiName = apiName;
+            this.isUpdateable = isUpdateable;
+        }
+
+        public Integer compareTo(Object other) {
+            return this.apiName.compareTo(((FieldAccessInfo) other).apiName);
         }
     }
 

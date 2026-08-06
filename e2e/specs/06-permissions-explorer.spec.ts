@@ -115,36 +115,49 @@ test('exports filtered permissions through the filter modal with help text', asy
     await expect(modal).toBeHidden({ timeout: 30_000 });
 });
 
-// Account.OwnerId is never subject to Field Level Security, so Salesforce cannot store a
-// FieldPermissions record for it. That makes it a stable probe in any org: it can only reach
-// the table through the toggle.
-test('includes fields without explicit permissions for Account', async () => {
+// Account.CreatedById is never subject to Field Level Security, so Salesforce cannot store a
+// FieldPermissions record for it. That makes it a stable probe in any org: it can only reach the
+// table through the Default Fields menu, and being an audit field it is readable but not writable,
+// which proves the Edit value comes from the field definition rather than being hardcoded.
+test('shows default fields for Account through the Default Fields menu', async () => {
     await explorer.selectPermissionType(PERMISSION_TYPES.fieldProfiles);
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
 
     const baseline = await explorer.getTotalRecords();
 
+    // Offered only for the field permission types.
+    await expect(explorer.defaultFieldsMenu.root).toBeVisible();
+
     await explorer.table.search(PERMISSIONS_SEARCH.object, 'Account');
-    await expect(explorer.tableRows.first()).toBeVisible({ timeout: 30_000 });
+    await explorer.table.search(PERMISSIONS_SEARCH.field, 'CreatedById');
 
-    // The toggle is offered only for field permission types.
-    await expect(explorer.nonPermissionableToggle).toBeVisible();
+    // Default on load is Hidden, so the field is absent until the mode is switched.
+    await expect(explorer.tableRows).toHaveCount(0);
 
-    await explorer.setNonPermissionableFields(true);
+    await explorer.selectDefaultFields('Shown');
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(baseline);
 
-    await explorer.table.search(PERMISSIONS_SEARCH.field, 'OwnerId');
-    const ownerIdRow = explorer.tableRows.first();
-    await expect(ownerIdRow).toBeVisible({ timeout: 30_000 });
-    await expect(ownerIdRow).toContainText('OwnerId');
-    // Reported as not applicable rather than as a grant, and visually separated from real rows.
-    await expect(ownerIdRow).toContainText('N/A');
-    await expect(ownerIdRow).toHaveClass(/not-fls-controlled/);
+    const createdByRow = explorer.tableRows.first();
+    await expect(createdByRow).toBeVisible({ timeout: 30_000 });
+    await expect(createdByRow).toContainText('CreatedById');
+    await expect(createdByRow).toHaveClass(/not-fls-controlled/);
 
-    // Toggling off has to restore the untouched result set, not a rebuilt approximation.
-    await explorer.setNonPermissionableFields(false);
+    // Readable because the object is readable, but an audit field is never writable.
+    const cells = createdByRow.locator('td');
+    await expect(cells.nth(3)).toHaveText('true');
+    await expect(cells.nth(4)).toHaveText('false');
+
+    // Hiding again has to restore the untouched result set, not a rebuilt approximation.
+    await explorer.selectDefaultFields('Hidden');
     await expect.poll(() => explorer.getTotalRecords(), { timeout: 60_000 }).toBe(baseline);
+    await expect(explorer.tableRows).toHaveCount(0);
 
     await explorer.table.search(PERMISSIONS_SEARCH.field, '');
     await explorer.table.search(PERMISSIONS_SEARCH.object, '');
+});
+
+// The table used to print its own "Page X of Y" line directly above the paginator's.
+test('renders the page indicator only once', async () => {
+    await expect(explorer.paginator.pageInput).toBeVisible();
+    await expect(explorer.root.getByText(/^Page \d+ of \d+$/)).toHaveCount(0);
 });

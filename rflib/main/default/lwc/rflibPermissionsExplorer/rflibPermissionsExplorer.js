@@ -43,16 +43,22 @@ import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExpl
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
 import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
 
-// Matches MAX_DESCRIBE_BATCH_SIZE in rflib_PermissionsExplorerController.
+// Must not exceed MAX_DESCRIBE_BATCH_SIZE in rflib_PermissionsExplorerController, which is capped
+// by Schema.describeSObjects() rather than by heap.
 const DESCRIBE_BATCH_SIZE = 100;
 
 // Synthesizing rows for every (parent, object) pair can roughly double the record count on
 // a large org, so anything beyond this asks the user before building.
 const SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD = 50000;
 
-// Non-FLS-controllable fields have no stored access to report. Their effective access follows
-// the object permission, so anything other than "not applicable" would be a misstatement.
-const NOT_APPLICABLE = 'N/A';
+// A field that Field Level Security cannot control is always readable once the parent can read the
+// object - the same condition that governs a granted field permission - so only Edit access varies.
+const DEFAULT_FIELD_READ_ACCESS = true;
+
+const DEFAULT_FIELDS_OPTIONS = {
+    HIDDEN: { id: '1', value: 'hidden', label: 'Hidden' },
+    SHOWN: { id: '2', value: 'shown', label: 'Shown' }
+};
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZES = [
@@ -251,6 +257,13 @@ export default class PermissionsExplorer extends LightningElement {
         }
 
         return pageSizes;
+    }
+
+    get defaultFieldsOptions() {
+        return [DEFAULT_FIELDS_OPTIONS.HIDDEN, DEFAULT_FIELDS_OPTIONS.SHOWN].map((option) => ({
+            ...option,
+            checked: this.includeNonPermissionableFields === (option.value === DEFAULT_FIELDS_OPTIONS.SHOWN.value)
+        }));
     }
 
     get permissionTypes() {
@@ -487,9 +500,13 @@ export default class PermissionsExplorer extends LightningElement {
         }
     }
 
-    handleIncludeNonPermissionableFieldsChange(event) {
-        const isEnabled = event.target.checked;
-        logger.debug('Include non-permissionable fields toggled: {0}', isEnabled);
+    handleDefaultFieldsSelection(event) {
+        const isEnabled = event.detail.value === DEFAULT_FIELDS_OPTIONS.SHOWN.value;
+        logger.debug('Default fields selection changed: {0}', event.detail.value);
+
+        if (isEnabled === this.includeNonPermissionableFields) {
+            return;
+        }
 
         if (!isEnabled) {
             this.includeNonPermissionableFields = false;
@@ -521,8 +538,13 @@ export default class PermissionsExplorer extends LightningElement {
             chunks.push(uncachedObjectNames.slice(i, i + DESCRIBE_BATCH_SIZE));
         }
 
-        const loadingFieldMetadataLabel = 'Loading field metadata';
-        this.progressText = loadingFieldMetadataLabel;
+        // Progress is reported in objects rather than requests: on a large org this runs for a while
+        // and the object count is the only number that means anything to the person waiting.
+        const totalObjects = uncachedObjectNames.length;
+        const describeProgress = (loaded) => 'Loading field metadata (' + loaded + ' / ' + totalObjects + ' objects)';
+
+        let loadedObjects = 0;
+        this.progressText = describeProgress(loadedObjects);
         this.isLoadingRecords = true;
 
         const loadChunk = (index) => {
@@ -532,7 +554,7 @@ export default class PermissionsExplorer extends LightningElement {
 
             return getNonPermissionableFields({ objectApiNames: chunks[index] }).then((result) => {
                 result.forEach((info) => {
-                    this.fieldMetadataCache[info.objectApiName] = info.fieldApiNames;
+                    this.fieldMetadataCache[info.objectApiName] = info.fields;
                 });
 
                 // Objects the server could not describe still get an entry so they are not requested again.
@@ -542,7 +564,8 @@ export default class PermissionsExplorer extends LightningElement {
                     }
                 });
 
-                this.progressText = loadingFieldMetadataLabel + ' (' + (index + 1) + ' / ' + chunks.length + ')';
+                loadedObjects += chunks[index].length;
+                this.progressText = describeProgress(loadedObjects);
 
                 return loadChunk(index + 1);
             });
@@ -557,7 +580,6 @@ export default class PermissionsExplorer extends LightningElement {
                 logger.error('Failed to retrieve non-permissionable fields. Error={0}', JSON.stringify(error));
                 this.isLoadingRecords = false;
                 this.includeNonPermissionableFields = false;
-                this.resetIncludeNonPermissionableFieldsInput();
                 this.dispatchErrorToast('Failed to retrieve field metadata', error);
             });
     }
@@ -599,15 +621,15 @@ export default class PermissionsExplorer extends LightningElement {
     materializeSyntheticRecords(sources) {
         const records = [];
         sources.forEach((rec) => {
-            (this.fieldMetadataCache[rec.SobjectType] || []).forEach((fieldName) => {
+            (this.fieldMetadataCache[rec.SobjectType] || []).forEach((field) => {
                 records.push({
                     SecurityObjectName: rec.SecurityObjectName,
                     SecurityType: rec.SecurityType,
                     Label: rec.Label,
                     SobjectType: rec.SobjectType,
-                    Field: fieldName,
-                    PermissionsRead: NOT_APPLICABLE,
-                    PermissionsEdit: NOT_APPLICABLE,
+                    Field: field.apiName,
+                    PermissionsRead: DEFAULT_FIELD_READ_ACCESS,
+                    PermissionsEdit: field.isUpdateable,
                     IsFlsControlled: false
                 });
             });
@@ -633,7 +655,6 @@ export default class PermissionsExplorer extends LightningElement {
 
         logger.debug('Field coverage cancelled by user');
         this.includeNonPermissionableFields = false;
-        this.resetIncludeNonPermissionableFieldsInput();
     }
 
     applyPermissionRecords() {
@@ -655,14 +676,6 @@ export default class PermissionsExplorer extends LightningElement {
         this.includeNonPermissionableFields = false;
         this.showFieldCoverageConfirmation = false;
         this.pendingSyntheticSources = null;
-    }
-
-    // The checkbox holds its own DOM state, so a cancelled or failed load has to clear it explicitly.
-    resetIncludeNonPermissionableFieldsInput() {
-        const toggle = this.template.querySelector('[data-id="include-non-permissionable-fields"]');
-        if (toggle) {
-            toggle.checked = false;
-        }
     }
 
     handleExportSelection(event) {

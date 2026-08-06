@@ -143,9 +143,13 @@ export default class RflibFieldPermissionsTable extends LightningElement {
         this.filteredRecords = filteredRecords.map(function (rec, index) {
             const modifiedRec = { ...rec };
             modifiedRec.id = index;
-            // Synthesized rows for fields that Field Level Security cannot control carry no stored
-            // access, so they are muted to keep them from reading as real grants.
-            modifiedRec.rowClass = rec.IsFlsControlled === false ? 'clickable not-fls-controlled' : 'clickable';
+            // Rows for fields that Field Level Security cannot control are muted, because their access
+            // comes from the object permission and the field definition rather than a stored grant.
+            const isDefaultField = rec.IsFlsControlled === false;
+            modifiedRec.rowClass = isDefaultField ? 'clickable not-fls-controlled' : 'clickable';
+            modifiedRec.rowTitle = isDefaultField
+                ? 'Field Level Security cannot control this field. It is readable whenever the object is readable, and the Edit value reflects whether the field can be written at all.'
+                : undefined;
             return modifiedRec;
         });
         this.filteredRecordCount = this.filteredRecords.length;

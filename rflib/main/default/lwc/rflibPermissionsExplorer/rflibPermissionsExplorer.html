@@ -214,6 +214,25 @@
                                     </lightning-menu-item>
                                 </template>
                             </lightning-button-menu>
+                            <template lwc:if={isFieldPermissions}>
+                                <lightning-button-menu
+                                    data-id="default-fields-menu"
+                                    label="Default Fields"
+                                    tooltip="Fields that Field Level Security cannot control, such as required, master-detail and system fields. Showing them loads field metadata only for the objects already listed in the current results."
+                                    menu-alignment="right"
+                                    onselect={handleDefaultFieldsSelection}
+                                >
+                                    <template for:each={defaultFieldsOptions} for:item="menuItem">
+                                        <lightning-menu-item
+                                            key={menuItem.id}
+                                            value={menuItem.value}
+                                            label={menuItem.label}
+                                            checked={menuItem.checked}
+                                        >
+                                        </lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </template>
                             <lightning-button-menu
                                 label="Export to CSV"
                                 menu-alignment="right"
@@ -282,21 +301,6 @@
                                 </template>
                             </div>
                             <div class="slds-col slds-size_6-of-12 slds-m-right_x-small">&nbsp;</div>
-                        </div>
-                    </template>
-                    <template lwc:if={isFieldPermissions}>
-                        <div class="slds-grid slds-m-left_medium slds-m-top_x-small">
-                            <div class="slds-col slds-size_12-of-12">
-                                <lightning-input
-                                    type="toggle"
-                                    data-id="include-non-permissionable-fields"
-                                    label="Include fields without explicit permissions"
-                                    message-toggle-active="Showing fields that Field Level Security cannot control, such as required and system fields"
-                                    message-toggle-inactive="Only fields with a stored Field Permissions record are shown"
-                                    checked={includeNonPermissionableFields}
-                                    onchange={handleIncludeNonPermissionableFieldsChange}
-                                ></lightning-input>
-                            </div>
                         </div>
                     </template>
                     <c-rflib-permissions-table

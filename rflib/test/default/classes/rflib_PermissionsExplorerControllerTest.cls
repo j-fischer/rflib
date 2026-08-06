@@ -853,24 +853,34 @@ private class rflib_PermissionsExplorerControllerTest {
         System.assertEquals('Account', info.objectApiName);
 
         // These standard fields are never FLS controllable, so Salesforce cannot store a FieldPermissions record for them.
-        Set<String> fieldNames = new Set<String>(info.fieldApiNames);
-        System.assert(fieldNames.contains('Name'), 'Expected Name to be non-permissionable, got: ' + info.fieldApiNames);
-        System.assert(fieldNames.contains('OwnerId'), 'Expected OwnerId to be non-permissionable, got: ' + info.fieldApiNames);
-        System.assert(fieldNames.contains('CreatedById'), 'Expected CreatedById to be non-permissionable, got: ' + info.fieldApiNames);
-        System.assert(fieldNames.contains('LastModifiedById'), 'Expected LastModifiedById to be non-permissionable, got: ' + info.fieldApiNames);
+        Map<String, Boolean> updateableByName = new Map<String, Boolean>();
+        for (rflib_PermissionsExplorerController.FieldAccessInfo field : info.fields) {
+            updateableByName.put(field.apiName, field.isUpdateable);
+        }
 
-        System.assert(!fieldNames.contains('Id'), 'Id should be excluded as noise');
+        System.assert(updateableByName.containsKey('Name'), 'Expected Name to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('OwnerId'), 'Expected OwnerId to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('CreatedById'), 'Expected CreatedById to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('LastModifiedById'), 'Expected LastModifiedById to be non-permissionable, got: ' + updateableByName.keySet());
+
+        System.assert(!updateableByName.containsKey('Id'), 'Id should be excluded as noise');
 
         // Without this the test would still pass if the isPermissionable() filter were inverted,
         // because every field would be returned and the assertions above would all hold.
         System.assert(
-            !fieldNames.contains('Phone'),
-            'Phone is FLS controllable and must not be reported, got: ' + info.fieldApiNames
+            !updateableByName.containsKey('Phone'),
+            'Phone is FLS controllable and must not be reported, got: ' + updateableByName.keySet()
         );
         System.assert(
-            !fieldNames.contains('Industry'),
-            'Industry is FLS controllable and must not be reported, got: ' + info.fieldApiNames
+            !updateableByName.containsKey('Industry'),
+            'Industry is FLS controllable and must not be reported, got: ' + updateableByName.keySet()
         );
+
+        // Whether the field can be written is what actually varies between these fields, and it is
+        // the only reason the UI can show a real Edit value instead of a placeholder.
+        System.assertEquals(true, updateableByName.get('Name'), 'Account.Name is writable');
+        System.assertEquals(false, updateableByName.get('CreatedById'), 'Audit fields are never writable');
+        System.assertEquals(false, updateableByName.get('LastModifiedById'), 'Audit fields are never writable');
     }
 
     @IsTest
@@ -896,6 +906,26 @@ private class rflib_PermissionsExplorerControllerTest {
 
         System.assertEquals(0, nullResult.size());
         System.assertEquals(0, emptyResult.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_StopsBeforeHeapLimit() {
+        // A heap LimitException cannot be caught, so the guard has to trip first. Lowering the ratio
+        // to effectively zero makes any describe exceed it.
+        rflib_PermissionsExplorerController.describeHeapSafetyRatio = 0.0000001;
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getNonPermissionableFields(new List<String> { 'Account' });
+            System.assert(false, 'Expected the heap guard to stop the describe');
+        } catch (AuraHandledException ex) {
+            System.assert(
+                ex.getMessage().contains('heap'),
+                'Expected the message to explain the heap stop, got: ' + ex.getMessage()
+            );
+        }
+        Test.stopTest();
     }
 
     @IsTest

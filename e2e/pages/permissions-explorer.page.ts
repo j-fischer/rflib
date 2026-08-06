@@ -107,24 +107,14 @@ export class PermissionsExplorerPage {
         return PaginatorComponent.within(this.root);
     }
 
-    // Only rendered for the field permission types (rflibPermissionsExplorer.html).
-    get nonPermissionableToggle(): Locator {
-        return this.root.locator('lightning-input[data-id="include-non-permissionable-fields"]');
+    // Only rendered for the field permission types (rflibPermissionsExplorer.html), so it is
+    // addressed by its data-id rather than by position in the header button group.
+    get defaultFieldsMenu(): LightningButtonMenu {
+        return new LightningButtonMenu(this.header.locator('lightning-button-menu[data-id="default-fields-menu"]'));
     }
 
-    // `lightning-input type="toggle"` renders a transparent checkbox behind a faux span, so the
-    // click has to land on the span while the state is read from the underlying input.
-    get nonPermissionableCheckbox(): Locator {
-        return this.nonPermissionableToggle.locator('input[type="checkbox"]');
-    }
-
-    async setNonPermissionableFields(enabled: boolean): Promise<void> {
-        if ((await this.nonPermissionableCheckbox.isChecked()) === enabled) {
-            return;
-        }
-
-        await this.nonPermissionableToggle.locator('.slds-checkbox_faux').click();
-        await expect(this.nonPermissionableCheckbox).toBeChecked({ checked: enabled });
+    async selectDefaultFields(mode: 'Hidden' | 'Shown'): Promise<void> {
+        await this.defaultFieldsMenu.select(mode);
         await this.waitForLoad();
     }
 
