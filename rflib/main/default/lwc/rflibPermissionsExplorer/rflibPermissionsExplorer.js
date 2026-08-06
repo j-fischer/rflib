@@ -41,6 +41,18 @@ import getApexSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_Per
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
+import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
+
+// Matches MAX_DESCRIBE_BATCH_SIZE in rflib_PermissionsExplorerController.
+const DESCRIBE_BATCH_SIZE = 100;
+
+// Synthesizing rows for every (parent, object) pair can roughly double the record count on
+// a large org, so anything beyond this asks the user before building.
+const SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD = 50000;
+
+// Non-FLS-controllable fields have no stored access to report. Their effective access follows
+// the object permission, so anything other than "not applicable" would be a misstatement.
+const NOT_APPLICABLE = 'N/A';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZES = [
@@ -161,6 +173,21 @@ export default class PermissionsExplorer extends LightningElement {
     progressText = 'Loading Permissions';
 
     cache = {};
+
+    // The pristine server result for the current permission type. `permissionRecords` is derived
+    // from this plus `syntheticRecords`, so toggling never has to rebuild or filter.
+    basePermissionRecords = [];
+    baseTotalRecords = 0;
+    syntheticRecords = [];
+    includeNonPermissionableFields = false;
+
+    // Keyed by object API name rather than by permission type: which fields are non-FLS-controllable
+    // is a property of the object, so one lookup serves every permission type for the whole session.
+    fieldMetadataCache = {};
+
+    showFieldCoverageConfirmation = false;
+    fieldCoverageConfirmationMessage = '';
+    pendingSyntheticSources = null;
 
     userFilter = {
         criteria: [
@@ -351,6 +378,7 @@ export default class PermissionsExplorer extends LightningElement {
 
         this.permissionRecords = [];
         this.numTotalRecords = 0;
+        this.resetNonPermissionableFields();
 
         if (remoteAction === null) {
             return;
@@ -383,6 +411,8 @@ export default class PermissionsExplorer extends LightningElement {
             }
 
             this.isLoadingRecords = false;
+            this.basePermissionRecords = this.permissionRecords;
+            this.baseTotalRecords = this.numTotalRecords;
 
             if (this.numRecordsLoaded < result.totalNumOfRecords) {
                 const evt = new ShowToastEvent({
@@ -419,6 +449,8 @@ export default class PermissionsExplorer extends LightningElement {
                 logger.debug('Using cached value for key: ' + cacheKey);
                 this.permissionRecords = cachedRecords;
                 this.numTotalRecords = cachedRecords.length;
+                this.basePermissionRecords = cachedRecords;
+                this.baseTotalRecords = cachedRecords.length;
                 this.isLoadingRecords = false;
                 this.page = 1;
                 return;
@@ -436,24 +468,201 @@ export default class PermissionsExplorer extends LightningElement {
                         JSON.stringify(error)
                     );
                     this.isLoadingRecords = false;
-
-                    const evt = new ShowToastEvent({
-                        title: 'Failed to retrieve permissions',
-                        message:
-                            'An error occurred: ' +
-                            (error instanceof String
-                                ? error
-                                : error?.body?.message
-                                  ? error?.body?.message
-                                  : JSON.stringify(error)),
-                        variant: 'error',
-                        mode: 'sticky'
-                    });
-                    if (!import.meta.env.SSR) {
-                        this.dispatchEvent(evt);
-                    }
+                    this.dispatchErrorToast('Failed to retrieve permissions', error);
                 });
         }, 0);
+    }
+
+    dispatchErrorToast(title, error) {
+        const evt = new ShowToastEvent({
+            title: title,
+            message:
+                'An error occurred: ' +
+                (error instanceof String ? error : error?.body?.message ? error?.body?.message : JSON.stringify(error)),
+            variant: 'error',
+            mode: 'sticky'
+        });
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(evt);
+        }
+    }
+
+    handleIncludeNonPermissionableFieldsChange(event) {
+        const isEnabled = event.target.checked;
+        logger.debug('Include non-permissionable fields toggled: {0}', isEnabled);
+
+        if (!isEnabled) {
+            this.includeNonPermissionableFields = false;
+            this.syntheticRecords = [];
+            this.applyPermissionRecords();
+            return;
+        }
+
+        this.loadNonPermissionableFields();
+    }
+
+    loadNonPermissionableFields() {
+        const objectNames = [...new Set(this.basePermissionRecords.map((rec) => rec.SobjectType))];
+        const uncachedObjectNames = objectNames.filter((name) => !this.fieldMetadataCache[name]);
+
+        logger.debug(
+            'Loading non-permissionable fields: totalObjects={0}, uncached={1}',
+            objectNames.length,
+            uncachedObjectNames.length
+        );
+
+        if (uncachedObjectNames.length === 0) {
+            this.buildSyntheticRecords();
+            return;
+        }
+
+        const chunks = [];
+        for (let i = 0; i < uncachedObjectNames.length; i += DESCRIBE_BATCH_SIZE) {
+            chunks.push(uncachedObjectNames.slice(i, i + DESCRIBE_BATCH_SIZE));
+        }
+
+        const loadingFieldMetadataLabel = 'Loading field metadata';
+        this.progressText = loadingFieldMetadataLabel;
+        this.isLoadingRecords = true;
+
+        const loadChunk = (index) => {
+            if (index >= chunks.length) {
+                return Promise.resolve();
+            }
+
+            return getNonPermissionableFields({ objectApiNames: chunks[index] }).then((result) => {
+                result.forEach((info) => {
+                    this.fieldMetadataCache[info.objectApiName] = info.fieldApiNames;
+                });
+
+                // Objects the server could not describe still get an entry so they are not requested again.
+                chunks[index].forEach((name) => {
+                    if (!this.fieldMetadataCache[name]) {
+                        this.fieldMetadataCache[name] = [];
+                    }
+                });
+
+                this.progressText = loadingFieldMetadataLabel + ' (' + (index + 1) + ' / ' + chunks.length + ')';
+
+                return loadChunk(index + 1);
+            });
+        };
+
+        loadChunk(0)
+            .then(() => {
+                this.isLoadingRecords = false;
+                this.buildSyntheticRecords();
+            })
+            .catch((error) => {
+                logger.error('Failed to retrieve non-permissionable fields. Error={0}', JSON.stringify(error));
+                this.isLoadingRecords = false;
+                this.includeNonPermissionableFields = false;
+                this.resetIncludeNonPermissionableFieldsInput();
+                this.dispatchErrorToast('Failed to retrieve field metadata', error);
+            });
+    }
+
+    buildSyntheticRecords() {
+        // One source record per (parent, object) pair, so the synthesized rows keep a meaningful
+        // profile/permission set name and remain reachable through the existing search.
+        const sourcesByPair = {};
+        this.basePermissionRecords.forEach((rec) => {
+            const key = rec.SecurityObjectName + '|' + rec.SobjectType;
+            if (!sourcesByPair[key]) {
+                sourcesByPair[key] = rec;
+            }
+        });
+
+        const sources = Object.keys(sourcesByPair).map((key) => sourcesByPair[key]);
+        const projectedCount = sources.reduce(
+            (total, rec) => total + (this.fieldMetadataCache[rec.SobjectType] || []).length,
+            0
+        );
+
+        logger.debug('Projected synthetic record count: {0}', projectedCount);
+
+        if (projectedCount > SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD) {
+            this.pendingSyntheticSources = sources;
+            this.fieldCoverageConfirmationMessage =
+                'Including fields without explicit permissions will add ' +
+                projectedCount +
+                ' rows to the current ' +
+                this.basePermissionRecords.length +
+                ' records. This may make the page slow to respond. Do you want to continue?';
+            this.showFieldCoverageConfirmation = true;
+            return;
+        }
+
+        this.materializeSyntheticRecords(sources);
+    }
+
+    materializeSyntheticRecords(sources) {
+        const records = [];
+        sources.forEach((rec) => {
+            (this.fieldMetadataCache[rec.SobjectType] || []).forEach((fieldName) => {
+                records.push({
+                    SecurityObjectName: rec.SecurityObjectName,
+                    SecurityType: rec.SecurityType,
+                    Label: rec.Label,
+                    SobjectType: rec.SobjectType,
+                    Field: fieldName,
+                    PermissionsRead: NOT_APPLICABLE,
+                    PermissionsEdit: NOT_APPLICABLE,
+                    IsFlsControlled: false
+                });
+            });
+        });
+
+        logger.debug('Built {0} synthetic permission records', records.length);
+
+        this.syntheticRecords = records;
+        this.includeNonPermissionableFields = true;
+        this.applyPermissionRecords();
+    }
+
+    handleFieldCoverageConfirmation(event) {
+        const sources = this.pendingSyntheticSources;
+
+        this.showFieldCoverageConfirmation = false;
+        this.pendingSyntheticSources = null;
+
+        if (event.detail.status === 'confirm') {
+            this.materializeSyntheticRecords(sources);
+            return;
+        }
+
+        logger.debug('Field coverage cancelled by user');
+        this.includeNonPermissionableFields = false;
+        this.resetIncludeNonPermissionableFieldsInput();
+    }
+
+    applyPermissionRecords() {
+        if (this.includeNonPermissionableFields) {
+            this.permissionRecords = this.basePermissionRecords.concat(this.syntheticRecords);
+            this.numTotalRecords = this.permissionRecords.length;
+        } else {
+            this.permissionRecords = this.basePermissionRecords;
+            this.numTotalRecords = this.baseTotalRecords;
+        }
+
+        this.page = 1;
+    }
+
+    resetNonPermissionableFields() {
+        this.basePermissionRecords = [];
+        this.baseTotalRecords = 0;
+        this.syntheticRecords = [];
+        this.includeNonPermissionableFields = false;
+        this.showFieldCoverageConfirmation = false;
+        this.pendingSyntheticSources = null;
+    }
+
+    // The checkbox holds its own DOM state, so a cancelled or failed load has to clear it explicitly.
+    resetIncludeNonPermissionableFieldsInput() {
+        const toggle = this.template.querySelector('[data-id="include-non-permissionable-fields"]');
+        if (toggle) {
+            toggle.checked = false;
+        }
     }
 
     handleExportSelection(event) {

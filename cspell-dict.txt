@@ -122,3 +122,4 @@ UTAM
 utam
 pageobjects
 wdio
+permissionable

@@ -114,3 +114,37 @@ test('exports filtered permissions through the filter modal with help text', asy
     expect(download.suggestedFilename()).toMatch(/\.csv$/i);
     await expect(modal).toBeHidden({ timeout: 30_000 });
 });
+
+// Account.OwnerId is never subject to Field Level Security, so Salesforce cannot store a
+// FieldPermissions record for it. That makes it a stable probe in any org: it can only reach
+// the table through the toggle.
+test('includes fields without explicit permissions for Account', async () => {
+    await explorer.selectPermissionType(PERMISSION_TYPES.fieldProfiles);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
+
+    const baseline = await explorer.getTotalRecords();
+
+    await explorer.table.search(PERMISSIONS_SEARCH.object, 'Account');
+    await expect(explorer.tableRows.first()).toBeVisible({ timeout: 30_000 });
+
+    // The toggle is offered only for field permission types.
+    await expect(explorer.nonPermissionableToggle).toBeVisible();
+
+    await explorer.setNonPermissionableFields(true);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(baseline);
+
+    await explorer.table.search(PERMISSIONS_SEARCH.field, 'OwnerId');
+    const ownerIdRow = explorer.tableRows.first();
+    await expect(ownerIdRow).toBeVisible({ timeout: 30_000 });
+    await expect(ownerIdRow).toContainText('OwnerId');
+    // Reported as not applicable rather than as a grant, and visually separated from real rows.
+    await expect(ownerIdRow).toContainText('N/A');
+    await expect(ownerIdRow).toHaveClass(/not-fls-controlled/);
+
+    // Toggling off has to restore the untouched result set, not a rebuilt approximation.
+    await explorer.setNonPermissionableFields(false);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 60_000 }).toBe(baseline);
+
+    await explorer.table.search(PERMISSIONS_SEARCH.field, '');
+    await explorer.table.search(PERMISSIONS_SEARCH.object, '');
+});

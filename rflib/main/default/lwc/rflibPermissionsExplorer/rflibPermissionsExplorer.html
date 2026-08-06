@@ -284,6 +284,21 @@
                             <div class="slds-col slds-size_6-of-12 slds-m-right_x-small">&nbsp;</div>
                         </div>
                     </template>
+                    <template lwc:if={isFieldPermissions}>
+                        <div class="slds-grid slds-m-left_medium slds-m-top_x-small">
+                            <div class="slds-col slds-size_12-of-12">
+                                <lightning-input
+                                    type="toggle"
+                                    data-id="include-non-permissionable-fields"
+                                    label="Include fields without explicit permissions"
+                                    message-toggle-active="Showing fields that Field Level Security cannot control, such as required and system fields"
+                                    message-toggle-inactive="Only fields with a stored Field Permissions record are shown"
+                                    checked={includeNonPermissionableFields}
+                                    onchange={handleIncludeNonPermissionableFieldsChange}
+                                ></lightning-input>
+                            </div>
+                        </div>
+                    </template>
                     <c-rflib-permissions-table
                         permission-type={permissionType}
                         is-profile-permissions={isProfilePermissions}
@@ -310,4 +325,14 @@
             </lightning-card>
         </div>
     </div>
+
+    <c-rflib-confirmation-dialog
+        visible={showFieldCoverageConfirmation}
+        title="Large Number of Records"
+        message={fieldCoverageConfirmationMessage}
+        confirm-label="Continue"
+        cancel-label="Cancel"
+        onmodalaction={handleFieldCoverageConfirmation}
+    >
+    </c-rflib-confirmation-dialog>
 </template>

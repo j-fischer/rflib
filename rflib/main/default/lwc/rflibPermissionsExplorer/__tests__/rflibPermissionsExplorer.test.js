@@ -15,6 +15,7 @@ import getApexSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_Per
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
+import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
 
 // Mock rflibLogger
 jest.mock(
@@ -180,6 +181,11 @@ jest.mock(
 );
 jest.mock(
     '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser',
+    () => ({ default: jest.fn() }),
+    { virtual: true }
+);
+jest.mock(
+    '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields',
     () => ({ default: jest.fn() }),
     { virtual: true }
 );
@@ -707,8 +713,9 @@ describe('c-rflib-permissions-explorer', () => {
         exportMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 'filtered' } }));
         await flushPromises();
 
-        // Set all 3 filters (field filter input should now be visible)
-        const inputs = element.shadowRoot.querySelectorAll('lightning-input');
+        // Set all 3 filters (field filter input should now be visible). Scoped to the modal so the
+        // toggle rendered for field permission types is not picked up.
+        const inputs = element.shadowRoot.querySelectorAll('.slds-modal lightning-input');
         expect(inputs.length).toBe(3);
 
         inputs[0].value = 'Admin';
@@ -950,5 +957,258 @@ describe('c-rflib-permissions-explorer', () => {
         // User picker should not be shown anymore
         const userPickerAfter = element.shadowRoot.querySelector('lightning-record-picker');
         expect(userPickerAfter).toBeNull();
+    });
+
+    describe('fields without explicit permissions', () => {
+        const ACCOUNT_NON_PERMISSIONABLE = [{ objectApiName: 'Account', fieldApiNames: ['CreatedById', 'OwnerId'] }];
+
+        function getToggle(element) {
+            return element.shadowRoot.querySelector('[data-id="include-non-permissionable-fields"]');
+        }
+
+        function getTable(element) {
+            return element.shadowRoot.querySelector('c-rflib-permissions-table');
+        }
+
+        async function toggle(element, checked) {
+            const input = getToggle(element);
+            input.checked = checked;
+            input.dispatchEvent(new CustomEvent('change'));
+
+            jest.runAllTimers();
+            await flushPromises(4);
+        }
+
+        async function loadFieldPermissions() {
+            const element = await createAndLoad();
+
+            jest.clearAllMocks();
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
+            getNonPermissionableFields.mockResolvedValue(ACCOUNT_NON_PERMISSIONABLE);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(2);
+
+            return element;
+        }
+
+        it('is only offered for field permission types', async () => {
+            const element = await createAndLoad();
+
+            // Default is Object Permissions for Profiles.
+            expect(getToggle(element)).toBeNull();
+
+            await switchPermissionTypeAndLoad(element, 'FieldPermissionsProfiles');
+
+            expect(getToggle(element)).not.toBeNull();
+        });
+
+        it('adds a row per (parent, object) pair and updates the count', async () => {
+            const element = await loadFieldPermissions();
+
+            expect(getTable(element).permissionRecords).toHaveLength(3);
+
+            await toggle(element, true);
+
+            expect(getNonPermissionableFields).toHaveBeenCalledWith({ objectApiNames: ['Account'] });
+
+            // Two distinct (parent, object) pairs x two non-permissionable fields.
+            const records = getTable(element).permissionRecords;
+            expect(records).toHaveLength(7);
+
+            const synthesized = records.filter((rec) => rec.IsFlsControlled === false);
+            expect(synthesized).toHaveLength(4);
+            expect(synthesized.map((rec) => rec.Field).sort()).toEqual([
+                'CreatedById',
+                'CreatedById',
+                'OwnerId',
+                'OwnerId'
+            ]);
+            expect(synthesized.map((rec) => rec.SecurityObjectName).sort()).toEqual([
+                'Admin',
+                'Admin',
+                'Sales',
+                'Sales'
+            ]);
+        });
+
+        it('never reports synthesized rows as granted access', async () => {
+            const element = await loadFieldPermissions();
+            await toggle(element, true);
+
+            getTable(element)
+                .permissionRecords.filter((rec) => rec.IsFlsControlled === false)
+                .forEach((rec) => {
+                    expect(rec.PermissionsRead).toBe('N/A');
+                    expect(rec.PermissionsEdit).toBe('N/A');
+                });
+        });
+
+        it('restores the exact original records when toggled off', async () => {
+            const element = await loadFieldPermissions();
+            const before = getTable(element).permissionRecords;
+
+            await toggle(element, true);
+            expect(getTable(element).permissionRecords).toHaveLength(7);
+
+            await toggle(element, false);
+
+            expect(getTable(element).permissionRecords).toBe(before);
+        });
+
+        it('reuses the object cache across permission types', async () => {
+            const element = await loadFieldPermissions();
+
+            await toggle(element, true);
+            expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
+
+            // A different permission type covering the same object must not re-describe it.
+            ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_FIELD_APEX_RESPONSE));
+            selectPermissionType(element, 'FieldPermissionsPermissionSets');
+            jest.runAllTimers();
+            await flushPromises(2);
+
+            await toggle(element, true);
+
+            expect(getNonPermissionableFields).toHaveBeenCalledTimes(1);
+            expect(getTable(element).permissionRecords).toHaveLength(7);
+        });
+
+        it('chunks the object list to stay within the describe limit', async () => {
+            const manyObjectRecords = [];
+            for (let i = 0; i < 150; i++) {
+                manyObjectRecords.push({
+                    SecurityObjectName: 'Admin',
+                    SobjectType: 'Object' + i + '__c',
+                    Field: 'Name',
+                    PermissionsRead: true,
+                    PermissionsEdit: true
+                });
+            }
+
+            const element = await createAndLoad();
+
+            jest.clearAllMocks();
+            ALL_APEX_MOCKS.forEach((mock) =>
+                mock.mockResolvedValue({
+                    records: manyObjectRecords,
+                    totalNumOfRecords: manyObjectRecords.length,
+                    nextRecordsUrl: null,
+                    nextPosition: manyObjectRecords.length - 1
+                })
+            );
+            getNonPermissionableFields.mockResolvedValue([]);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(2);
+
+            await toggle(element, true);
+
+            expect(getNonPermissionableFields).toHaveBeenCalledTimes(2);
+            expect(getNonPermissionableFields.mock.calls[0][0].objectApiNames).toHaveLength(100);
+            expect(getNonPermissionableFields.mock.calls[1][0].objectApiNames).toHaveLength(50);
+        });
+
+        // The guard trips on projected rows = (parent, object) pairs x non-permissionable fields.
+        // 200 parents x 300 fields = 60,000, above the 50,000 threshold.
+        async function loadOversizedFieldPermissions() {
+            const manyParentRecords = [];
+            for (let i = 0; i < 200; i++) {
+                manyParentRecords.push({
+                    SecurityObjectName: 'Profile' + i,
+                    SobjectType: 'Account',
+                    Field: 'Name',
+                    PermissionsRead: true,
+                    PermissionsEdit: true
+                });
+            }
+
+            const manyFieldNames = [];
+            for (let i = 0; i < 300; i++) {
+                manyFieldNames.push('Field' + i + '__c');
+            }
+
+            const element = await createAndLoad();
+
+            jest.clearAllMocks();
+            ALL_APEX_MOCKS.forEach((mock) =>
+                mock.mockResolvedValue({
+                    records: manyParentRecords,
+                    totalNumOfRecords: manyParentRecords.length,
+                    nextRecordsUrl: null,
+                    nextPosition: manyParentRecords.length - 1
+                })
+            );
+            getNonPermissionableFields.mockResolvedValue([{ objectApiName: 'Account', fieldApiNames: manyFieldNames }]);
+
+            selectPermissionType(element, 'FieldPermissionsProfiles');
+            jest.runAllTimers();
+            await flushPromises(2);
+
+            return element;
+        }
+
+        function getConfirmationDialog(element) {
+            return element.shadowRoot.querySelector('c-rflib-confirmation-dialog');
+        }
+
+        it('asks before building an oversized set instead of freezing the page', async () => {
+            const element = await loadOversizedFieldPermissions();
+
+            await toggle(element, true);
+
+            const dialog = getConfirmationDialog(element);
+            expect(dialog.visible).toBe(true);
+            expect(dialog.message).toContain('60000');
+
+            // Nothing is built until the user agrees.
+            expect(getTable(element).permissionRecords).toHaveLength(200);
+        });
+
+        it('builds the oversized set once confirmed', async () => {
+            const element = await loadOversizedFieldPermissions();
+            await toggle(element, true);
+
+            getConfirmationDialog(element).dispatchEvent(
+                new CustomEvent('modalaction', { detail: { status: 'confirm' } })
+            );
+            await flushPromises(2);
+
+            expect(getConfirmationDialog(element).visible).toBe(false);
+            expect(getTable(element).permissionRecords).toHaveLength(60200);
+        });
+
+        it('leaves the records untouched when the oversized build is cancelled', async () => {
+            const element = await loadOversizedFieldPermissions();
+            const before = getTable(element).permissionRecords;
+
+            await toggle(element, true);
+
+            getConfirmationDialog(element).dispatchEvent(
+                new CustomEvent('modalaction', { detail: { status: 'cancel' } })
+            );
+            await flushPromises(2);
+
+            expect(getConfirmationDialog(element).visible).toBe(false);
+            expect(getTable(element).permissionRecords).toBe(before);
+            expect(getToggle(element).checked).toBe(false);
+        });
+
+        it('clears the toggle and warns when the describe call fails', async () => {
+            const element = await loadFieldPermissions();
+
+            const toastHandler = jest.fn();
+            element.addEventListener(ShowToastEventName, toastHandler);
+
+            getNonPermissionableFields.mockRejectedValue({ body: { message: 'Describe failed' } });
+
+            await toggle(element, true);
+
+            expect(toastHandler).toHaveBeenCalled();
+            expect(getToggle(element).checked).toBe(false);
+            expect(getTable(element).permissionRecords).toHaveLength(3);
+        });
     });
 });

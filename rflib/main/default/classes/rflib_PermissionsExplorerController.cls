@@ -37,6 +37,9 @@ public with sharing class rflib_PermissionsExplorerController {
     
     @TestVisible private static final Integer APEX_CURSOR_RESULT_SIZE = 2000;
     @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 24995;
+
+    // Schema.describeSObjects() accepts at most 100 objects per call.
+    @TestVisible private static final Integer MAX_DESCRIBE_BATCH_SIZE = 100;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
@@ -218,6 +221,69 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryPermissionsApex(APEX_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails) + APEX_CONDITIONS, position);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    /**
+     * @description Returns the fields of the given objects that cannot be controlled by Field Level Security,
+     *              i.e. required custom fields, master-detail fields and standard system fields. Salesforce never
+     *              stores a `FieldPermissions` record for those fields, so they are invisible to the FLS queries
+     *              above. Their access is determined by the object permission instead.
+     * @param  objectApiNames The objects to inspect, limited to `MAX_DESCRIBE_BATCH_SIZE` per invocation.
+     * @return                One entry per resolvable object, each listing its non-permissionable field names.
+     */
+    @AuraEnabled(cacheable = true)
+    public static List<ObjectFieldInfo> getNonPermissionableFields(List<String> objectApiNames) {
+        try {
+            rflib_LoggerUtil.logInternal(LOGGER, 'getNonPermissionableFields: numObjects={0}', new Object[] { objectApiNames?.size() });
+
+            if (objectApiNames == null || objectApiNames.isEmpty()) {
+                return new List<ObjectFieldInfo>();
+            }
+
+            if (objectApiNames.size() > MAX_DESCRIBE_BATCH_SIZE) {
+                throw new rflib_InvalidArgumentException(
+                    'objectApiNames',
+                    'Number of objects (' + objectApiNames.size() + ') exceeds the limit of ' + MAX_DESCRIBE_BATCH_SIZE
+                );
+            }
+
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+            List<String> resolvableNames = new List<String>();
+            for (String objectApiName : objectApiNames) {
+                if (globalDescribe.containsKey(objectApiName)) {
+                    resolvableNames.add(objectApiName);
+                } else {
+                    // A single object the running user cannot see must not fail the whole batch.
+                    rflib_LoggerUtil.logInternal(LOGGER, 'Skipping object that cannot be described: {0}', new Object[] { objectApiName });
+                }
+            }
+
+            List<ObjectFieldInfo> result = new List<ObjectFieldInfo>();
+            if (resolvableNames.isEmpty()) {
+                return result;
+            }
+
+            for (Schema.DescribeSObjectResult objectDescribe : Schema.describeSObjects(resolvableNames)) {
+                ObjectFieldInfo info = new ObjectFieldInfo(objectDescribe.getName());
+
+                for (Schema.SObjectField field : objectDescribe.fields.getMap().values()) {
+                    Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
+
+                    if (!fieldDescribe.isPermissionable() && fieldDescribe.getName() != 'Id') {
+                        info.fieldApiNames.add(fieldDescribe.getName());
+                    }
+                }
+
+                info.fieldApiNames.sort();
+                result.add(info);
+            }
+
+            rflib_LoggerUtil.logInternal(LOGGER, 'getNonPermissionableFields: resolved {0} objects', new Object[] { result.size() });
+            return result;
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve non-permissionable fields', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
@@ -583,6 +649,15 @@ public with sharing class rflib_PermissionsExplorerController {
         public void updateSObjectType(Map<Id, ApexInfo> entityInfo) {
             this.SobjectType = entityInfo.get(this.SetupEntityId)?.name;
         } 
+    }
+
+    public class ObjectFieldInfo {
+        @AuraEnabled public String objectApiName;
+        @AuraEnabled public List<String> fieldApiNames = new List<String>();
+
+        public ObjectFieldInfo(String objectApiName) {
+            this.objectApiName = objectApiName;
+        }
     }
 
     public class UserPermissionsDetails {

@@ -838,6 +838,87 @@ private class rflib_PermissionsExplorerControllerTest {
         System.assertNotEquals(null, info.PermissionsDelete);
     }
 
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> result = rflib_PermissionsExplorerController.getNonPermissionableFields(
+            new List<String> { 'Account' }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.size(), 'A single object was requested');
+
+        rflib_PermissionsExplorerController.ObjectFieldInfo info = result.get(0);
+        System.assertEquals('Account', info.objectApiName);
+
+        // These standard fields are never FLS controllable, so Salesforce cannot store a FieldPermissions record for them.
+        Set<String> fieldNames = new Set<String>(info.fieldApiNames);
+        System.assert(fieldNames.contains('Name'), 'Expected Name to be non-permissionable, got: ' + info.fieldApiNames);
+        System.assert(fieldNames.contains('OwnerId'), 'Expected OwnerId to be non-permissionable, got: ' + info.fieldApiNames);
+        System.assert(fieldNames.contains('CreatedById'), 'Expected CreatedById to be non-permissionable, got: ' + info.fieldApiNames);
+        System.assert(fieldNames.contains('LastModifiedById'), 'Expected LastModifiedById to be non-permissionable, got: ' + info.fieldApiNames);
+
+        System.assert(!fieldNames.contains('Id'), 'Id should be excluded as noise');
+
+        // Without this the test would still pass if the isPermissionable() filter were inverted,
+        // because every field would be returned and the assertions above would all hold.
+        System.assert(
+            !fieldNames.contains('Phone'),
+            'Phone is FLS controllable and must not be reported, got: ' + info.fieldApiNames
+        );
+        System.assert(
+            !fieldNames.contains('Industry'),
+            'Industry is FLS controllable and must not be reported, got: ' + info.fieldApiNames
+        );
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_SkipsUnknownObject() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> result = rflib_PermissionsExplorerController.getNonPermissionableFields(
+            new List<String> { 'Account', 'rflib_This_Object_Does_Not_Exist__c' }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.size(), 'The unknown object should be skipped without failing the batch');
+        System.assertEquals('Account', result.get(0).objectApiName);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_EmptyInput() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> nullResult = rflib_PermissionsExplorerController.getNonPermissionableFields(null);
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> emptyResult = rflib_PermissionsExplorerController.getNonPermissionableFields(new List<String>());
+        Test.stopTest();
+
+        System.assertEquals(0, nullResult.size());
+        System.assertEquals(0, emptyResult.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_ExceedsBatchSize() {
+        List<String> tooManyObjects = new List<String>();
+        for (Integer i = 0; i <= rflib_PermissionsExplorerController.MAX_DESCRIBE_BATCH_SIZE; i++) {
+            tooManyObjects.add('Account');
+        }
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getNonPermissionableFields(tooManyObjects);
+            System.assert(false, 'Expected an exception for exceeding the describe batch size');
+        } catch (AuraHandledException ex) {
+            System.assert(
+                ex.getMessage().contains(String.valueOf(rflib_PermissionsExplorerController.MAX_DESCRIBE_BATCH_SIZE)),
+                'Expected the message to reference the limit, got: ' + ex.getMessage()
+            );
+        }
+        Test.stopTest();
+    }
+
     private static void assertFieldPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
         System.assert(records.size() > 0);
 
