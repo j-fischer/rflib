@@ -1,3 +1,7 @@
+### RFLIB 11.2.0
+
+- Added an optional `Include fields without explicit permissions` toggle to the Permissions Explorer's field permission views. Salesforce only stores a `FieldPermissions` record when a profile or permission set grants Read or Edit on a field whose access Field Level Security can control, so fields it cannot control — required fields, master-detail fields, and standard system fields such as `Name`, `OwnerId`, and `CreatedById` — never appear in these views at all. That made a missing field ambiguous: it could mean the profile has no access, or that Field Level Security does not govern the field in the first place. With the toggle enabled, those fields are listed for every object in the current result set with their Read and Edit access shown as `N/A` and the row styled to set it apart from a real grant, because access for these fields follows the object permission rather than any stored field permission. The toggle is off by default, and on large orgs it asks for confirmation before adding more than 50,000 rows to the table.
+
 ### RFLIB 11.1.0
 
 Package ID: 04tKY0000005SoOYAU
