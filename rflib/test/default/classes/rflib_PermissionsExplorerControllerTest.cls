@@ -838,6 +838,129 @@ private class rflib_PermissionsExplorerControllerTest {
         System.assertNotEquals(null, info.PermissionsDelete);
     }
 
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> result = rflib_PermissionsExplorerController.getNonPermissionableFields(
+            new List<String> { 'Account' }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.size(), 'A single object was requested');
+
+        rflib_PermissionsExplorerController.ObjectFieldInfo info = result.get(0);
+        System.assertEquals('Account', info.objectApiName);
+
+        // These standard fields are never FLS controllable, so Salesforce cannot store a FieldPermissions record for them.
+        Map<String, Boolean> updateableByName = new Map<String, Boolean>();
+        for (rflib_PermissionsExplorerController.FieldAccessInfo field : info.fields) {
+            updateableByName.put(field.apiName, field.isUpdateable);
+        }
+
+        System.assert(updateableByName.containsKey('Name'), 'Expected Name to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('OwnerId'), 'Expected OwnerId to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('CreatedById'), 'Expected CreatedById to be non-permissionable, got: ' + updateableByName.keySet());
+        System.assert(updateableByName.containsKey('LastModifiedById'), 'Expected LastModifiedById to be non-permissionable, got: ' + updateableByName.keySet());
+
+        System.assert(!updateableByName.containsKey('Id'), 'Id should be excluded as noise');
+
+        // Without this the test would still pass if the isPermissionable() filter were inverted,
+        // because every field would be returned and the assertions above would all hold.
+        System.assert(
+            !updateableByName.containsKey('Phone'),
+            'Phone is FLS controllable and must not be reported, got: ' + updateableByName.keySet()
+        );
+        System.assert(
+            !updateableByName.containsKey('Industry'),
+            'Industry is FLS controllable and must not be reported, got: ' + updateableByName.keySet()
+        );
+
+        // Whether the field can be written is what actually varies between these fields, and it is
+        // the only reason the UI can show a real Edit value instead of a placeholder.
+        System.assertEquals(true, updateableByName.get('Name'), 'Account.Name is writable');
+        System.assertEquals(false, updateableByName.get('CreatedById'), 'Audit fields are never writable');
+        System.assertEquals(false, updateableByName.get('LastModifiedById'), 'Audit fields are never writable');
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_SkipsUnknownObject() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> result = rflib_PermissionsExplorerController.getNonPermissionableFields(
+            new List<String> { 'Account', 'rflib_This_Object_Does_Not_Exist__c' }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, result.size(), 'The unknown object should be skipped without failing the batch');
+        System.assertEquals('Account', result.get(0).objectApiName);
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_EmptyInput() {
+        Test.startTest();
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> nullResult = rflib_PermissionsExplorerController.getNonPermissionableFields(null);
+        List<rflib_PermissionsExplorerController.ObjectFieldInfo> emptyResult = rflib_PermissionsExplorerController.getNonPermissionableFields(new List<String>());
+        Test.stopTest();
+
+        System.assertEquals(0, nullResult.size());
+        System.assertEquals(0, emptyResult.size());
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetShowFieldsWithoutFlsByDefault() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', null);
+        System.assertEquals(false, rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault());
+
+        rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', 'true');
+        System.assertEquals(true, rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault());
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_StopsBeforeHeapLimit() {
+        // A heap LimitException cannot be caught, so the guard has to trip first. Lowering the ratio
+        // to effectively zero makes any describe exceed it.
+        rflib_PermissionsExplorerController.describeHeapSafetyRatio = 0.0000001;
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getNonPermissionableFields(new List<String> { 'Account' });
+            System.assert(false, 'Expected the heap guard to stop the describe');
+        } catch (AuraHandledException ex) {
+            System.assert(
+                ex.getMessage().contains('heap'),
+                'Expected the message to explain the heap stop, got: ' + ex.getMessage()
+            );
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    @SuppressWarnings('PMD.MethodNamingConventions')
+    private static void testGetNonPermissionableFields_ExceedsBatchSize() {
+        List<String> tooManyObjects = new List<String>();
+        for (Integer i = 0; i <= rflib_PermissionsExplorerController.MAX_DESCRIBE_BATCH_SIZE; i++) {
+            tooManyObjects.add('Account');
+        }
+
+        Test.startTest();
+        try {
+            rflib_PermissionsExplorerController.getNonPermissionableFields(tooManyObjects);
+            System.assert(false, 'Expected an exception for exceeding the describe batch size');
+        } catch (AuraHandledException ex) {
+            System.assert(
+                ex.getMessage().contains(String.valueOf(rflib_PermissionsExplorerController.MAX_DESCRIBE_BATCH_SIZE)),
+                'Expected the message to reference the limit, got: ' + ex.getMessage()
+            );
+        }
+        Test.stopTest();
+    }
+
     private static void assertFieldPermissionsResult(List<rflib_PermissionsExplorerController.PermissionInfo> records, String expectedSecurityType) {
         System.assert(records.size() > 0);
 

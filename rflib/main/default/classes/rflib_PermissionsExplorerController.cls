@@ -37,6 +37,17 @@ public with sharing class rflib_PermissionsExplorerController {
     
     @TestVisible private static final Integer APEX_CURSOR_RESULT_SIZE = 2000;
     @TestVisible private static final Integer APEX_QUERY_RECORD_LIMIT = 24995;
+
+    // Schema.describeSObjects() accepts at most 100 objects per call, and that API cap is the real
+    // constraint: describe results come from the platform's describe cache rather than the
+    // transaction heap, so 23 of the widest standard objects (673 fields without FLS) measured at only
+    // 29 KB - about 1% of the 6 MB heap.
+    @TestVisible private static final Integer MAX_DESCRIBE_BATCH_SIZE = 100;
+
+    // Insurance rather than a routine limit: measured usage is nowhere near the heap, but an org
+    // with pathologically wide objects should get a real error instead of an uncatchable heap
+    // LimitException. Mutable so a test can lower it far enough to exercise the guard.
+    @TestVisible private static Decimal describeHeapSafetyRatio = 0.6;
     
     @TestVisible private static final String COUNT = 'SELECT COUNT()';
     @TestVisible private static final String FLS_FIELDS = 'SELECT Parent.Label, Parent.Profile.Name, Parent.IsOwnedByProfile, Parent.PermissionSetGroupId, SobjectType, Field, PermissionsEdit, PermissionsRead';
@@ -218,6 +229,111 @@ public with sharing class rflib_PermissionsExplorerController {
                 queryPermissionsApex(APEX_SEARCH_TYPE, getCompleteUserQueryCondition(userPermissionDetails) + APEX_CONDITIONS, position);
         } catch (Exception ex) {
             LOGGER.error('Failed to retrieve object level security for user', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    /**
+     * @description Returns whether the field permission views should start with fields without FLS shown, taken
+     *              from the optional `Permissions_Explorer_Show_Fields_Without_FLS` Global Setting. Without the
+     *              setting they stay hidden.
+     *
+     *              Deliberately not `cacheable=true`: the Lightning action cache would keep serving the
+     *              previous value after an admin changes the setting, so the new default would not apply on
+     *              the next page load. This runs once per component initialization.
+     * @return      True when the views should show fields without FLS without the user asking.
+     */
+    @AuraEnabled
+    public static Boolean getShowFieldsWithoutFlsByDefault() {
+        try {
+            Boolean result = rflib_GlobalSettings.showFieldsWithoutFlsInPermissionsExplorerOrDefault;
+            rflib_LoggerUtil.logInternal(LOGGER, 'getShowFieldsWithoutFlsByDefault: {0}', new Object[] { result });
+            return result;
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve the fields without FLS setting', ex);
+            throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
+        }
+    }
+
+    /**
+     * @description Returns the fields of the given objects that cannot be controlled by Field Level Security,
+     *              i.e. required custom fields, master-detail fields and standard system fields. Salesforce never
+     *              stores a `FieldPermissions` record for those fields, so they are invisible to the FLS queries
+     *              above. Their access is determined by the object permission instead.
+     * @param  objectApiNames The objects to inspect, limited to `MAX_DESCRIBE_BATCH_SIZE` per invocation.
+     * @return                One entry per resolvable object, each listing its non-permissionable fields
+     *                        and whether each of them can be written.
+     */
+    @AuraEnabled(cacheable = true)
+    public static List<ObjectFieldInfo> getNonPermissionableFields(List<String> objectApiNames) {
+        try {
+            rflib_LoggerUtil.logInternal(LOGGER, 'getNonPermissionableFields: numObjects={0}', new Object[] { objectApiNames?.size() });
+
+            if (objectApiNames == null || objectApiNames.isEmpty()) {
+                return new List<ObjectFieldInfo>();
+            }
+
+            if (objectApiNames.size() > MAX_DESCRIBE_BATCH_SIZE) {
+                throw new rflib_InvalidArgumentException(
+                    'objectApiNames',
+                    'Number of objects (' + objectApiNames.size() + ') exceeds the limit of ' + MAX_DESCRIBE_BATCH_SIZE
+                );
+            }
+
+            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
+            List<String> resolvableNames = new List<String>();
+            for (String objectApiName : objectApiNames) {
+                if (globalDescribe.containsKey(objectApiName)) {
+                    resolvableNames.add(objectApiName);
+                } else {
+                    // A single object the running user cannot see must not fail the whole batch.
+                    rflib_LoggerUtil.logInternal(LOGGER, 'Skipping object that cannot be described: {0}', new Object[] { objectApiName });
+                }
+            }
+
+            List<ObjectFieldInfo> result = new List<ObjectFieldInfo>();
+            if (resolvableNames.isEmpty()) {
+                return result;
+            }
+
+            Integer heapThreshold = (Limits.getLimitHeapSize() * describeHeapSafetyRatio).intValue();
+
+            // DEFERRED keeps child relationships and record types out of the describe; only the
+            // field map below is actually needed and it is by far the cheaper half.
+            for (
+                Schema.DescribeSObjectResult objectDescribe : Schema.describeSObjects(
+                    resolvableNames,
+                    SObjectDescribeOptions.DEFERRED
+                )
+            ) {
+                ObjectFieldInfo info = new ObjectFieldInfo(objectDescribe.getName());
+
+                for (Schema.SObjectField field : objectDescribe.fields.getMap().values()) {
+                    Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
+
+                    if (!fieldDescribe.isPermissionable() && fieldDescribe.getName() != 'Id') {
+                        info.fields.add(new FieldAccessInfo(fieldDescribe.getName(), fieldDescribe.isUpdateable()));
+                    }
+                }
+
+                info.fields.sort();
+                result.add(info);
+
+                if (Limits.getHeapSize() > heapThreshold) {
+                    throw new rflib_InvalidArgumentException(
+                        'objectApiNames',
+                        'Describing these objects would exceed the available heap. ' +
+                        result.size() + ' of ' + resolvableNames.size() +
+                        ' objects were processed before reaching ' + Limits.getHeapSize() +
+                        ' of ' + Limits.getLimitHeapSize() + ' bytes. Retry with fewer objects.'
+                    );
+                }
+            }
+
+            rflib_LoggerUtil.logInternal(LOGGER, 'getNonPermissionableFields: resolved {0} objects', new Object[] { result.size() });
+            return result;
+        } catch (Exception ex) {
+            LOGGER.error('Failed to retrieve non-permissionable fields', ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
         }
     }
@@ -583,6 +699,33 @@ public with sharing class rflib_PermissionsExplorerController {
         public void updateSObjectType(Map<Id, ApexInfo> entityInfo) {
             this.SobjectType = entityInfo.get(this.SetupEntityId)?.name;
         } 
+    }
+
+    public class ObjectFieldInfo {
+        @AuraEnabled public String objectApiName;
+        @AuraEnabled public List<FieldAccessInfo> fields = new List<FieldAccessInfo>();
+
+        public ObjectFieldInfo(String objectApiName) {
+            this.objectApiName = objectApiName;
+        }
+    }
+
+    /**
+     * @description A field that Field Level Security cannot control. Such a field is always readable
+     *              when the parent can read the object, so only whether it can be written varies.
+     */
+    public class FieldAccessInfo implements Comparable {
+        @AuraEnabled public String apiName;
+        @AuraEnabled public Boolean isUpdateable;
+
+        public FieldAccessInfo(String apiName, Boolean isUpdateable) {
+            this.apiName = apiName;
+            this.isUpdateable = isUpdateable;
+        }
+
+        public Integer compareTo(Object other) {
+            return this.apiName.compareTo(((FieldAccessInfo) other).apiName);
+        }
     }
 
     public class UserPermissionsDetails {

@@ -27,4 +27,11 @@ export class PaginatorComponent {
     async currentPage(): Promise<number> {
         return parseInt(await this.pageInput.inputValue(), 10);
     }
+
+    // Rendered as "of <b>N</b>" beside the page selector (rflibPaginator.html). The authored
+    // `totalPages` id does not survive to the DOM, so this anchors on the page selector's class
+    // and takes the bold count in the same container, confirmed with e2e/tools/inspect.mjs.
+    async totalPages(): Promise<number> {
+        return parseInt((await this.root.locator('div:has(> input.page-selector) b').innerText()).trim(), 10);
+    }
 }

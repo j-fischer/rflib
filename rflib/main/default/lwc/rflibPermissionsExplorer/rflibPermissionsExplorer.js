@@ -41,6 +41,25 @@ import getApexSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_Per
 import getObjectLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForUser';
 import getFieldLevelSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForUser';
 import getApexSecurityForUser from '@salesforce/apex/rflib_PermissionsExplorerController.getApexSecurityForUser';
+import getNonPermissionableFields from '@salesforce/apex/rflib_PermissionsExplorerController.getNonPermissionableFields';
+import getShowFieldsWithoutFlsByDefault from '@salesforce/apex/rflib_PermissionsExplorerController.getShowFieldsWithoutFlsByDefault';
+
+// Must not exceed MAX_DESCRIBE_BATCH_SIZE in rflib_PermissionsExplorerController, which is capped
+// by Schema.describeSObjects() rather than by heap.
+const DESCRIBE_BATCH_SIZE = 100;
+
+// Synthesizing rows for every (parent, object) pair can roughly double the record count on
+// a large org, so anything beyond this asks the user before building.
+const SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD = 50000;
+
+// A field that Field Level Security cannot control is always readable once the parent can read the
+// object - the same condition that governs a granted field permission - so only Edit access varies.
+const FIELD_WITHOUT_FLS_READ_ACCESS = true;
+
+const FIELDS_WITHOUT_FLS_OPTIONS = {
+    HIDDEN: { id: '1', value: 'hidden', label: 'Hidden' },
+    SHOWN: { id: '2', value: 'shown', label: 'Shown' }
+};
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZES = [
@@ -143,7 +162,10 @@ const PERMISSION_TYPES = {
 
 const OBJECT_PERMISSIONS_CSV_HEADER =
     '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL FIELDS","VIEW ALL RECORDS","MODIFY ALL RECORDS"\r\n';
-const FIELD_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS"\r\n';
+// A row for a field without FLS carries real access values, so without the trailing column it would
+// read as a stored grant once the styling and tooltip of the table are gone.
+const FIELD_PERMISSIONS_CSV_HEADER =
+    '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","FLS CONTROLLED"\r\n';
 
 const logger = createLogger('PermissionsExplorer');
 
@@ -161,6 +183,25 @@ export default class PermissionsExplorer extends LightningElement {
     progressText = 'Loading Permissions';
 
     cache = {};
+
+    // The pristine server result for the current permission type. `permissionRecords` is derived
+    // from this plus `syntheticRecords`, so toggling never has to rebuild or filter.
+    basePermissionRecords = [];
+    baseTotalRecords = 0;
+    syntheticRecords = [];
+    includeFieldsWithoutFls = false;
+
+    // Keyed by object API name rather than by permission type: which fields are non-FLS-controllable
+    // is a property of the object, so one lookup serves every permission type for the whole session.
+    fieldMetadataCache = {};
+
+    showFieldCoverageConfirmation = false;
+    fieldCoverageConfirmationMessage = '';
+    pendingSyntheticSources = null;
+
+    // Incremented on every load. The describe chain runs for a while on a large org, so it has to be
+    // able to tell that the permission type moved on and its result is no longer wanted.
+    loadToken = 0;
 
     userFilter = {
         criteria: [
@@ -181,7 +222,40 @@ export default class PermissionsExplorer extends LightningElement {
     exportFieldSearch = '';
 
     connectedCallback() {
+        // Resolved once per component lifetime and awaited after each load, so a slow round trip
+        // never delays the records themselves.
+        this.fieldsWithoutFlsPreference = this.resolveFieldsWithoutFlsPreference();
         this.loadPermissions();
+    }
+
+    async resolveFieldsWithoutFlsPreference() {
+        try {
+            return (await getShowFieldsWithoutFlsByDefault()) === true;
+        } catch (error) {
+            logger.error('Failed to retrieve the fields without FLS setting: {0}', JSON.stringify(error));
+            return false;
+        }
+    }
+
+    // Applied once the primary load has finished, because the synthesized rows are derived from the
+    // objects those records reference.
+    applyFieldsWithoutFlsPreference() {
+        const token = this.loadToken;
+
+        return Promise.resolve(this.fieldsWithoutFlsPreference).then((showByDefault) => {
+            // Another load may have started while the setting was in flight.
+            if (
+                token !== this.loadToken ||
+                !showByDefault ||
+                !this.isFieldPermissions ||
+                this.includeFieldsWithoutFls
+            ) {
+                return;
+            }
+
+            logger.debug('Showing fields without FLS because the Global Setting requests it');
+            this.loadNonPermissionableFields();
+        });
     }
 
     get permissionType() {
@@ -224,6 +298,13 @@ export default class PermissionsExplorer extends LightningElement {
         }
 
         return pageSizes;
+    }
+
+    get fieldsWithoutFlsOptions() {
+        return [FIELDS_WITHOUT_FLS_OPTIONS.HIDDEN, FIELDS_WITHOUT_FLS_OPTIONS.SHOWN].map((option) => ({
+            ...option,
+            checked: this.includeFieldsWithoutFls === (option.value === FIELDS_WITHOUT_FLS_OPTIONS.SHOWN.value)
+        }));
     }
 
     get permissionTypes() {
@@ -347,6 +428,8 @@ export default class PermissionsExplorer extends LightningElement {
 
         this.permissionRecords = [];
         this.numTotalRecords = 0;
+        this.loadToken += 1;
+        this.resetFieldsWithoutFls();
 
         if (remoteAction === null) {
             return;
@@ -379,6 +462,8 @@ export default class PermissionsExplorer extends LightningElement {
             }
 
             this.isLoadingRecords = false;
+            this.basePermissionRecords = this.permissionRecords;
+            this.baseTotalRecords = this.numTotalRecords;
 
             if (this.numRecordsLoaded < result.totalNumOfRecords) {
                 const evt = new ShowToastEvent({
@@ -399,7 +484,7 @@ export default class PermissionsExplorer extends LightningElement {
 
             this.page = 1;
 
-            return Promise.resolve();
+            return this.applyFieldsWithoutFlsPreference();
         };
 
         this.isLoadingRecords = true;
@@ -415,8 +500,11 @@ export default class PermissionsExplorer extends LightningElement {
                 logger.debug('Using cached value for key: ' + cacheKey);
                 this.permissionRecords = cachedRecords;
                 this.numTotalRecords = cachedRecords.length;
+                this.basePermissionRecords = cachedRecords;
+                this.baseTotalRecords = cachedRecords.length;
                 this.isLoadingRecords = false;
                 this.page = 1;
+                this.applyFieldsWithoutFlsPreference();
                 return;
             }
 
@@ -424,7 +512,9 @@ export default class PermissionsExplorer extends LightningElement {
                 .then(retrievePermissionsCallback)
                 .then(() => {
                     logger.debug('Caching result');
-                    this.cache[cacheKey] = this.permissionRecords;
+                    // The pristine server result, never the synthesized rows, which the default
+                    // fields setting may already have appended to permissionRecords by now.
+                    this.cache[cacheKey] = this.basePermissionRecords;
                 })
                 .catch((error) => {
                     logger.error(
@@ -432,24 +522,215 @@ export default class PermissionsExplorer extends LightningElement {
                         JSON.stringify(error)
                     );
                     this.isLoadingRecords = false;
-
-                    const evt = new ShowToastEvent({
-                        title: 'Failed to retrieve permissions',
-                        message:
-                            'An error occurred: ' +
-                            (error instanceof String
-                                ? error
-                                : error?.body?.message
-                                  ? error?.body?.message
-                                  : JSON.stringify(error)),
-                        variant: 'error',
-                        mode: 'sticky'
-                    });
-                    if (!import.meta.env.SSR) {
-                        this.dispatchEvent(evt);
-                    }
+                    this.dispatchErrorToast('Failed to retrieve permissions', error);
                 });
         }, 0);
+    }
+
+    dispatchErrorToast(title, error) {
+        const evt = new ShowToastEvent({
+            title: title,
+            message:
+                'An error occurred: ' +
+                (error instanceof String ? error : error?.body?.message ? error?.body?.message : JSON.stringify(error)),
+            variant: 'error',
+            mode: 'sticky'
+        });
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(evt);
+        }
+    }
+
+    handleFieldsWithoutFlsSelection(event) {
+        const isEnabled = event.detail.value === FIELDS_WITHOUT_FLS_OPTIONS.SHOWN.value;
+        logger.debug('Fields without FLS selection changed: {0}', event.detail.value);
+
+        if (isEnabled === this.includeFieldsWithoutFls) {
+            return;
+        }
+
+        if (!isEnabled) {
+            this.includeFieldsWithoutFls = false;
+            this.syntheticRecords = [];
+            this.applyPermissionRecords();
+            return;
+        }
+
+        this.loadNonPermissionableFields();
+    }
+
+    loadNonPermissionableFields() {
+        const token = this.loadToken;
+        const objectNames = [...new Set(this.basePermissionRecords.map((rec) => rec.SobjectType))];
+        const uncachedObjectNames = objectNames.filter((name) => !this.fieldMetadataCache[name]);
+
+        logger.debug(
+            'Loading non-permissionable fields: totalObjects={0}, uncached={1}',
+            objectNames.length,
+            uncachedObjectNames.length
+        );
+
+        if (uncachedObjectNames.length === 0) {
+            this.buildSyntheticRecords();
+            return;
+        }
+
+        const chunks = [];
+        for (let i = 0; i < uncachedObjectNames.length; i += DESCRIBE_BATCH_SIZE) {
+            chunks.push(uncachedObjectNames.slice(i, i + DESCRIBE_BATCH_SIZE));
+        }
+
+        // Progress is reported in objects rather than requests: on a large org this runs for a while
+        // and the object count is the only number that means anything to the person waiting.
+        const totalObjects = uncachedObjectNames.length;
+        const describeProgress = (loaded) => 'Loading field metadata (' + loaded + ' / ' + totalObjects + ' objects)';
+
+        let loadedObjects = 0;
+        this.progressText = describeProgress(loadedObjects);
+        this.isLoadingRecords = true;
+
+        const loadChunk = (index) => {
+            if (index >= chunks.length) {
+                return Promise.resolve();
+            }
+
+            return getNonPermissionableFields({ objectApiNames: chunks[index] }).then((result) => {
+                result.forEach((info) => {
+                    this.fieldMetadataCache[info.objectApiName] = info.fields;
+                });
+
+                // Objects the server could not describe still get an entry so they are not requested again.
+                chunks[index].forEach((name) => {
+                    if (!this.fieldMetadataCache[name]) {
+                        this.fieldMetadataCache[name] = [];
+                    }
+                });
+
+                loadedObjects += chunks[index].length;
+                this.progressText = describeProgress(loadedObjects);
+
+                return loadChunk(index + 1);
+            });
+        };
+
+        loadChunk(0)
+            .then(() => {
+                // The metadata itself stays cached - it is keyed by object and independent of the
+                // permission type - but applying it to a view the user has already left would clear
+                // the spinner of the load now running and rebuild the wrong records.
+                if (token !== this.loadToken) {
+                    logger.debug('Discarding field metadata for a superseded load');
+                    return;
+                }
+
+                this.isLoadingRecords = false;
+                this.buildSyntheticRecords();
+            })
+            .catch((error) => {
+                logger.error('Failed to retrieve non-permissionable fields. Error={0}', JSON.stringify(error));
+
+                if (token !== this.loadToken) {
+                    return;
+                }
+
+                this.isLoadingRecords = false;
+                this.includeFieldsWithoutFls = false;
+                this.dispatchErrorToast('Failed to retrieve field metadata', error);
+            });
+    }
+
+    buildSyntheticRecords() {
+        // One source record per (parent, object) pair, so the synthesized rows keep a meaningful
+        // profile/permission set name and remain reachable through the existing search.
+        const sourcesByPair = {};
+        this.basePermissionRecords.forEach((rec) => {
+            const key = rec.SecurityObjectName + '|' + rec.SobjectType;
+            if (!sourcesByPair[key]) {
+                sourcesByPair[key] = rec;
+            }
+        });
+
+        const sources = Object.keys(sourcesByPair).map((key) => sourcesByPair[key]);
+        const projectedCount = sources.reduce(
+            (total, rec) => total + (this.fieldMetadataCache[rec.SobjectType] || []).length,
+            0
+        );
+
+        logger.debug('Projected synthetic record count: {0}', projectedCount);
+
+        if (projectedCount > SYNTHETIC_RECORD_CONFIRMATION_THRESHOLD) {
+            this.pendingSyntheticSources = sources;
+            this.fieldCoverageConfirmationMessage =
+                'Including fields without explicit permissions will add ' +
+                projectedCount +
+                ' rows to the current ' +
+                this.basePermissionRecords.length +
+                ' records. This may make the page slow to respond. Do you want to continue?';
+            this.showFieldCoverageConfirmation = true;
+            return;
+        }
+
+        this.materializeSyntheticRecords(sources);
+    }
+
+    materializeSyntheticRecords(sources) {
+        const records = [];
+        sources.forEach((rec) => {
+            (this.fieldMetadataCache[rec.SobjectType] || []).forEach((field) => {
+                records.push({
+                    SecurityObjectName: rec.SecurityObjectName,
+                    SecurityType: rec.SecurityType,
+                    Label: rec.Label,
+                    SobjectType: rec.SobjectType,
+                    Field: field.apiName,
+                    PermissionsRead: FIELD_WITHOUT_FLS_READ_ACCESS,
+                    PermissionsEdit: field.isUpdateable,
+                    IsFlsControlled: false
+                });
+            });
+        });
+
+        logger.debug('Built {0} synthetic permission records', records.length);
+
+        this.syntheticRecords = records;
+        this.includeFieldsWithoutFls = true;
+        this.applyPermissionRecords();
+    }
+
+    handleFieldCoverageConfirmation(event) {
+        const sources = this.pendingSyntheticSources;
+
+        this.showFieldCoverageConfirmation = false;
+        this.pendingSyntheticSources = null;
+
+        if (event.detail.status === 'confirm') {
+            this.materializeSyntheticRecords(sources);
+            return;
+        }
+
+        logger.debug('Field coverage cancelled by user');
+        this.includeFieldsWithoutFls = false;
+    }
+
+    applyPermissionRecords() {
+        if (this.includeFieldsWithoutFls) {
+            this.permissionRecords = this.basePermissionRecords.concat(this.syntheticRecords);
+            this.numTotalRecords = this.permissionRecords.length;
+        } else {
+            this.permissionRecords = this.basePermissionRecords;
+            this.numTotalRecords = this.baseTotalRecords;
+        }
+
+        this.page = 1;
+    }
+
+    resetFieldsWithoutFls() {
+        this.basePermissionRecords = [];
+        this.baseTotalRecords = 0;
+        this.syntheticRecords = [];
+        this.includeFieldsWithoutFls = false;
+        this.showFieldCoverageConfirmation = false;
+        this.pendingSyntheticSources = null;
     }
 
     handleExportSelection(event) {
@@ -463,6 +744,24 @@ export default class PermissionsExplorer extends LightningElement {
         }
     }
 
+    buildFieldPermissionCsvRow(permission) {
+        return (
+            '"' +
+            permission.SecurityObjectName +
+            '","' +
+            permission.SobjectType +
+            '","' +
+            permission.Field +
+            '","' +
+            permission.PermissionsRead +
+            '","' +
+            permission.PermissionsEdit +
+            '","' +
+            (permission.IsFlsControlled !== false) +
+            '"\r\n'
+        );
+    }
+
     exportAllToCsv() {
         logger.debug(
             'Export all to CSV: type={0}, numRecords={1}',
@@ -474,18 +773,7 @@ export default class PermissionsExplorer extends LightningElement {
         if (this.isFieldPermissions) {
             csvContent += FIELD_PERMISSIONS_CSV_HEADER;
             this.permissionRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.Field +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '"\r\n';
+                csvContent += this.buildFieldPermissionCsvRow(permission);
             });
         } else {
             csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
@@ -596,18 +884,7 @@ export default class PermissionsExplorer extends LightningElement {
         if (this.isFieldPermissions) {
             csvContent += FIELD_PERMISSIONS_CSV_HEADER;
             filteredRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.Field +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '"\r\n';
+                csvContent += this.buildFieldPermissionCsvRow(permission);
             });
         } else {
             csvContent += OBJECT_PERMISSIONS_CSV_HEADER;

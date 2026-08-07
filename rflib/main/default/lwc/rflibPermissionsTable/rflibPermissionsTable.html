@@ -175,7 +175,7 @@
                         </thead>
                         <tbody>
                             <template for:each={recordsToDisplay} for:item="rec">
-                                <tr class="clickable" key={rec.id} data-log-id={rec.Id}>
+                                <tr class={rec.rowClass} title={rec.rowTitle} key={rec.id} data-log-id={rec.Id}>
                                     <td class="slds-truncate">
                                         <div title={rec.Label}>{rec.SecurityObjectName}</div>
                                     </td>
@@ -234,8 +234,5 @@
                 </template>
             </template>
         </div>
-        <p class="slds-m-around_medium">
-            <b>{filteredRecordsCount} </b> Page <b>{currentPage}</b> of <b> {totalPages}</b>
-        </p>
     </lightning-card>
 </template>

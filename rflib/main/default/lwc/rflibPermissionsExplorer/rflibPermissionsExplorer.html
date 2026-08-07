@@ -214,6 +214,25 @@
                                     </lightning-menu-item>
                                 </template>
                             </lightning-button-menu>
+                            <template lwc:if={isFieldPermissions}>
+                                <lightning-button-menu
+                                    data-id="fields-without-fls-menu"
+                                    label="Fields Without FLS"
+                                    tooltip="Fields that Field Level Security cannot control, such as required, master-detail and system fields. Showing them loads field metadata only for the objects already listed in the current results."
+                                    menu-alignment="right"
+                                    onselect={handleFieldsWithoutFlsSelection}
+                                >
+                                    <template for:each={fieldsWithoutFlsOptions} for:item="menuItem">
+                                        <lightning-menu-item
+                                            key={menuItem.id}
+                                            value={menuItem.value}
+                                            label={menuItem.label}
+                                            checked={menuItem.checked}
+                                        >
+                                        </lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </template>
                             <lightning-button-menu
                                 label="Export to CSV"
                                 menu-alignment="right"
@@ -310,4 +329,14 @@
             </lightning-card>
         </div>
     </div>
+
+    <c-rflib-confirmation-dialog
+        visible={showFieldCoverageConfirmation}
+        title="Large Number of Records"
+        message={fieldCoverageConfirmationMessage}
+        confirm-label="Continue"
+        cancel-label="Cancel"
+        onmodalaction={handleFieldCoverageConfirmation}
+    >
+    </c-rflib-confirmation-dialog>
 </template>
