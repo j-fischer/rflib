@@ -213,4 +213,42 @@ describe('c-rflib-permissions-table', () => {
         expect(rows.length).toBe(1);
         expect(rows[0].textContent).toContain('Admin');
     });
+
+    it('pages in time bounded by the page size rather than the record count', async () => {
+        const manyRecords = [];
+        for (let i = 0; i < 50000; i++) {
+            manyRecords.push({
+                SecurityObjectName: 'Profile' + (i % 50),
+                SobjectType: 'Object' + (i % 20) + '__c',
+                Field: 'Field' + i + '__c',
+                PermissionsRead: true,
+                PermissionsEdit: i % 2 === 0
+            });
+        }
+
+        const element = createElement('c-rflib-permissions-table', {
+            is: RflibPermissionsTable
+        });
+        element.permissionRecords = manyRecords;
+        element.pageSize = 10;
+        element.permissionType = 'FLS';
+        document.body.appendChild(element);
+        await Promise.resolve();
+
+        const start = Date.now();
+        for (let page = 2; page <= 21; page++) {
+            element.currentPage = page;
+        }
+        const elapsed = Date.now() - start;
+
+        // Paging previously re-filtered and cloned every loaded record to display ten of them, so
+        // these twenty page changes meant a million clones. The bound is deliberately loose: the
+        // point is the difference between work proportional to the page and to the whole result set.
+        expect(elapsed).toBeLessThan(1000);
+
+        await Promise.resolve();
+        const rows = element.shadowRoot.querySelectorAll('tbody tr');
+        expect(rows.length).toBe(10);
+        expect(rows[0].textContent).toContain('Field200__c');
+    });
 });

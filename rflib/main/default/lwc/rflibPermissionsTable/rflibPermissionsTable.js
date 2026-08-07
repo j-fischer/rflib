@@ -50,7 +50,8 @@ export default class RflibFieldPermissionsTable extends LightningElement {
         if (this.currentPageIndex !== newPageIndex) {
             logger.debug('Changing current page {0}', newPageIndex);
             this.currentPageIndex = newPageIndex;
-            this.refreshEventList();
+            // Paging cannot change the filtered set, so only the visible rows are rebuilt.
+            this.renderPage();
         }
     }
 
@@ -114,6 +115,45 @@ export default class RflibFieldPermissionsTable extends LightningElement {
     }
 
     refreshEventList() {
+        this.applyFilter();
+        this.renderPage();
+    }
+
+    /**
+     * Narrows the records down to the current search. Linear in the size of the whole result set, so
+     * it runs only when the records or the search terms change - never when the user pages, which on
+     * a large org is the difference between paging in milliseconds and paging in seconds.
+     *
+     * The matches are kept as references to the original records. Decorating them here would clone
+     * the entire result set to display one page of it.
+     */
+    applyFilter() {
+        if (!this.isFieldPermissions) {
+            this.fieldSearch = null;
+        }
+
+        const allRecords = this.allRecords || [];
+
+        this.filteredRecords =
+            this.securityObjectNameSearch || this.objectSearch || this.fieldSearch
+                ? allRecords.filter(
+                      (rec) =>
+                          (!this.securityObjectNameSearch ||
+                              rec.SecurityObjectName.indexOf(this.securityObjectNameSearch) > -1) &&
+                          (!this.objectSearch || rec.SobjectType.indexOf(this.objectSearch) > -1) &&
+                          (!this.fieldSearch || rec.Field.indexOf(this.fieldSearch) > -1)
+                  )
+                : allRecords;
+
+        this.filteredRecordCount = this.filteredRecords.length;
+        this.totalPages = this.filteredRecordCount > 0 ? Math.ceil(this.filteredRecordCount / this._pageSize) : 1;
+
+        logger.debug('Filtered records count {0}', this.filteredRecordCount);
+    }
+
+    // Builds the rows for the current page only, so the cost is bounded by the page size rather than
+    // by the number of records loaded.
+    renderPage() {
         this.displayedPageIndex = this.currentPageIndex;
         logger.debug(
             'Display page with index {0} (permissionType={1}, isFieldPermission={2}, isObjectPermissions={3}, isApexPermissions={4}, isUserMode={5})',
@@ -125,46 +165,23 @@ export default class RflibFieldPermissionsTable extends LightningElement {
             this.isUserMode
         );
 
-        if (!this.isFieldPermissions) {
-            this.fieldSearch = null;
-        }
+        const startIndex = this.currentPageIndex * this._pageSize;
 
-        const filteredRecords =
-            this.securityObjectNameSearch || this.objectSearch || this.fieldSearch
-                ? this.allRecords.filter(
-                      (rec) =>
-                          (!this.securityObjectNameSearch ||
-                              rec.SecurityObjectName.indexOf(this.securityObjectNameSearch) > -1) &&
-                          (!this.objectSearch || rec.SobjectType.indexOf(this.objectSearch) > -1) &&
-                          (!this.fieldSearch || rec.Field.indexOf(this.fieldSearch) > -1)
-                  )
-                : this.allRecords;
-
-        this.filteredRecords = filteredRecords.map(function (rec, index) {
-            const modifiedRec = { ...rec };
-            modifiedRec.id = index;
-            // Rows for fields that Field Level Security cannot control are muted, because their access
-            // comes from the object permission and the field definition rather than a stored grant.
-            const isDefaultField = rec.IsFlsControlled === false;
-            modifiedRec.rowClass = isDefaultField ? 'clickable not-fls-controlled' : 'clickable';
-            modifiedRec.rowTitle = isDefaultField
-                ? 'Field Level Security cannot control this field. It is readable whenever the object is readable, and the Edit value reflects whether the field can be written at all.'
-                : undefined;
-            return modifiedRec;
-        });
-        this.filteredRecordCount = this.filteredRecords.length;
-
-        logger.debug('Filtered records count {0}', this.filteredRecordCount);
-
-        if (this.filteredRecordCount > 0) {
-            this.totalPages = Math.ceil(this.filteredRecordCount / this._pageSize);
-
-            const startIndex = this.currentPageIndex * this._pageSize;
-            this.recordsToDisplay = this.filteredRecords.slice(startIndex, startIndex + this._pageSize);
-        } else {
-            this.recordsToDisplay = [];
-            this.totalPages = 1;
-        }
+        this.recordsToDisplay = this.filteredRecords
+            .slice(startIndex, startIndex + this._pageSize)
+            .map(function (rec, offset) {
+                const modifiedRec = { ...rec };
+                // Index within the filtered set, so keys stay unique across pages.
+                modifiedRec.id = startIndex + offset;
+                // Rows for fields that Field Level Security cannot control are muted, because their access
+                // comes from the object permission and the field definition rather than a stored grant.
+                const isFieldWithoutFls = rec.IsFlsControlled === false;
+                modifiedRec.rowClass = isFieldWithoutFls ? 'clickable not-fls-controlled' : 'clickable';
+                modifiedRec.rowTitle = isFieldWithoutFls
+                    ? 'Field Level Security cannot control this field. It is readable whenever the object is readable, and the Edit value reflects whether the field can be written at all.'
+                    : undefined;
+                return modifiedRec;
+            });
 
         const event = new CustomEvent('refreshed', {
             detail: JSON.stringify({

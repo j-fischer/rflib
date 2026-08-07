@@ -27,4 +27,9 @@ export class PaginatorComponent {
     async currentPage(): Promise<number> {
         return parseInt(await this.pageInput.inputValue(), 10);
     }
+
+    // Rendered as "of <b>N</b>" next to the page selector (rflibPaginator.html).
+    async totalPages(): Promise<number> {
+        return parseInt((await this.root.locator('b[id$="totalPages"]').innerText()).trim(), 10);
+    }
 }

@@ -156,6 +156,47 @@ test('shows fields without FLS for Account through the Fields Without FLS menu',
     await explorer.table.search(PERMISSIONS_SEARCH.object, '');
 });
 
+// Paging used to re-filter and clone every loaded record to render ten of them, which on a large
+// result set cost seconds per click. Both the widest view and the one with the most rows are timed,
+// since showing fields without FLS roughly doubles the record count.
+test('pages through object field permissions well under a second per click', async () => {
+    await explorer.selectPermissionType(PERMISSION_TYPES.fieldProfiles);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
+
+    const paginator = explorer.paginator;
+
+    const timePageChange = async (action: () => Promise<void>, expectedPage: number) => {
+        const start = Date.now();
+        await action();
+        // The value only settles once the rows for the new page have rendered.
+        await expect(paginator.pageInput).toHaveValue(String(expectedPage), { timeout: 30_000 });
+        await expect(explorer.tableRows.first()).toBeVisible();
+        return Date.now() - start;
+    };
+
+    await paginator.goTo(1);
+    const lastPage = await paginator.totalPages();
+    expect(lastPage).toBeGreaterThan(1);
+
+    const toLast = await timePageChange(() => paginator.button('Last').click(), lastPage);
+    expect(toLast).toBeLessThan(1000);
+
+    const toFirst = await timePageChange(() => paginator.button('First').click(), 1);
+    expect(toFirst).toBeLessThan(1000);
+
+    const toNext = await timePageChange(() => paginator.button('Next').click(), 2);
+    expect(toNext).toBeLessThan(1000);
+
+    // Showing fields without FLS is the heavier case: more rows to page through.
+    await explorer.selectFieldsWithoutFls('Shown');
+    await paginator.goTo(1);
+
+    const withFlsRows = await timePageChange(() => paginator.button('Next').click(), 2);
+    expect(withFlsRows).toBeLessThan(1000);
+
+    await explorer.selectFieldsWithoutFls('Hidden');
+});
+
 // The table used to print its own "Page X of Y" line directly above the paginator's.
 test('renders the page indicator only once', async () => {
     await expect(explorer.paginator.pageInput).toBeVisible();
