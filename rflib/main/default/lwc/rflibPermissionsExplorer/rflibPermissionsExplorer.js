@@ -254,10 +254,6 @@ export default class PermissionsExplorer extends LightningElement {
         return permissionTypes;
     }
 
-    get hasRecords() {
-        return this.numTotalRecords > 0;
-    }
-
     get isUserNotSelected() {
         return this.selectedUserId == null;
     }
@@ -369,7 +365,7 @@ export default class PermissionsExplorer extends LightningElement {
             );
             this.permissionRecords = this.permissionRecords.concat(result.records);
             this.numRecordsLoaded = this.permissionRecords.length;
-            this.numTotalRecords = result.totalNumOfRecords;
+            this.numTotalRecords = this.permissionRecords.length;
 
             this.progressText =
                 loadingPermissionsLabel + ' (' + this.numRecordsLoaded + ' / ' + result.totalNumOfRecords + ')';
@@ -667,7 +663,7 @@ export default class PermissionsExplorer extends LightningElement {
         let consolidatedPermissions = {};
         if (this.isFieldPermissions) {
             let i;
-            for (i = 0; i < this.numTotalRecords; i++) {
+            for (i = 0; i < this.permissionRecords.length; i++) {
                 let permission = this.permissionRecords[i];
 
                 let consolidatePermissionKey = permission.SobjectType + '|' + permission.Field;
@@ -686,7 +682,7 @@ export default class PermissionsExplorer extends LightningElement {
             }
         } else {
             let i;
-            for (i = 0; i < this.numTotalRecords; i++) {
+            for (i = 0; i < this.permissionRecords.length; i++) {
                 let permission = this.permissionRecords[i];
 
                 let consolidatePermissionKey = permission.SobjectType;
