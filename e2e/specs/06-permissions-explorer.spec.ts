@@ -174,7 +174,17 @@ test('pages through object field permissions well under a second per click', asy
         return Date.now() - start;
     };
 
-    await paginator.goTo(1);
+    // Reached through the First button rather than goTo(): filling the number input does not
+    // reliably replace its current value, which silently lands on a different page. The button is
+    // disabled on page one, so clicking it unconditionally would hang instead of being a no-op.
+    const goToFirstPage = async () => {
+        if ((await paginator.currentPage()) !== 1) {
+            await paginator.button('First').click();
+        }
+        await expect(paginator.pageInput).toHaveValue('1', { timeout: 30_000 });
+    };
+
+    await goToFirstPage();
     const lastPage = await paginator.totalPages();
     expect(lastPage).toBeGreaterThan(1);
 
@@ -189,12 +199,13 @@ test('pages through object field permissions well under a second per click', asy
 
     // Showing fields without FLS is the heavier case: more rows to page through.
     await explorer.selectFieldsWithoutFls('Shown');
-    await paginator.goTo(1);
+    await goToFirstPage();
 
-    const withFlsRows = await timePageChange(() => paginator.button('Next').click(), 2);
-    expect(withFlsRows).toBeLessThan(1000);
+    const withFieldsWithoutFls = await timePageChange(() => paginator.button('Next').click(), 2);
+    expect(withFieldsWithoutFls).toBeLessThan(1000);
 
     await explorer.selectFieldsWithoutFls('Hidden');
+    await goToFirstPage();
 });
 
 // The table used to print its own "Page X of Y" line directly above the paginator's.
