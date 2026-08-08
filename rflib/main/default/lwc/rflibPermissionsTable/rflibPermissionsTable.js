@@ -34,6 +34,13 @@ import { createLogger } from 'c/rflibLogger';
 
 const logger = createLogger('FieldPermissionsTable');
 
+// Filtering is linear in the whole result set. Below this size it completes within a frame and a
+// spinner would only flicker, so the blocking overlay is reserved for the result sets where the
+// browser actually stops responding.
+const SEARCH_SPINNER_THRESHOLD = 30000;
+
+const SEARCH_PROGRESS_TEXT = 'Searching Permissions';
+
 export default class RflibFieldPermissionsTable extends LightningElement {
     _pageSize;
 
@@ -76,6 +83,8 @@ export default class RflibFieldPermissionsTable extends LightningElement {
 
     filteredRecordCount;
     recordsToDisplay = [];
+    isSearching = false;
+    searchProgressText = SEARCH_PROGRESS_TEXT;
 
     securityObjectNameSearch;
     objectSearch;
@@ -202,7 +211,22 @@ export default class RflibFieldPermissionsTable extends LightningElement {
             this.fieldSearch
         );
         this.currentPageIndex = 0;
-        this.refreshEventList();
+
+        if ((this.allRecords || []).length < SEARCH_SPINNER_THRESHOLD) {
+            this.refreshEventList();
+            return;
+        }
+
+        this.isSearching = true;
+        // The filter runs on the thread that paints, so it has to yield once for the spinner to
+        // reach the screen before the work begins.
+        setTimeout(() => {
+            try {
+                this.refreshEventList();
+            } finally {
+                this.isSearching = false;
+            }
+        }, 0);
     }
 
     handleSecurityObjectNameKeyPress(event) {

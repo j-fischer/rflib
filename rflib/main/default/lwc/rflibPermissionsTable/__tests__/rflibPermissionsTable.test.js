@@ -34,6 +34,20 @@ const MOCK_DATA = [
     }
 ];
 
+const buildRecords = (count) => {
+    const records = [];
+    for (let i = 0; i < count; i++) {
+        records.push({
+            SecurityObjectName: 'Profile' + (i % 50),
+            SobjectType: 'Object' + (i % 20) + '__c',
+            Field: 'Field' + i + '__c',
+            PermissionsRead: true,
+            PermissionsEdit: i % 2 === 0
+        });
+    }
+    return records;
+};
+
 describe('c-rflib-permissions-table', () => {
     afterEach(() => {
         while (document.body.firstChild) {
@@ -215,16 +229,7 @@ describe('c-rflib-permissions-table', () => {
     });
 
     it('pages in time bounded by the page size rather than the record count', async () => {
-        const manyRecords = [];
-        for (let i = 0; i < 50000; i++) {
-            manyRecords.push({
-                SecurityObjectName: 'Profile' + (i % 50),
-                SobjectType: 'Object' + (i % 20) + '__c',
-                Field: 'Field' + i + '__c',
-                PermissionsRead: true,
-                PermissionsEdit: i % 2 === 0
-            });
-        }
+        const manyRecords = buildRecords(50000);
 
         const element = createElement('c-rflib-permissions-table', {
             is: RflibPermissionsTable
@@ -250,5 +255,63 @@ describe('c-rflib-permissions-table', () => {
         const rows = element.shadowRoot.querySelectorAll('tbody tr');
         expect(rows.length).toBe(10);
         expect(rows[0].textContent).toContain('Field200__c');
+    });
+
+    it('blocks the UI with a spinner while searching 30,000 or more records', async () => {
+        jest.useFakeTimers();
+
+        const element = createElement('c-rflib-permissions-table', {
+            is: RflibPermissionsTable
+        });
+        element.permissionRecords = buildRecords(30000);
+        element.pageSize = 10;
+        element.permissionType = 'FLS';
+        document.body.appendChild(element);
+
+        await Promise.resolve();
+        expect(element.shadowRoot.querySelector('lightning-spinner')).toBeNull();
+
+        const searchButton = element.shadowRoot.querySelector('lightning-button');
+        searchButton.click();
+
+        // The spinner has to be on screen before the filter runs, so it is rendered ahead of the
+        // timeout that performs the work.
+        await Promise.resolve();
+        expect(element.shadowRoot.querySelector('lightning-spinner')).not.toBeNull();
+
+        jest.runAllTimers();
+        await Promise.resolve();
+        expect(element.shadowRoot.querySelector('lightning-spinner')).toBeNull();
+
+        jest.useRealTimers();
+    });
+
+    it('searches without a spinner below 30,000 records', async () => {
+        jest.useFakeTimers();
+
+        const element = createElement('c-rflib-permissions-table', {
+            is: RflibPermissionsTable
+        });
+        element.permissionRecords = buildRecords(29999);
+        element.pageSize = 10;
+        element.permissionType = 'FLS';
+        document.body.appendChild(element);
+
+        await Promise.resolve();
+
+        const inputs = element.shadowRoot.querySelectorAll('lightning-input');
+        inputs[0].value = 'Profile1';
+        inputs[0].dispatchEvent(new CustomEvent('change'));
+
+        element.shadowRoot.querySelector('lightning-button').click();
+
+        await Promise.resolve();
+        expect(element.shadowRoot.querySelector('lightning-spinner')).toBeNull();
+
+        // The search is applied straight away rather than deferred to a timeout.
+        const rows = element.shadowRoot.querySelectorAll('tbody tr');
+        expect(rows[0].textContent).toContain('Profile1');
+
+        jest.useRealTimers();
     });
 });

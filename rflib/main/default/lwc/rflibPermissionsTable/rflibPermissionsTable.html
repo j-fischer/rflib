@@ -30,6 +30,15 @@
  * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
 -->
 <template>
+    <div lwc:if={isSearching}>
+        <lightning-spinner
+            class="slds-is-fixed spinner-large"
+            size="large"
+            alternative-text="Searching records..."
+            data-text={searchProgressText}
+        >
+        </lightning-spinner>
+    </div>
     <lightning-card title={title} icon-name="utility:list">
         <div class="slds-m-around_medium">
             <div class="slds-grid">
