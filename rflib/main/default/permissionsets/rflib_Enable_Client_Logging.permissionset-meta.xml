@@ -12,7 +12,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>rflib_Logs_Archive__b.Log_Source__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>rflib_Logs_Archive__b.Platform_Info__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>rflib_Logs_Archive__b.Stacktrace__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>

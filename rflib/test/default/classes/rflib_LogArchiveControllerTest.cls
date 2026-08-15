@@ -120,6 +120,8 @@ private class rflib_LogArchiveControllerTest {
         System.assertEquals('123', result.records[0].Request_ID__c, 'Request ID should match');
         System.assertEquals('Test Context', result.records[0].Context__c, 'Context should match');
         System.assertEquals('INFO', result.records[0].Log_Level__c, 'Log level should match');
+        System.assertEquals('Apex', result.records[0].Log_Source__c, 'Log source should match');
+        System.assertEquals('Test Stacktrace', result.records[0].Stacktrace__c, 'Stacktrace should match');
     }
 
     @IsTest
@@ -262,7 +264,9 @@ private class rflib_LogArchiveControllerTest {
             Context__c = 'Test Context',
             Log_Level__c = 'INFO',
             Log_Messages__c = 'Test Message',
-            Platform_Info__c = 'Test Platform'
+            Platform_Info__c = 'Test Platform',
+            Log_Source__c = 'Apex',
+            Stacktrace__c = 'Test Stacktrace'
         );
     }
 

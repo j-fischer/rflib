@@ -36,6 +36,7 @@ const SEARCH_FIELDS = {
     LEVEL: 'level',
     CONTEXT: 'context',
     REQUEST_ID: 'requestId',
+    LOG_SOURCE: 'logSource',
     LOG_MESSAGE: 'logMessage'
 };
 
@@ -52,6 +53,7 @@ export default class RflibLogEventList extends LightningElement {
     @track levelSearch;
     @track contextSearch;
     @track requestIdSearch;
+    @track logSourceSearch;
     @track logMessageSearch;
     @track focusedSearchField = null;
 
@@ -78,7 +80,7 @@ export default class RflibLogEventList extends LightningElement {
     }
 
     get defaultSearchFieldClass() {
-        return `${this.baseSearchFieldClass} slds-size_1-of-6`;
+        return `${this.baseSearchFieldClass} slds-size_1-of-7`;
     }
 
     get createdByFieldClass() {
@@ -95,6 +97,10 @@ export default class RflibLogEventList extends LightningElement {
 
     get requestIdFieldClass() {
         return this.getFieldClass(SEARCH_FIELDS.REQUEST_ID);
+    }
+
+    get logSourceFieldClass() {
+        return this.getFieldClass(SEARCH_FIELDS.LOG_SOURCE);
     }
 
     get logMessageFieldClass() {
@@ -123,6 +129,10 @@ export default class RflibLogEventList extends LightningElement {
 
     handleRequestIdFocus() {
         this.focusedSearchField = SEARCH_FIELDS.REQUEST_ID;
+    }
+
+    handleLogSourceFocus() {
+        this.focusedSearchField = SEARCH_FIELDS.LOG_SOURCE;
     }
 
     handleLogMessageFocus() {
@@ -163,6 +173,12 @@ export default class RflibLogEventList extends LightningElement {
         }
     }
 
+    handleLogSourceKeyPress(event) {
+        if (event.which === 13) {
+            this.executeSearch();
+        }
+    }
+
     handleLogMessageKeyPress(event) {
         if (event.which === 13) {
             this.executeSearch();
@@ -193,6 +209,12 @@ export default class RflibLogEventList extends LightningElement {
         }
     }
 
+    handleLogSourceKeyChange(event) {
+        if (this.logSourceSearch !== event.target.value) {
+            this.logSourceSearch = event.target.value;
+        }
+    }
+
     handleLogMessageKeyChange(event) {
         if (this.logMessageSearch !== event.target.value) {
             this.logMessageSearch = event.target.value;
@@ -201,11 +223,12 @@ export default class RflibLogEventList extends LightningElement {
 
     executeSearch() {
         logger.debug(
-            'Executing search for createdBy={0}, level={1}, context={2}, requestId={3}, logMessage={4}',
+            'Executing search for createdBy={0}, level={1}, context={2}, requestId={3}, logSource={4}, logMessage={5}',
             this.createdBySearch,
             this.levelSearch,
             this.contextSearch,
             this.requestIdSearch,
+            this.logSourceSearch,
             this.logMessageSearch
         );
         this.currentPageIndex = 0;
@@ -221,6 +244,7 @@ export default class RflibLogEventList extends LightningElement {
             this.levelSearch ||
             this.contextSearch ||
             this.requestIdSearch ||
+            this.logSourceSearch ||
             this.logMessageSearch
                 ? this.allRecords.filter(
                       (rec) =>
@@ -229,6 +253,9 @@ export default class RflibLogEventList extends LightningElement {
                           (!this.levelSearch || rec.Log_Level__c.indexOf(this.levelSearch) > -1) &&
                           (!this.contextSearch || rec.Context__c.indexOf(this.contextSearch) > -1) &&
                           (!this.requestIdSearch || rec.Request_ID__c.indexOf(this.requestIdSearch) > -1) &&
+                          // Records archived before the Log Source field existed have no value, so the
+                          // search must not assume the field is present.
+                          (!this.logSourceSearch || (rec.Log_Source__c || '').indexOf(this.logSourceSearch) > -1) &&
                           (!this.logMessageSearch || rec.Log_Messages__c.indexOf(this.logMessageSearch) > -1)
                   )
                 : this.allRecords;

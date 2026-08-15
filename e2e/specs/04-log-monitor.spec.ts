@@ -69,7 +69,7 @@ test('receives new log events in real time over the EMP API', async () => {
     await expect(monitor.eventRows().filter({ hasText: 'TestContext' }).first()).toBeVisible();
 });
 
-test('filters log events by level and context', async () => {
+test('filters log events by level, context, and log source', async () => {
     // Reconnect in historic mode with a guaranteed set of rows to filter.
     await monitor.connectHistoricAndAwaitEvents();
     const eventList = monitor.eventList;
@@ -83,6 +83,11 @@ test('filters log events by level and context', async () => {
     await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
     await expect(monitor.eventRows().filter({ hasText: 'TestContext' }).first()).toBeVisible();
 
+    // CreateLogEvent.apex publishes through the Apex logger, so every row carries that source.
+    await eventList.search('logSource', 'Apex');
+    await expect(monitor.eventRows().first()).toBeVisible({ timeout: 30_000 });
+
+    await eventList.searchField('logSource').fill('');
     await eventList.search('context', '');
 });
 

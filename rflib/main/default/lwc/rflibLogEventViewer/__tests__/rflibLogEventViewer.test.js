@@ -52,7 +52,9 @@ describe('c-rflib-log-event-viewer', () => {
             CreatedById: '005User',
             CreatedDate: '2021-01-01',
             Platform_Info__c: '{"Browser": "Chrome"}',
-            Log_Messages__c: 'Message 1\nMessage 2'
+            Log_Messages__c: 'Message 1\nMessage 2',
+            Log_Source__c: 'Apex',
+            Stacktrace__c: 'Class.Foo.bar: line 1, column 1'
         };
 
         element.logEvent = logEvent;
@@ -80,6 +82,38 @@ describe('c-rflib-log-event-viewer', () => {
             // Check messages are processed
             const messages = element.shadowRoot.querySelectorAll('c-rflib-log-event-viewer-message');
             expect(messages.length).toBe(2);
+
+            const staticFields = element.shadowRoot.querySelectorAll('.slds-form-element__static');
+            const logSourceField = Array.from(staticFields).find(
+                (field) => field.textContent === logEvent.Log_Source__c
+            );
+            expect(logSourceField).toBeTruthy();
+
+            const stacktrace = element.shadowRoot.querySelector('.stacktrace pre code');
+            expect(stacktrace.textContent).toBe(logEvent.Stacktrace__c);
+        });
+    });
+
+    it('displays a placeholder when the log event has no stacktrace', () => {
+        const element = createElement('c-rflib-log-event-viewer', {
+            is: RflibLogEventViewer
+        });
+
+        getApexLogsForRequestId.mockResolvedValue([]);
+
+        // Records archived before the Stacktrace field existed have no value
+        element.logEvent = {
+            Request_ID__c: 'REQ-123',
+            Log_Level__c: 'INFO',
+            Context__c: 'TestContext',
+            Platform_Info__c: '{}',
+            Log_Messages__c: 'Message 1'
+        };
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            const stacktrace = element.shadowRoot.querySelector('.stacktrace pre code');
+            expect(stacktrace.textContent).toBe('No stacktrace available.');
         });
     });
 

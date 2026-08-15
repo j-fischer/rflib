@@ -88,6 +88,8 @@ public with sharing class rflib_ArchiveLogAction {
         log.Request_ID__c = evt.Request_ID__c;
         log.Log_Messages__c = evt.Log_Messages__c;
         log.Platform_Info__c = evt.Platform_Info__c;
+        log.Log_Source__c = evt.Log_Source__c;
+        log.Stacktrace__c = evt.Stacktrace__c;
 
         return log;
     }

@@ -1,3 +1,12 @@
+### RFLIB 11.3.0
+
+Package ID: TBD
+Package Alias: TBD
+Install link: TBD
+
+- The Log Archive now retains the `Log Source` and the `Stacktrace` of every archived log event. Both values were recorded on the `rflib_Log_Event__e` Platform Event but were dropped when the event was written to the `rflib_Logs_Archive__b` Big Object, so an archived record could not tell you whether it originated in Apex, Flow, Aura, LWC, or OmniStudio, and its `Stacktrace` tab in the Log Monitor was always empty. Both fields are added to the Big Object as regular, optional fields; the `rflib_Log_Index` is unchanged, so the upgrade is additive and existing archived records are preserved. Because Big Objects cannot be updated after the fact, records archived by earlier versions keep an empty `Log Source` and `Stacktrace` — the Log Monitor shows those as blank and the `Stacktrace` tab reports `No stacktrace available.` Records archived from this version onward carry both values. The new fields are readable through the `RFLIB - Ops Center Access` and `RFLIB - Enable Client Logging` permission sets.
+- Added a `Source` column to the Log Monitor's event list, showing the log source of each event in both live and archive mode, along with a matching `Source...` search field to filter the list by it. The log source is also shown in the log event viewer's `Log Event` tab and included as a `Source` column in the CSV export, between `Context` and `Log Messages`.
+
 ### RFLIB 11.2.0
 
 Package ID: 04tKY0000005SpvYAE

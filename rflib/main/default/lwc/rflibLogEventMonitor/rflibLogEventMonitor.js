@@ -186,7 +186,7 @@ export default class LogEventMonitor extends LightningElement {
                     return;
                 }
 
-                const csvHeader = '"Date","Created By","Request ID","Level","Context","Log Messages"\r\n';
+                const csvHeader = '"Date","Created By","Request ID","Level","Context","Source","Log Messages"\r\n';
                 let csvContent = csvHeader;
 
                 records.forEach((rec) => {
@@ -195,6 +195,7 @@ export default class LogEventMonitor extends LightningElement {
                     const requestId = rec.Request_ID__c || '';
                     const level = rec.Log_Level__c || '';
                     const context = rec.Context__c || '';
+                    const logSource = rec.Log_Source__c || '';
 
                     let rawMessages = rec.Log_Messages__c || '';
                     if (rawMessages.length > 32000) {
@@ -202,7 +203,7 @@ export default class LogEventMonitor extends LightningElement {
                     }
                     const messages = rawMessages.replace(/"/g, '""'); // Escape double quotes
 
-                    csvContent += `"${date}","${createdBy}","${requestId}","${level}","${context}","${messages}"\r\n`;
+                    csvContent += `"${date}","${createdBy}","${requestId}","${level}","${context}","${logSource}","${messages}"\r\n`;
                 });
 
                 const element = document.createElement('a');
