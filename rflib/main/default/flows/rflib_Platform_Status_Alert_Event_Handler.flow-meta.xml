@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Reports the Platform Status Alert Event as an RFLIB log event so that it flows through the regular log event pipeline.</description>
+        <name>Report_Platform_Status_Alert_Event</name>
+        <label>Report Platform Status Alert Event</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <actionName>rflib_PlatformStatusAlertEventAdapter</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_PlatformStatusAlertEventAdapter</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>65.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Flow to execute when Salesforce publishes a Platform Status Alert Event. A Flow is used instead of an Apex trigger because no test can make Salesforce publish this event, so a trigger would ship without any code coverage.</description>
+    <environments>Default</environments>
+    <interviewLabel>Platform Status Alert Event Handler {!$Flow.CurrentDateTime}: {!$Record.ServiceName} - {!$Record.RequestId}</interviewLabel>
+    <label>RFLIB Platform Status Alert Event Handler</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Report_Platform_Status_Alert_Event</targetReference>
+        </connector>
+        <flowRunAsUser>DefaultWorkflowUser</flowRunAsUser>
+        <object>PlatformStatusAlertEvent</object>
+        <triggerType>PlatformEvent</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

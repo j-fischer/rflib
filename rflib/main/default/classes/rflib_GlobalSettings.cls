@@ -109,6 +109,19 @@ public class rflib_GlobalSettings {
     @TestVisible
     private static final String LOG_MONITOR_DEFAULT_CONNECTION_DEFAULT_VALUE = 'New Messages';
 
+    // NOTE: The diagnostic event settings default to TRUE so that the platform diagnostics are reported
+    //       without an admin having to create a Global Setting record first. The events themselves are
+    //       low volume in a typical org, since Salesforce only publishes BatchApexErrorEvent for batch
+    //       classes that opt in and PlatformStatusAlertEvent for a handful of internal services.
+    @TestVisible
+    private static final Boolean BATCH_APEX_ERROR_REPORTING_ENABLED_DEFAULT_VALUE = true;
+
+    @TestVisible
+    private static final Boolean FLOW_EXECUTION_ERROR_REPORTING_ENABLED_DEFAULT_VALUE = true;
+
+    @TestVisible
+    private static final Boolean PLATFORM_STATUS_ALERT_REPORTING_ENABLED_DEFAULT_VALUE = true;
+
     public static Integer daysToRetainApplicationEventsOrDefault {
         get {
             String val = getSetting('Application_Event_Retain_X_Days');
@@ -289,6 +302,27 @@ public class rflib_GlobalSettings {
         get {
             String val = getSetting('Log_Monitor_Default_Connection');
             return String.isBlank(val) ? LOG_MONITOR_DEFAULT_CONNECTION_DEFAULT_VALUE : val;
+        }
+    }
+
+    public static Boolean batchApexErrorReportingEnabledOrDefault {
+        get {
+            String val = getSetting('Diagnostic_Event_Batch_Apex_Error_Reporting_Enabled');
+            return String.isBlank(val) ? BATCH_APEX_ERROR_REPORTING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Boolean flowExecutionErrorReportingEnabledOrDefault {
+        get {
+            String val = getSetting('Diagnostic_Event_Flow_Execution_Error_Reporting_Enabled');
+            return String.isBlank(val) ? FLOW_EXECUTION_ERROR_REPORTING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
+        }
+    }
+
+    public static Boolean platformStatusAlertReportingEnabledOrDefault {
+        get {
+            String val = getSetting('Diagnostic_Event_Platform_Status_Alert_Reporting_Enabled');
+            return String.isBlank(val) ? PLATFORM_STATUS_ALERT_REPORTING_ENABLED_DEFAULT_VALUE : Boolean.valueOf(val);
         }
     }
 

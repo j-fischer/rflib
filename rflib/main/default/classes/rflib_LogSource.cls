@@ -37,5 +37,6 @@ public enum rflib_LogSource {
     Apex,
     Flow,
     LWC,
-    Aura
+    Aura,
+    Platform
 }
