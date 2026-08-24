@@ -106,6 +106,28 @@ private class rflib_RetryableActionManagerTest {
     }
 
     @IsTest
+    public static void testExecute_EventDeliveredThroughEventBus() {
+        setup();
+
+        Test.startTest();
+        EventBus.publish(new rflib_Retryable_Action__e(
+            Record_ID__c = 'recId1',
+            Action__c = 'Action_One'
+        ));
+        Test.getEventBus().deliver();
+        Test.stopTest();
+
+        Assert.areEqual(1, rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.size());
+
+        rflib_RetryableAction action = rflib_MockRetryableActionHandler.CAPTURED_ACTION_EVENTS.get(0);
+        Assert.areEqual('Action_One', action.Action);
+        Assert.areEqual('recId1', action.Record_ID);
+        Assert.isNotNull(action.ReplayId);
+        Assert.isNotNull(action.EventUuid);
+        Assert.isInstanceOfType(action.event, rflib_Retryable_Action__e.class);
+    }
+
+    @IsTest
     public static void testExecute_AfterCommitEventDeliveredThroughEventBus() {
         setup();
 
