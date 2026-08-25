@@ -1,5 +1,10 @@
 import { chromium } from '@playwright/test';
-import { runApex, saveOrgInfo, sfJson, soql, STORAGE_STATE_PATH } from './helpers/sf';
+import { runApex, saveOrgInfo, savePipelineMarker, sfJson, soql, STORAGE_STATE_PATH } from './helpers/sf';
+
+// Context of the log event published to verify the subscriber pipeline. Deliberately distinct from the
+// 'TestContext' that CreateLogEvent.apex and SeedLogArchive.apex share, so 09-log-event-pipeline.spec.ts
+// cannot mistake a directly seeded row for one that traveled the pipeline.
+const PIPELINE_CONTEXT = 'E2ELogPipeline';
 
 export default async function globalSetup(): Promise<void> {
     console.log('Resolving default org via sf CLI...');
@@ -39,5 +44,13 @@ export default async function globalSetup(): Promise<void> {
     // Log Monitor Archive mode) have deterministic, recent rows instead of racing the async
     // platform-event archival pipeline, which can lag minutes in a fresh scratch org.
     runApex('scripts/apex/SeedLogArchive.apex');
+
+    // Published here rather than inside the spec because the platform event -> Flow -> Big Object hop
+    // can take several minutes, which exceeds a single test's timeout. Publishing during setup lets the
+    // rest of the suite absorb the lag, leaving the spec a short poll.
+    const publishedAt = new Date();
+    runApex('scripts/apex/CreatePipelineLogEvent.apex');
+    savePipelineMarker({ context: PIPELINE_CONTEXT, publishedAt: publishedAt.toISOString() });
+
     console.log('Global setup complete.');
 }

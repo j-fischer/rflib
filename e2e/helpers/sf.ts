@@ -7,12 +7,20 @@ const IS_WINDOWS = process.platform === 'win32';
 export const AUTH_DIR = path.join(__dirname, '..', '.auth');
 export const ORG_INFO_PATH = path.join(AUTH_DIR, 'org.json');
 export const STORAGE_STATE_PATH = path.join(AUTH_DIR, 'storageState.json');
+export const PIPELINE_MARKER_PATH = path.join(AUTH_DIR, 'pipeline.json');
 export const REPO_ROOT = path.join(__dirname, '..', '..');
 
 export interface OrgInfo {
     username: string;
     instanceUrl: string;
     adminName: string;
+}
+
+// Records the log event that global setup published through the real logger, so that
+// 09-log-event-pipeline.spec.ts can tell that row apart from ones left by an earlier run.
+export interface PipelineMarker {
+    context: string;
+    publishedAt: string;
 }
 
 // execFileSync with shell:true does not quote arguments, so quote anything with whitespace.
@@ -82,4 +90,13 @@ export function saveOrgInfo(info: OrgInfo): void {
 
 export function orgInfo(): OrgInfo {
     return JSON.parse(fs.readFileSync(ORG_INFO_PATH, 'utf8'));
+}
+
+export function savePipelineMarker(marker: PipelineMarker): void {
+    fs.mkdirSync(AUTH_DIR, { recursive: true });
+    fs.writeFileSync(PIPELINE_MARKER_PATH, JSON.stringify(marker, null, 4));
+}
+
+export function pipelineMarker(): PipelineMarker {
+    return JSON.parse(fs.readFileSync(PIPELINE_MARKER_PATH, 'utf8'));
 }
