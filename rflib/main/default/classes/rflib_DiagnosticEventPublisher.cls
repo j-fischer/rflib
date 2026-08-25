@@ -56,9 +56,9 @@ public with sharing class rflib_DiagnosticEventPublisher {
     private static rflib_EventPublisher EVENT_PUBLISHER = new rflib_EventBusPublisher();
 
     static {
-        // NOTE: It is critical to turn reporting off so that this class's own log statements do not
-        //       create additional log events while it is publishing the diagnostics themselves.
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
+        // NOTE: Reporting is deliberately left enabled. Publishing an rflib_Log_Event__e cannot re-raise
+        //       any of the diagnostic events subscribed to, so there is no recursion to guard against,
+        //       and a failure here must not disappear in a feature whose purpose is surfacing failures.
         LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
@@ -86,21 +86,49 @@ public with sharing class rflib_DiagnosticEventPublisher {
 
         List<SObject> events = new List<SObject>();
         for (rflib_DiagnosticEvent diagnostic : diagnostics) {
-            events.add(new rflib_Log_Event__e(
-                Source_System_ID__c = sourceSystemId,
-                Request_ID__c = resolveRequestId(diagnostic.requestId),
-                Log_Level__c = LOG_LEVEL,
-                Context__c = truncate(diagnostic.context, MAX_TEXT_FIELD_SIZE),
-                Log_Source__c = LOG_SOURCE,
-                Log_Messages__c = prepare(diagnostic.message, isMaskingEnabled),
-                Stacktrace__c = prepare(diagnostic.stacktrace, isMaskingEnabled),
-                Platform_Info__c = serializeAttributes(diagnostic.attributes)
-            ));
+            try {
+                events.add(toLogEvent(diagnostic, sourceSystemId, isMaskingEnabled));
+            } catch (Exception ex) {
+                // NOTE: Each event is built on its own so that a single failure, for example an invalid
+                //       Masking Rule applied to one message, does not discard the rest of the batch.
+                LOGGER.error(
+                    'Failed to build a log event for diagnostic context {0}, skipping it',
+                    new Object[] { diagnostic?.context },
+                    ex
+                );
+            }
         }
 
-        // NOTE: A single publish call keeps this within the transaction's publish limit no matter how
-        //       many events the subscriber received, since the limit counts calls and not messages.
-        EVENT_PUBLISHER.publish(events);
+        if (events.isEmpty()) {
+            return;
+        }
+
+        try {
+            // NOTE: A single publish call keeps this within the transaction's publish limit no matter how
+            //       many events the subscriber received, since the limit counts calls and not messages.
+            EVENT_PUBLISHER.publish(events);
+        } catch (Exception ex) {
+            // NOTE: Nothing can be salvaged once the publish itself fails, but the exception must not
+            //       reach the subscriber, where it would stall the channel for every later event.
+            LOGGER.error('Failed to publish {0} diagnostic log event(s)', new Object[] { events.size() }, ex);
+        }
+    }
+
+    private static rflib_Log_Event__e toLogEvent(
+        rflib_DiagnosticEvent diagnostic,
+        String sourceSystemId,
+        Boolean isMaskingEnabled
+    ) {
+        return new rflib_Log_Event__e(
+            Source_System_ID__c = sourceSystemId,
+            Request_ID__c = resolveRequestId(diagnostic.requestId),
+            Log_Level__c = LOG_LEVEL,
+            Context__c = truncate(diagnostic.context, MAX_TEXT_FIELD_SIZE),
+            Log_Source__c = LOG_SOURCE,
+            Log_Messages__c = prepare(diagnostic.message, isMaskingEnabled),
+            Stacktrace__c = prepare(diagnostic.stacktrace, isMaskingEnabled),
+            Platform_Info__c = serializeAttributes(diagnostic.attributes)
+        );
     }
 
     private static String resolveRequestId(String requestId) {

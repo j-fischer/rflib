@@ -35,6 +35,11 @@
  *
  *              Note that Salesforce only publishes the event for batch classes that opt in through that
  *              interface, so existing batch jobs are not captured until they declare it.
+ *
+ *              Like the other diagnostic adapters, this one is invoked from a platform event triggered
+ *              Flow. Salesforce would accept an Apex trigger on this event, but all RFLIB platform event
+ *              subscriptions are Flow based by design, which keeps one mental model for the whole
+ *              library and lets an admin see and extend the subscription without code.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_BatchApexErrorEventAdapter {
@@ -47,7 +52,9 @@ public with sharing class rflib_BatchApexErrorEventAdapter {
     private static final String TRUNCATED_JOB_SCOPE_PATTERN = '\nJob Scope (truncated): {0}';
 
     static {
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
+        // NOTE: Reporting stays enabled. A conversion failure here cannot re-raise a BatchApexErrorEvent,
+        //       so there is no recursion to guard against, and silently dropping the failure would hide it
+        //       from the very dashboards this adapter feeds.
         LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
@@ -55,25 +62,31 @@ public with sharing class rflib_BatchApexErrorEventAdapter {
      * @description Convert and report the given batch Apex error events.
      * @param events The events received by the platform event subscriber.
      */
+    @InvocableMethod(label='Report Batch Apex Error Event' category='RFLIB' description='Report Batch Apex Error Events as RFLIB log events')
     public static void handle(List<BatchApexErrorEvent> events) {
+        if (events == null || events.isEmpty()) {
+            return;
+        }
+
         if (!rflib_GlobalSettings.batchApexErrorReportingEnabledOrDefault) {
             LOGGER.debug('Batch Apex error reporting is disabled, skipping {0} event(s)', new Object[] { events.size() });
             return;
         }
 
-        try {
-            List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
-            for (BatchApexErrorEvent evt : events) {
+        List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
+        for (BatchApexErrorEvent evt : events) {
+            try {
                 diagnostics.add(convert(evt));
+            } catch (Exception ex) {
+                // NOTE: Each event is converted on its own so that one unusable message does not cost the
+                //       rest of the batch, which can hold up to 2000 events. There is no outer catch
+                //       because rflib_DiagnosticEventPublisher guards the publish itself, so nothing from
+                //       here can reach the subscriber and leave it in an error state.
+                LOGGER.error('Failed to convert a Batch Apex error event, skipping it', ex);
             }
-
-            rflib_DiagnosticEventPublisher.publish(diagnostics);
-        } catch (Exception ex) {
-            // NOTE: Exceptions are swallowed on purpose. An uncaught exception would leave the subscriber
-            //       in an error state and stall the entire channel, which loses far more diagnostics than
-            //       the single batch that failed to convert.
-            LOGGER.error('Failed to report Batch Apex error events', ex);
         }
+
+        rflib_DiagnosticEventPublisher.publish(diagnostics);
     }
 
     private static rflib_DiagnosticEvent convert(BatchApexErrorEvent evt) {

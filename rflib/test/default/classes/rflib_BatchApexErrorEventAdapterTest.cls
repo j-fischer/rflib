@@ -119,32 +119,33 @@ private class rflib_BatchApexErrorEventAdapterTest {
     }
 
     @isTest
-    public static void testTriggerSubscribesToTheEvent() {
+    public static void testUnconvertibleEventDoesNotDiscardTheBatch() {
         rflib_MockEventPublisher publisher = setupPublisher();
 
         Test.startTest();
-        // Salesforce is the only publisher of BatchApexErrorEvent, so the subscription can only be
-        // exercised by making a batch that opted into Database.RaisesPlatformEvents fail for real.
-        Database.executeBatch(new rflib_MockFailingBatch());
-        try {
-            // The batch runs synchronously here and its exception surfaces to the test rather than
-            // being absorbed by the platform, so it has to be caught for the run to continue.
-            Test.stopTest();
-        } catch (Exception ex) {
-            System.assert(ex.getMessage().contains(rflib_MockFailingBatch.FAILURE_MESSAGE), 'unexpected failure: ' + ex);
-        }
-
-        Test.getEventBus().deliver();
-
-        System.assertEquals(1, publisher.getPublishingCounter(), 'the trigger must report the batch failure');
-
-        rflib_Log_Event__e evt = (rflib_Log_Event__e) publisher.capturedPlatformEvent;
-        System.assertEquals('BatchApexErrorEvent', evt.Context__c);
-        System.assertEquals('FATAL', evt.Log_Level__c);
-        System.assert(
-            evt.Log_Messages__c.contains(rflib_MockFailingBatch.FAILURE_MESSAGE),
-            'expected the batch exception message, but was: ' + evt.Log_Messages__c
+        rflib_BatchApexErrorEventAdapter.handle(
+            new List<BatchApexErrorEvent> { createEvent(false), null, createEvent(false) }
         );
+        Test.stopTest();
+
+        System.assertEquals(1, publisher.getPublishingCounter());
+        System.assertEquals(
+            2,
+            publisher.capturedPlatformEvents.size(),
+            'the events that could be converted must still be reported'
+        );
+    }
+
+    @isTest
+    public static void testIgnoresNullAndEmptyInput() {
+        rflib_MockEventPublisher publisher = setupPublisher();
+
+        Test.startTest();
+        rflib_BatchApexErrorEventAdapter.handle(null);
+        rflib_BatchApexErrorEventAdapter.handle(new List<BatchApexErrorEvent>());
+        Test.stopTest();
+
+        System.assertEquals(0, publisher.getPublishingCounter());
     }
 
     private static rflib_MockEventPublisher setupPublisher() {

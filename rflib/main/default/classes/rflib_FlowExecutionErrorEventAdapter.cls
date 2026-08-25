@@ -51,7 +51,8 @@ public with sharing class rflib_FlowExecutionErrorEventAdapter {
     private static final String MESSAGE_PATTERN = 'Screen flow {0} failed at element {1}: {2}';
 
     static {
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
+        // NOTE: See rflib_BatchApexErrorEventAdapter, reporting stays enabled so conversion failures
+        //       remain visible; there is no recursion for it to cause.
         LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
@@ -61,23 +62,27 @@ public with sharing class rflib_FlowExecutionErrorEventAdapter {
      */
     @InvocableMethod(label='Report Flow Execution Error Event' category='RFLIB' description='Report Flow Execution Error Events as RFLIB log events')
     public static void handle(List<FlowExecutionErrorEvent> events) {
+        if (events == null || events.isEmpty()) {
+            return;
+        }
+
         if (!rflib_GlobalSettings.flowExecutionErrorReportingEnabledOrDefault) {
             LOGGER.debug('Flow execution error reporting is disabled, skipping {0} event(s)', new Object[] { events.size() });
             return;
         }
 
-        try {
-            List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
-            for (FlowExecutionErrorEvent evt : events) {
+        List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
+        for (FlowExecutionErrorEvent evt : events) {
+            try {
                 diagnostics.add(convert(evt));
+            } catch (Exception ex) {
+                // NOTE: See rflib_BatchApexErrorEventAdapter, one unusable message must not cost the rest
+                //       of the batch, and the publisher guards the publish itself.
+                LOGGER.error('Failed to convert a flow execution error event, skipping it', ex);
             }
-
-            rflib_DiagnosticEventPublisher.publish(diagnostics);
-        } catch (Exception ex) {
-            // NOTE: See rflib_BatchApexErrorEventAdapter, exceptions are swallowed to keep the subscriber
-            //       out of an error state that would stall the whole channel.
-            LOGGER.error('Failed to report flow execution error events', ex);
         }
+
+        rflib_DiagnosticEventPublisher.publish(diagnostics);
     }
 
     private static rflib_DiagnosticEvent convert(FlowExecutionErrorEvent evt) {

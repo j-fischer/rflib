@@ -114,6 +114,38 @@ private class rflib_PlatformStatusAlertAdapterTest {
         System.assertEquals(0, publisher.getPublishingCounter());
     }
 
+    @isTest
+    public static void testUnconvertibleEventDoesNotDiscardTheBatch() {
+        rflib_MockEventPublisher publisher = setupPublisher();
+
+        Test.startTest();
+        rflib_PlatformStatusAlertEventAdapter.handle(
+            new List<PlatformStatusAlertEvent> { createEvent('Error'), null, createEvent('Error') }
+        );
+        Test.stopTest();
+
+        System.assertEquals(1, publisher.getPublishingCounter());
+        System.assertEquals(
+            2,
+            publisher.capturedPlatformEvents.size(),
+            'the events that could be converted must still be reported'
+        );
+    }
+
+    @isTest
+    public static void testIgnoresNullInputWhenReportingIsDisabled() {
+        // handle() is invocable, so any Flow can pass an uninitialized collection to it. The null check
+        // has to run before anything dereferences the list, including the disabled-path logging.
+        rflib_GlobalSettings.SETTINGS.put(SETTING_NAME, 'false');
+        rflib_MockEventPublisher publisher = setupPublisher();
+
+        Test.startTest();
+        rflib_PlatformStatusAlertEventAdapter.handle(null);
+        Test.stopTest();
+
+        System.assertEquals(0, publisher.getPublishingCounter());
+    }
+
     private static rflib_MockEventPublisher setupPublisher() {
         rflib_MockEventPublisher publisher = new rflib_MockEventPublisher();
         rflib_DiagnosticEventPublisher.EVENT_PUBLISHER = publisher;

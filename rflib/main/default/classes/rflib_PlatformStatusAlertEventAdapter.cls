@@ -47,7 +47,8 @@ public with sharing class rflib_PlatformStatusAlertEventAdapter {
     private static final String MESSAGE_PATTERN = '{0}/{1} raised a {2} alert: {3} (API error code {4})';
 
     static {
-        LOGGER.setReportingLogLevel(rflib_LogLevel.NONE);
+        // NOTE: See rflib_BatchApexErrorEventAdapter, reporting stays enabled so conversion failures
+        //       remain visible; there is no recursion for it to cause.
         LOGGER.setSystemDebugLevel(rflib_LogLevel.DEBUG);
     }
 
@@ -64,23 +65,27 @@ public with sharing class rflib_PlatformStatusAlertEventAdapter {
      */
     @InvocableMethod(label='Report Platform Status Alert Event' category='RFLIB' description='Report Platform Status Alert Events as RFLIB log events')
     public static void handle(List<PlatformStatusAlertEvent> events) {
+        if (events == null || events.isEmpty()) {
+            return;
+        }
+
         if (!rflib_GlobalSettings.platformStatusAlertReportingEnabledOrDefault) {
             LOGGER.debug('Platform status alert reporting is disabled, skipping {0} event(s)', new Object[] { events.size() });
             return;
         }
 
-        try {
-            List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
-            for (PlatformStatusAlertEvent evt : events) {
+        List<rflib_DiagnosticEvent> diagnostics = new List<rflib_DiagnosticEvent>();
+        for (PlatformStatusAlertEvent evt : events) {
+            try {
                 diagnostics.add(convert(evt));
+            } catch (Exception ex) {
+                // NOTE: See rflib_BatchApexErrorEventAdapter, one unusable message must not cost the rest
+                //       of the batch, and the publisher guards the publish itself.
+                LOGGER.error('Failed to convert a platform status alert event, skipping it', ex);
             }
-
-            rflib_DiagnosticEventPublisher.publish(diagnostics);
-        } catch (Exception ex) {
-            // NOTE: See rflib_BatchApexErrorEventAdapter, exceptions are swallowed to keep the subscriber
-            //       out of an error state that would stall the whole channel.
-            LOGGER.error('Failed to report platform status alert events', ex);
         }
+
+        rflib_DiagnosticEventPublisher.publish(diagnostics);
     }
 
     private static rflib_DiagnosticEvent convert(PlatformStatusAlertEvent evt) {

@@ -169,9 +169,77 @@ private class rflib_DiagnosticEventPublisherTest {
         System.assertNotEquals(null, ((rflib_Log_Event__e) publisher.capturedPlatformEvent).Log_Messages__c);
     }
 
+    @isTest
+    public static void testSkipsDiagnosticsThatCannotBeBuilt() {
+        rflib_MockEventPublisher publisher = setupPublisher();
+
+        Test.startTest();
+        rflib_DiagnosticEventPublisher.publish(new List<rflib_DiagnosticEvent> {
+            new rflib_DiagnosticEvent('BatchApexErrorEvent', 'REQ-1', 'Failed'),
+            null,
+            new rflib_DiagnosticEvent('BatchApexErrorEvent', 'REQ-2', 'Failed')
+        });
+        Test.stopTest();
+
+        System.assertEquals(1, publisher.getPublishingCounter());
+        System.assertEquals(
+            2,
+            publisher.capturedPlatformEvents.size(),
+            'the diagnostics that could be built must still be published'
+        );
+    }
+
+    @isTest
+    public static void testDoesNotPublishWhenNoDiagnosticCouldBeBuilt() {
+        rflib_MockEventPublisher publisher = setupPublisher();
+
+        Test.startTest();
+        rflib_DiagnosticEventPublisher.publish(new List<rflib_DiagnosticEvent> { null });
+        Test.stopTest();
+
+        System.assertEquals(0, publisher.getPublishingCounter());
+    }
+
+    @isTest
+    public static void testDoesNotPropagatePublishFailures() {
+        rflib_ThrowingEventPublisher publisher = new rflib_ThrowingEventPublisher();
+        rflib_DiagnosticEventPublisher.EVENT_PUBLISHER = publisher;
+
+        Test.startTest();
+        // An exception escaping here would leave the platform event subscriber in an error state and
+        // stall the channel for every event that follows, so the publisher has to absorb it.
+        rflib_DiagnosticEventPublisher.publish(new List<rflib_DiagnosticEvent> {
+            new rflib_DiagnosticEvent('BatchApexErrorEvent', 'REQ-1', 'Failed')
+        });
+        Test.stopTest();
+
+        System.assertEquals(1, publisher.getPublishingCounter(), 'the publish must have been attempted');
+    }
+
     private static rflib_MockEventPublisher setupPublisher() {
         rflib_MockEventPublisher publisher = new rflib_MockEventPublisher();
         rflib_DiagnosticEventPublisher.EVENT_PUBLISHER = publisher;
         return publisher;
+    }
+
+    /**
+     * An event publisher that always fails, used to prove the diagnostic publisher absorbs the failure.
+     */
+    private class rflib_ThrowingEventPublisher implements rflib_EventPublisher {
+        private Integer attempts = 0;
+
+        public Integer getPublishingCounter() {
+            return attempts;
+        }
+
+        public Database.SaveResult publish(SObject event) {
+            attempts++;
+            throw new rflib_InvalidStateException('Simulated publish failure');
+        }
+
+        public List<Database.SaveResult> publish(List<SObject> events) {
+            attempts++;
+            throw new rflib_InvalidStateException('Simulated publish failure');
+        }
     }
 }
