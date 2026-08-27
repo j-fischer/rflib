@@ -103,6 +103,12 @@
                         </div>
                     </div>
                     <div class="slds-form-element">
+                        <span class="slds-form-element__label">Log Source</span>
+                        <div class="slds-form-element__control slds-border_bottom">
+                            <div class="slds-form-element__static">{logEvent.Log_Source__c}</div>
+                        </div>
+                    </div>
+                    <div class="slds-form-element">
                         <span class="slds-form-element__label">Log Messages</span>
                         <div class="slds-form-element__control slds-border_bottom">
                             <div class="slds-form-element__static slds-scrollable_y logMessages">
@@ -161,7 +167,12 @@
                     <div class="slds-form-element">
                         <div class="slds-form-element__control slds-border_bottom">
                             <div class="slds-form-element__static slds-scrollable_y stacktrace">
-                                <pre><code>{logEvent.Stacktrace__c}</code></pre>
+                                <template lwc:if={hasStacktrace}>
+                                    <pre><code>{logEvent.Stacktrace__c}</code></pre>
+                                </template>
+                                <template lwc:else>
+                                    <pre><code>No stacktrace available.</code></pre>
+                                </template>
                             </div>
                         </div>
                     </div>

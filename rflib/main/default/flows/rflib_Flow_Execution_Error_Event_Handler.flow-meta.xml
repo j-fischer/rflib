@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Reports the Flow Execution Error Event as an RFLIB log event so that it flows through the regular log event pipeline.</description>
+        <name>Report_Flow_Execution_Error_Event</name>
+        <label>Report Flow Execution Error Event</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <actionName>rflib_FlowExecutionErrorEventAdapter</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>events</name>
+            <value>
+                <elementReference>$Record</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>rflib_FlowExecutionErrorEventAdapter</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <apiVersion>65.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Flow to execute when Salesforce publishes a Flow Execution Error Event. Salesforce does not allow Apex triggers on this event, so this Flow is the subscriber that hands the event to the RFLIB adapter.</description>
+    <environments>Default</environments>
+    <interviewLabel>Flow Execution Error Event Handler {!$Flow.CurrentDateTime}: {!$Record.FlowApiName} - {!$Record.InterviewGuid}</interviewLabel>
+    <label>RFLIB Flow Execution Error Event Handler</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Report_Flow_Execution_Error_Event</targetReference>
+        </connector>
+        <flowRunAsUser>DefaultWorkflowUser</flowRunAsUser>
+        <object>FlowExecutionErrorEvent</object>
+        <triggerType>PlatformEvent</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

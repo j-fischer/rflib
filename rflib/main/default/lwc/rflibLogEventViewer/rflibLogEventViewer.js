@@ -222,6 +222,10 @@ export default class RflibLogEventViewer extends LightningElement {
         return !!this.logEvent;
     }
 
+    get hasStacktrace() {
+        return !!this.logEvent.Stacktrace__c;
+    }
+
     get platformInfo() {
         const platformInfo = JSON.parse(this.logEvent.Platform_Info__c) || {};
         const result = Object.keys(platformInfo).map((key, index) => {

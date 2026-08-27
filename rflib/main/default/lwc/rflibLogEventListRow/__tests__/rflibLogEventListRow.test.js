@@ -15,7 +15,8 @@ describe('c-rflib-log-event-list-row', () => {
             CreatedDate: '2021-01-01T00:00:00.000Z',
             Log_Level__c: 'ERROR',
             Request_ID__c: 'REQ-123',
-            Context__c: 'TestContext'
+            Context__c: 'TestContext',
+            Log_Source__c: 'Apex'
         };
 
         const element = createElement('c-rflib-log-event-list-row', {
@@ -44,6 +45,8 @@ describe('c-rflib-log-event-list-row', () => {
             expect(cells[3].className).toContain('level-error');
             // Index 4 is Context
             expect(cells[4].textContent).toBe(evt.Context__c);
+            // Index 5 is Log Source
+            expect(cells[5].textContent).toBe(evt.Log_Source__c);
         });
     });
 
@@ -68,6 +71,8 @@ describe('c-rflib-log-event-list-row', () => {
 
             const cells = element.shadowRoot.querySelectorAll('td div');
             expect(cells[1].textContent).toBe(evt.CreatedById__c);
+            // Records archived before the Log Source field existed have no value
+            expect(cells[5].textContent).toBe('');
         });
     });
 

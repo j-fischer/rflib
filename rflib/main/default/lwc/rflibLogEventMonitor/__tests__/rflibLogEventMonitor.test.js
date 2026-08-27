@@ -441,6 +441,7 @@ describe('c-rflib-log-event-monitor', () => {
                         Request_ID__c: 'Req1',
                         Log_Level__c: 'INFO',
                         Context__c: 'Ctx',
+                        Log_Source__c: 'Apex',
                         Log_Messages__c: 'Msg'
                     }
                 ]);
@@ -468,6 +469,15 @@ describe('c-rflib-log-event-monitor', () => {
             })
             .then(() => {
                 expect(document.createElement).toHaveBeenCalledWith('a');
+
+                const anchor = document.createElement.mock.results
+                    .map((result) => result.value)
+                    .find((el) => el.tagName === 'A');
+                const csvContent = decodeURIComponent(anchor.getAttribute('href'));
+                expect(csvContent).toContain(
+                    '"Date","Created By","Request ID","Level","Context","Source","Log Messages"'
+                );
+                expect(csvContent).toContain('"2021-01-01","User1","Req1","INFO","Ctx","Apex","Msg"');
             });
     });
 

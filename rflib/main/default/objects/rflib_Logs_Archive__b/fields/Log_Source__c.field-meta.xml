@@ -3,9 +3,7 @@
     <fullName>Log_Source__c</fullName>
     <description>The source type where the log originated: Apex, Flow, Aura, LWC, OmniStudio, or Platform for Salesforce diagnostic events.</description>
     <externalId>false</externalId>
-    <isFilteringDisabled>false</isFilteringDisabled>
-    <isNameField>false</isNameField>
-    <isSortingDisabled>false</isSortingDisabled>
+    <inlineHelpText>The source type where the log originated: Apex, Flow, Aura, LWC, OmniStudio, or Platform for Salesforce diagnostic events.</inlineHelpText>
     <label>Log Source</label>
     <length>10</length>
     <required>false</required>

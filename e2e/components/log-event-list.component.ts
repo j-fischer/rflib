@@ -3,7 +3,7 @@ import { Locator } from '@playwright/test';
 // The search inputs carry `data-field` in rflibLogEventList.html and the component
 // reads it back through `dataset.field`, so it is a stable hook. The surrounding
 // column classes are not - they swap on focus to expand the active field.
-const SEARCH_FIELDS = ['createdBy', 'requestId', 'context', 'level', 'logMessage'] as const;
+const SEARCH_FIELDS = ['createdBy', 'requestId', 'context', 'level', 'logSource', 'logMessage'] as const;
 
 export type LogSearchField = (typeof SEARCH_FIELDS)[number];
 

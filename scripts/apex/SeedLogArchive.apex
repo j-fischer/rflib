@@ -16,6 +16,8 @@ for (Integer i = 0; i < levels.size(); i++) {
     row.Request_ID__c = 'e2e-seed-' + levels[i];
     row.Log_Messages__c = 'E2E seeded ' + levels[i] + ' archive entry for deterministic UI tests';
     row.Platform_Info__c = '{"CPU Time":12,"Heap Size":4080}';
+    row.Log_Source__c = 'Apex';
+    row.Stacktrace__c = 'Class.rflib_E2ESeed.run: line ' + (i + 1) + ', column 1';
     rows.add(row);
 }
 

@@ -56,6 +56,17 @@ private class rflib_ArchiveLogActionTest {
         rflib_ArchiveLogAction.archiveLogIfApplicable(createLogEventList());
         System.assertNotEquals(null, dbExecutor.records);
         Test.stopTest();
+
+        System.assertEquals(1, dbExecutor.records.size());
+
+        rflib_Logs_Archive__b archivedLog = (rflib_Logs_Archive__b) dbExecutor.records[0];
+        System.assertEquals('Some Request ID', archivedLog.Request_ID__c);
+        System.assertEquals('Context Foo', archivedLog.Context__c);
+        System.assertEquals('Some messages', archivedLog.Log_Messages__c);
+        System.assertEquals('ERROR', archivedLog.Log_Level__c);
+        System.assertEquals('{"CPU Time":12}', archivedLog.Platform_Info__c);
+        System.assertEquals('Apex', archivedLog.Log_Source__c);
+        System.assertEquals('Class.Foo.bar: line 1, column 1', archivedLog.Stacktrace__c);
     }
 
     private static List<rflib_Log_Event__e> createLogEventList() {
@@ -63,7 +74,10 @@ private class rflib_ArchiveLogActionTest {
             Request_ID__c = 'Some Request ID',
             Context__c = 'Context Foo',
             Log_Messages__c = 'Some messages',
-            Log_Level__c = 'ERROR'
+            Log_Level__c = 'ERROR',
+            Platform_Info__c = '{"CPU Time":12}',
+            Log_Source__c = 'Apex',
+            Stacktrace__c = 'Class.Foo.bar: line 1, column 1'
         );
 
         return new List<rflib_Log_Event__e> { ev };

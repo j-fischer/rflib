@@ -86,6 +86,19 @@
                     >
                     </lightning-input>
                 </div>
+                <div class={logSourceFieldClass} onkeypress={handleLogSourceKeyPress}>
+                    <lightning-input
+                        type="search"
+                        onchange={handleLogSourceKeyChange}
+                        class="slds-m-bottom_small"
+                        variant="label-hidden"
+                        placeholder="Source..."
+                        onfocus={handleLogSourceFocus}
+                        onblur={handleSearchFieldBlur}
+                        data-field="logSource"
+                    >
+                    </lightning-input>
+                </div>
                 <div class={logMessageFieldClass} onkeypress={handleLogMessageKeyPress}>
                     <lightning-input
                         type="search"
@@ -123,6 +136,9 @@
                             </th>
                             <th scope="col">
                                 <div class="slds-truncate" title="Context">Context</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Source">Source</div>
                             </th>
                         </tr>
                     </thead>

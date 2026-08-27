@@ -205,7 +205,9 @@ public with sharing class rflib_LogArchiveController {
                         rflib_Logs_Archive__b.Log_Level__c,
                         rflib_Logs_Archive__b.Request_ID__c,
                         rflib_Logs_Archive__b.Log_Messages__c,
-                        rflib_Logs_Archive__b.Platform_Info__c
+                        rflib_Logs_Archive__b.Platform_Info__c,
+                        rflib_Logs_Archive__b.Log_Source__c,
+                        rflib_Logs_Archive__b.Stacktrace__c
                     }
                 )
                 .whereAre(

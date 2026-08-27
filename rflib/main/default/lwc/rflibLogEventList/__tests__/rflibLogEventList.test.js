@@ -9,6 +9,7 @@ const MOCK_LOG_EVENTS = [
         Log_Level__c: 'ERROR',
         Context__c: 'Referral',
         Request_ID__c: 'REQ-001',
+        Log_Source__c: 'Apex',
         Log_Messages__c: 'Error occurred'
     },
     {
@@ -18,6 +19,7 @@ const MOCK_LOG_EVENTS = [
         Log_Level__c: 'INFO',
         Context__c: 'Payment',
         Request_ID__c: 'REQ-002',
+        Log_Source__c: 'LWC',
         Log_Messages__c: 'Payment processed'
     },
     {
@@ -27,6 +29,7 @@ const MOCK_LOG_EVENTS = [
         Log_Level__c: 'DEBUG',
         Context__c: 'Referral',
         Request_ID__c: 'REQ-003',
+        Log_Source__c: 'Apex',
         Log_Messages__c: 'Debug info'
     }
 ];
@@ -206,6 +209,57 @@ describe('c-rflib-log-event-list', () => {
             });
     });
 
+    it('filters logs by Log Source', () => {
+        const element = createElement('c-rflib-log-event-list', {
+            is: RflibLogEventList
+        });
+
+        element.pageSize = 10;
+        element.logEvents = MOCK_LOG_EVENTS;
+        document.body.appendChild(element);
+
+        return Promise.resolve()
+            .then(() => {
+                const input = element.shadowRoot.querySelector('lightning-input[data-field="logSource"]');
+                input.value = 'LWC';
+                input.dispatchEvent(new CustomEvent('change'));
+
+                const searchBtn = element.shadowRoot.querySelector('lightning-button');
+                searchBtn.click();
+            })
+            .then(() => {
+                const rows = element.shadowRoot.querySelectorAll('c-rflib-log-event-list-row');
+                expect(rows.length).toBe(1);
+            });
+    });
+
+    it('filters logs by Log Source for records archived without a log source', () => {
+        const element = createElement('c-rflib-log-event-list', {
+            is: RflibLogEventList
+        });
+
+        element.pageSize = 10;
+        element.logEvents = MOCK_LOG_EVENTS.map((evt) => {
+            const { Log_Source__c, ...recordWithoutSource } = evt;
+            return recordWithoutSource;
+        });
+        document.body.appendChild(element);
+
+        return Promise.resolve()
+            .then(() => {
+                const input = element.shadowRoot.querySelector('lightning-input[data-field="logSource"]');
+                input.value = 'Apex';
+                input.dispatchEvent(new CustomEvent('change'));
+
+                const searchBtn = element.shadowRoot.querySelector('lightning-button');
+                searchBtn.click();
+            })
+            .then(() => {
+                const rows = element.shadowRoot.querySelectorAll('c-rflib-log-event-list-row');
+                expect(rows.length).toBe(0);
+            });
+    });
+
     it('filters logs by Log Message', () => {
         const element = createElement('c-rflib-log-event-list', {
             is: RflibLogEventList
@@ -348,6 +402,29 @@ describe('c-rflib-log-event-list', () => {
             });
     });
 
+    it('executes search on enter key press for log source', () => {
+        const element = createElement('c-rflib-log-event-list', {
+            is: RflibLogEventList
+        });
+        element.pageSize = 10;
+        element.logEvents = MOCK_LOG_EVENTS;
+        document.body.appendChild(element);
+
+        return Promise.resolve()
+            .then(() => {
+                const input = element.shadowRoot.querySelector('lightning-input[data-field="logSource"]');
+                input.value = 'Apex';
+                input.dispatchEvent(new CustomEvent('change'));
+
+                const keyEvent = new KeyboardEvent('keypress', { which: 13, bubbles: true, composed: true });
+                input.closest('div').dispatchEvent(keyEvent);
+            })
+            .then(() => {
+                const rows = element.shadowRoot.querySelectorAll('c-rflib-log-event-list-row');
+                expect(rows.length).toBe(2);
+            });
+    });
+
     it('executes search on enter key press for log message', () => {
         const element = createElement('c-rflib-log-event-list', {
             is: RflibLogEventList
@@ -439,6 +516,23 @@ describe('c-rflib-log-event-list', () => {
         });
     });
 
+    it('updates focus state on log source search field', () => {
+        const element = createElement('c-rflib-log-event-list', {
+            is: RflibLogEventList
+        });
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            const input = element.shadowRoot.querySelector('lightning-input[data-field="logSource"]');
+            input.dispatchEvent(new CustomEvent('focus'));
+
+            return Promise.resolve().then(() => {
+                const container = input.closest('div');
+                expect(container.className).toContain('search-field-expanded');
+            });
+        });
+    });
+
     it('updates focus state on log message search field', () => {
         const element = createElement('c-rflib-log-event-list', {
             is: RflibLogEventList
@@ -480,7 +574,7 @@ describe('c-rflib-log-event-list', () => {
             .then(() => {
                 const input = element.shadowRoot.querySelector('lightning-input[data-field="createdBy"]');
                 const container = input.closest('div');
-                expect(container.className).toContain('slds-size_1-of-6'); // Default class
+                expect(container.className).toContain('slds-size_1-of-7'); // Default class
             });
     });
 });

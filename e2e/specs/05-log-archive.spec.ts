@@ -1,5 +1,5 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
-import { ConfirmationDialogComponent } from '../components';
+import { ConfirmationDialogComponent, VIEWER_TABS } from '../components';
 import { expectToast } from '../components/base';
 import { createOpsCenterSession } from '../fixtures';
 import { pollUntil } from '../helpers/polling';
@@ -51,6 +51,20 @@ test('archived events open in the log event viewer', async () => {
     await monitor.eventRows().first().click();
     await expect(monitor.viewer.root).toBeVisible({ timeout: 30_000 });
     await expect(monitor.viewer.root.getByText('Log Messages')).toBeVisible();
+});
+
+test('archived events retain the log source and the stacktrace', async () => {
+    // Both fields were added to the Big Object so that archived records carry the same
+    // detail as live events; the seed script writes them like the archive action does.
+    await expect(monitor.eventRows().filter({ hasText: 'Apex' }).first()).toBeVisible();
+
+    // The selected row may come from the seed script or from a real archived log event, so assert the
+    // shape of an Apex stack frame rather than either source's exact text - and never the placeholder
+    // that pre-upgrade records without a stacktrace render.
+    await monitor.viewer.openTab(VIEWER_TABS.stacktrace);
+    await expect(monitor.viewer.stacktrace).toContainText(/line \d+, column \d+/);
+
+    await monitor.viewer.openTab(VIEWER_TABS.logEvent);
 });
 
 test('clear archive removes expired records after confirmation', async () => {
