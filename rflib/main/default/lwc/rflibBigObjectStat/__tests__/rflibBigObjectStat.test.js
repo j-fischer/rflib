@@ -108,10 +108,21 @@ const MOCK_CONFIGS = JSON.stringify([
 const MOCK_FIELDS = 'Name, Count';
 
 describe('c-rflib-big-object-stat', () => {
-    afterEach(() => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(async () => {
         while (document.body.firstChild) {
             document.body.removeChild(document.body.firstChild);
         }
+
+        // The CDC subscription is shared across component instances and torn down on a timer, so
+        // it has to be flushed between tests to reset the module state.
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+
+        jest.useRealTimers();
         jest.clearAllMocks();
     });
 
@@ -375,7 +386,7 @@ describe('c-rflib-big-object-stat', () => {
         expect(refreshApex).toHaveBeenCalled();
     });
 
-    it('unsubscribes on disconnect', async () => {
+    it('unsubscribes on disconnect once the grace period has elapsed', async () => {
         const element = createElement('c-rflib-big-object-stat', {
             is: RflibBigObjectStat
         });
@@ -388,6 +399,39 @@ describe('c-rflib-big-object-stat', () => {
 
         document.body.removeChild(element);
 
+        // The teardown is deferred so a replacement instance can take the subscription over
+        expect(unsubscribe).not.toHaveBeenCalled();
+
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+
         expect(unsubscribe).toHaveBeenCalled();
+    });
+
+    it('reuses the subscription when the component is re-created within the grace period', async () => {
+        const createComponent = () => {
+            const element = createElement('c-rflib-big-object-stat', {
+                is: RflibBigObjectStat
+            });
+            element.bigObjectConfigs = MOCK_CONFIGS;
+            element.fieldsToDisplay = MOCK_FIELDS;
+            document.body.appendChild(element);
+            return element;
+        };
+
+        const firstElement = createComponent();
+        await Promise.resolve();
+
+        // Lightning rebuilds the page on a tab switch: the old instance is removed and a new one
+        // is created right away, which must not churn the shared CometD subscription.
+        document.body.removeChild(firstElement);
+        createComponent();
+        await Promise.resolve();
+
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+
+        expect(subscribe).toHaveBeenCalledTimes(1);
+        expect(unsubscribe).not.toHaveBeenCalled();
     });
 });

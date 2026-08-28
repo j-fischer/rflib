@@ -10,14 +10,77 @@ import getFieldMetadata from '@salesforce/apex/rflib_BigObjectStatController.get
 const logger = createLogger('rflibBigObjectStat');
 const CDC_CHANNEL = '/event/rflib_Big_Object_Stat_ChangeEvent__chn';
 
+// Lightning tears the Management Console page down and rebuilds it on every tab switch, so a
+// per-instance subscription would unsubscribe and resubscribe to the same channel within ~100ms.
+// CometD needs a grace period to release a channel: the in-flight unsubscribe fails and the
+// immediate resubscribe yields a dead subscription that receives no events. The subscription is
+// therefore shared across instances and its teardown is deferred long enough for the replacement
+// instance to take it over. Same delay rationale as rflibLogEventMonitor.
+const UNSUBSCRIBE_GRACE_PERIOD_MS = 2500;
+
 const ACTIONS = [{ label: 'Refresh', name: 'refresh' }];
+
+const channelState = {
+    subscribePromise: null,
+    pendingTeardown: null,
+    listeners: new Set()
+};
+
+const notifyListeners = (event) => {
+    channelState.listeners.forEach((listener) => listener(event));
+};
+
+const acquireStatSubscription = (listener) => {
+    channelState.listeners.add(listener);
+
+    if (channelState.pendingTeardown) {
+        logger.debug('Reusing the Big Object Stat CDC subscription that was pending teardown');
+        clearTimeout(channelState.pendingTeardown);
+        channelState.pendingTeardown = null;
+    }
+
+    if (!channelState.subscribePromise) {
+        logger.debug('Subscribing to Big Object Stat CDC events');
+        channelState.subscribePromise = subscribe(CDC_CHANNEL, -1, notifyListeners).catch((error) => {
+            channelState.subscribePromise = null;
+            throw error;
+        });
+    }
+
+    return channelState.subscribePromise;
+};
+
+const releaseStatSubscription = (listener) => {
+    channelState.listeners.delete(listener);
+
+    if (channelState.listeners.size > 0 || channelState.pendingTeardown || !channelState.subscribePromise) {
+        return;
+    }
+
+    const subscribePromise = channelState.subscribePromise;
+    channelState.pendingTeardown = setTimeout(() => {
+        channelState.pendingTeardown = null;
+        channelState.subscribePromise = null;
+
+        logger.debug('Unsubscribing from Big Object Stat CDC events');
+        subscribePromise
+            .then((subscription) => {
+                unsubscribe(subscription, (response) => {
+                    logger.debug('Unsubscribed from Big Object Stat CDC events: {0}', JSON.stringify(response));
+                });
+            })
+            .catch((error) => {
+                logger.warn('Failed to unsubscribe from Big Object Stat CDC events: {0}', JSON.stringify(error));
+            });
+    }, UNSUBSCRIBE_GRACE_PERIOD_MS);
+};
 
 export default class RflibBigObjectStat extends LightningElement {
     @api bigObjectConfigs;
     @api fieldsToDisplay;
 
     parsedConfigs;
-    subscription = {};
+    statEventListener;
     displayFields = [];
     columns = [];
 
@@ -70,7 +133,7 @@ export default class RflibBigObjectStat extends LightningElement {
                 }
             ];
         } else if (error) {
-            logger.error('Failed to get field metadata', error);
+            logger.error('Failed to get field metadata: {0}', JSON.stringify(error));
             this.handleError('Configuration Error', 'Failed to configure columns for display');
         }
     }
@@ -80,7 +143,7 @@ export default class RflibBigObjectStat extends LightningElement {
             this.parsedConfigs = JSON.parse(this.bigObjectConfigs);
             logger.debug('Parsed configurations: {0}', JSON.stringify(this.parsedConfigs));
         } catch (error) {
-            logger.error('Failed to parse big object configurations', error);
+            logger.error('Failed to parse big object configurations: {0}', error.message);
             this.handleError('Configuration Error', 'Invalid Big Object configuration format. Expected JSON array.');
             this.parsedConfigs = [];
         }
@@ -120,7 +183,7 @@ export default class RflibBigObjectStat extends LightningElement {
                 orderBy: config.orderBy
             });
         } catch (error) {
-            logger.error('Error refreshing big object stats', error);
+            logger.error('Error refreshing big object stats: {0}', error.message);
             this.handleError('Refresh Error', 'Failed to refresh Big Object statistics: ' + error.message);
         } finally {
             this.isRefreshing = false;
@@ -157,7 +220,7 @@ export default class RflibBigObjectStat extends LightningElement {
                 );
             }
         } catch (error) {
-            logger.error('Failed to refresh all Big Objects', error);
+            logger.error('Failed to refresh all Big Objects: {0}', error.message);
             this.handleError('Refresh Error', 'Failed to refresh all Big Object statistics');
         } finally {
             this.isRefreshing = false;
@@ -165,35 +228,31 @@ export default class RflibBigObjectStat extends LightningElement {
     }
 
     async subscribeToStatEvents() {
+        this.statEventListener = (event) => {
+            logger.debug('Received CDC event: {0}', JSON.stringify(event));
+
+            refreshApex(this.wiredStatsResult)
+                .then(() => {
+                    logger.debug('Successfully refreshed data after CDC event');
+                })
+                .catch((error) => {
+                    logger.error('Error refreshing data after CDC event: {0}', JSON.stringify(error));
+                });
+        };
+
         try {
-            logger.debug('Subscribing to Big Object Stat CDC events');
-            this.subscription = await subscribe(CDC_CHANNEL, -1, (event) => {
-                logger.debug('Received CDC event: {0}', JSON.stringify(event));
-
-                refreshApex(this.wiredStatsResult)
-                    .then(() => {
-                        logger.debug('Successfully refreshed data after CDC event');
-                    })
-                    .catch((error) => {
-                        logger.error('Error refreshing data after CDC event', error);
-                    });
-            });
-
+            await acquireStatSubscription(this.statEventListener);
             logger.info('Successfully subscribed to Big Object Stat CDC events');
         } catch (error) {
-            logger.error('Failed to subscribe to Big Object Stat CDC events', error);
+            logger.error('Failed to subscribe to Big Object Stat CDC events: {0}', JSON.stringify(error));
             this.handleError('Subscription Error', 'Failed to subscribe to Big Object stat updates');
         }
     }
 
-    async unsubscribeFromStatEvents() {
-        try {
-            logger.debug('Unsubscribing from Big Object Stat CDC events');
-            await unsubscribe(this.subscription);
-            logger.info('Successfully unsubscribed from Big Object Stat CDC events');
-        } catch (error) {
-            logger.error('Failed to unsubscribe from Big Object Stat CDC events', error);
-            this.handleError('Unsubscribe Error', 'Failed to unsubscribe from Big Object stat updates');
+    unsubscribeFromStatEvents() {
+        if (this.statEventListener) {
+            releaseStatSubscription(this.statEventListener);
+            this.statEventListener = undefined;
         }
     }
 
