@@ -1,8 +1,8 @@
 ### RFLIB 11.3.0
 
-Package ID: TBD
-Package Alias: TBD
-Install link: TBD
+Package ID: 04tKY0000005SuhYAE
+Package Alias: RFLIB@11.3.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005SuhYAE
 
 - Added `Log Source` and `Stacktrace` to the Log Archive, so archived records carry the same detail as live log events. Records archived by earlier versions keep both values empty, because Big Objects cannot be updated after the fact. Both fields are readable through the `RFLIB - Ops Center Access` and `RFLIB - Enable Client Logging` permission sets.
 - Added a `Source` column and a matching search field to the Log Monitor's event list in both live and archive mode. The log source is also shown in the log event viewer and included in the CSV export.
