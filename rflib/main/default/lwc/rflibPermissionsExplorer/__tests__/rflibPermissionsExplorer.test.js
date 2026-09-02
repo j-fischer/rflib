@@ -929,6 +929,44 @@ describe('c-rflib-permissions-explorer', () => {
         expect(rows[1]).toBe('"Sales ""West"" Team","Account","true","false","false","false","false","false","false"');
     });
 
+    // The export used to have no error handling at all, so the failure that broke it left nothing on
+    // screen and only a masked error in the console.
+    it('reports a failed export in a toast instead of failing silently', async () => {
+        const element = await createAndLoad();
+
+        const toastHandler = jest.fn();
+        element.addEventListener(ShowToastEventName, toastHandler);
+
+        global.URL.createObjectURL = jest.fn(() => {
+            throw new Error('Lightning Web Security: Unsupported MIME type.');
+        });
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
+        await flushPromises();
+
+        expect(toastHandler).toHaveBeenCalled();
+        expect(toastHandler.mock.calls[0][0].detail.variant).toBe('error');
+    });
+
+    // A failed filtered export must not strand the modal either - it used to stay open because
+    // closeExportFilterModal() sat after the code that threw.
+    it('closes the export filter modal even when the export fails', async () => {
+        const element = await createAndLoad();
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'filtered' } }));
+        await flushPromises();
+        expect(element.shadowRoot.querySelector('.slds-modal')).not.toBeNull();
+
+        global.URL.createObjectURL = jest.fn(() => {
+            throw new Error('Lightning Web Security: Unsupported MIME type.');
+        });
+
+        element.shadowRoot.querySelector('.slds-button_brand').click();
+        await flushPromises();
+
+        expect(element.shadowRoot.querySelector('.slds-modal')).toBeNull();
+    });
+
     // --- Aggregation tests ---
 
     it('aggregates object permissions by SobjectType using OR logic', async () => {
