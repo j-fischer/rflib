@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { Download, expect, Locator, Page } from '@playwright/test';
 import { PaginatorComponent, PermissionsTableComponent } from '../components';
 import { LightningButtonMenu, LightningRecordPicker, waitForSpinners } from '../components/base';
 
@@ -136,5 +136,12 @@ export class PermissionsExplorerPage {
 
     get exportFilterExportButton(): Locator {
         return this.exportFilterModal.getByRole('button', { name: 'Export', exact: true });
+    }
+
+    /** Chooses Export to CSV > All and hands back the download it produces. */
+    async exportAll(): Promise<Download> {
+        const downloadPromise = this.page.waitForEvent('download', { timeout: 120_000 });
+        await this.exportMenu.select('All');
+        return downloadPromise;
     }
 }

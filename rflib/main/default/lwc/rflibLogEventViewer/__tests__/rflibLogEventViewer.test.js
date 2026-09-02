@@ -29,7 +29,27 @@ jest.mock(
 
 const mockGetRecord = require('lightning/uiRecordApi').getRecord;
 
+import { Blob as NodeBlob } from 'buffer';
+
+// jsdom's Blob exposes only size, type and slice, so the downloaded content could not be read back
+// off the Blob the download helper builds. Node's Blob is API compatible for that and adds text().
+global.Blob = NodeBlob;
+
 describe('c-rflib-log-event-viewer', () => {
+    let downloadedBlobs;
+
+    beforeEach(() => {
+        // The download is delivered as a Blob behind an object URL, because the Lightning security
+        // layer rejects a data: URL on an anchor href. jsdom implements neither URL.createObjectURL
+        // nor anchor navigation, so the object URL is captured here and the content read off the Blob.
+        downloadedBlobs = [];
+        global.URL.createObjectURL = jest.fn((blob) => {
+            downloadedBlobs.push(blob);
+            return 'blob:rflib/' + downloadedBlobs.length;
+        });
+        global.URL.revokeObjectURL = jest.fn();
+    });
+
     afterEach(() => {
         while (document.body.firstChild) {
             document.body.removeChild(document.body.firstChild);
@@ -166,31 +186,25 @@ describe('c-rflib-log-event-viewer', () => {
 
         // Wait for apex logs to load
         return Promise.resolve().then(() => {
-            // Mock window.URL.createObjectURL or simulated click
-            const clickSpy = jest.fn();
+            // The log file is delivered as a Blob behind an object URL, so the anchor's href is
+            // opaque and the content is read back off the captured Blob.
+            const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
-            // Use real element to pass type checks
-            const realCreateElement = document.createElement.bind(document);
-            jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
-                const el = realCreateElement(tagName);
-                if (tagName === 'a') {
-                    // We can't overwrite click easily on DOM element in some envs, but let's try
-                    // Or just spy on it
-                    el.click = clickSpy;
-                }
-                return el;
-            });
-
-            // Find the menu - it should be visible now
             const menu = element.shadowRoot.querySelector('lightning-button-menu');
             expect(menu).not.toBeNull();
 
             menu.dispatchEvent(new CustomEvent('select', { detail: { value: 'rflib-log' } }));
 
-            return Promise.resolve().then(() => {
-                expect(document.createElement).toHaveBeenCalledWith('a');
-                expect(clickSpy).toHaveBeenCalled();
-            });
+            return Promise.resolve()
+                .then(() => {
+                    expect(clickSpy).toHaveBeenCalled();
+                    expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+                    return downloadedBlobs[0].text();
+                })
+                .then((logFile) => {
+                    expect(logFile).toContain('LogContent');
+                    clickSpy.mockRestore();
+                });
         });
     });
 });

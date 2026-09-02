@@ -1,3 +1,15 @@
+### RFLIB 11.4.0
+
+Package ID: TBD
+Package Alias: TBD
+Install link: TBD
+
+- Fixed the CSV export in the Permissions Explorer, which produced no file at all. Both `Export to CSV` options failed silently: nothing was downloaded, no message was shown, and only a JavaScript error in the browser console indicated that anything had gone wrong. The export delivered its content as a `data:` URL, which Lightning Web Security rejects when it is assigned to a download link. The file is now delivered as a Blob instead, which also removes the browser's maximum URL length as a limit on how large an export can be — a limit a full field permission export on a large org would otherwise have reached. Both exports now also report a failure as an error message rather than failing silently.
+- Fixed the CSV export of `Apex Permissions` in the Permissions Explorer, which used the column layout of the object permission export. Apex class and Visualforce page access has none of the object access fields, so those exports carried the nine object columns with an empty value in every access column. They now export the three columns the dashboard shows — `PROFILE/PERMISSION SET`, `CLASS/PAGE`, and `CLASS/PAGE ACCESS` — with the access value the table displays.
+- Fixed the Permissions Explorer CSV exports corrupting a row whose profile or permission set name contains a double quote. Such a value ended its column early and shifted every column after it; quotes are now escaped the way the Log Monitor export already escaped them.
+- Fixed the file name of every RFLIB download containing colons, which Windows does not allow in a file name and browsers silently rewrote. Affects the Permissions Explorer and Log Monitor CSV exports and the log file download in the log event viewer.
+- Fixed the Log Monitor CSV export and the log event viewer's log file download, which failed for the same reason as the Permissions Explorer export. The Log Monitor reported the failure in a message; the log file download failed silently.
+
 ### RFLIB 11.3.0
 
 Package ID: 04tKY0000005SuhYAE

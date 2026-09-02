@@ -1,6 +1,11 @@
 import { createElement } from 'lwc';
 import RflibPermissionsExplorer from 'c/rflibPermissionsExplorer';
 import { ShowToastEventName } from 'lightning/platformShowToastEvent';
+import { Blob as NodeBlob } from 'buffer';
+
+// jsdom's Blob exposes only size, type and slice, so the exported CSV could not be read back off
+// the Blob the download helper builds. Node's Blob is API compatible for that and adds text().
+global.Blob = NodeBlob;
 
 // Import the Apex methods (which will be mocked)
 import getObjectLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles';
@@ -124,6 +129,47 @@ const MOCK_MULTI_OBJECT_APEX_RESPONSE = {
     nextPosition: 2
 };
 
+// A SetupEntityAccess record carries no access flags: it exists only where access was granted, so a
+// class or page permission has nothing but the security object and the entity name.
+const MOCK_CLASS_ACCESS_RECORDS = [
+    {
+        SecurityObjectName: 'Admin',
+        SobjectType: 'rflib_LoggerController',
+        SetupEntityType: 'ApexClass'
+    },
+    {
+        SecurityObjectName: 'RFLIB - Ops Center Access',
+        SobjectType: 'rflib_LogArchiveController',
+        SetupEntityType: 'ApexClass'
+    }
+];
+
+const MOCK_CLASS_ACCESS_RESPONSE = {
+    records: MOCK_CLASS_ACCESS_RECORDS,
+    totalNumOfRecords: 2,
+    nextRecordsUrl: null,
+    nextPosition: 1
+};
+
+const MOCK_QUOTED_LABEL_RESPONSE = {
+    records: [
+        {
+            SecurityObjectName: 'Sales "West" Team',
+            SobjectType: 'Account',
+            PermissionsRead: true,
+            PermissionsEdit: false,
+            PermissionsCreate: false,
+            PermissionsDelete: false,
+            PermissionsViewAllFields: false,
+            PermissionsViewAllRecords: false,
+            PermissionsModifyAllRecords: false
+        }
+    ],
+    totalNumOfRecords: 1,
+    nextRecordsUrl: null,
+    nextPosition: 0
+};
+
 // Mock all Apex methods explicitly with inline jest.fn()
 jest.mock(
     '@salesforce/apex/rflib_PermissionsExplorerController.getObjectLevelSecurityForAllProfiles',
@@ -241,20 +287,46 @@ describe('c-rflib-permissions-explorer', () => {
         getApexSecurityForUser
     ];
 
+    let downloadedBlobs;
+    let anchorClickSpy;
+
     beforeEach(() => {
         jest.useFakeTimers();
         ALL_APEX_MOCKS.forEach((mock) => mock.mockResolvedValue(MOCK_APEX_RESPONSE));
         // Without the Global Setting the views start with fields without FLS hidden.
         getShowFieldsWithoutFlsByDefault.mockResolvedValue(false);
+
+        // The export hands the file to the browser as a Blob behind an object URL, because the
+        // Lightning security layer rejects a data: URL assigned to an anchor's href. jsdom implements
+        // neither URL.createObjectURL nor anchor navigation, so both are stubbed here and the CSV is
+        // read back off the captured Blob. Stubbing document.createElement instead - as these tests
+        // used to - hands LWC's own renderer the same fake anchor and crashes it.
+        downloadedBlobs = [];
+        global.URL.createObjectURL = jest.fn((blob) => {
+            downloadedBlobs.push(blob);
+            return 'blob:rflib/' + downloadedBlobs.length;
+        });
+        global.URL.revokeObjectURL = jest.fn();
+        anchorClickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     });
 
     afterEach(() => {
         while (document.body.firstChild) {
             document.body.removeChild(document.body.firstChild);
         }
+        anchorClickSpy.mockRestore();
         jest.clearAllMocks();
         jest.useRealTimers();
     });
+
+    function downloadCount() {
+        return downloadedBlobs.length;
+    }
+
+    async function exportedCsvRows(index = 0) {
+        const csv = await downloadedBlobs[index].text();
+        return csv.trim().split('\r\n');
+    }
 
     async function createAndLoad() {
         const element = createElement('c-rflib-permissions-explorer', {
@@ -317,20 +389,16 @@ describe('c-rflib-permissions-explorer', () => {
     it('exports to CSV', async () => {
         const element = await createAndLoad();
 
-        // Mock document.createElement and click
-        const mockLink = document.createElement('a');
-        const clickSpy = jest.spyOn(mockLink, 'click');
-        const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
-
         const exportMenu = getExportMenu(element);
         exportMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
 
         await flushPromises();
 
-        expect(createElementSpy).toHaveBeenCalledWith('a');
-        expect(clickSpy).toHaveBeenCalled();
-
-        createElementSpy.mockRestore();
+        expect(downloadCount()).toBe(1);
+        expect(anchorClickSpy).toHaveBeenCalled();
+        // An object URL, not a data: URL - the security layer rejects the latter on an anchor href.
+        expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:rflib/1');
     });
 
     it('handles error during load', async () => {
@@ -736,24 +804,24 @@ describe('c-rflib-permissions-explorer', () => {
         inputs[1].dispatchEvent(new CustomEvent('change'));
         await flushPromises();
 
-        // Mock the download link
-        const mockLink = document.createElement('a');
-        const clickSpy = jest.spyOn(mockLink, 'click');
-        const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
-
         // Click Export button
         const exportBtn = element.shadowRoot.querySelector('.slds-button_brand');
         exportBtn.click();
         await flushPromises();
 
-        expect(createElementSpy).toHaveBeenCalledWith('a');
-        expect(clickSpy).toHaveBeenCalled();
+        expect(anchorClickSpy).toHaveBeenCalled();
+
+        const rows = await exportedCsvRows();
+        expect(rows[0]).toBe(
+            '"PROFILE/PERMISSION SET","OBJECT","READ ACCESS","CREATE ACCESS","EDIT ACCESS","DELETE ACCESS","VIEW ALL FIELDS","VIEW ALL RECORDS","MODIFY ALL RECORDS"'
+        );
+        // Only the Admin/Account record of the three matches both filters.
+        expect(rows).toHaveLength(2);
+        expect(rows[1]).toBe('"Admin","Account","true","true","true","true","true","true","true"');
 
         // Modal should be closed after export
         const modal = element.shadowRoot.querySelector('.slds-modal');
         expect(modal).toBeNull();
-
-        createElementSpy.mockRestore();
     });
 
     // --- Filtered export for field permissions ---
@@ -784,19 +852,16 @@ describe('c-rflib-permissions-explorer', () => {
         inputs[2].dispatchEvent(new CustomEvent('change'));
         await flushPromises();
 
-        // Mock the download link
-        const mockLink = document.createElement('a');
-        const clickSpy = jest.spyOn(mockLink, 'click');
-        const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
-
         // Click Export button
         const exportBtn = element.shadowRoot.querySelector('.slds-button_brand');
         exportBtn.click();
         await flushPromises();
 
-        expect(clickSpy).toHaveBeenCalled();
+        expect(anchorClickSpy).toHaveBeenCalled();
 
-        createElementSpy.mockRestore();
+        const rows = await exportedCsvRows();
+        expect(rows).toHaveLength(2);
+        expect(rows[1]).toBe('"Admin","Account","Name","true","true","true"');
     });
 
     // --- Export all for field permissions ---
@@ -809,23 +874,97 @@ describe('c-rflib-permissions-explorer', () => {
         // Switch to field permissions
         await switchPermissionTypeAndLoad(element, 'FieldPermissionsProfiles');
 
-        // Mock the download link
-        const mockLink = document.createElement('a');
-        const clickSpy = jest.spyOn(mockLink, 'click');
-        const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
-
         // Export all
         const exportMenu = getExportMenu(element);
         exportMenu.dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
         await flushPromises();
 
-        expect(clickSpy).toHaveBeenCalled();
-        // Verify the href contains field permissions CSV header markers
-        const hrefValue = mockLink.getAttribute('href');
-        expect(hrefValue).toContain('FIELD');
-        expect(hrefValue).toContain('csv');
+        expect(anchorClickSpy).toHaveBeenCalled();
 
-        createElementSpy.mockRestore();
+        const rows = await exportedCsvRows();
+        expect(rows[0]).toBe('"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","FLS CONTROLLED"');
+        expect(rows).toHaveLength(MOCK_FIELD_RECORDS.length + 1);
+    });
+
+    // --- Export for Apex class and Visualforce page permissions ---
+
+    // A SetupEntityAccess record has none of the object access fields, so exporting it in the object
+    // format produced a nine column file whose access columns all read "null".
+    it('exports Apex permissions in the class and page format rather than the object one', async () => {
+        const element = await createAndLoad();
+
+        jest.clearAllMocks();
+        getApexSecurityForAllProfiles.mockResolvedValue(MOCK_CLASS_ACCESS_RESPONSE);
+        selectPermissionType(element, 'ApexPermissionsProfiles');
+        jest.runAllTimers();
+        await flushPromises(2);
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
+        await flushPromises();
+
+        const rows = await exportedCsvRows();
+        expect(rows[0]).toBe('"PROFILE/PERMISSION SET","CLASS/PAGE","CLASS/PAGE ACCESS"');
+        expect(rows).toHaveLength(MOCK_CLASS_ACCESS_RECORDS.length + 1);
+        expect(rows[1]).toBe('"Admin","rflib_LoggerController","true"');
+        expect(rows.some((row) => row.includes('null'))).toBe(false);
+    });
+
+    // The label of a permission set is free text, and an unescaped quote inside it ends the field
+    // early, shifting every column after it.
+    it('escapes double quotes in exported values', async () => {
+        getObjectLevelSecurityForAllProfiles.mockResolvedValueOnce(MOCK_QUOTED_LABEL_RESPONSE);
+
+        const element = createElement('c-rflib-permissions-explorer', {
+            is: RflibPermissionsExplorer
+        });
+        document.body.appendChild(element);
+
+        jest.runAllTimers();
+        await flushPromises(2);
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
+        await flushPromises();
+
+        const rows = await exportedCsvRows();
+        expect(rows[1]).toBe('"Sales ""West"" Team","Account","true","false","false","false","false","false","false"');
+    });
+
+    // The export used to have no error handling at all, so the failure that broke it left nothing on
+    // screen and only a masked error in the console.
+    it('reports a failed export in a toast instead of failing silently', async () => {
+        const element = await createAndLoad();
+
+        const toastHandler = jest.fn();
+        element.addEventListener(ShowToastEventName, toastHandler);
+
+        global.URL.createObjectURL = jest.fn(() => {
+            throw new Error('Lightning Web Security: Unsupported MIME type.');
+        });
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
+        await flushPromises();
+
+        expect(toastHandler).toHaveBeenCalled();
+        expect(toastHandler.mock.calls[0][0].detail.variant).toBe('error');
+    });
+
+    // A failed filtered export must not strand the modal either - it used to stay open because
+    // closeExportFilterModal() sat after the code that threw.
+    it('closes the export filter modal even when the export fails', async () => {
+        const element = await createAndLoad();
+
+        getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'filtered' } }));
+        await flushPromises();
+        expect(element.shadowRoot.querySelector('.slds-modal')).not.toBeNull();
+
+        global.URL.createObjectURL = jest.fn(() => {
+            throw new Error('Lightning Web Security: Unsupported MIME type.');
+        });
+
+        element.shadowRoot.querySelector('.slds-button_brand').click();
+        await flushPromises();
+
+        expect(element.shadowRoot.querySelector('.slds-modal')).toBeNull();
     });
 
     // --- Aggregation tests ---
@@ -1454,16 +1593,10 @@ describe('c-rflib-permissions-explorer', () => {
             const element = await loadFieldPermissions();
             await showFieldsWithoutFls(element);
 
-            const mockLink = document.createElement('a');
-            const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
-
             getExportMenu(element).dispatchEvent(new CustomEvent('select', { detail: { value: 'all' } }));
             await flushPromises();
 
-            const csv = decodeURIComponent(mockLink.getAttribute('href').replace('data:text/csv;charset=utf-8,', ''));
-            createElementSpy.mockRestore();
-
-            const rows = csv.trim().split('\r\n');
+            const rows = await exportedCsvRows();
             expect(rows[0]).toContain('"FLS CONTROLLED"');
 
             // A stored grant and a field without FLS carry the same access values, so the flag is the

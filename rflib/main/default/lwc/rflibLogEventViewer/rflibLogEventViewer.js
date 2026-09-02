@@ -29,6 +29,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { createLogger } from 'c/rflibLogger';
+import { downloadFile } from 'c/rflibFileDownload';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getApexLogsForRequestId from '@salesforce/apex/rflib_LogEventViewerController.getApexLogsForRequestId';
 
@@ -176,14 +177,7 @@ export default class RflibLogEventViewer extends LightningElement {
     }
 
     simulateDownload(outputFilename, outputText) {
-        const downloadLogLink = window.document.createElement('a');
-        downloadLogLink.download = outputFilename;
-        downloadLogLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(outputText);
-
-        const downloadLogLinkContainer = this.template.querySelector('.download-container');
-        downloadLogLinkContainer.appendChild(downloadLogLink);
-        downloadLogLink.click();
-        downloadLogLinkContainer.removeChild(downloadLogLink);
+        downloadFile(this.template.querySelector('.download-container'), outputFilename, outputText);
     }
 
     get createdBy() {
