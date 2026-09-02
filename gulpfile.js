@@ -458,42 +458,42 @@ function shellTask(getCommand, ignoreErrors = false) {
 gulp.task(
     'shell-force-create-org-default',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-default-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-with-omni-default',
     shellTask(function () {
-        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default`;
+        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-with-omni-default-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --set-default --release=preview`;
+        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
     })
 );
 
 gulp.task(
     'shell-force-create-org',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias}`;
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} --release=preview`;
+        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --release=preview`;
     })
 );
 
