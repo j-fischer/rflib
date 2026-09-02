@@ -1,6 +1,7 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
 import { PERMISSIONS_SEARCH } from '../components';
 import { createOpsCenterSession } from '../fixtures';
+import { parseCsv, readCsvDownload, readDownload } from '../helpers/downloads';
 import { orgInfo } from '../helpers/sf';
 import { TABS } from '../pages/ops-center-app.page';
 import { EXPORT_FILTERS, PERMISSION_TYPES, PermissionsExplorerPage } from '../pages/permissions-explorer.page';
@@ -91,14 +92,44 @@ test('paginator navigates pages including go-to-page', async () => {
     await expect(paginator.pageInput).toHaveValue('1');
 });
 
-test('exports all permissions to CSV', async () => {
-    const downloadPromise = page.waitForEvent('download', { timeout: 120_000 });
-    await explorer.exportMenu.select('All');
-    const download = await downloadPromise;
+// The export used to be asserted by file name alone, which is why it went unnoticed when the
+// download stopped being produced at all. Every export test below reads the bytes back.
+
+const OBJECT_CSV_HEADER = [
+    'PROFILE/PERMISSION SET',
+    'OBJECT',
+    'READ ACCESS',
+    'CREATE ACCESS',
+    'EDIT ACCESS',
+    'DELETE ACCESS',
+    'VIEW ALL FIELDS',
+    'VIEW ALL RECORDS',
+    'MODIFY ALL RECORDS'
+];
+
+const FIELD_CSV_HEADER = ['PROFILE/PERMISSION SET', 'OBJECT', 'FIELD', 'READ ACCESS', 'EDIT ACCESS', 'FLS CONTROLLED'];
+
+const APEX_CSV_HEADER = ['PROFILE/PERMISSION SET', 'CLASS/PAGE', 'CLASS/PAGE ACCESS'];
+
+test('exports all object permissions to CSV', async () => {
+    await explorer.selectPermissionType(PERMISSION_TYPES.objectProfiles);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
+    const totalRecords = await explorer.getTotalRecords();
+
+    const download = await explorer.exportAll();
     expect(download.suggestedFilename()).toMatch(/\.csv$/i);
+    // toISOString() puts colons in the name, which Windows rejects and browsers silently rewrite.
+    expect(download.suggestedFilename()).not.toContain(':');
+
+    const { header, rows } = await readCsvDownload(download);
+    expect(header).toEqual(OBJECT_CSV_HEADER);
+    expect(rows).toHaveLength(totalRecords);
+    rows.forEach((row) => expect(row).toHaveLength(OBJECT_CSV_HEADER.length));
 });
 
 test('exports filtered permissions through the filter modal with help text', async () => {
+    const unfilteredCount = await explorer.getTotalRecords();
+
     await explorer.exportMenu.select('Filtered');
     const modal = explorer.exportFilterModal;
     await expect(modal).toBeVisible();
@@ -111,8 +142,42 @@ test('exports filtered permissions through the filter modal with help text', asy
     const downloadPromise = page.waitForEvent('download', { timeout: 120_000 });
     await explorer.exportFilterExportButton.click();
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/\.csv$/i);
     await expect(modal).toBeHidden({ timeout: 30_000 });
+
+    const { header, rows } = await readCsvDownload(download);
+    expect(header).toEqual(OBJECT_CSV_HEADER);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThan(unfilteredCount);
+    rows.forEach((row) => expect(row[1]).toContain('Account'));
+});
+
+test('exports field permissions with the FLS controlled column', async () => {
+    await explorer.selectPermissionType(PERMISSION_TYPES.fieldProfiles);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
+    const totalRecords = await explorer.getTotalRecords();
+
+    const { header, rows } = await readCsvDownload(await explorer.exportAll());
+    expect(header).toEqual(FIELD_CSV_HEADER);
+    expect(rows).toHaveLength(totalRecords);
+    // With fields without FLS hidden, every exported row is backed by a stored FieldPermissions record.
+    rows.forEach((row) => expect(row[5]).toBe('true'));
+});
+
+// A SetupEntityAccess record has none of the object access fields. Exporting it in the object format
+// produced a nine column file whose access columns all read "null".
+test('exports Apex permissions in the class and page format', async () => {
+    await explorer.selectPermissionType(PERMISSION_TYPES.apexPermissionSets);
+    await expect.poll(() => explorer.getTotalRecords(), { timeout: 180_000 }).toBeGreaterThan(0);
+    const totalRecords = await explorer.getTotalRecords();
+
+    const download = await explorer.exportAll();
+    const text = await readDownload(download);
+    expect(text).not.toContain('null');
+
+    const { header, rows } = parseCsv(text);
+    expect(header).toEqual(APEX_CSV_HEADER);
+    expect(rows).toHaveLength(totalRecords);
+    rows.forEach((row) => expect(row[2]).toBe('true'));
 });
 
 // Account.CreatedById is never subject to Field Level Security, so Salesforce cannot store a

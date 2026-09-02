@@ -29,6 +29,7 @@
 import { LightningElement } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
+import { downloadFile, fileNameTimestamp } from 'c/rflibFileDownload';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles';
 import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
 import getFieldLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups';
@@ -166,6 +167,9 @@ const OBJECT_PERMISSIONS_CSV_HEADER =
 // read as a stored grant once the styling and tooltip of the table are gone.
 const FIELD_PERMISSIONS_CSV_HEADER =
     '"PROFILE/PERMISSION SET","OBJECT","FIELD","READ ACCESS","EDIT ACCESS","FLS CONTROLLED"\r\n';
+// Apex classes and Visualforce pages carry no access flags of their own: a SetupEntityAccess
+// record exists only where access was granted, which is why the table shows a constant value.
+const APEX_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","CLASS/PAGE","CLASS/PAGE ACCESS"\r\n';
 
 const logger = createLogger('PermissionsExplorer');
 
@@ -269,6 +273,10 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_PERMISSION_SET_GROUPS ||
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER
         );
+    }
+
+    get isApexPermissions() {
+        return this.permissionType === 'APX';
     }
 
     get isProfilePermissions() {
@@ -744,22 +752,70 @@ export default class PermissionsExplorer extends LightningElement {
         }
     }
 
+    // A value can legitimately contain a double quote - a permission set label, for instance - and an
+    // unescaped one ends the field early and shifts every column after it.
+    buildCsvRow(values) {
+        return '"' + values.map((value) => String(value).replace(/"/g, '""')).join('","') + '"\r\n';
+    }
+
+    buildObjectPermissionCsvRow(permission) {
+        return this.buildCsvRow([
+            permission.SecurityObjectName,
+            permission.SobjectType,
+            permission.PermissionsRead,
+            permission.PermissionsCreate,
+            permission.PermissionsEdit,
+            permission.PermissionsDelete,
+            permission.PermissionsViewAllFields,
+            permission.PermissionsViewAllRecords,
+            permission.PermissionsModifyAllRecords
+        ]);
+    }
+
     buildFieldPermissionCsvRow(permission) {
-        return (
-            '"' +
-            permission.SecurityObjectName +
-            '","' +
-            permission.SobjectType +
-            '","' +
-            permission.Field +
-            '","' +
-            permission.PermissionsRead +
-            '","' +
-            permission.PermissionsEdit +
-            '","' +
-            (permission.IsFlsControlled !== false) +
-            '"\r\n'
-        );
+        return this.buildCsvRow([
+            permission.SecurityObjectName,
+            permission.SobjectType,
+            permission.Field,
+            permission.PermissionsRead,
+            permission.PermissionsEdit,
+            permission.IsFlsControlled !== false
+        ]);
+    }
+
+    // Access is implied by the record existing, the same value the table prints, so there is nothing
+    // to read off the record. The object columns would all be empty here.
+    buildApexPermissionCsvRow(permission) {
+        return this.buildCsvRow([permission.SecurityObjectName, permission.SobjectType, true]);
+    }
+
+    buildCsv(records) {
+        let header;
+        let buildRow;
+
+        if (this.isFieldPermissions) {
+            header = FIELD_PERMISSIONS_CSV_HEADER;
+            buildRow = (permission) => this.buildFieldPermissionCsvRow(permission);
+        } else if (this.isApexPermissions) {
+            header = APEX_PERMISSIONS_CSV_HEADER;
+            buildRow = (permission) => this.buildApexPermissionCsvRow(permission);
+        } else {
+            header = OBJECT_PERMISSIONS_CSV_HEADER;
+            buildRow = (permission) => this.buildObjectPermissionCsvRow(permission);
+        }
+
+        return records.reduce((csv, permission) => csv + buildRow(permission), header);
+    }
+
+    downloadCsv(csvContent) {
+        const fileName =
+            (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
+            this.currentPermissionType.value +
+            '_' +
+            fileNameTimestamp() +
+            '.csv';
+
+        downloadFile(this.template.querySelector('.download-container'), fileName, csvContent);
     }
 
     exportAllToCsv() {
@@ -768,57 +824,13 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType.value,
             this.numTotalRecords
         );
-        let csvContent = '';
 
-        if (this.isFieldPermissions) {
-            csvContent += FIELD_PERMISSIONS_CSV_HEADER;
-            this.permissionRecords.forEach((permission) => {
-                csvContent += this.buildFieldPermissionCsvRow(permission);
-            });
-        } else {
-            csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
-            this.permissionRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsCreate +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '","' +
-                    permission.PermissionsDelete +
-                    '","' +
-                    permission.PermissionsViewAllFields +
-                    '","' +
-                    permission.PermissionsViewAllRecords +
-                    '","' +
-                    permission.PermissionsModifyAllRecords +
-                    '"\r\n';
-            });
+        try {
+            this.downloadCsv(this.buildCsv(this.permissionRecords));
+        } catch (error) {
+            logger.error('Failed to export all permissions to CSV. Error={0}', error.message);
+            this.dispatchErrorToast('Export Failed', error);
         }
-
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-
-        const fileName =
-            (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
-            this.currentPermissionType.value +
-            '_' +
-            new Date().toISOString() +
-            '.csv';
-
-        element.setAttribute('download', fileName);
-        element.style.display = 'none';
-
-        const downloadContainer = this.template.querySelector('.download-container');
-        downloadContainer.appendChild(element);
-
-        element.click();
-        downloadContainer.removeChild(element);
     }
 
     exportToCsv() {
@@ -853,85 +865,43 @@ export default class PermissionsExplorer extends LightningElement {
             this.exportFieldSearch
         );
 
-        const getSearchTerms = (searchStr) => {
-            if (!searchStr) return [];
-            return searchStr
-                .split(',')
-                .map((term) => term.trim())
-                .filter((term) => term.length > 0);
-        };
+        try {
+            const getSearchTerms = (searchStr) => {
+                if (!searchStr) return [];
+                return searchStr
+                    .split(',')
+                    .map((term) => term.trim())
+                    .filter((term) => term.length > 0);
+            };
 
-        const securityTerms = getSearchTerms(this.exportSecurityObjectSearch);
-        const objectTerms = getSearchTerms(this.exportObjectSearch);
-        const fieldTerms = getSearchTerms(this.exportFieldSearch);
+            const securityTerms = getSearchTerms(this.exportSecurityObjectSearch);
+            const objectTerms = getSearchTerms(this.exportObjectSearch);
+            const fieldTerms = getSearchTerms(this.exportFieldSearch);
 
-        const filteredRecords = this.permissionRecords.filter((rec) => {
-            const matchesSecurity =
-                securityTerms.length === 0 || securityTerms.some((term) => rec.SecurityObjectName.indexOf(term) > -1);
+            const filteredRecords = this.permissionRecords.filter((rec) => {
+                const matchesSecurity =
+                    securityTerms.length === 0 ||
+                    securityTerms.some((term) => rec.SecurityObjectName.indexOf(term) > -1);
 
-            const matchesObject =
-                objectTerms.length === 0 || objectTerms.some((term) => rec.SobjectType.indexOf(term) > -1);
+                const matchesObject =
+                    objectTerms.length === 0 || objectTerms.some((term) => rec.SobjectType.indexOf(term) > -1);
 
-            const matchesField =
-                !this.isFieldPermissions ||
-                fieldTerms.length === 0 ||
-                fieldTerms.some((term) => rec.Field.indexOf(term) > -1);
+                const matchesField =
+                    !this.isFieldPermissions ||
+                    fieldTerms.length === 0 ||
+                    fieldTerms.some((term) => rec.Field.indexOf(term) > -1);
 
-            return matchesSecurity && matchesObject && matchesField;
-        });
-
-        let csvContent = '';
-        if (this.isFieldPermissions) {
-            csvContent += FIELD_PERMISSIONS_CSV_HEADER;
-            filteredRecords.forEach((permission) => {
-                csvContent += this.buildFieldPermissionCsvRow(permission);
+                return matchesSecurity && matchesObject && matchesField;
             });
-        } else {
-            csvContent += OBJECT_PERMISSIONS_CSV_HEADER;
-            filteredRecords.forEach((permission) => {
-                csvContent +=
-                    '"' +
-                    permission.SecurityObjectName +
-                    '","' +
-                    permission.SobjectType +
-                    '","' +
-                    permission.PermissionsRead +
-                    '","' +
-                    permission.PermissionsCreate +
-                    '","' +
-                    permission.PermissionsEdit +
-                    '","' +
-                    permission.PermissionsDelete +
-                    '","' +
-                    permission.PermissionsViewAllFields +
-                    '","' +
-                    permission.PermissionsViewAllRecords +
-                    '","' +
-                    permission.PermissionsModifyAllRecords +
-                    '"\r\n';
-            });
+
+            this.downloadCsv(this.buildCsv(filteredRecords));
+        } catch (error) {
+            logger.error('Failed to export filtered permissions to CSV. Error={0}', error.message);
+            this.dispatchErrorToast('Export Failed', error);
+        } finally {
+            // Closed either way, so a failed export leaves the dashboard usable and the toast explains.
+            this.closeExportFilterModal();
         }
-
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-
-        const fileName =
-            (this.isUserModeSelected ? this.selectedUserId + '_' : '') +
-            this.currentPermissionType.value +
-            '_' +
-            new Date().toISOString() +
-            '.csv';
-
-        element.setAttribute('download', fileName);
-        element.style.display = 'none';
-
-        const downloadContainer = this.template.querySelector('.download-container');
-        downloadContainer.appendChild(element);
-
-        element.click();
-        downloadContainer.removeChild(element);
-
-        this.closeExportFilterModal();
     }
 
     aggregatePermission() {

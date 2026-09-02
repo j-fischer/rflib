@@ -14,7 +14,11 @@ export interface OpsCenterSession {
 export async function createOpsCenterSession(browser: Browser, tabLabel?: string): Promise<OpsCenterSession> {
     const context = await browser.newContext({
         storageState: STORAGE_STATE_PATH,
-        viewport: { width: 1600, height: 900 }
+        viewport: { width: 1600, height: 900 },
+        // Pinned rather than left to the default: the CSV export specs read the downloaded bytes, and
+        // a context that does not accept downloads would leave the browser waiting on a save dialog
+        // that no one is there to answer.
+        acceptDownloads: true
     });
     const page = await context.newPage();
     const app = new OpsCenterApp(page);

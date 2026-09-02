@@ -29,6 +29,7 @@
 import { LightningElement, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
+import { downloadFile, fileNameTimestamp } from 'c/rflibFileDownload';
 import { subscribe, unsubscribe, onError, setDebugFlag, isEmpEnabled } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
 
@@ -206,20 +207,10 @@ export default class LogEventMonitor extends LightningElement {
                     csvContent += `"${date}","${createdBy}","${requestId}","${level}","${context}","${logSource}","${messages}"\r\n`;
                 });
 
-                const element = document.createElement('a');
-                element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-
                 const modeLabel = this.currentConnectionMode.label.replace(/\s+/g, '_');
-                const fileName = `Log_Events_${modeLabel}_${new Date().toISOString()}.csv`;
+                const fileName = `Log_Events_${modeLabel}_${fileNameTimestamp()}.csv`;
 
-                element.setAttribute('download', fileName);
-                element.style.display = 'none';
-
-                const downloadContainer = this.template.querySelector('.download-container');
-                downloadContainer.appendChild(element);
-
-                element.click();
-                downloadContainer.removeChild(element);
+                downloadFile(this.template.querySelector('.download-container'), fileName, csvContent);
             } catch (error) {
                 logger.error('Failed to export to CSV: {0}', error.message);
                 const evt = new ShowToastEvent({

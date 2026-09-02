@@ -6,6 +6,12 @@ import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getA
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
 import getDefaultConnectionMode from '@salesforce/apex/rflib_LogMonitorController.getDefaultConnectionMode';
 
+import { Blob as NodeBlob } from 'buffer';
+
+// jsdom's Blob exposes only size, type and slice, so the downloaded content could not be read back
+// off the Blob the download helper builds. Node's Blob is API compatible for that and adds text().
+global.Blob = NodeBlob;
+
 // Mock c/rflibLogger
 jest.mock('c/rflibLogger', () => {
     return {
@@ -87,6 +93,20 @@ function flushPromises() {
 }
 
 describe('c-rflib-log-event-monitor', () => {
+    let downloadedBlobs;
+
+    beforeEach(() => {
+        // The download is delivered as a Blob behind an object URL, because the Lightning security
+        // layer rejects a data: URL on an anchor href. jsdom implements neither URL.createObjectURL
+        // nor anchor navigation, so the object URL is captured here and the content read off the Blob.
+        downloadedBlobs = [];
+        global.URL.createObjectURL = jest.fn((blob) => {
+            downloadedBlobs.push(blob);
+            return 'blob:rflib/' + downloadedBlobs.length;
+        });
+        global.URL.revokeObjectURL = jest.fn();
+    });
+
     beforeEach(() => {
         loadStyle.mockResolvedValue();
         getDefaultConnectionMode.mockResolvedValue('New Messages');
@@ -446,15 +466,9 @@ describe('c-rflib-log-event-monitor', () => {
                     }
                 ]);
 
-                // Mock document.createElement to return a real element with spied click
-                const realCreateElement = document.createElement.bind(document);
-                jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
-                    const el = realCreateElement(tagName);
-                    if (tagName === 'a') {
-                        el.click = jest.fn();
-                    }
-                    return el;
-                });
+                // The download is delivered as a Blob behind an object URL, so the CSV is read back
+                // off the captured Blob rather than off the anchor's href.
+                jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
                 const buttons = Array.from(element.shadowRoot.querySelectorAll('button'));
                 const exportButton = buttons.find((b) => b.textContent.trim() === 'Export to CSV');
@@ -468,12 +482,10 @@ describe('c-rflib-log-event-monitor', () => {
                 return flushPromises();
             })
             .then(() => {
-                expect(document.createElement).toHaveBeenCalledWith('a');
-
-                const anchor = document.createElement.mock.results
-                    .map((result) => result.value)
-                    .find((el) => el.tagName === 'A');
-                const csvContent = decodeURIComponent(anchor.getAttribute('href'));
+                expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+                return downloadedBlobs[0].text();
+            })
+            .then((csvContent) => {
                 expect(csvContent).toContain(
                     '"Date","Created By","Request ID","Level","Context","Source","Log Messages"'
                 );
