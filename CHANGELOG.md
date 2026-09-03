@@ -1,8 +1,8 @@
-### RFLIB 11.4.0
+### RFLIB 11.3.1
 
-Package ID: TBD
-Package Alias: TBD
-Install link: TBD
+Package ID: 04tKY0000005Sv1YAE
+Package Alias: RFLIB@11.3.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005Sv1YAE
 
 - Fixed CSV export in the Permissions Explorer, which broke with the Winter 27 release. Both Export to CSV options failed silently, producing no file and only a JavaScript console error.
 - Fixed the CSV export of `Apex Permissions` in the Permissions Explorer, which used the column layout of the object permission export. Apex class and Visualforce page access has none of the object access fields, so those exports carried the nine object columns with an empty value in every access column. They now export the three columns the dashboard shows — `PROFILE/PERMISSION SET`, `CLASS/PAGE`, and `CLASS/PAGE ACCESS` — with the access value the table displays.

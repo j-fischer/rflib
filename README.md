@@ -74,8 +74,8 @@ sf package install --package <Package ID> --target-org <your org alias>
 Here are the commands for the latest versions:
 
 ```
-rem RFLIB 11.3.0
-sf package install --package 04tKY0000005SuhYAE --target-org <your org alias>
+rem RFLIB 11.3.1
+sf package install --package 04tKY0000005Sv1YAE --target-org <your org alias>
 
 rem RFLIB-FS 4.0.0
 sf package install --package 04tKY0000005SfyYAE --target-org <your org alias>
