@@ -84,11 +84,15 @@ const DEFAULT_CONNECTION_MODE = CONNECTION_MODE.NEW_MESSAGES_ONLY;
 
 const logger = createLogger('LogEventMonitor');
 
+function findConnectionModeByLabel(label) {
+    const normalizedLabel = (label || '').trim().toLowerCase();
+    return CONNECTION_MODES.find((candidate) => candidate.label.toLowerCase() === normalizedLabel);
+}
+
 async function resolveDefaultConnectionMode() {
     try {
         const configuredLabel = await getDefaultConnectionMode();
-        const normalizedLabel = (configuredLabel || '').trim().toLowerCase();
-        const mode = CONNECTION_MODES.find((candidate) => candidate.label.toLowerCase() === normalizedLabel);
+        const mode = findConnectionModeByLabel(configuredLabel);
 
         if (mode) {
             return mode;
@@ -114,6 +118,9 @@ export default class LogEventMonitor extends LightningElement {
 
     debugEnabled = false;
     isClearArchiveDialogVisible = false;
+    // Connection mode requested via the c__mode URL parameter, e.g. by the dashboard's log
+    // archive alert linking straight into the Archive. Takes precedence over the Global Setting.
+    requestedConnectionMode = null;
     // Stays null until the configured default connection mode has been resolved, so the header never
     // renders a mode the component is not actually in.
     currentConnectionMode = null;
@@ -235,6 +242,14 @@ export default class LogEventMonitor extends LightningElement {
         } else {
             logger.debug('EMP API debug mode not enabled');
         }
+
+        const requestedMode = currentPageReference?.state?.c__mode;
+        if (requestedMode) {
+            this.requestedConnectionMode = findConnectionModeByLabel(requestedMode);
+            if (!this.requestedConnectionMode) {
+                logger.warn('Unknown requested connection mode "{0}", ignoring it', requestedMode);
+            }
+        }
     }
 
     get connectionModes() {
@@ -262,9 +277,10 @@ export default class LogEventMonitor extends LightningElement {
 
         this.loadFieldVisibilitySettings();
 
-        // The Log_Monitor_Default_Connection Global Setting decides which mode the monitor
-        // starts in; it is optional and defaults to New Messages.
-        this.currentConnectionMode = await resolveDefaultConnectionMode();
+        // A c__mode URL parameter decides which mode the monitor starts in; without it the
+        // Log_Monitor_Default_Connection Global Setting applies, which defaults to New Messages.
+        const defaultConnectionMode = await resolveDefaultConnectionMode();
+        this.currentConnectionMode = this.requestedConnectionMode || defaultConnectionMode;
         logger.debug('Initializing with connection mode {0}', this.currentConnectionMode.label);
 
         if (this.currentConnectionMode === CONNECTION_MODE.DISCONNECTED) {

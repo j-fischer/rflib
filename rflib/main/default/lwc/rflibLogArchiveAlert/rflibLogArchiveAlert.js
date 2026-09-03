@@ -32,6 +32,7 @@ import { createLogger } from 'c/rflibLogger';
 import getRecentLogSummary from '@salesforce/apex/rflib_LogArchiveController.getRecentLogSummary';
 
 const LOG_MONITOR_TAB = 'rflib_Log_Monitor';
+const ARCHIVE_CONNECTION_MODE = 'Archive';
 
 const logger = createLogger('LogArchiveAlert');
 
@@ -97,11 +98,14 @@ export default class RflibLogArchiveAlert extends NavigationMixin(LightningEleme
             event.preventDefault();
         }
 
-        logger.debug('Navigating to the Log Monitor tab');
+        logger.debug('Navigating to the Log Monitor tab in Archive mode');
         this[NavigationMixin.Navigate]({
             type: 'standard__navItemPage',
             attributes: {
                 apiName: LOG_MONITOR_TAB
+            },
+            state: {
+                c__mode: ARCHIVE_CONNECTION_MODE
             }
         });
     }

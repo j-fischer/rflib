@@ -13,6 +13,7 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 - Fixed the Permissions Explorer CSV exports corrupting a row whose profile or permission set name contains a double quote. Such a value ended its column early and shifted every column after it; quotes are now escaped the way the Log Monitor export already escaped them.
 - Fixed the file name of every RFLIB download containing colons, which Windows does not allow in a file name and browsers silently rewrote. Affects the Permissions Explorer and Log Monitor CSV exports and the log file download in the log event viewer.
 - Fixed the Log Monitor CSV export and the log event viewer's log file download, which failed for the same reason as the Permissions Explorer export. The Log Monitor reported the failure in a message; the log file download failed silently.
+- The Management Dashboard's log alert now opens the Log Monitor in `Archive` mode. The banner reports recent `WARN`, `ERROR`, and `FATAL` records held in the Log Archive, but its `Investigate in the Log Monitor` link used to open the tab in whichever mode the `Log_Monitor_Default_Connection` Global Setting selected — by default `New Messages`, which shows none of the archived records the banner just counted. The link now lands directly on the archive query.
 
 ### RFLIB 11.2.0
 

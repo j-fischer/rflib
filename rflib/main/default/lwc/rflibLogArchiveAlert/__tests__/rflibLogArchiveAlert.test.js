@@ -132,7 +132,7 @@ describe('c-rflib-log-archive-alert', () => {
         expect(element.shadowRoot.querySelector('.slds-notify_alert')).toBeNull();
     });
 
-    it('navigates to the Log Monitor tab when the link is clicked', async () => {
+    it('navigates to the Log Monitor tab in Archive mode when the link is clicked', async () => {
         const element = createComponent();
 
         getRecentLogSummary.emit({
@@ -152,6 +152,9 @@ describe('c-rflib-log-archive-alert', () => {
             type: 'standard__navItemPage',
             attributes: {
                 apiName: 'rflib_Log_Monitor'
+            },
+            state: {
+                c__mode: 'Archive'
             }
         });
     });

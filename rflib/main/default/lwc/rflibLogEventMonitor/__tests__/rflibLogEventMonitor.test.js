@@ -5,6 +5,7 @@ import { loadStyle } from 'lightning/platformResourceLoader';
 import getArchivedRecords from '@salesforce/apex/rflib_LogArchiveController.getArchivedRecords';
 import clearArchive from '@salesforce/apex/rflib_LogArchiveController.clearArchive';
 import getDefaultConnectionMode from '@salesforce/apex/rflib_LogMonitorController.getDefaultConnectionMode';
+import { CurrentPageReference } from 'lightning/navigation';
 
 import { Blob as NodeBlob } from 'buffer';
 
@@ -223,6 +224,34 @@ describe('c-rflib-log-event-monitor', () => {
             const element = createMonitor();
 
             return flushPromises().then(() => {
+                expect(subscribe).toHaveBeenCalledWith('/event/rflib_Log_Event__e', -1, expect.any(Function));
+                expect(connectionModeButtonLabel(element)).toBe('New Messages');
+            });
+        });
+
+        it('starts in the mode requested via the c__mode URL parameter, overriding the setting', () => {
+            getDefaultConnectionMode.mockResolvedValue('New Messages');
+            getArchivedRecords.mockResolvedValue({ records: [{ CreatedById: 'ArchivedUser' }], queryLimit: 100 });
+
+            const element = createMonitor();
+            CurrentPageReference.emit({ state: { c__mode: 'Archive' } });
+
+            return flushPromises().then(() => {
+                expect(getArchivedRecords).toHaveBeenCalled();
+                expect(subscribe).not.toHaveBeenCalled();
+                expect(connectionStatus(element)).toContain('Archive');
+                expect(connectionModeButtonLabel(element)).toBe('Archive');
+            });
+        });
+
+        it('ignores an unrecognized c__mode URL parameter', () => {
+            getDefaultConnectionMode.mockResolvedValue('New Messages');
+
+            const element = createMonitor();
+            CurrentPageReference.emit({ state: { c__mode: 'Not A Mode' } });
+
+            return flushPromises().then(() => {
+                expect(getArchivedRecords).not.toHaveBeenCalled();
                 expect(subscribe).toHaveBeenCalledWith('/event/rflib_Log_Event__e', -1, expect.any(Function));
                 expect(connectionModeButtonLabel(element)).toBe('New Messages');
             });

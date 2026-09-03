@@ -4,7 +4,7 @@ import { clickDialogButton, waitForToastsToClear } from '../components/base';
 import { createOpsCenterSession } from '../fixtures';
 import { pollUntil } from '../helpers/polling';
 import { orgInfo } from '../helpers/sf';
-import { LogMonitorPage } from '../pages/log-monitor.page';
+import { CONNECTION_MODES, LogMonitorPage } from '../pages/log-monitor.page';
 import { ManagementConsolePage } from '../pages/management-console.page';
 import { OpsCenterApp, TABS } from '../pages/ops-center-app.page';
 
@@ -178,7 +178,7 @@ test('apex job schedulers can schedule, refresh, and delete jobs', async () => {
     }
 });
 
-test('log archive alert appears for recent high-severity logs and links to the Log Monitor', async () => {
+test('log archive alert appears for recent high-severity logs and opens the Log Monitor in Archive mode', async () => {
     // Global setup seeds recent WARN/ERROR/FATAL rows straight into the Big Object, so the alert is
     // deterministic. The summary is @wire-fetched on component load, so reload to re-fire the wire and
     // wait for the banner each round rather than blind-sleeping; with seeded data this resolves quickly.
@@ -196,6 +196,10 @@ test('log archive alert appears for recent high-severity logs and links to the L
     );
 
     await console_.archiveAlert.investigateLink.click();
-    await expect(new LogMonitorPage(page).root).toBeVisible({ timeout: 60_000 });
+    const logMonitor = new LogMonitorPage(page);
+    await expect(logMonitor.root).toBeVisible({ timeout: 60_000 });
+    // The link carries c__mode=Archive, so the monitor must open in the Archive rather than
+    // whatever the Log_Monitor_Default_Connection setting says.
+    await expect(logMonitor.connectionStatusText).toContainText(CONNECTION_MODES.archive, { timeout: 60_000 });
     await app.gotoTab(TABS.managementConsole);
 });
