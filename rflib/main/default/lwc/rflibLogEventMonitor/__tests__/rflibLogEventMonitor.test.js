@@ -244,6 +244,19 @@ describe('c-rflib-log-event-monitor', () => {
             });
         });
 
+        it('matches the c__mode URL parameter case-insensitively', () => {
+            getDefaultConnectionMode.mockResolvedValue('New Messages');
+            getArchivedRecords.mockResolvedValue({ records: [], queryLimit: 100 });
+
+            const element = createMonitor();
+            CurrentPageReference.emit({ state: { c__mode: 'aRcHiVe' } });
+
+            return flushPromises().then(() => {
+                expect(getArchivedRecords).toHaveBeenCalled();
+                expect(connectionModeButtonLabel(element)).toBe('Archive');
+            });
+        });
+
         it('ignores an unrecognized c__mode URL parameter', () => {
             getDefaultConnectionMode.mockResolvedValue('New Messages');
 

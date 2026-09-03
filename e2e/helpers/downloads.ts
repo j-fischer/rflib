@@ -1,7 +1,8 @@
 import { Download } from '@playwright/test';
 import { promises as fs } from 'fs';
-import os from 'os';
-import path from 'path';
+
+const READ_ATTEMPTS = 20;
+const READ_RETRY_MS = 250;
 
 export interface ParsedCsv {
     header: string[];
@@ -11,8 +12,10 @@ export interface ParsedCsv {
 /**
  * Reads a download's bytes.
  *
- * The file is saved to a path of our own first. Reading the runner's own artifact copy through
- * createReadStream() came back empty for blob downloads, including for a one line probe file.
+ * On Windows the browser process keeps its handle on the artifact open for a moment after the
+ * download completes, so the first read fails with EPERM even though the file is already complete
+ * (stat reports the full size). The read is retried until the handle is released; without the retry
+ * saveAs() and createReadStream() fail too - the latter silently, by returning nothing.
  */
 export async function readDownload(download: Download): Promise<string> {
     const failure = await download.failure();
@@ -20,14 +23,22 @@ export async function readDownload(download: Download): Promise<string> {
         throw new Error(`Download ${download.suggestedFilename()} failed: ${failure}`);
     }
 
-    const target = path.join(os.tmpdir(), `rflib-e2e-${Date.now()}-${download.suggestedFilename()}`);
-    await download.saveAs(target);
+    const artifact = await download.path();
 
-    try {
-        return await fs.readFile(target, 'utf8');
-    } finally {
-        await fs.rm(target, { force: true });
+    let lastError: unknown;
+    for (let attempt = 0; attempt < READ_ATTEMPTS; attempt++) {
+        try {
+            return await fs.readFile(artifact, 'utf8');
+        } catch (error) {
+            lastError = error;
+            await new Promise((resolve) => setTimeout(resolve, READ_RETRY_MS));
+        }
     }
+
+    throw new Error(
+        `Could not read the download ${download.suggestedFilename()} at ${artifact} after ` +
+            `${READ_ATTEMPTS} attempts: ${(lastError as Error)?.message}`
+    );
 }
 
 /**
