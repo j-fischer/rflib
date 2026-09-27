@@ -127,6 +127,75 @@ private class rflib_LoggerFlowActionTest {
         System.assert(loggerFactory.debugLogCapture.containsInAnyMessage('INFO'), 'debugLogger did not contain INFO message');
     }
 
+    @IsTest
+    private static void testLogMessage_TerminateTransaction() {
+        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
+        messages[0].message = 'Fault in {0}';
+        messages[0].args = new List<String> { 'Create_Contact' };
+        messages[0].terminateTransaction = true;
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual('Fault in Create_Contact', ex.getMessage(), 'Exception message did not match the formatted log message');
+        }
+        Test.stopTest();
+
+        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain ERROR message');
+    }
+
+    @IsTest
+    private static void testLogMessage_TerminateTransactionWithBatchReporting() {
+        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
+        messages[0].useBatchReporting = true;
+        messages[0].terminateTransaction = true;
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual('This is a message', ex.getMessage(), 'Exception message did not match the log message');
+        }
+        Test.stopTest();
+
+        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain ERROR message');
+    }
+
+    @IsTest
+    private static void testLogMessage_TerminateTransactionFalse() {
+        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
+        messages[0].terminateTransaction = false;
+
+        Test.startTest();
+        rflib_LoggerFlowAction.logMessage(messages);
+        Test.stopTest();
+
+        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain ERROR message');
+    }
+
+    @IsTest
+    private static void testLogMessage_TerminateTransactionNull() {
+        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
+        messages[0].terminateTransaction = null;
+
+        Test.startTest();
+        rflib_LoggerFlowAction.logMessage(messages);
+        Test.stopTest();
+
+        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain ERROR message');
+    }
+
     private static List<rflib_LoggerFlowAction.LogMessageInfo> createMessageInfo(String logLevel) {
         rflib_LoggerFlowAction.LogMessageInfo result = new rflib_LoggerFlowAction.LogMessageInfo();
 

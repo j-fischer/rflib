@@ -41,6 +41,8 @@ public with sharing class rflib_LoggerFlowAction {
 
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
+        rflib_Logger terminatingLogger = null;
+        String terminationMessage = null;
 
         for (LogMessageInfo messageInfo : logMessages) {
             rflib_Logger logger = messageInfo.useBatchReporting == true ? 
@@ -75,8 +77,27 @@ public with sharing class rflib_LoggerFlowAction {
                     logger.debug(messageInfo.message, messageInfo.args);
                 }
             }
+
+            if (messageInfo.terminateTransaction == true && terminatingLogger == null) {
+                terminatingLogger = logger;
+                terminationMessage = messageInfo.args == null || messageInfo.args.isEmpty()
+                    ? messageInfo.message
+                    : String.format(messageInfo.message, messageInfo.args);
+            }
+        }
+
+        if (terminatingLogger != null) {
+            // Batched events are only dispatched at the end of a transaction, which the exception below prevents
+            terminatingLogger.publishBatchedLogEvents();
+            throw new FlowTerminationException(terminationMessage);
         }
     }
+
+    /**
+     * @description Thrown when a log message requests the termination of the transaction. The exception is not caught
+     *              by the Flow, which fails the interview the same way as a fault without a fault path.
+     */
+    public class FlowTerminationException extends Exception {}
 
     public class LogMessageInfo {
 
@@ -117,5 +138,12 @@ public with sharing class rflib_LoggerFlowAction {
             required=false
         )
         public List<String> args;
+
+        @InvocableVariable(
+            label='Terminate Transaction'
+            description='When true, the action throws an exception after logging so that the Flow fails as if no fault path was defined. Use on fault paths only.'
+            required=false
+        )
+        public Boolean terminateTransaction = false;
     }
 }
