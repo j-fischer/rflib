@@ -233,6 +233,69 @@ private class rflib_LoggerFlowActionTest {
     }
 
     @IsTest
+    private static void testLogMessage_TerminateTransactionCombinesNonTerminatingMessages() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory(rflib_LogLevel.ERROR);
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = new List<rflib_LoggerFlowAction.LogMessageInfo>();
+        rflib_LoggerFlowAction.LogMessageInfo fatalMessage = createMessageInfo('fatal')[0];
+        fatalMessage.message = 'Fatal non-terminating';
+        fatalMessage.useBatchReporting = true;
+        messages.add(fatalMessage);
+
+        for (Integer i = 0; i < 159; i++) {
+            rflib_LoggerFlowAction.LogMessageInfo errorMessage = createMessageInfo('error')[0];
+            errorMessage.message = 'Error non-terminating {0}';
+            errorMessage.args = new List<String> { String.valueOf(i) };
+            messages.add(errorMessage);
+        }
+        messages.add(createTerminatingMessageInfo('info', 'Info terminating'));
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual('Info terminating', ex.getMessage(), 'Exception message did not match the terminating message');
+        }
+        Test.stopTest();
+
+        Assert.areEqual(0, batchingFactory.batchedLoggerCount, 'A terminating invocation must not use batched loggers');
+        Assert.areEqual(1, batchingFactory.publisher.publishCount, 'A terminating invocation must be published as a single event');
+
+        rflib_Log_Event__e logEvent = batchingFactory.publisher.getLastLogEvent();
+        Assert.areEqual('FATAL', logEvent.Log_Level__c, 'Event must be published at the most severe level');
+        for (String message : new List<String> { 'Fatal non-terminating', 'Error non-terminating 158', 'Info terminating' }) {
+            Assert.isTrue(logEvent.Log_Messages__c.contains(message), 'Published event is missing: ' + message);
+        }
+    }
+
+    @IsTest
+    private static void testLogMessage_TerminateTransactionWithNullMessage() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = new List<rflib_LoggerFlowAction.LogMessageInfo> {
+            createTerminatingMessageInfo('error', null)
+        };
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual(
+                'The Flow was terminated by the RFLIB Log Message action.',
+                ex.getMessage(),
+                'Exception message did not fall back to the default message'
+            );
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, batchingFactory.publisher.publishCount, 'Log event was not published before terminating');
+    }
+
+    @IsTest
     private static void testLogMessage_BatchReportingWithoutTermination() {
         BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
         rflib_LoggerFlowAction.loggerFactory = batchingFactory;

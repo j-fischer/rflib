@@ -39,61 +39,59 @@ public with sharing class rflib_LoggerFlowAction {
     @TestVisible
     private static rflib_LoggerFactory loggerFactory = rflib_LoggerUtil.getFactory();
 
+    private static final String DEFAULT_TERMINATION_MESSAGE = 'The Flow was terminated by the RFLIB Log Message action.';
+
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
-        // Bulkified interviews terminate together. To stay within the Publish Immediate DML limit, only the most severe
-        // terminating message publishes a log event. It is logged last, so the event contains all other buffered messages.
-        Integer publishingIndex = -1;
-        rflib_LogLevel publishingLevel = null;
-        String terminationMessage = null;
-
+        Integer firstTerminatingIndex = -1;
         for (Integer i = 0; i < logMessages.size(); i++) {
-            LogMessageInfo messageInfo = logMessages[i];
-            if (messageInfo.terminateTransaction != true) {
-                continue;
+            if (logMessages[i].terminateTransaction == true) {
+                firstTerminatingIndex = i;
+                break;
             }
+        }
 
-            rflib_LogLevel logLevel = getEffectiveLogLevel(messageInfo.logLevel);
-            if (publishingLevel == null || publishingLevel.encompasses(logLevel)) {
+        if (firstTerminatingIndex < 0) {
+            for (LogMessageInfo messageInfo : logMessages) {
+                logSingleMessage(messageInfo, false, false);
+            }
+            return;
+        }
+
+        // Bulkified interviews terminate together, and the transaction is rolled back. To guarantee that the log survives
+        // within the Publish Immediate DML limit, all messages are combined into a single event, published by the most
+        // severe message. It is logged last, so the event contains all other buffered messages.
+        Integer publishingIndex = 0;
+        rflib_LogLevel publishingLevel = getEffectiveLogLevel(logMessages[0].logLevel);
+        for (Integer i = 1; i < logMessages.size(); i++) {
+            rflib_LogLevel logLevel = getEffectiveLogLevel(logMessages[i].logLevel);
+            if (publishingLevel.encompasses(logLevel)) {
                 publishingIndex = i;
                 publishingLevel = logLevel;
-            }
-
-            if (terminationMessage == null) {
-                terminationMessage = messageInfo.args == null || messageInfo.args.isEmpty()
-                    ? messageInfo.message
-                    : String.format(messageInfo.message, messageInfo.args);
             }
         }
 
         for (Integer i = 0; i < logMessages.size(); i++) {
             if (i != publishingIndex) {
-                logSingleMessage(logMessages[i], false);
+                logSingleMessage(logMessages[i], true, false);
             }
         }
+        logSingleMessage(logMessages[publishingIndex], true, true);
 
-        if (publishingIndex >= 0) {
-            logSingleMessage(logMessages[publishingIndex], true);
-        }
-
-        if (terminationMessage != null) {
-            throw new FlowTerminationException(terminationMessage);
-        }
+        throw new FlowTerminationException(getTerminationMessage(logMessages[firstTerminatingIndex]));
     }
 
-    private static void logSingleMessage(LogMessageInfo messageInfo, Boolean isPublishingTerminatingMessage) {
-        Boolean shouldTerminate = messageInfo.terminateTransaction == true;
-
-        // Batched events are dispatched after the transaction, which a termination rolls back, so terminating
-        // messages are always published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
-        rflib_Logger logger = messageInfo.useBatchReporting == true && !shouldTerminate ?
+    private static void logSingleMessage(LogMessageInfo messageInfo, Boolean isTerminating, Boolean isPublishing) {
+        // Batched events are dispatched after the transaction, which a termination rolls back, so messages of a
+        // terminating invocation are published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
+        rflib_Logger logger = messageInfo.useBatchReporting == true && !isTerminating ?
             loggerFactory.createBatchedLogger(messageInfo.context) :
             loggerFactory.createLogger(messageInfo.context);
 
-        if (shouldTerminate) {
+        if (isTerminating) {
             logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
 
-            if (!isPublishingTerminatingMessage) {
+            if (!isPublishing) {
                 logger.setReportingLogLevel(rflib_LogLevel.NONE);
             }
         }
@@ -126,6 +124,17 @@ public with sharing class rflib_LoggerFlowAction {
                 logger.debug(messageInfo.message, messageInfo.args);
             }
         }
+    }
+
+    // A Flow resource mapped to the message can be null at runtime, which must not prevent the termination
+    private static String getTerminationMessage(LogMessageInfo messageInfo) {
+        if (String.isBlank(messageInfo.message)) {
+            return DEFAULT_TERMINATION_MESSAGE;
+        }
+
+        return messageInfo.args == null || messageInfo.args.isEmpty()
+            ? messageInfo.message
+            : String.format(messageInfo.message, messageInfo.args);
     }
 
     // Unknown log levels are logged as DEBUG
