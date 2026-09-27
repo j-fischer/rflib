@@ -39,44 +39,115 @@ public with sharing class rflib_LoggerFlowAction {
     @TestVisible
     private static rflib_LoggerFactory loggerFactory = rflib_LoggerUtil.getFactory();
 
+    private static final String DEFAULT_TERMINATION_MESSAGE = 'The Flow was terminated by the RFLIB Log Message action.';
+
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
+        Integer firstTerminatingIndex = -1;
+        for (Integer i = 0; i < logMessages.size(); i++) {
+            if (logMessages[i].terminateTransaction == true) {
+                firstTerminatingIndex = i;
+                break;
+            }
+        }
 
-        for (LogMessageInfo messageInfo : logMessages) {
-            rflib_Logger logger = messageInfo.useBatchReporting == true ? 
-                loggerFactory.createBatchedLogger(messageInfo.context) :
-                loggerFactory.createLogger(messageInfo.context);
-                
-            // Set the log source to Flow
-            logger.setLogSource(rflib_LogSource.Flow);
+        if (firstTerminatingIndex < 0) {
+            for (LogMessageInfo messageInfo : logMessages) {
+                logSingleMessage(messageInfo, false, false);
+            }
+            return;
+        }
 
-            switch on messageInfo.logLevel.toUpperCase() {
-                when 'FATAL' {
-                    logger.fatal(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'ERROR' {
-                    logger.error(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'WARN' {
-                    logger.warn(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'INFO' {
-                    logger.info(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'DEBUG' {
-                    logger.debug(messageInfo.message, messageInfo.args);
-                }
+        // Bulkified interviews terminate together, and the transaction is rolled back. To guarantee that the log survives
+        // within the Publish Immediate DML limit, all messages are combined into a single event, published by the most
+        // severe message. It is logged last, so the event contains all other buffered messages.
+        Integer publishingIndex = 0;
+        rflib_LogLevel publishingLevel = getEffectiveLogLevel(logMessages[0].logLevel);
+        for (Integer i = 1; i < logMessages.size(); i++) {
+            rflib_LogLevel logLevel = getEffectiveLogLevel(logMessages[i].logLevel);
+            if (publishingLevel.encompasses(logLevel)) {
+                publishingIndex = i;
+                publishingLevel = logLevel;
+            }
+        }
 
-                when else {
-                    logger.debug(messageInfo.message, messageInfo.args);
-                }
+        for (Integer i = 0; i < logMessages.size(); i++) {
+            if (i != publishingIndex) {
+                logSingleMessage(logMessages[i], true, false);
+            }
+        }
+        logSingleMessage(logMessages[publishingIndex], true, true);
+
+        throw new FlowTerminationException(getTerminationMessage(logMessages[firstTerminatingIndex]));
+    }
+
+    private static void logSingleMessage(LogMessageInfo messageInfo, Boolean isTerminating, Boolean isPublishing) {
+        // Batched events are dispatched after the transaction, which a termination rolls back, so messages of a
+        // terminating invocation are published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
+        rflib_Logger logger = messageInfo.useBatchReporting == true && !isTerminating ?
+            loggerFactory.createBatchedLogger(messageInfo.context) :
+            loggerFactory.createLogger(messageInfo.context);
+
+        if (isTerminating) {
+            logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
+
+            if (!isPublishing) {
+                logger.setReportingLogLevel(rflib_LogLevel.NONE);
+            }
+        }
+
+        // Set the log source to Flow
+        logger.setLogSource(rflib_LogSource.Flow);
+
+        switch on messageInfo.logLevel.toUpperCase() {
+            when 'FATAL' {
+                logger.fatal(messageInfo.message, messageInfo.args);
+            }
+
+            when 'ERROR' {
+                logger.error(messageInfo.message, messageInfo.args);
+            }
+
+            when 'WARN' {
+                logger.warn(messageInfo.message, messageInfo.args);
+            }
+
+            when 'INFO' {
+                logger.info(messageInfo.message, messageInfo.args);
+            }
+
+            when 'DEBUG' {
+                logger.debug(messageInfo.message, messageInfo.args);
+            }
+
+            when else {
+                logger.debug(messageInfo.message, messageInfo.args);
             }
         }
     }
+
+    // A Flow resource mapped to the message can be null at runtime, which must not prevent the termination
+    private static String getTerminationMessage(LogMessageInfo messageInfo) {
+        if (String.isBlank(messageInfo.message)) {
+            return DEFAULT_TERMINATION_MESSAGE;
+        }
+
+        return messageInfo.args == null || messageInfo.args.isEmpty()
+            ? messageInfo.message
+            : String.format(messageInfo.message, messageInfo.args);
+    }
+
+    // Unknown log levels are logged as DEBUG
+    private static rflib_LogLevel getEffectiveLogLevel(String logLevel) {
+        rflib_LogLevel result = rflib_LogLevel.fromString(logLevel);
+        return result == rflib_LogLevel.NONE ? rflib_LogLevel.DEBUG : result;
+    }
+
+    /**
+     * @description Thrown when a log message requests the termination of the transaction. The exception is not caught
+     *              by the Flow, which fails the interview the same way as a fault without a fault path.
+     */
+    public class FlowTerminationException extends Exception {}
 
     public class LogMessageInfo {
 
@@ -117,5 +188,12 @@ public with sharing class rflib_LoggerFlowAction {
             required=false
         )
         public List<String> args;
+
+        @InvocableVariable(
+            label='Terminate Transaction'
+            description='When true, the action throws an exception after logging so that the Flow fails as if no fault path was defined. The log event is published immediately, ignoring batch reporting. Use on fault paths only.'
+            required=false
+        )
+        public Boolean terminateTransaction = false;
     }
 }
