@@ -1,6 +1,6 @@
 ### RFLIB 11.4.0
 
-- Added the `Terminate Transaction` option to the `Log Message` Flow action (`rflib_LoggerFlowAction`). When checked, the action logs the message and then throws an exception, so the Flow fails the same way it would without a fault path: the transaction is rolled back and the standard error is shown. Use it on fault paths to log a fault without swallowing it. The log event is still published because `rflib_Log_Event__e` publishes immediately. The option is unchecked by default, so existing Flows are not affected. The RFLIB SF CLI plugin sets it on the fault paths it creates when instrumenting Flows.
+- Added the `Terminate Transaction` option to the `Log Message` Flow action (`rflib_LoggerFlowAction`). When checked, the action logs the message and then throws an exception, so the Flow fails the same way it would without a fault path: the transaction is rolled back and the standard error is shown. Use it on fault paths to log a fault without swallowing it. The log event is published right away, even when batch reporting is configured, and survives the rollback because `rflib_Log_Event__e` publishes immediately. The option is unchecked by default, so existing Flows are not affected. The RFLIB SF CLI plugin sets it on the fault paths it creates when instrumenting Flows.
 
 ### RFLIB 11.3.1
 

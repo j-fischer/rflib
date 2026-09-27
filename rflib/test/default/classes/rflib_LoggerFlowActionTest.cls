@@ -149,8 +149,9 @@ private class rflib_LoggerFlowActionTest {
     }
 
     @IsTest
-    private static void testLogMessage_TerminateTransactionWithBatchReporting() {
-        rflib_LoggerFlowAction.loggerFactory = loggerFactory;
+    private static void testLogMessage_TerminateTransactionPublishesImmediately() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
 
         List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
         messages[0].useBatchReporting = true;
@@ -165,7 +166,25 @@ private class rflib_LoggerFlowActionTest {
         }
         Test.stopTest();
 
-        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('ERROR'), 'debugLogger did not contain ERROR message');
+        Assert.areEqual(0, batchingFactory.batchedLoggerCount, 'A terminating message must not use a batched logger');
+        Assert.isTrue(batchingFactory.eventCapture.eventHasBeenPublished(), 'Log event was not published before terminating');
+        Assert.areEqual('ERROR', batchingFactory.eventCapture.getEvent().Log_Level__c, 'Published event has the wrong log level');
+    }
+
+    @IsTest
+    private static void testLogMessage_BatchReportingWithoutTermination() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = createMessageInfo('error');
+        messages[0].useBatchReporting = true;
+
+        Test.startTest();
+        rflib_LoggerFlowAction.logMessage(messages);
+        Test.stopTest();
+
+        Assert.areEqual(1, batchingFactory.batchedLoggerCount, 'Batch reporting did not use a batched logger');
+        Assert.isTrue(batchingFactory.eventCapture.eventHasNotBeenPublished(), 'Batched log event should not be published immediately');
     }
 
     @IsTest
@@ -204,6 +223,25 @@ private class rflib_LoggerFlowActionTest {
         result.message = 'This is a message';
 
         return new List<rflib_LoggerFlowAction.LogMessageInfo> { result };
+    }
+
+    // Creates loggers that queue log events until the end of the transaction, like the Batched Log Event Reporting Level setting
+    private class BatchingLoggerFactory implements rflib_LoggerFactory {
+        public final rflib_MockLoggerFactory.EventCapture eventCapture = new rflib_MockLoggerFactory.EventCapture();
+        public final rflib_MockLoggerFactory.DebugLogCapture debugLogCapture = new rflib_MockLoggerFactory.DebugLogCapture();
+        public Integer batchedLoggerCount = 0;
+
+        public rflib_Logger createLogger(String context) {
+            rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
+            result.setReportingLogLevel(rflib_LogLevel.INFO);
+            result.setBatchReportingLogLevel(rflib_LogLevel.INFO);
+            return result;
+        }
+
+        public rflib_Logger createBatchedLogger(String context) {
+            batchedLoggerCount++;
+            return createLogger(context);
+        }
     }
     
 }

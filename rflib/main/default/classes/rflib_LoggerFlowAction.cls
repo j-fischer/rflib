@@ -41,14 +41,21 @@ public with sharing class rflib_LoggerFlowAction {
 
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
-        rflib_Logger terminatingLogger = null;
         String terminationMessage = null;
 
         for (LogMessageInfo messageInfo : logMessages) {
-            rflib_Logger logger = messageInfo.useBatchReporting == true ? 
+            Boolean shouldTerminate = messageInfo.terminateTransaction == true;
+
+            // Batched events are dispatched after the transaction, which a termination rolls back, so terminating
+            // messages are always published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
+            rflib_Logger logger = messageInfo.useBatchReporting == true && !shouldTerminate ?
                 loggerFactory.createBatchedLogger(messageInfo.context) :
                 loggerFactory.createLogger(messageInfo.context);
-                
+
+            if (shouldTerminate) {
+                logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
+            }
+
             // Set the log source to Flow
             logger.setLogSource(rflib_LogSource.Flow);
 
@@ -78,17 +85,14 @@ public with sharing class rflib_LoggerFlowAction {
                 }
             }
 
-            if (messageInfo.terminateTransaction == true && terminatingLogger == null) {
-                terminatingLogger = logger;
+            if (shouldTerminate && terminationMessage == null) {
                 terminationMessage = messageInfo.args == null || messageInfo.args.isEmpty()
                     ? messageInfo.message
                     : String.format(messageInfo.message, messageInfo.args);
             }
         }
 
-        if (terminatingLogger != null) {
-            // Batched events are only dispatched at the end of a transaction, which the exception below prevents
-            terminatingLogger.publishBatchedLogEvents();
+        if (terminationMessage != null) {
             throw new FlowTerminationException(terminationMessage);
         }
     }
@@ -141,7 +145,7 @@ public with sharing class rflib_LoggerFlowAction {
 
         @InvocableVariable(
             label='Terminate Transaction'
-            description='When true, the action throws an exception after logging so that the Flow fails as if no fault path was defined. Use on fault paths only.'
+            description='When true, the action throws an exception after logging so that the Flow fails as if no fault path was defined. The log event is published immediately, ignoring batch reporting. Use on fault paths only.'
             required=false
         )
         public Boolean terminateTransaction = false;
