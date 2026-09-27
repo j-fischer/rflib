@@ -184,7 +184,7 @@ public with sharing class rflib_LoggerFlowAction {
         
         @InvocableVariable(
             label='Message Arguments' 
-            description='The arguments to be inserted into the message. Arguments must be of type string' 
+            description='Optional Text collection variable whose values replace the {0}, {1}, ... placeholders in the message. Usually not needed, as the Message property already supports merge fields.'
             required=false
         )
         public List<String> args;
