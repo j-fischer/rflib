@@ -167,8 +167,39 @@ private class rflib_LoggerFlowActionTest {
         Test.stopTest();
 
         Assert.areEqual(0, batchingFactory.batchedLoggerCount, 'A terminating message must not use a batched logger');
-        Assert.isTrue(batchingFactory.eventCapture.eventHasBeenPublished(), 'Log event was not published before terminating');
-        Assert.areEqual('ERROR', batchingFactory.eventCapture.getEvent().Log_Level__c, 'Published event has the wrong log level');
+        Assert.areEqual(1, batchingFactory.publisher.publishCount, 'Log event was not published before terminating');
+        Assert.areEqual('ERROR', batchingFactory.publisher.getLastLogEvent().Log_Level__c, 'Published event has the wrong log level');
+    }
+
+    @IsTest
+    private static void testLogMessage_TerminateTransactionBulkPublishesOnce() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = new List<rflib_LoggerFlowAction.LogMessageInfo>();
+        for (Integer i = 0; i < 200; i++) {
+            rflib_LoggerFlowAction.LogMessageInfo messageInfo = createMessageInfo('error')[0];
+            messageInfo.message = 'Fault in record {0}';
+            messageInfo.args = new List<String> { String.valueOf(i) };
+            messageInfo.terminateTransaction = true;
+            messages.add(messageInfo);
+        }
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual('Fault in record 0', ex.getMessage(), 'Exception message did not match the first terminating message');
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, batchingFactory.publisher.publishCount, 'Bulk terminating messages must be published as a single event');
+
+        rflib_Log_Event__e logEvent = batchingFactory.publisher.getLastLogEvent();
+        Assert.areEqual('ERROR', logEvent.Log_Level__c, 'Published event has the wrong log level');
+        Assert.isTrue(logEvent.Log_Messages__c.contains('Fault in record 199'), 'Published event is missing the last message');
+        Assert.isTrue(logEvent.Log_Messages__c.contains('Fault in record 150'), 'Published event is missing buffered messages');
     }
 
     @IsTest
@@ -184,7 +215,7 @@ private class rflib_LoggerFlowActionTest {
         Test.stopTest();
 
         Assert.areEqual(1, batchingFactory.batchedLoggerCount, 'Batch reporting did not use a batched logger');
-        Assert.isTrue(batchingFactory.eventCapture.eventHasNotBeenPublished(), 'Batched log event should not be published immediately');
+        Assert.areEqual(0, batchingFactory.publisher.publishCount, 'Batched log event should not be published immediately');
     }
 
     @IsTest
@@ -227,12 +258,12 @@ private class rflib_LoggerFlowActionTest {
 
     // Creates loggers that queue log events until the end of the transaction, like the Batched Log Event Reporting Level setting
     private class BatchingLoggerFactory implements rflib_LoggerFactory {
-        public final rflib_MockLoggerFactory.EventCapture eventCapture = new rflib_MockLoggerFactory.EventCapture();
+        public final CountingEventPublisher publisher = new CountingEventPublisher();
         public final rflib_MockLoggerFactory.DebugLogCapture debugLogCapture = new rflib_MockLoggerFactory.DebugLogCapture();
         public Integer batchedLoggerCount = 0;
 
         public rflib_Logger createLogger(String context) {
-            rflib_DefaultLogger result = new rflib_DefaultLogger(eventCapture, debugLogCapture, context);
+            rflib_DefaultLogger result = new rflib_DefaultLogger(publisher, debugLogCapture, context);
             result.setReportingLogLevel(rflib_LogLevel.INFO);
             result.setBatchReportingLogLevel(rflib_LogLevel.INFO);
             return result;
@@ -241,6 +272,36 @@ private class rflib_LoggerFlowActionTest {
         public rflib_Logger createBatchedLogger(String context) {
             batchedLoggerCount++;
             return createLogger(context);
+        }
+    }
+
+    // Counts every publish call, since each one consumes a Publish Immediate DML statement
+    private class CountingEventPublisher implements rflib_EventPublisher {
+        public Integer publishCount = 0;
+        private rflib_Log_Event__e lastLogEvent;
+
+        public Integer getPublishingCounter() {
+            return publishCount;
+        }
+
+        public Database.SaveResult publish(SObject event) {
+            publish(new List<SObject> { event });
+            return null;
+        }
+
+        public List<Database.SaveResult> publish(List<SObject> events) {
+            publishCount++;
+            for (SObject event : events) {
+                if (event instanceof rflib_Log_Event__e) {
+                    lastLogEvent = (rflib_Log_Event__e) event;
+                }
+            }
+            return null;
+        }
+
+        public rflib_Log_Event__e getLastLogEvent() {
+            Assert.isNotNull(lastLogEvent, 'No log event was published');
+            return lastLogEvent;
         }
     }
     

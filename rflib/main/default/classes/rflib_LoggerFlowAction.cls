@@ -42,8 +42,15 @@ public with sharing class rflib_LoggerFlowAction {
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
         String terminationMessage = null;
+        Integer lastTerminatingIndex = -1;
+        for (Integer i = 0; i < logMessages.size(); i++) {
+            if (logMessages[i].terminateTransaction == true) {
+                lastTerminatingIndex = i;
+            }
+        }
 
-        for (LogMessageInfo messageInfo : logMessages) {
+        for (Integer i = 0; i < logMessages.size(); i++) {
+            LogMessageInfo messageInfo = logMessages[i];
             Boolean shouldTerminate = messageInfo.terminateTransaction == true;
 
             // Batched events are dispatched after the transaction, which a termination rolls back, so terminating
@@ -54,6 +61,12 @@ public with sharing class rflib_LoggerFlowAction {
 
             if (shouldTerminate) {
                 logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
+
+                // Bulkified interviews terminate together: buffer all but the last terminating message, which then publishes
+                // a single event with the buffered log statements to stay within the Publish Immediate DML limit
+                if (i != lastTerminatingIndex) {
+                    logger.setReportingLogLevel(rflib_LogLevel.NONE);
+                }
             }
 
             // Set the log source to Flow
