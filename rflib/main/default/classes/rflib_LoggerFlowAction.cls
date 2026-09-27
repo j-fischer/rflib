@@ -41,73 +41,97 @@ public with sharing class rflib_LoggerFlowAction {
 
     @InvocableMethod(label='Log Message' category='RFLIB' description='Log message(s) to the current transaction log' iconName='resource:rflib_LoggerActionIcon:icon')
     public static void logMessage(List<LogMessageInfo> logMessages) {
+        // Bulkified interviews terminate together. To stay within the Publish Immediate DML limit, only the most severe
+        // terminating message publishes a log event. It is logged last, so the event contains all other buffered messages.
+        Integer publishingIndex = -1;
+        rflib_LogLevel publishingLevel = null;
         String terminationMessage = null;
-        Integer lastTerminatingIndex = -1;
-        for (Integer i = 0; i < logMessages.size(); i++) {
-            if (logMessages[i].terminateTransaction == true) {
-                lastTerminatingIndex = i;
-            }
-        }
 
         for (Integer i = 0; i < logMessages.size(); i++) {
             LogMessageInfo messageInfo = logMessages[i];
-            Boolean shouldTerminate = messageInfo.terminateTransaction == true;
-
-            // Batched events are dispatched after the transaction, which a termination rolls back, so terminating
-            // messages are always published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
-            rflib_Logger logger = messageInfo.useBatchReporting == true && !shouldTerminate ?
-                loggerFactory.createBatchedLogger(messageInfo.context) :
-                loggerFactory.createLogger(messageInfo.context);
-
-            if (shouldTerminate) {
-                logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
-
-                // Bulkified interviews terminate together: buffer all but the last terminating message, which then publishes
-                // a single event with the buffered log statements to stay within the Publish Immediate DML limit
-                if (i != lastTerminatingIndex) {
-                    logger.setReportingLogLevel(rflib_LogLevel.NONE);
-                }
+            if (messageInfo.terminateTransaction != true) {
+                continue;
             }
 
-            // Set the log source to Flow
-            logger.setLogSource(rflib_LogSource.Flow);
-
-            switch on messageInfo.logLevel.toUpperCase() {
-                when 'FATAL' {
-                    logger.fatal(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'ERROR' {
-                    logger.error(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'WARN' {
-                    logger.warn(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'INFO' {
-                    logger.info(messageInfo.message, messageInfo.args);
-                }
-                
-                when 'DEBUG' {
-                    logger.debug(messageInfo.message, messageInfo.args);
-                }
-
-                when else {
-                    logger.debug(messageInfo.message, messageInfo.args);
-                }
+            rflib_LogLevel logLevel = getEffectiveLogLevel(messageInfo.logLevel);
+            if (publishingLevel == null || publishingLevel.encompasses(logLevel)) {
+                publishingIndex = i;
+                publishingLevel = logLevel;
             }
 
-            if (shouldTerminate && terminationMessage == null) {
+            if (terminationMessage == null) {
                 terminationMessage = messageInfo.args == null || messageInfo.args.isEmpty()
                     ? messageInfo.message
                     : String.format(messageInfo.message, messageInfo.args);
             }
         }
 
+        for (Integer i = 0; i < logMessages.size(); i++) {
+            if (i != publishingIndex) {
+                logSingleMessage(logMessages[i], false);
+            }
+        }
+
+        if (publishingIndex >= 0) {
+            logSingleMessage(logMessages[publishingIndex], true);
+        }
+
         if (terminationMessage != null) {
             throw new FlowTerminationException(terminationMessage);
         }
+    }
+
+    private static void logSingleMessage(LogMessageInfo messageInfo, Boolean isPublishingTerminatingMessage) {
+        Boolean shouldTerminate = messageInfo.terminateTransaction == true;
+
+        // Batched events are dispatched after the transaction, which a termination rolls back, so terminating
+        // messages are always published immediately. rflib_Log_Event__e is PublishImmediately and survives the rollback.
+        rflib_Logger logger = messageInfo.useBatchReporting == true && !shouldTerminate ?
+            loggerFactory.createBatchedLogger(messageInfo.context) :
+            loggerFactory.createLogger(messageInfo.context);
+
+        if (shouldTerminate) {
+            logger.setBatchReportingLogLevel(rflib_LogLevel.NONE);
+
+            if (!isPublishingTerminatingMessage) {
+                logger.setReportingLogLevel(rflib_LogLevel.NONE);
+            }
+        }
+
+        // Set the log source to Flow
+        logger.setLogSource(rflib_LogSource.Flow);
+
+        switch on messageInfo.logLevel.toUpperCase() {
+            when 'FATAL' {
+                logger.fatal(messageInfo.message, messageInfo.args);
+            }
+
+            when 'ERROR' {
+                logger.error(messageInfo.message, messageInfo.args);
+            }
+
+            when 'WARN' {
+                logger.warn(messageInfo.message, messageInfo.args);
+            }
+
+            when 'INFO' {
+                logger.info(messageInfo.message, messageInfo.args);
+            }
+
+            when 'DEBUG' {
+                logger.debug(messageInfo.message, messageInfo.args);
+            }
+
+            when else {
+                logger.debug(messageInfo.message, messageInfo.args);
+            }
+        }
+    }
+
+    // Unknown log levels are logged as DEBUG
+    private static rflib_LogLevel getEffectiveLogLevel(String logLevel) {
+        rflib_LogLevel result = rflib_LogLevel.fromString(logLevel);
+        return result == rflib_LogLevel.NONE ? rflib_LogLevel.DEBUG : result;
     }
 
     /**

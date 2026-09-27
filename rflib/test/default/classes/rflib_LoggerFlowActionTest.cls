@@ -203,6 +203,36 @@ private class rflib_LoggerFlowActionTest {
     }
 
     @IsTest
+    private static void testLogMessage_TerminateTransactionBulkPublishesMostSevereMessage() {
+        BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory(rflib_LogLevel.ERROR);
+        rflib_LoggerFlowAction.loggerFactory = batchingFactory;
+
+        List<rflib_LoggerFlowAction.LogMessageInfo> messages = new List<rflib_LoggerFlowAction.LogMessageInfo> {
+            createTerminatingMessageInfo('foobar', 'Unknown level first'),
+            createTerminatingMessageInfo('fatal', 'Fatal second'),
+            createTerminatingMessageInfo('error', 'Error third'),
+            createTerminatingMessageInfo('info', 'Info last')
+        };
+
+        Test.startTest();
+        try {
+            rflib_LoggerFlowAction.logMessage(messages);
+            Assert.fail('Expected FlowTerminationException to be thrown');
+        } catch (rflib_LoggerFlowAction.FlowTerminationException ex) {
+            Assert.areEqual('Unknown level first', ex.getMessage(), 'Exception message did not match the first terminating message');
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, batchingFactory.publisher.publishCount, 'Bulk terminating messages must be published as a single event');
+
+        rflib_Log_Event__e logEvent = batchingFactory.publisher.getLastLogEvent();
+        Assert.areEqual('FATAL', logEvent.Log_Level__c, 'Event must be published at the most severe level');
+        for (String message : new List<String> { 'Unknown level first', 'Fatal second', 'Error third', 'Info last' }) {
+            Assert.isTrue(logEvent.Log_Messages__c.contains(message), 'Published event is missing: ' + message);
+        }
+    }
+
+    @IsTest
     private static void testLogMessage_BatchReportingWithoutTermination() {
         BatchingLoggerFactory batchingFactory = new BatchingLoggerFactory();
         rflib_LoggerFlowAction.loggerFactory = batchingFactory;
@@ -256,15 +286,32 @@ private class rflib_LoggerFlowActionTest {
         return new List<rflib_LoggerFlowAction.LogMessageInfo> { result };
     }
 
+    private static rflib_LoggerFlowAction.LogMessageInfo createTerminatingMessageInfo(String logLevel, String message) {
+        rflib_LoggerFlowAction.LogMessageInfo result = createMessageInfo(logLevel)[0];
+        result.message = message;
+        result.terminateTransaction = true;
+        return result;
+    }
+
     // Creates loggers that queue log events until the end of the transaction, like the Batched Log Event Reporting Level setting
     private class BatchingLoggerFactory implements rflib_LoggerFactory {
         public final CountingEventPublisher publisher = new CountingEventPublisher();
         public final rflib_MockLoggerFactory.DebugLogCapture debugLogCapture = new rflib_MockLoggerFactory.DebugLogCapture();
         public Integer batchedLoggerCount = 0;
 
+        private final rflib_LogLevel reportingLogLevel;
+
+        public BatchingLoggerFactory() {
+            this(rflib_LogLevel.INFO);
+        }
+
+        public BatchingLoggerFactory(rflib_LogLevel reportingLogLevel) {
+            this.reportingLogLevel = reportingLogLevel;
+        }
+
         public rflib_Logger createLogger(String context) {
             rflib_DefaultLogger result = new rflib_DefaultLogger(publisher, debugLogCapture, context);
-            result.setReportingLogLevel(rflib_LogLevel.INFO);
+            result.setReportingLogLevel(reportingLogLevel);
             result.setBatchReportingLogLevel(rflib_LogLevel.INFO);
             return result;
         }
