@@ -1,5 +1,9 @@
 ### RFLIB 11.4.0
 
+Package ID: 04tKY0000005SvfYAE
+Package Alias: RFLIB@11.4.0-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005SvfYAE
+
 - Added the `Terminate Transaction` option to the `Log Message` Flow action (`rflib_LoggerFlowAction`). When checked, the action logs the message and then throws an exception, so the Flow fails the same way it would without a fault path: the transaction is rolled back and the standard error is shown. Use it on fault paths to log a fault without swallowing it. The log event is published right away, even when batch reporting is configured, and survives the rollback because `rflib_Log_Event__e` publishes immediately. When a bulkified Flow logs several messages in one invocation and any of them terminates the transaction, all of them are combined into a single log event, published at the most severe of their log levels, to stay within the Publish Immediate DML limit. The option is unchecked by default, so existing Flows are not affected. The RFLIB SF CLI plugin sets it on the fault paths it creates when instrumenting Flows.
 
 ### RFLIB 11.3.1
