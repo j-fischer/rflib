@@ -444,6 +444,17 @@ gulp.task('create-scratch-org', function (done) {
     }
 });
 
+gulp.task('create-scratch-org-no-default', function (done) {
+    const skipCreation = process.argv.includes('--skip-creation');
+    const previewMode = process.argv.includes('--preview');
+
+    if (!skipCreation) {
+        gulp.series(previewMode ? 'shell-force-create-org-preview' : 'shell-force-create-org')(done);
+    } else {
+        done();
+    }
+});
+
 // Shell tasks
 function shellTask(getCommand, ignoreErrors = false) {
     return function (done) {
@@ -882,7 +893,7 @@ gulp.task(
         'prompt-alias',
         'prompt-selectPackage',
         'prompt-confirmVersion',
-        'create-scratch-org',
+        'create-scratch-org-no-default',
         'shell-force-install-dependencies',
         'shell-force-install-latest',
         'shell-force-test',
