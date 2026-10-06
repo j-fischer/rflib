@@ -35,6 +35,7 @@ private class rflib_PublicGroupMemberManagerCtrlTest {
     private static final User ADMIN_USER = rflib_TestUserFactory.insertAndRetrieve('Alice', 'Admin', 'System Administrator');
     private static final User STANDARD_USER = rflib_TestUserFactory.insertAndRetrieve('Bob', 'Viewer', 'Standard User');
     private static final User NON_MEMBER = rflib_TestUserFactory.insertAndRetrieve('Grace', 'Ghost', 'Standard User');
+    private static final User OPS_CENTER_USER = rflib_TestUserFactory.insertWithPermissionSetAndRetrieve('Oscar', 'GroupOps', 'Standard User', 'rflib_Ops_Center_Access');
     
     private static Id testGroupId;
     
@@ -215,10 +216,57 @@ private class rflib_PublicGroupMemberManagerCtrlTest {
                 rflib_PublicGroupMemberManagerController.removeUserFromGroup('NonExistentGroup', ADMIN_USER.Id);
                 Assert.fail('Expected AuraHandledException was not thrown for non-existent group.');
             } catch (AuraHandledException e) {
-                Assert.isTrue(e.getMessage().contains('Error removing user from group: List has no rows for assignment'), 
+                Assert.isTrue(e.getMessage().contains('Error removing user from group: List has no rows for assignment'),
                     'Exception message should indicate non-existence of group, was: ' + e.getMessage());
             }
         }
         Test.stopTest();
+    }
+
+    // When the controller logs an error, Test.stopTest() delivers the log event in a separate context and the
+    // static users above are initialized again on the next access to this class, failing with DUPLICATE_USERNAME.
+    // These tests therefore capture values before Test.startTest() and query inline afterwards.
+    @IsTest
+    private static void testAddUserToGroup_OpsCenterUserWithoutPermission() {
+        setupTestData();
+
+        Id groupId = testGroupId;
+        Id userId = NON_MEMBER.Id;
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_PublicGroupMemberManagerController.addUserToGroup(TEST_GROUP_API_NAME, userId);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to manage group members.');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('INSUFFICIENT_ACCESS'),
+                    'Exception message should indicate insufficient access, was: ' + e.getMessage());
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM GroupMember WHERE GroupId = :groupId AND UserOrGroupId = :userId], 'User should not be added to the group.');
+    }
+
+    @IsTest
+    private static void testRemoveUserFromGroup_OpsCenterUserWithoutPermission() {
+        setupTestData();
+
+        Id groupId = testGroupId;
+        Id userId = STANDARD_USER.Id;
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_PublicGroupMemberManagerController.removeUserFromGroup(TEST_GROUP_API_NAME, userId);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to manage group members.');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('INSUFFICIENT_ACCESS'),
+                    'Exception message should indicate insufficient access, was: ' + e.getMessage());
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, [SELECT COUNT() FROM GroupMember WHERE GroupId = :groupId AND UserOrGroupId = :userId], 'User should not be removed from the group.');
     }
 }

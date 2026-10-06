@@ -242,6 +242,23 @@ public with sharing class rflib_CustomSettingsEditorController {
         }
     }
 
+    // The save and delete methods accept any SObject type from the client, so they must not touch anything
+    // other than custom settings.
+    private static void assertIsCustomSetting(DescribeSObjectResult describeResult) {
+        if (!describeResult.isCustomSetting()) {
+            LOGGER.error('{0} is not a Custom Setting.', new List<Object>{ describeResult.getName() });
+            throw rflib_ControllerUtil.createAuraHandledException('The provided API Name does not belong to a Custom Setting.');
+        }
+    }
+
+    private static void assertPermission(Boolean hasPermission, String operation, DescribeSObjectResult describeResult) {
+        if (!hasPermission) {
+            throw rflib_ControllerUtil.createAuraHandledException(
+                'You do not have permission to ' + operation + ' records of ' + describeResult.getName() + '.'
+            );
+        }
+    }
+
     private static Map<Id, Profile> getProfileMap() {
         return new Map<Id, Profile>([SELECT Id, Name FROM Profile]);
     }
@@ -309,10 +326,14 @@ public with sharing class rflib_CustomSettingsEditorController {
                 );
             }
 
+            DescribeSObjectResult describeResult = targetType.getDescribe();
+            assertIsCustomSetting(describeResult);
+            assertPermission(describeResult.isDeletable(), 'delete', describeResult);
+
             SObject record = targetType.newSObject();
             record.put('Id', recordId);
 
-            delete record;
+            Database.delete(record, AccessLevel.USER_MODE);
             rflib_LoggerUtil.logInternal(LOGGER, 'Record deleted successfully. Record ID: {0}', new List<Object>{ recordId });
         } catch (Exception ex) {
             LOGGER.error('Error in deleteCustomSettingRecord: {0}', new List<Object>{ ex.getMessage() });
@@ -331,15 +352,21 @@ public with sharing class rflib_CustomSettingsEditorController {
                 throw rflib_ControllerUtil.createAuraHandledException('Custom Setting record cannot be null.');
             }
 
+            DescribeSObjectResult describeResult = customSettingRecord.getSObjectType().getDescribe();
+            assertIsCustomSetting(describeResult);
+
             if (customSettingRecord.Id == null) {
                 // Insert new record
-                insert customSettingRecord;
+                assertPermission(describeResult.isCreateable(), 'create', describeResult);
+                Database.insert(customSettingRecord, AccessLevel.USER_MODE);
                 rflib_LoggerUtil.logInternal(LOGGER, 
                     'Custom Setting inserted successfully. Record ID: {0}',
                     new List<Object>{ customSettingRecord.Id }
                 );
             } else {
                 // Update existing record
+                assertPermission(describeResult.isUpdateable(), 'update', describeResult);
+
                 // Create a new SObject instance and copy fields except SetupOwnerId
                 SObjectType csType = customSettingRecord.getSObjectType();
                 SObject updateRecord = csType.newSObject();
@@ -353,7 +380,7 @@ public with sharing class rflib_CustomSettingsEditorController {
                     }
                 }
 
-                update updateRecord;
+                Database.update(updateRecord, AccessLevel.USER_MODE);
                 rflib_LoggerUtil.logInternal(LOGGER, 
                     'Custom Setting updated successfully. Record ID: {0}',
                     new List<Object>{ customSettingRecord.Id }

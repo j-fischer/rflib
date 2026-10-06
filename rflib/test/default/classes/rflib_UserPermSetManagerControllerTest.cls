@@ -38,7 +38,8 @@ private class rflib_UserPermSetManagerControllerTest {
     private static final User ADMIN_USER = rflib_TestUserFactory.insertAndRetrieve('Alice', 'Admin', 'System Administrator');
     private static final User STANDARD_USER = rflib_TestUserFactory.insertAndRetrieve('Bob', 'Viewer', 'Standard User');
     private static final User NO_PERMISSION_USER = rflib_TestUserFactory.insertAndRetrieve('Charlie', 'NoAccess', 'Standard User');
-    
+    private static final User OPS_CENTER_USER = rflib_TestUserFactory.insertWithPermissionSetAndRetrieve('Olivia', 'PermSetOps', 'Standard User', PERM_SET_NAME);
+
     private static void setupTestData() {
         PermissionSet permSet = [SELECT Id FROM PermissionSet WHERE Name = :PERM_SET_NAME LIMIT 1];
         List<PermissionSetAssignment> permSetAssignments = new List<PermissionSetAssignment>();
@@ -216,5 +217,50 @@ private class rflib_UserPermSetManagerControllerTest {
             Assert.isTrue(e.getMessage().contains('Invalid id value for this SObject type'), 'Exception message should indicate no record found, was:' + e.getMessage());
         }
         Test.stopTest();
+    }
+
+    // When the controller logs an error, Test.stopTest() delivers the log event in a separate context and the
+    // static users above are initialized again on the next access to this class, failing with DUPLICATE_USERNAME.
+    // These tests therefore capture values before Test.startTest() and query inline afterwards.
+    @IsTest
+    private static void testAssignPermissionSet_OpsCenterUserWithoutAssignPermission() {
+        setupTestData();
+
+        PermissionSet permSet = [SELECT Id FROM PermissionSet WHERE Name = :PERM_SET_NAME LIMIT 1];
+        Id targetUserId = NO_PERMISSION_USER.Id;
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_UserPermSetManagerController.assignPermissionSet(permSet.Id, TEST_ALIAS_NO_PERM);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to assign permission sets.');
+            } catch (AuraHandledException e) {
+                Assert.areEqual('You do not have permission to assign permission sets.', e.getMessage(), 'Exception message should indicate missing permission');
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM PermissionSetAssignment WHERE AssigneeId = :targetUserId AND PermissionSetId = :permSet.Id], 'Permission Set should not be assigned.');
+    }
+
+    @IsTest
+    private static void testDeletePermissionSetAssignment_OpsCenterUserWithoutAssignPermission() {
+        setupTestData();
+
+        PermissionSet permSet = [SELECT Id FROM PermissionSet WHERE Name = :PERM_SET_NAME LIMIT 1];
+        PermissionSetAssignment psa = [SELECT Id FROM PermissionSetAssignment WHERE Assignee.Alias = :TEST_ALIAS_ADMIN AND PermissionSetId = :permSet.Id LIMIT 1];
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_UserPermSetManagerController.deletePermissionSetAssignment(psa.Id);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to remove permission set assignments.');
+            } catch (AuraHandledException e) {
+                Assert.areEqual('You do not have permission to remove permission set assignments.', e.getMessage(), 'Exception message should indicate missing permission');
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, [SELECT COUNT() FROM PermissionSetAssignment WHERE Id = :psa.Id], 'Permission Set Assignment should not be deleted.');
     }
 }
