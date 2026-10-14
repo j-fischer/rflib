@@ -24,7 +24,7 @@ test('opens RFLIB Ops Center through the App Launcher search', async () => {
     expect(page.url()).toContain('/lightning/');
 });
 
-test('shows all six Ops Center tabs', async () => {
+test('shows all seven Ops Center tabs', async () => {
     for (const label of Object.values(TABS)) {
         await expect(app.tabLink(label)).toBeVisible();
     }
@@ -62,4 +62,15 @@ test('Application Events tab shows the object list view', async () => {
     await app.gotoTab(TABS.applicationEvents);
     await page.waitForURL(/rflib_Application_Event__c/, { timeout: 60_000 });
     await expect(new ApplicationEventsPage(page).listViewContainer).toBeVisible({ timeout: 60_000 });
+});
+
+test('Application Event Archive tab renders the big object explorer', async () => {
+    // Clicked straight after the Application Events list view, the tab can light up while Lightning drops the
+    // navigation, leaving the list view on screen. Re-click until the URL actually moves.
+    await expect(async () => {
+        await app.gotoTab(TABS.appEventArchive);
+        await expect(page).toHaveURL(/rflib_Application_Event_Archive_Explorer/, { timeout: 10_000 });
+    }).toPass({ timeout: 60_000 });
+    await expect(app.rootComponent(ROOT_COMPONENT_TAGS.bigObjectExplorer)).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText('Records Loaded')).toBeVisible({ timeout: 60_000 });
 });

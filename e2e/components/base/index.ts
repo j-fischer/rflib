@@ -3,7 +3,7 @@
 export { LightningButtonMenu } from './lightning-button-menu';
 export { LightningCombobox } from './lightning-combobox';
 export { LightningDatatable } from './lightning-datatable';
-export { formatDateUs, LightningDateTimeInput } from './lightning-datetime-input';
+export { formatDateIso, formatDateUs, LightningDateTimeInput } from './lightning-datetime-input';
 export { LightningRecordPicker } from './lightning-record-picker';
 export { clickDialogButton } from './modal';
 export { waitForSpinners } from './spinner';

@@ -44,6 +44,9 @@ export default async function globalSetup(): Promise<void> {
     // Log Monitor Archive mode) have deterministic, recent rows instead of racing the async
     // platform-event archival pipeline, which can lag minutes in a fresh scratch org.
     runApex('scripts/apex/SeedLogArchive.apex');
+    // The application event archiver only moves events older than the retention threshold, so the Big Object
+    // Explorer spec gets its archived events written directly as well.
+    runApex('scripts/apex/SeedApplicationEventArchive.apex');
 
     // Published here rather than inside the spec because the platform event -> Flow -> Big Object hop
     // can take several minutes, which exceeds a single test's timeout. Publishing during setup lets the

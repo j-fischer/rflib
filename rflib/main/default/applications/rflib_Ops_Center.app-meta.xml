@@ -20,6 +20,7 @@
     <tabs>rflib_Permissions_Explorer</tabs>
     <tabs>rflib_Application_Events_Dashboard</tabs>
     <tabs>rflib_Application_Event__c</tabs>
+    <tabs>rflib_Application_Event_Archive_Explorer</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>rflib_Log_Monitor_UtilityBar</utilityBar>
 </CustomApplication>
