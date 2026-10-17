@@ -48,7 +48,11 @@ config/user/.sfdx-hardis*
 
 # Claude reference file
 CLAUDE.md
-.claude
+
+# Claude Code: the skills and launch configurations are shared; local settings, worktrees and drafts are not
+.claude/settings.local.json
+.claude/worktrees/
+.claude/skills/rflib-pr/out/
 
 # Codex
 .codex

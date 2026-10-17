@@ -1,0 +1,11 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "rflib-pr-preview",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [".claude/skills/rflib-pr/preview.mjs", "--serve"],
+            "port": 4799
+        }
+    ]
+}
