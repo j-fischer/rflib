@@ -229,9 +229,20 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             // With every index field pinned to an exact value, the query addresses a single record and needs no
             // cursor.
             result.isComplete = !hasMoreRows || cursorField == null;
-            // More rows beyond a chunk without a single new record means the next query would return the same rows
-            // again. A boundary that fills the chunk exactly and ends the range is complete, not stuck.
-            result.isStuck = !result.isComplete && newRecords.isEmpty();
+
+            // A chunk of nothing but records already returned is only stuck when the read-ahead row still carries the
+            // boundary value. If it carries the next value, every record at the boundary has been returned, and the
+            // index order guarantees nothing lies between the two values, so the cursor moves on to the read-ahead.
+            Boolean isBoundaryExhausted = false;
+            if (!result.isComplete && newRecords.isEmpty()) {
+                String nextValue = format(cursorField, fetchedRows[chunkSize]);
+                isBoundaryExhausted = !nextValue.equals(nextCursor.boundaryValue);
+                if (isBoundaryExhausted) {
+                    nextCursor.boundaryValue = nextValue;
+                    nextCursor.seenKeys = new List<String>();
+                }
+            }
+            result.isStuck = !result.isComplete && newRecords.isEmpty() && !isBoundaryExhausted;
 
             if (result.isStuck) {
                 result.message = String.format(

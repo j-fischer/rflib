@@ -188,6 +188,25 @@ private class rflib_DefaultBigObjectQueryServiceTest {
     }
 
     @IsTest
+    private static void testQueryChunk_ExactlyFullBoundaryFollowedByMoreRecordsAdvances() {
+        rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 2);
+        rflib_Application_Event_Archive__b seenA = createRecord(BOUNDARY, 'A');
+        rflib_Application_Event_Archive__b seenB = createRecord(BOUNDARY, 'B');
+        rflib_Application_Event_Archive__b readAheadC = createRecord(EARLIER, 'C');
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB, readAheadC });
+
+        rflib_BigObjectQueryController.ChunkResult result = new rflib_DefaultBigObjectQueryService()
+            .queryChunk(config, createCursor(BOUNDARY, new List<String>{ createKey(seenA), createKey(seenB) }, 2));
+
+        Assert.isFalse(result.isStuck, 'Exactly chunk-size records at the boundary are not a stuck load');
+        Assert.isFalse(result.isComplete);
+        Assert.isTrue(result.records.isEmpty());
+        Assert.areEqual(iso(EARLIER), result.cursor.boundaryValue, 'The cursor moves on to the read-ahead value');
+        Assert.isTrue(result.cursor.seenKeys.isEmpty());
+        Assert.areEqual(2, result.cursor.recordsLoaded);
+    }
+
+    @IsTest
     private static void testQueryChunk_KeysDoNotCollideOnSeparatorsInValues() {
         rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 3);
         rflib_Application_Event_Archive__b seen = createRecord(BOUNDARY, 'x||y');
