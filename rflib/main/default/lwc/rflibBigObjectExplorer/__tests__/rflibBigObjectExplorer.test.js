@@ -439,6 +439,26 @@ describe('c-rflib-big-object-explorer', () => {
         expect(list.selectedKey).toBeNull();
     });
 
+    it('jumps to the page entered in the paginator', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        const records = Array.from({ length: 5 }, (value, index) => createRecord(index));
+        queryChunk.mockResolvedValue(createChunk(records, { isComplete: true }));
+
+        const element = mount(createExplorer({ pageSize: 2 }));
+        await flush();
+
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+        expect(paginator.shouldDisplayPageSelection).toBeTruthy();
+        expect(paginator.totalRecords).toBe(5);
+
+        // The paginator passes the typed page number as a string.
+        paginator.dispatchEvent(new CustomEvent('gotopage', { detail: '3' }));
+        await flush();
+
+        expect(paginator.currentPage).toBe(3);
+        expect(getList(element).currentPage).toBe(3);
+    });
+
     it('flags system mode and fields hidden from the user', async () => {
         describeConfig.mockResolvedValue(
             createDescription({ isSystemMode: true, droppedFields: ['Additional_Details__c'] })

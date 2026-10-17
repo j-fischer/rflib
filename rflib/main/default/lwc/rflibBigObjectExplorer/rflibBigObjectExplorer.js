@@ -572,6 +572,11 @@ export default class RflibBigObjectExplorer extends LightningElement {
         this.page = this.totalPages;
     }
 
+    handleGoToPage(event) {
+        // The paginator clamps the page to the valid range but passes what was typed, which is a string.
+        this.page = parseInt(event.detail, 10);
+    }
+
     handleRecordSelected(event) {
         logger.debug('Record selected with key={0}', event.detail.key);
         this.selectedKey = event.detail.key;
