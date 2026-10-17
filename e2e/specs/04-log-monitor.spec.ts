@@ -110,6 +110,16 @@ test('paginates when more than one page of events exists', async () => {
     await expect(pageInfo).toContainText('Page 2');
     await monitor.paginator.button('First').click();
     await expect(pageInfo).toContainText('Page 1');
+
+    await monitor.paginator.goTo(2);
+    await expect(pageInfo).toContainText('Page 2');
+    await expect(monitor.paginator.pageInput).toHaveValue('2');
+
+    // Changing the page size returns the list to the first page.
+    await monitor.paginator.selectPageSize(25);
+    await expect(pageInfo).toContainText('Page 1');
+    await expect(monitor.paginator.pageInput).toHaveValue('1');
+    await monitor.paginator.selectPageSize(10);
 });
 
 test('selecting an event opens the viewer with details, platform info, and stacktrace', async () => {

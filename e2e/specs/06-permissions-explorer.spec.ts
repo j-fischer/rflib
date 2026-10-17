@@ -71,10 +71,10 @@ test('page size selection shows more rows per page', async () => {
     const rowsAtTen = await explorer.tableRows.count();
     expect(rowsAtTen).toBeLessThanOrEqual(10);
 
-    await explorer.pageSizeMenu.select('50');
+    await explorer.paginator.selectPageSize(50);
     await expect.poll(() => explorer.tableRows.count(), { timeout: 60_000 }).toBeGreaterThan(10);
 
-    await explorer.pageSizeMenu.select('10');
+    await explorer.paginator.selectPageSize(10);
     await expect.poll(() => explorer.tableRows.count(), { timeout: 60_000 }).toBeLessThanOrEqual(10);
 });
 

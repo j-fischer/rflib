@@ -242,23 +242,6 @@
                                 <lightning-menu-item value="all" label="All"></lightning-menu-item>
                                 <lightning-menu-item value="filtered" label="Filtered"></lightning-menu-item>
                             </lightning-button-menu>
-                            <lightning-button-menu
-                                variant="border-filled"
-                                icon-name="utility:settings"
-                                menu-alignment="right"
-                                onselect={handlePageSizeChanged}
-                                alternative-text="Select page size"
-                            >
-                                <template for:each={pageSizes} for:item="menuItem">
-                                    <lightning-menu-item
-                                        key={menuItem.id}
-                                        value={menuItem.value}
-                                        label={menuItem.label}
-                                        checked={menuItem.checked}
-                                    >
-                                    </lightning-menu-item>
-                                </template>
-                            </lightning-button-menu>
                         </lightning-button-group>
                     </div>
                 </div>
@@ -319,10 +302,10 @@
                             onfirst={handleFirst}
                             onlast={handleLast}
                             ongotopage={handleGoToPage}
+                            onpagesizechange={handlePageSizeChanged}
                             current-page={page}
                             total-records={numDisplayedRecords}
                             page-size={pageSize}
-                            should-display-page-selection="true"
                         ></c-rflib-paginator>
                     </div>
                 </div>

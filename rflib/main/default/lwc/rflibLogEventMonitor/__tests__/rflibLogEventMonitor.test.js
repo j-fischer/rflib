@@ -652,7 +652,48 @@ describe('c-rflib-log-event-monitor', () => {
                 const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
                 paginator.dispatchEvent(new CustomEvent('last'));
                 return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                paginator.dispatchEvent(new CustomEvent('gotopage', { detail: 2 }));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+                expect(paginator.currentPage).toBe(2);
+                expect(logEventList.currentPage).toBe(2);
+
+                paginator.dispatchEvent(new CustomEvent('pagesizechange', { detail: 50 }));
+                return flushPromises();
+            })
+            .then(() => {
+                const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+                const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+                expect(paginator.pageSize).toBe(50);
+                expect(paginator.currentPage).toBe(1);
+                expect(logEventList.pageSize).toBe(50);
             });
+    });
+
+    it('uses the default page size configured in the App Builder', () => {
+        const element = createElement('c-rflib-log-event-monitor', {
+            is: RflibLogEventMonitor
+        });
+        element.defaultPageSize = '25';
+
+        isEmpEnabled.mockResolvedValue(true);
+        subscribe.mockResolvedValue({});
+        loadStyle.mockResolvedValue();
+
+        document.body.appendChild(element);
+
+        return flushPromises().then(() => {
+            const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+            const logEventList = element.shadowRoot.querySelector('c-rflib-log-event-list');
+            expect(paginator.pageSize).toBe(25);
+            expect(logEventList.pageSize).toBe(25);
+        });
     });
 
     it('handles date changes and manual archive query', () => {

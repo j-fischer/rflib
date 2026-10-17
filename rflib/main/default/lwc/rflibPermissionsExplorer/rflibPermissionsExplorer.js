@@ -26,10 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { LightningElement } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 import { downloadFile, fileNameTimestamp } from 'c/rflibFileDownload';
+import { getValidPageSize } from 'c/rflibPaginator';
 import getFieldLevelSecurityForAllProfiles from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllProfiles';
 import getFieldLevelSecurityForAllPermissionSets from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSets';
 import getFieldLevelSecurityForAllPermissionSetGroups from '@salesforce/apex/rflib_PermissionsExplorerController.getFieldLevelSecurityForAllPermissionSetGroups';
@@ -63,28 +64,6 @@ const FIELDS_WITHOUT_FLS_OPTIONS = {
 };
 
 const DEFAULT_PAGE_SIZE = 10;
-const PAGE_SIZES = [
-    {
-        id: '1',
-        value: 10,
-        label: '10'
-    },
-    {
-        id: '2',
-        value: 25,
-        label: '25'
-    },
-    {
-        id: '3',
-        value: 50,
-        label: '50'
-    },
-    {
-        id: '4',
-        value: 100,
-        label: '100'
-    }
-];
 
 const PERMISSION_TYPES = {
     OBJECT_PERMISSIONS_PROFILES: {
@@ -174,6 +153,15 @@ const APEX_PERMISSIONS_CSV_HEADER = '"PROFILE/PERMISSION SET","CLASS/PAGE","CLAS
 const logger = createLogger('PermissionsExplorer');
 
 export default class PermissionsExplorer extends LightningElement {
+    @api
+    get defaultPageSize() {
+        return this._defaultPageSize;
+    }
+    set defaultPageSize(value) {
+        this._defaultPageSize = value;
+        this.pageSize = getValidPageSize(value, DEFAULT_PAGE_SIZE);
+    }
+
     page = 1;
     pageSize = DEFAULT_PAGE_SIZE;
     numDisplayedRecords;
@@ -293,19 +281,6 @@ export default class PermissionsExplorer extends LightningElement {
             this.currentPermissionType === PERMISSION_TYPES.FIELD_PERMISSIONS_USER ||
             this.currentPermissionType === PERMISSION_TYPES.APEX_PERMISSIONS_USER
         );
-    }
-
-    get pageSizes() {
-        const pageSizes = JSON.parse(JSON.stringify(PAGE_SIZES));
-
-        let i,
-            len = pageSizes.length;
-        for (i = 0; i < len; i++) {
-            const menuItem = pageSizes[i];
-            menuItem.checked = this.pageSize !== null && menuItem.value === this.pageSize;
-        }
-
-        return pageSizes;
     }
 
     get fieldsWithoutFlsOptions() {
@@ -1031,9 +1006,10 @@ export default class PermissionsExplorer extends LightningElement {
     }
 
     handlePageSizeChanged(event) {
-        const newPageSize = parseInt(event.detail.value, 10);
-        logger.debug('New page size selected: pageSize=' + newPageSize);
+        const newPageSize = event.detail;
+        logger.debug('New page size selected: pageSize={0}', newPageSize);
 
+        this.page = 1;
         this.pageSize = newPageSize;
     }
 }

@@ -26,10 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import { LightningElement, wire } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { createLogger } from 'c/rflibLogger';
 import { downloadFile, fileNameTimestamp } from 'c/rflibFileDownload';
+import { getValidPageSize } from 'c/rflibPaginator';
 import { subscribe, unsubscribe, onError, setDebugFlag, isEmpEnabled } from 'lightning/empApi';
 import { CurrentPageReference } from 'lightning/navigation';
 
@@ -111,6 +112,15 @@ async function resolveDefaultConnectionMode() {
 }
 
 export default class LogEventMonitor extends LightningElement {
+    @api
+    get defaultPageSize() {
+        return this._defaultPageSize;
+    }
+    set defaultPageSize(value) {
+        this._defaultPageSize = value;
+        this.pageSize = getValidPageSize(value, DEFAULT_PAGE_SIZE);
+    }
+
     page = 1;
     pageSize = DEFAULT_PAGE_SIZE;
     numDisplayedRecords = 0;
@@ -646,6 +656,19 @@ export default class LogEventMonitor extends LightningElement {
     handleLast() {
         logger.debug('Navigate to last page, current page={0}', this.page);
         this.page = this.totalPages;
+    }
+
+    handleGoToPage(evt) {
+        logger.debug('Navigate to page, current page={0}', evt.detail);
+        this.page = evt.detail;
+    }
+
+    handlePageSizeChanged(event) {
+        const newPageSize = event.detail;
+        logger.debug('New page size selected: pageSize={0}', newPageSize);
+
+        this.page = 1;
+        this.pageSize = newPageSize;
     }
 
     handleRefreshed(event) {

@@ -48,13 +48,15 @@
             </lightning-button-group>
         </lightning-layout-item>
         <lightning-layout-item flexibility="grow">
-            <template lwc:if={shouldDisplayPageSelection}>
-                <div class="slds-text-align_center">
+            <div class="slds-grid slds-grid_align-center slds-grid_vertical-align-center slds-wrap">
+                <div class="slds-p-horizontal_x-small">
                     <label class="slds-text-color_weak slds-p-horizontal_x-small" for="pageNum">Page:</label>
                     <input
                         type="number"
                         id="pageNum"
                         value={currentPage}
+                        min="1"
+                        max={totalPages}
                         maxlength="4"
                         onkeypress={handlePageNumberChange}
                         class="slds-input_counter page-selector"
@@ -62,7 +64,19 @@
                     />
                     <span>&nbsp;of&nbsp;<b id="totalPages">{totalPages}</b></span>
                 </div>
-            </template>
+                <div class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_x-small">
+                    <span class="slds-text-color_weak slds-p-horizontal_x-small">Rows per page:</span>
+                    <lightning-combobox
+                        class="page-size-selector"
+                        variant="label-hidden"
+                        label="Rows per page"
+                        dropdown-alignment="auto"
+                        options={pageSizeOptions}
+                        value={selectedPageSize}
+                        onchange={handlePageSizeChange}
+                    ></lightning-combobox>
+                </div>
+            </div>
         </lightning-layout-item>
         <lightning-layout-item>
             <lightning-button-group>

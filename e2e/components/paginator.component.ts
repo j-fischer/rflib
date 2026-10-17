@@ -1,4 +1,5 @@
 import { Locator } from '@playwright/test';
+import { LightningCombobox } from './base';
 
 /** Wraps `c-rflib-paginator`. */
 export class PaginatorComponent {
@@ -8,11 +9,18 @@ export class PaginatorComponent {
         return new PaginatorComponent(scope.locator('c-rflib-paginator'));
     }
 
-    // The page selector only renders when the paginator is configured to show it.
     // LWC rewrites `id` attributes to keep them unique, so key off the authored
     // class instead of the `pageNum` id (rflibPaginator.html).
     get pageInput(): Locator {
         return this.root.locator('input.page-selector');
+    }
+
+    get pageSizeSelector(): LightningCombobox {
+        return LightningCombobox.within(this.root);
+    }
+
+    async selectPageSize(pageSize: 10 | 25 | 50 | 100): Promise<void> {
+        await this.pageSizeSelector.select(String(pageSize), true);
     }
 
     button(label: 'First' | 'Previous' | 'Next' | 'Last'): Locator {
