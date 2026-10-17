@@ -101,7 +101,9 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             Decimal difference = (Decimal) left - (Decimal) right;
             return difference > 0 ? 1 : (difference < 0 ? -1 : 0);
         }
-        // compareTo is case-sensitive, unlike the comparison operators on Strings.
+        // Unlike SOQL on standard objects, a Big Object text index orders and matches values case-sensitively in
+        // code point order ('Alpha' < 'Zeta' < 'alpha', verified against a scratch org), which is what compareTo does.
+        // The comparison operators on Apex Strings are case-insensitive and would disagree with the index.
         return String.valueOf(left).compareTo(String.valueOf(right));
     }
 
