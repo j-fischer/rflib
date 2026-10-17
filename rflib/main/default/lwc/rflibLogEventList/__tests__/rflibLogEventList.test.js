@@ -111,6 +111,35 @@ describe('c-rflib-log-event-list', () => {
             });
     });
 
+    it('re-slices the records and returns to the first page when the page size changes', () => {
+        const element = createElement('c-rflib-log-event-list', {
+            is: RflibLogEventList
+        });
+
+        element.pageSize = 2;
+        element.logEvents = MOCK_LOG_EVENTS;
+        document.body.appendChild(element);
+
+        const handler = jest.fn();
+        element.addEventListener('refreshed', handler);
+
+        return Promise.resolve()
+            .then(() => {
+                element.currentPage = 2;
+            })
+            .then(() => {
+                expect(element.shadowRoot.querySelectorAll('c-rflib-log-event-list-row').length).toBe(1);
+
+                element.pageSize = 10;
+            })
+            .then(() => {
+                expect(element.shadowRoot.querySelectorAll('c-rflib-log-event-list-row').length).toBe(3);
+
+                const lastRefresh = JSON.parse(handler.mock.calls[handler.mock.calls.length - 1][0].detail);
+                expect(lastRefresh).toEqual({ numDisplayedRecords: 3, currentPage: 1 });
+            });
+    });
+
     it('filters logs by request ID', () => {
         const element = createElement('c-rflib-log-event-list', {
             is: RflibLogEventList
