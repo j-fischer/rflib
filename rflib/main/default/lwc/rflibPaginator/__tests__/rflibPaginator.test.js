@@ -174,13 +174,14 @@ describe('c-rflib-paginator', () => {
         });
     });
 
-    it('always displays page selection input with the total number of pages', () => {
+    it('displays page selection input with the total number of pages when flag is set', () => {
         const element = createElement('c-rflib-paginator', {
             is: Paginator
         });
         element.currentPage = 1;
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         return Promise.resolve().then(() => {
@@ -191,6 +192,21 @@ describe('c-rflib-paginator', () => {
         });
     });
 
+    it('hides page selection input when flag is not set', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 1;
+        element.totalRecords = 20;
+        element.pageSize = 5;
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            expect(element.shadowRoot.querySelector('input')).toBeNull();
+            expect(element.shadowRoot.querySelector('lightning-combobox')).not.toBeNull();
+        });
+    });
+
     it('fires gotopage event on enter key', () => {
         const element = createElement('c-rflib-paginator', {
             is: Paginator
@@ -198,6 +214,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 1;
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         const handler = jest.fn();
@@ -220,6 +237,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 2; // Start at 2 so we can go to 1
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         const handler = jest.fn();
@@ -242,6 +260,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 1;
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         const handler = jest.fn();
@@ -264,6 +283,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 1;
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         const handler = jest.fn();
@@ -285,6 +305,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 2;
         element.totalRecords = 20;
         element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         const handler = jest.fn();
@@ -307,6 +328,7 @@ describe('c-rflib-paginator', () => {
         element.currentPage = 1;
         element.totalRecords = 0;
         element.pageSize = 10;
+        element.shouldDisplayPageSelection = true;
         document.body.appendChild(element);
 
         return Promise.resolve().then(() => {

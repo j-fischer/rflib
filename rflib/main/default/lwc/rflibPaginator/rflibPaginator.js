@@ -47,7 +47,6 @@ export default class Paginator extends LightningElement {
     @api currentPage;
     @api pageSize;
 
-    // Deprecated: the page selection is always displayed. Kept so that existing markup remains valid.
     @api shouldDisplayPageSelection = false;
 
     get totalPages() {

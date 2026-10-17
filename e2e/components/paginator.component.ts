@@ -9,6 +9,7 @@ export class PaginatorComponent {
         return new PaginatorComponent(scope.locator('c-rflib-paginator'));
     }
 
+    // The page selector only renders when the paginator is configured to show it.
     // LWC rewrites `id` attributes to keep them unique, so key off the authored
     // class instead of the `pageNum` id (rflibPaginator.html).
     get pageInput(): Locator {
