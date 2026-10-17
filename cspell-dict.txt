@@ -125,11 +125,10 @@ wdio
 permissionable
 Visualforce
 CMDT
-oneline
-fisch
 hotspot
 hotspots
 unpushed
 permissionsets
 flexipages
 heredocs
+overcomplication
