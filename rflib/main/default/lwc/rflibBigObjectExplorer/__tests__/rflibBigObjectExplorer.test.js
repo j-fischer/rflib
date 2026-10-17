@@ -276,6 +276,72 @@ describe('c-rflib-big-object-explorer', () => {
         expect(toastHandler.mock.calls[0][0].detail.variant).toBe('warning');
     });
 
+    it('caps the last chunk at maxRecords', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        queryChunk.mockResolvedValueOnce(
+            createChunk([createRecord(1), createRecord(2), createRecord(3), createRecord(4)], { isComplete: true })
+        );
+        const toastHandler = jest.fn();
+
+        const element = mount(createExplorer({ maxRecords: 3 }), toastHandler);
+        await flush();
+
+        expect(getList(element).records.length).toBe(3);
+        expect(toastHandler.mock.calls[0][0].detail.title).toBe('Record limit reached');
+    });
+
+    it('does not warn when the last chunk ends exactly at maxRecords', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        queryChunk.mockResolvedValueOnce(createChunk([createRecord(1), createRecord(2)], { isComplete: true }));
+        const toastHandler = jest.fn();
+
+        const element = mount(createExplorer({ maxRecords: 2 }), toastHandler);
+        await flush();
+
+        expect(getList(element).records.length).toBe(2);
+        expect(toastHandler).not.toHaveBeenCalled();
+    });
+
+    it('resolves untouched default filters again on every query', async () => {
+        const nextDayFilter = {
+            ...DEFAULT_FILTER,
+            fromValue: '2026-10-08T00:00:00.000Z',
+            toValue: '2026-10-15T23:59:59.999Z'
+        };
+        describeConfig
+            .mockResolvedValueOnce(createDescription())
+            .mockResolvedValueOnce(createDescription({ defaultFilters: [nextDayFilter] }));
+        queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));
+
+        const element = mount(createExplorer());
+        await flush();
+
+        getButton(element, 'Query').click();
+        await flush();
+
+        expect(describeConfig).toHaveBeenCalledTimes(2);
+        expect(queryChunk.mock.calls[1][0].config.indexFilters).toEqual([nextDayFilter]);
+    });
+
+    it('keeps edited index filters instead of resolving the defaults again', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));
+
+        const element = mount(createExplorer());
+        await flush();
+
+        const fromInput = element.shadowRoot.querySelector('lightning-input[data-field="Occurred_On__c"]');
+        fromInput.value = '2026-10-01T00:00:00.000Z';
+        fromInput.dispatchEvent(new CustomEvent('change'));
+        getButton(element, 'Query').click();
+        await flush();
+
+        expect(describeConfig).toHaveBeenCalledTimes(1);
+        expect(queryChunk.mock.calls[1][0].config.indexFilters).toEqual([
+            { ...DEFAULT_FILTER, fromValue: '2026-10-01T00:00:00.000Z' }
+        ]);
+    });
+
     it('stops and explains when the cursor cannot advance', async () => {
         describeConfig.mockResolvedValue(createDescription());
         queryChunk.mockResolvedValueOnce(

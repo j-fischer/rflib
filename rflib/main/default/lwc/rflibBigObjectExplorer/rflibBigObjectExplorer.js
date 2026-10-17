@@ -144,6 +144,9 @@ export default class RflibBigObjectExplorer extends LightningElement {
     // Resolved once, so the viewer is not handed a new array on every render of the explorer.
     detailFieldInfos = [];
     indexFilterInputs = [];
+    // Whether the user changed an index filter since the defaults were resolved. Untouched defaults are resolved
+    // again on every query, so a relative window like LAST_N_DAYS:7 does not go stale in a tab left open overnight.
+    isIndexFilterEdited = false;
 
     records = [];
     isLoading = false;
@@ -390,9 +393,18 @@ export default class RflibBigObjectExplorer extends LightningElement {
         this.indexFilterInputs = this.indexFilterInputs.map((input) =>
             input.fieldName === fieldName ? { ...input, [part]: value } : input
         );
+        this.isIndexFilterEdited = true;
     }
 
-    handleQuery() {
+    async handleQuery() {
+        if (!this.isIndexFilterEdited) {
+            try {
+                const description = await describeConfig({ config: this.createConfig() });
+                this.indexFilterInputs = this.createIndexFilterInputs(description.defaultFilters);
+            } catch (error) {
+                logger.error('Failed to resolve the default index filters again: {0}', JSON.stringify(error));
+            }
+        }
         this.loadRecords();
     }
 
@@ -433,16 +445,8 @@ export default class RflibBigObjectExplorer extends LightningElement {
                 cursor = result.cursor;
                 this.progressText = 'Loaded ' + loaded.length.toLocaleString() + ' records';
 
-                if (result.isStuck) {
-                    this.showToast('Load stopped', result.message, 'warning', 'sticky');
-                    break;
-                }
-
-                if (result.isComplete) {
-                    break;
-                }
-
-                if (loaded.length >= maxRecords) {
+                // Checked first, because the chunk that crosses the limit may also be the last or a stuck one.
+                if (loaded.length > maxRecords || (loaded.length === maxRecords && !result.isComplete)) {
                     loaded.length = maxRecords;
                     this.showToast(
                         'Record limit reached',
@@ -452,6 +456,15 @@ export default class RflibBigObjectExplorer extends LightningElement {
                         'warning',
                         'sticky'
                     );
+                    break;
+                }
+
+                if (result.isStuck) {
+                    this.showToast('Load stopped', result.message, 'warning', 'sticky');
+                    break;
+                }
+
+                if (result.isComplete) {
                     break;
                 }
 

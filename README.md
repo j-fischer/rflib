@@ -157,6 +157,8 @@ fields in index order, the columns of the list, the fields of the detail pane, a
 The explorer enforces the object and field permissions of the user. Assign the `Big Object Explorer Access` or `Ops Center Access` Permission
 Set to grant access to the RFLIB archives; any other Big Object needs its own read access. To read a Big Object in system mode, check the
 component's `Allow System Mode` attribute and assign the `RFLIB Big Object Explorer System Mode` custom permission to the users who need it.
+The custom permission is the security control: its holders can read any Big Object through the explorer in system mode, so assign it only to
+users who may see every Big Object in the org.
 
 ## Updates
 

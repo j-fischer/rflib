@@ -35,8 +35,10 @@
  *              configuration that `describeConfig()` already accepted.
  *
  *              The component reads any Big Object named in App Builder, so it defaults to `USER_MODE`. System
- *              mode needs two keys: the `allowSystemMode` attribute on the placement, and the
- *              `rflib_Big_Object_Explorer_System_Mode` custom permission on the running user.
+ *              mode is used only when the request asks for it (the placement's `allowSystemMode` attribute) and
+ *              the running user holds the `rflib_Big_Object_Explorer_System_Mode` custom permission. Only the
+ *              permission is a security control: the attribute arrives with the request, so a permission holder
+ *              can ask for system mode on any call. Editing a page alone never grants it.
  */
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.CognitiveComplexity,PMD.CyclomaticComplexity')
 public with sharing class rflib_BigObjectQueryController {
@@ -74,7 +76,7 @@ public with sharing class rflib_BigObjectQueryController {
      * @param  config The configuration entered in App Builder.
      * @return        The resolved field metadata and default filters, or the list of configuration problems.
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static ConfigDescription describeConfig(ExplorerConfig config) {
         try {
             rflib_LoggerUtil.logInternal(LOGGER, 'describeConfig({0})', new List<Object>{ config?.bigObjectApiName });
@@ -323,6 +325,7 @@ public with sharing class rflib_BigObjectQueryController {
             Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
             resolved.objectApiName = objectDescribe.getName();
             resolved.objectLabel = objectDescribe.getLabel();
+            // allowSystemMode is client input and only selects the mode; the custom permission is what authorizes it.
             resolved.useSystemMode = config.allowSystemMode == true && HAS_SYSTEM_MODE_PERMISSION;
 
             if (!resolved.useSystemMode && !objectDescribe.isAccessible()) {
