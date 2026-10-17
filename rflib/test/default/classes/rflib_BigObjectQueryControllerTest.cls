@@ -42,8 +42,6 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testDescribeConfig_ResolvesFieldsAndDefaultFilter() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
-
         rflib_BigObjectQueryController.ConfigDescription result = rflib_BigObjectQueryController.describeConfig(
             createConfig()
         );
@@ -54,7 +52,6 @@ private class rflib_BigObjectQueryControllerTest {
         Assert.areEqual(INDEX_FIELDS, result.indexFields);
         Assert.areEqual(new List<String>{ 'Occurred_On__c', 'Event_Name__c' }, result.displayFields);
         Assert.areEqual(1, result.filterableIndexDepth);
-        Assert.isFalse(result.isSystemMode);
         Assert.isTrue(result.droppedFields.isEmpty());
 
         Assert.areEqual(4, result.fields.size(), 'The query fields are the union of all field lists');
@@ -90,12 +87,20 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testDescribeConfig_BlankDetailFieldsShowEveryCustomField() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = true;
+        // A reader with the access permission set can read Additional_Details__c, whatever the running user holds.
+        User reader = rflib_TestUserFactory.insertAndRetrieve('Bea', 'Blank', 'Standard User');
+        insert new PermissionSetAssignment(
+            PermissionSetId = [SELECT Id FROM PermissionSet WHERE Name = 'rflib_Big_Object_Explorer_Access']
+            .Id,
+            AssigneeId = reader.Id
+        );
         rflib_BigObjectQueryController.ExplorerConfig config = createConfig();
-        config.allowSystemMode = true;
         config.detailFields = new List<String>{ ' ' };
 
-        rflib_BigObjectQueryController.ConfigDescription result = rflib_BigObjectQueryController.describeConfig(config);
+        rflib_BigObjectQueryController.ConfigDescription result;
+        System.runAs(reader) {
+            result = rflib_BigObjectQueryController.describeConfig(config);
+        }
 
         List<String> expected = new List<String>(INDEX_FIELDS);
         expected.add('Additional_Details__c');
@@ -219,30 +224,7 @@ private class rflib_BigObjectQueryControllerTest {
     }
 
     @IsTest
-    private static void testDescribeConfig_SystemModeRequiresBothKeys() {
-        rflib_BigObjectQueryController.ExplorerConfig config = createConfig();
-
-        config.allowSystemMode = true;
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
-        Assert.isFalse(
-            rflib_BigObjectQueryController.describeConfig(config).isSystemMode,
-            'The placement alone cannot grant system mode'
-        );
-
-        config.allowSystemMode = false;
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = true;
-        Assert.isFalse(
-            rflib_BigObjectQueryController.describeConfig(config).isSystemMode,
-            'The permission alone cannot grant system mode'
-        );
-
-        config.allowSystemMode = true;
-        Assert.isTrue(rflib_BigObjectQueryController.describeConfig(config).isSystemMode);
-    }
-
-    @IsTest
     private static void testDescribeConfig_RejectsUsersWithoutObjectAccess() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
         User standardUser = rflib_TestUserFactory.insertAndRetrieve('Ned', 'NoAccess', 'Standard User');
 
         rflib_BigObjectQueryController.ConfigDescription result;
@@ -259,7 +241,6 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testDescribeConfig_GrantsTheArchiveThroughTheAccessPermissionSet() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
         User reader = rflib_TestUserFactory.insertAndRetrieve('Rita', 'Reader', 'Standard User');
         insert new PermissionSetAssignment(
             PermissionSetId = [SELECT Id FROM PermissionSet WHERE Name = 'rflib_Big_Object_Explorer_Access']
@@ -282,7 +263,6 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testDescribeConfig_DropsFieldsTheUserCannotRead() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
         User reader = rflib_TestUserFactory.insertAndRetrieve('Dora', 'Dropped', 'Standard User');
 
         PermissionSet permissionSet = new PermissionSet(Name = 'rflibBigObjectReaderTest', Label = 'Big Object Reader');
@@ -305,7 +285,6 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testQueryChunk_RunsInUserModeForAnOpsCenterUser() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
         User opsUser = rflib_TestUserFactory.insertAndRetrieve('Owen', 'Ops', 'Standard User');
         insert new PermissionSetAssignment(
             PermissionSetId = [SELECT Id FROM PermissionSet WHERE Name = 'rflib_Ops_Center_Access']
@@ -332,7 +311,6 @@ private class rflib_BigObjectQueryControllerTest {
 
     @IsTest
     private static void testQueryChunk_PassesTheValidatedConfigToTheService() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = false;
         StubQueryService service = new StubQueryService(null);
         rflib_BigObjectQueryController.QUERY_SERVICE = service;
 
@@ -350,23 +328,8 @@ private class rflib_BigObjectQueryControllerTest {
         Assert.areEqual(INDEX_FIELDS, service.capturedConfig.queryFields);
         Assert.areEqual(new List<String>{ 'DESC', 'ASC', 'ASC', 'ASC' }, service.capturedConfig.indexDirections);
         Assert.areEqual(2000, service.capturedConfig.chunkSize);
-        Assert.isFalse(service.capturedConfig.useSystemMode);
         Assert.areEqual(1, service.capturedConfig.filters.size());
         Assert.areEqual('Occurred_On__c', service.capturedConfig.filters[0].fieldName);
-    }
-
-    @IsTest
-    private static void testQueryChunk_SystemModeWithBothKeys() {
-        rflib_BigObjectQueryController.HAS_SYSTEM_MODE_PERMISSION = true;
-        StubQueryService service = new StubQueryService(null);
-        rflib_BigObjectQueryController.QUERY_SERVICE = service;
-
-        rflib_BigObjectQueryController.ExplorerConfig config = createConfig();
-        config.allowSystemMode = true;
-
-        rflib_BigObjectQueryController.queryChunk(config, null);
-
-        Assert.isTrue(service.capturedConfig.useSystemMode);
     }
 
     @IsTest

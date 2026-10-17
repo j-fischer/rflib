@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Lets the user read any Big Object in system mode through the RFLIB Big Object Explorer, ignoring their object and field permissions. The placement&apos;s Allow System Mode attribute is not a security control; assign with care.</description>
-    <isLicensed>false</isLicensed>
-    <label>RFLIB Big Object Explorer System Mode</label>
-</CustomPermission>

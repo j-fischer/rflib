@@ -321,7 +321,6 @@ private class rflib_DefaultBigObjectQueryServiceTest {
     @IsTest
     private static void testQueryChunk_FullyPinnedIndexNeedsNoCursor() {
         rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 1);
-        config.useSystemMode = true;
         config.filters = new List<rflib_BigObjectQueryController.IndexFilter>{
             createEquals('Occurred_On__c', iso(BOUNDARY)),
             createEquals('Event_Name__c', 'A'),

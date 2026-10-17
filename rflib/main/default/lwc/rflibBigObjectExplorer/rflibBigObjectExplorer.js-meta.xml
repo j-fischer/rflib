@@ -94,13 +94,6 @@
                 label="Page Size"
                 description="Number of records per page of the record list."
             />
-            <property
-                name="allowSystemMode"
-                type="Boolean"
-                default="false"
-                label="Allow System Mode"
-                description="Read the Big Object in system mode for users assigned the RFLIB Big Object Explorer System Mode custom permission. Without that permission, object and field permissions are always enforced. The custom permission is the security control; this attribute only chooses the mode for its holders."
-            />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

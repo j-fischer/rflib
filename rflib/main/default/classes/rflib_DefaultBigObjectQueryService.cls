@@ -40,7 +40,7 @@
  *              Object record.
  *
  *              No `ORDER BY` is issued: Big Object queries return their records in index order, which is exactly
- *              the order the cursor relies on.
+ *              the order the cursor relies on. Queries always run in user mode.
  */
 @SuppressWarnings('PMD.ClassNamingConventions')
 public with sharing class rflib_DefaultBigObjectQueryService implements rflib_BigObjectQueryService {
@@ -85,7 +85,7 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
         lastQueryBinding = query.binding().clone();
         LOGGER.debug('queryChunk: {0}, binding={1}', new List<Object>{ lastQuery, JSON.serialize(lastQueryBinding) });
 
-        List<SObject> rows = (config.useSystemMode ? query.systemMode() : query.userMode()).toList();
+        List<SObject> rows = query.userMode().toList();
         return chunkQuery.createResult(rows);
     }
 

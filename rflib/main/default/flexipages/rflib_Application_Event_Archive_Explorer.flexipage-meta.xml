@@ -4,10 +4,6 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
-                    <name>allowSystemMode</name>
-                    <value>false</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
                     <name>bigObjectApiName</name>
                     <value>rflib_Application_Event_Archive__b</value>
                 </componentInstanceProperties>

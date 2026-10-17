@@ -50,7 +50,6 @@ function createDescription(overrides = {}) {
         droppedFields: [],
         defaultFilters: [DEFAULT_FILTER],
         filterableIndexDepth: 1,
-        isSystemMode: false,
         ...overrides
     };
 }
@@ -105,8 +104,7 @@ function createExplorer(properties = {}) {
             filterableIndexDepth: 1,
             chunkSize: 2000,
             maxRecords: 100000,
-            pageSize: 25,
-            allowSystemMode: false
+            pageSize: 25
         },
         properties
     );
@@ -156,8 +154,7 @@ describe('c-rflib-big-object-explorer', () => {
                 detailFields: ['Occurred_On__c', 'Additional_Details__c'],
                 defaultFilter: 'Occurred_On__c=LAST_N_DAYS:7',
                 filterableIndexDepth: 1,
-                chunkSize: 2000,
-                allowSystemMode: false
+                chunkSize: 2000
             }
         });
     });
@@ -564,17 +561,13 @@ describe('c-rflib-big-object-explorer', () => {
         expect(getList(element).currentPage).toBe(3);
     });
 
-    it('flags system mode and fields hidden from the user', async () => {
-        describeConfig.mockResolvedValue(
-            createDescription({ isSystemMode: true, droppedFields: ['Additional_Details__c'] })
-        );
+    it('flags fields hidden from the user', async () => {
+        describeConfig.mockResolvedValue(createDescription({ droppedFields: ['Additional_Details__c'] }));
         queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));
 
-        const element = mount(createExplorer({ allowSystemMode: true, cardTitle: 'Archive' }));
+        const element = mount(createExplorer({ cardTitle: 'Archive' }));
         await flush();
 
-        expect(describeConfig.mock.calls[0][0].config.allowSystemMode).toBe(true);
-        expect(element.shadowRoot.querySelector('lightning-badge').label).toBe('System Mode');
         expect(element.shadowRoot.querySelector('.dropped-fields').textContent).toContain('Additional_Details__c');
         expect(element.shadowRoot.querySelector('.title').textContent).toBe('Archive');
     });

@@ -135,7 +135,6 @@ export default class RflibBigObjectExplorer extends LightningElement {
     @api defaultFilter;
     @api filterableIndexDepth;
     @api pageSize;
-    @api allowSystemMode;
 
     isDescribing = true;
     problems = null;
@@ -197,10 +196,6 @@ export default class RflibBigObjectExplorer extends LightningElement {
 
     get isReady() {
         return this.description !== null;
-    }
-
-    get isSystemMode() {
-        return this.description?.isSystemMode === true;
     }
 
     get hasDroppedFields() {
@@ -315,8 +310,7 @@ export default class RflibBigObjectExplorer extends LightningElement {
             detailFields: splitList(this.detailFields),
             defaultFilter: this.defaultFilter,
             filterableIndexDepth: toInteger(this.filterableIndexDepth),
-            chunkSize: toInteger(this.chunkSize),
-            allowSystemMode: this.allowSystemMode === true || this.allowSystemMode === 'true'
+            chunkSize: toInteger(this.chunkSize)
         };
     }
 

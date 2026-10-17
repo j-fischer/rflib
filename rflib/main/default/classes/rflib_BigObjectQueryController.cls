@@ -34,18 +34,13 @@
  *              configured Big Object before any query is built - the client is never trusted to send a
  *              configuration that `describeConfig()` already accepted.
  *
- *              The component reads any Big Object named in App Builder, so it defaults to `USER_MODE`. System
- *              mode is used only when the request asks for it (the placement's `allowSystemMode` attribute) and
- *              the running user holds the `rflib_Big_Object_Explorer_System_Mode` custom permission. Only the
- *              permission is a security control: the attribute arrives with the request, so a permission holder
- *              can ask for system mode on any call. Editing a page alone never grants it.
+ *              The component reads any Big Object named in App Builder, so it always queries in `USER_MODE`: the
+ *              object and field permissions of the running user decide what it can read, never the placement.
  */
 @SuppressWarnings('PMD.ClassNamingConventions,PMD.CognitiveComplexity,PMD.CyclomaticComplexity')
 public with sharing class rflib_BigObjectQueryController {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory()
         .createLogger('rflib_BigObjectQueryController');
-
-    public static final String SYSTEM_MODE_PERMISSION = 'rflib_Big_Object_Explorer_System_Mode';
 
     public static final String OPERATOR_EQUALS = 'EQUALS';
     public static final String OPERATOR_RANGE = 'RANGE';
@@ -62,9 +57,6 @@ public with sharing class rflib_BigObjectQueryController {
     private static final String DATETIME_FORMAT = 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'';
     private static final String DATE_FORMAT = 'yyyy-MM-dd';
     private static final Pattern LAST_N_DAYS_PATTERN = Pattern.compile('(?i)LAST_N_DAYS:(\\d+)');
-
-    @TestVisible
-    private static Boolean HAS_SYSTEM_MODE_PERMISSION = FeatureManagement.checkPermission(SYSTEM_MODE_PERMISSION);
 
     @TestVisible
     private static rflib_BigObjectQueryService QUERY_SERVICE = new rflib_DefaultBigObjectQueryService();
@@ -194,20 +186,15 @@ public with sharing class rflib_BigObjectQueryController {
     }
 
     private static void logRead(ResolvedConfig resolved, ChunkResult result) {
-        String message = 'Big Object Explorer read {0} records from {1} in {2} ({3} loaded so far), fields: {4}';
-        List<Object> args = new List<Object>{
-            result.records.size(),
-            resolved.objectApiName,
-            resolved.useSystemMode ? 'SYSTEM_MODE' : 'USER_MODE',
-            result.cursor.recordsLoaded,
-            String.join(resolved.queryFields, ',')
-        };
-
-        if (resolved.useSystemMode) {
-            LOGGER.warn(message, args);
-        } else {
-            LOGGER.info(message, args);
-        }
+        LOGGER.info(
+            'Big Object Explorer read {0} records from {1} ({2} loaded so far), fields: {3}',
+            new List<Object>{
+                result.records.size(),
+                resolved.objectApiName,
+                result.cursor.recordsLoaded,
+                String.join(resolved.queryFields, ',')
+            }
+        );
     }
 
     // Relative windows mirror SOQL's date literals and resolve in GMT, the same way the cursor values are formatted.
@@ -336,10 +323,7 @@ public with sharing class rflib_BigObjectQueryController {
             Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
             resolved.objectApiName = objectDescribe.getName();
             resolved.objectLabel = objectDescribe.getLabel();
-            // allowSystemMode is client input and only selects the mode; the custom permission is what authorizes it.
-            resolved.useSystemMode = config.allowSystemMode == true && HAS_SYSTEM_MODE_PERMISSION;
-
-            if (!resolved.useSystemMode && !objectDescribe.isAccessible()) {
+            if (!objectDescribe.isAccessible()) {
                 addProblem(
                     'bigObjectApiName',
                     'You do not have read access to {0}.',
@@ -368,9 +352,7 @@ public with sharing class rflib_BigObjectQueryController {
             resolved.chunkSize = resolveChunkSize();
             resolved.filterableIndexDepth = resolveFilterableIndexDepth();
 
-            if (!resolved.useSystemMode) {
-                enforceFieldAccess();
-            }
+            enforceFieldAccess();
 
             // The query field set is derived rather than configured, so there is no fourth list to keep in sync.
             resolved.queryFields = appendDistinct(new List<String>(), resolved.indexFields);
@@ -704,8 +686,6 @@ public with sharing class rflib_BigObjectQueryController {
         @AuraEnabled
         public Integer chunkSize { get; set; }
         @AuraEnabled
-        public Boolean allowSystemMode { get; set; }
-        @AuraEnabled
         public List<IndexFilter> indexFilters { get; set; }
     }
 
@@ -820,8 +800,6 @@ public with sharing class rflib_BigObjectQueryController {
         public List<IndexFilter> defaultFilters;
         @AuraEnabled
         public Integer filterableIndexDepth;
-        @AuraEnabled
-        public Boolean isSystemMode;
 
         public ConfigDescription(
             ResolvedConfig resolved,
@@ -842,7 +820,6 @@ public with sharing class rflib_BigObjectQueryController {
             this.droppedFields = resolved.droppedFields;
             this.defaultFilters = defaultFilters;
             this.filterableIndexDepth = resolved.filterableIndexDepth;
-            this.isSystemMode = resolved.useSystemMode;
 
             this.fields = new List<FieldInfo>();
             for (String fieldName : resolved.queryFields) {
@@ -867,7 +844,6 @@ public with sharing class rflib_BigObjectQueryController {
         public List<IndexFilter> filters = new List<IndexFilter>();
         public Integer chunkSize;
         public Integer filterableIndexDepth;
-        public Boolean useSystemMode = false;
         public Map<String, Schema.DescribeFieldResult> fieldDescribes = new Map<String, Schema.DescribeFieldResult>();
 
         public Schema.DisplayType getFieldType(String fieldName) {

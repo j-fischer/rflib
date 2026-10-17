@@ -152,16 +152,7 @@
             </div>
             <div class="slds-page-header__row slds-m-top_x-small">
                 <div class="slds-page-header__col-meta">
-                    <p class="slds-page-header__name-meta">
-                        {recordCountText}
-                        <template lwc:if={isSystemMode}>
-                            <lightning-badge
-                                class="slds-m-left_x-small slds-theme_warning"
-                                label="System Mode"
-                                title="Object and field permissions are not enforced for this component"
-                            ></lightning-badge>
-                        </template>
-                    </p>
+                    <p class="slds-page-header__name-meta">{recordCountText}</p>
                     <p
                         lwc:if={hasDroppedFields}
                         class="slds-page-header__name-meta slds-text-color_error dropped-fields"
