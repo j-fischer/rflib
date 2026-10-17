@@ -143,10 +143,9 @@ export default class RflibBigObjectExplorer extends LightningElement {
     fieldInfos = [];
     // Resolved once, so the viewer is not handed a new array on every render of the explorer.
     detailFieldInfos = [];
+    // Each input tracks whether the user edited it. Inputs still holding their default are resolved again on every
+    // query, so a relative window like LAST_N_DAYS:7 does not go stale in a tab left open overnight.
     indexFilterInputs = [];
-    // Whether the user changed an index filter since the defaults were resolved. Untouched defaults are resolved
-    // again on every query, so a relative window like LAST_N_DAYS:7 does not go stale in a tab left open overnight.
-    isIndexFilterEdited = false;
 
     records = [];
     isLoading = false;
@@ -391,16 +390,21 @@ export default class RflibBigObjectExplorer extends LightningElement {
         const value = event.target.value;
 
         this.indexFilterInputs = this.indexFilterInputs.map((input) =>
-            input.fieldName === fieldName ? { ...input, [part]: value } : input
+            input.fieldName === fieldName ? { ...input, [part]: value, isEdited: true } : input
         );
-        this.isIndexFilterEdited = true;
     }
 
     async handleQuery() {
-        if (!this.isIndexFilterEdited) {
+        if (this.indexFilterInputs.some((input) => !input.isEdited)) {
             try {
                 const description = await describeConfig({ config: this.createConfig() });
-                this.indexFilterInputs = this.createIndexFilterInputs(description.defaultFilters);
+                const freshInputs = {};
+                this.createIndexFilterInputs(description.defaultFilters).forEach((input) => {
+                    freshInputs[input.fieldName] = input;
+                });
+                this.indexFilterInputs = this.indexFilterInputs.map((input) =>
+                    input.isEdited ? input : freshInputs[input.fieldName] || input
+                );
             } catch (error) {
                 logger.error('Failed to resolve the default index filters again: {0}', JSON.stringify(error));
             }

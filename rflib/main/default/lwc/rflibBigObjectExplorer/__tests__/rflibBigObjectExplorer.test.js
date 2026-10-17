@@ -323,6 +323,45 @@ describe('c-rflib-big-object-explorer', () => {
         expect(queryChunk.mock.calls[1][0].config.indexFilters).toEqual([nextDayFilter]);
     });
 
+    it('refreshes the defaults the user did not edit when another filter was edited', async () => {
+        const tenantDescription = (occurredFilter) =>
+            createDescription({
+                fields: [
+                    { apiName: 'Tenant_Id__c', label: 'Tenant', dataType: 'text' },
+                    { apiName: 'Occurred_On__c', label: 'Occurred On', dataType: 'datetime' }
+                ],
+                indexFields: ['Tenant_Id__c', 'Occurred_On__c'],
+                displayFields: ['Tenant_Id__c', 'Occurred_On__c'],
+                detailFields: ['Tenant_Id__c', 'Occurred_On__c'],
+                defaultFilters: [{ fieldName: 'Tenant_Id__c', operator: 'EQUALS', value: 'ACME' }, occurredFilter],
+                filterableIndexDepth: 2
+            });
+        const nextDayFilter = {
+            ...DEFAULT_FILTER,
+            fromValue: '2026-10-08T00:00:00.000Z',
+            toValue: '2026-10-15T23:59:59.999Z'
+        };
+        describeConfig
+            .mockResolvedValueOnce(tenantDescription(DEFAULT_FILTER))
+            .mockResolvedValueOnce(tenantDescription(nextDayFilter));
+        queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));
+
+        const element = mount(createExplorer());
+        await flush();
+
+        const tenantInput = element.shadowRoot.querySelector('lightning-input[data-field="Tenant_Id__c"]');
+        tenantInput.value = 'BETA';
+        tenantInput.dispatchEvent(new CustomEvent('change'));
+        getButton(element, 'Query').click();
+        await flush();
+
+        expect(describeConfig).toHaveBeenCalledTimes(2);
+        expect(queryChunk.mock.calls[1][0].config.indexFilters).toEqual([
+            { fieldName: 'Tenant_Id__c', operator: 'EQUALS', value: 'BETA' },
+            nextDayFilter
+        ]);
+    });
+
     it('keeps edited index filters instead of resolving the defaults again', async () => {
         describeConfig.mockResolvedValue(createDescription());
         queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));

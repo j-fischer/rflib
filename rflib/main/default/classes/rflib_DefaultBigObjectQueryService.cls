@@ -46,10 +46,11 @@
 public with sharing class rflib_DefaultBigObjectQueryService implements rflib_BigObjectQueryService {
     public static final String QUERY_MOCK_ID = 'rflib_DefaultBigObjectQueryService.queryChunk';
 
+    // The query reads one row beyond the chunk, so a chunk can hold one row less than the synchronous SOQL limit.
+    private static final Integer MAX_ROWS_PER_CHUNK = 49999;
+
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory()
         .createLogger('rflib_DefaultBigObjectQueryService');
-
-    private static final String KEY_SEPARATOR = '||';
 
     // The generated SOQL and its bind values, kept so tests can assert the predicate without running the query.
     @TestVisible
@@ -70,9 +71,10 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             return chunkQuery.createResult(new List<SObject>());
         }
 
+        // One row beyond the chunk tells a finished range from one that happens to fill the chunk exactly.
         rflib_SOQL.Queryable query = rflib_SOQL.of(config.objectApiName)
             .with(config.queryFields)
-            .setLimit(config.chunkSize)
+            .setLimit(chunkQuery.chunkSize + 1)
             .mockId(QUERY_MOCK_ID);
 
         if (filterGroup.hasValues()) {
@@ -112,6 +114,7 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
         private final rflib_BigObjectQueryController.QueryCursor cursor;
         private final Integer cursorPosition;
         private final String cursorField;
+        public final Integer chunkSize;
 
         public ChunkQuery(
             rflib_BigObjectQueryController.ResolvedConfig config,
@@ -119,6 +122,7 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
         ) {
             this.config = config;
             this.cursor = cursor;
+            this.chunkSize = Math.min(config.chunkSize, MAX_ROWS_PER_CHUNK);
             this.cursorPosition = countExactFilters(config.filters);
             this.cursorField = cursorPosition < config.indexFields.size() ? config.indexFields[cursorPosition] : null;
         }
@@ -189,7 +193,13 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             return filterGroup;
         }
 
-        public rflib_BigObjectQueryController.ChunkResult createResult(List<SObject> rows) {
+        public rflib_BigObjectQueryController.ChunkResult createResult(List<SObject> fetchedRows) {
+            Boolean hasMoreRows = fetchedRows.size() > chunkSize;
+            List<SObject> rows = new List<SObject>();
+            for (Integer i = 0; i < Math.min(fetchedRows.size(), chunkSize); i++) {
+                rows.add(fetchedRows[i]);
+            }
+
             Set<String> seenKeys = cursor?.seenKeys != null ? new Set<String>(cursor.seenKeys) : new Set<String>();
 
             List<SObject> newRecords = new List<SObject>();
@@ -218,14 +228,15 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             result.cursor = nextCursor;
             // With every index field pinned to an exact value, the query addresses a single record and needs no
             // cursor.
-            result.isComplete = rows.size() < config.chunkSize || cursorField == null;
-            // A full chunk without a single new record means the next query would return the same rows again.
+            result.isComplete = !hasMoreRows || cursorField == null;
+            // More rows beyond a chunk without a single new record means the next query would return the same rows
+            // again. A boundary that fills the chunk exactly and ends the range is complete, not stuck.
             result.isStuck = !result.isComplete && newRecords.isEmpty();
 
             if (result.isStuck) {
                 result.message = String.format(
                     'More than {0} records share the value {1} in {2}, so the load cannot continue past them. Raise the chunk size above the number of records with that value.',
-                    new List<Object>{ String.valueOf(config.chunkSize), nextCursor.boundaryValue, cursorField }
+                    new List<Object>{ String.valueOf(chunkSize), nextCursor.boundaryValue, cursorField }
                 );
             }
             return result;
@@ -242,12 +253,13 @@ public with sharing class rflib_DefaultBigObjectQueryService implements rflib_Bi
             return count;
         }
 
+        // JSON-encoded, so text index values that contain any separator cannot make two primary keys collide.
         private String createKey(SObject row) {
             List<String> parts = new List<String>();
             for (String indexField : config.indexFields) {
                 parts.add(format(indexField, row));
             }
-            return String.join(parts, KEY_SEPARATOR);
+            return JSON.serialize(parts);
         }
 
         private String format(String fieldName, SObject row) {

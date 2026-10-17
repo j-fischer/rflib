@@ -35,14 +35,13 @@ const logger = createLogger('BigObjectRecordList');
 // so the blocking spinner starts far earlier than the 30,000 rows used by the Permissions Explorer.
 const SEARCH_SPINNER_THRESHOLD = 5000;
 
-const KEY_SEPARATOR = '||';
-
 /**
  * Builds the key of a record from its index tuple. The index is the primary key of a Big Object record, so the
- * key is stable across filters and loads, unlike a position in the filtered list.
+ * key is stable across filters and loads, unlike a position in the filtered list. It is JSON-encoded, so text
+ * values that contain any separator cannot make two keys collide.
  */
 function createRecordKey(record, indexFields) {
-    return indexFields.map((fieldName) => (record[fieldName] == null ? '' : record[fieldName])).join(KEY_SEPARATOR);
+    return JSON.stringify(indexFields.map((fieldName) => (record[fieldName] == null ? '' : record[fieldName])));
 }
 
 function toEpochTime(day, isEndOfDay) {

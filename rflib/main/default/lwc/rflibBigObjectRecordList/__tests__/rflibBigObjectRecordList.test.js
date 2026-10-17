@@ -43,7 +43,7 @@ const RECORD_C = {
 const RECORDS = [RECORD_A, RECORD_B, RECORD_C];
 
 function keyOf(record) {
-    return INDEX_FIELDS.map((fieldName) => record[fieldName]).join('||');
+    return JSON.stringify(INDEX_FIELDS.map((fieldName) => record[fieldName]));
 }
 
 function createList(records = RECORDS, pageSize = 10) {

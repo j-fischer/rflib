@@ -60,8 +60,19 @@ private class rflib_DefaultBigObjectQueryServiceTest {
         String soql = rflib_DefaultBigObjectQueryService.lastQuery;
         Assert.isFalse(soql.contains('WHERE'), 'The first unfiltered chunk has no predicate: ' + soql);
         Assert.isFalse(soql.contains('ORDER BY'), 'Big Objects return index order without ORDER BY: ' + soql);
-        Assert.isTrue(soql.contains('LIMIT 3'), soql);
+        Assert.isTrue(soql.contains('LIMIT 4'), 'One row beyond the chunk is read ahead: ' + soql);
         Assert.isTrue(soql.contains('Additional_Details__c'), soql);
+    }
+
+    @IsTest
+    private static void testQueryChunk_ReadAheadStaysWithinTheSoqlRowLimit() {
+        rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 50000);
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>());
+
+        new rflib_DefaultBigObjectQueryService().queryChunk(config, null);
+
+        String soql = rflib_DefaultBigObjectQueryService.lastQuery;
+        Assert.isTrue(soql.contains('LIMIT 50000'), 'The largest chunk reads 49,999 rows plus one ahead: ' + soql);
     }
 
     @IsTest
@@ -96,7 +107,8 @@ private class rflib_DefaultBigObjectQueryServiceTest {
         rflib_Application_Event_Archive__b seenB = createRecord(BOUNDARY, 'B');
         rflib_Application_Event_Archive__b newC = createRecord(BOUNDARY, 'C');
         rflib_Application_Event_Archive__b newD = createRecord(EARLIER, 'D');
-        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB, newC, newD });
+        rflib_Application_Event_Archive__b readAheadE = createRecord(EARLIEST, 'E');
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB, newC, newD, readAheadE });
 
         rflib_BigObjectQueryController.QueryCursor cursor = createCursor(
             BOUNDARY,
@@ -111,7 +123,7 @@ private class rflib_DefaultBigObjectQueryServiceTest {
         Assert.areEqual('C', result.records[0].get('Event_Name__c'));
         Assert.areEqual('D', result.records[1].get('Event_Name__c'));
         Assert.areEqual(12, result.cursor.recordsLoaded);
-        Assert.isFalse(result.isComplete, 'A full chunk may be followed by more records');
+        Assert.isFalse(result.isComplete, 'The read-ahead row shows that more records follow');
 
         Assert.areEqual(iso(EARLIER), result.cursor.boundaryValue);
         Assert.areEqual(
@@ -146,7 +158,8 @@ private class rflib_DefaultBigObjectQueryServiceTest {
         rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 2);
         rflib_Application_Event_Archive__b seenA = createRecord(BOUNDARY, 'A');
         rflib_Application_Event_Archive__b seenB = createRecord(BOUNDARY, 'B');
-        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB });
+        rflib_Application_Event_Archive__b readAheadC = createRecord(BOUNDARY, 'C');
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB, readAheadC });
 
         rflib_BigObjectQueryController.ChunkResult result = new rflib_DefaultBigObjectQueryService()
             .queryChunk(config, createCursor(BOUNDARY, new List<String>{ createKey(seenA), createKey(seenB) }, 2));
@@ -157,6 +170,37 @@ private class rflib_DefaultBigObjectQueryServiceTest {
         Assert.isTrue(result.message.contains('Occurred_On__c'), result.message);
         Assert.isTrue(result.message.contains(iso(BOUNDARY)), result.message);
         Assert.isTrue(result.message.contains('More than 2 records'), result.message);
+    }
+
+    @IsTest
+    private static void testQueryChunk_ExactlyFullBoundaryThatEndsTheRangeIsComplete() {
+        rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 2);
+        rflib_Application_Event_Archive__b seenA = createRecord(BOUNDARY, 'A');
+        rflib_Application_Event_Archive__b seenB = createRecord(BOUNDARY, 'B');
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seenA, seenB });
+
+        rflib_BigObjectQueryController.ChunkResult result = new rflib_DefaultBigObjectQueryService()
+            .queryChunk(config, createCursor(BOUNDARY, new List<String>{ createKey(seenA), createKey(seenB) }, 2));
+
+        Assert.isTrue(result.isComplete, 'No read-ahead row means the boundary was the end of the range');
+        Assert.isFalse(result.isStuck);
+        Assert.isTrue(result.records.isEmpty());
+    }
+
+    @IsTest
+    private static void testQueryChunk_KeysDoNotCollideOnSeparatorsInValues() {
+        rflib_BigObjectQueryController.ResolvedConfig config = createConfig('DESC', 3);
+        rflib_Application_Event_Archive__b seen = createRecord(BOUNDARY, 'x||y');
+        seen.Related_Record_ID__c = 'z';
+        rflib_Application_Event_Archive__b other = createRecord(BOUNDARY, 'x');
+        other.Related_Record_ID__c = 'y||z';
+        rflib_SOQL.setMock(MOCK_ID, new List<SObject>{ seen, other });
+
+        rflib_BigObjectQueryController.ChunkResult result = new rflib_DefaultBigObjectQueryService()
+            .queryChunk(config, createCursor(BOUNDARY, new List<String>{ createKey(seen) }, 1));
+
+        Assert.areEqual(1, result.records.size(), 'Only the record already seen is dropped');
+        Assert.areEqual('x', result.records[0].get('Event_Name__c'));
     }
 
     @IsTest
@@ -290,7 +334,7 @@ private class rflib_DefaultBigObjectQueryServiceTest {
             .queryChunk(config, null);
 
         Assert.areEqual('2026-10-01', result.cursor.boundaryValue, 'A Date also passes instanceof Datetime in Apex');
-        Assert.areEqual(new List<String>{ '2026-10-01' }, result.cursor.seenKeys);
+        Assert.areEqual(new List<String>{ JSON.serialize(new List<String>{ '2026-10-01' }) }, result.cursor.seenKeys);
     }
 
     @IsTest
@@ -401,14 +445,13 @@ private class rflib_DefaultBigObjectQueryServiceTest {
     }
 
     private static String createKey(rflib_Application_Event_Archive__b record) {
-        return String.join(
+        return JSON.serialize(
             new List<String>{
                 iso(record.Occurred_On__c),
                 record.Event_Name__c,
                 record.Related_Record_ID__c,
                 record.Created_By_ID__c
-            },
-            '||'
+            }
         );
     }
 

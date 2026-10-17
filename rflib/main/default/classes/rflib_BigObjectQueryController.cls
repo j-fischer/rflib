@@ -241,6 +241,17 @@ public with sharing class rflib_BigObjectQueryController {
         return formatValue(Schema.DisplayType.DATETIME, Datetime.newInstanceGmt(day, timeOfDay));
     }
 
+    // Field lists keep the order they were configured in, which a Set does not guarantee: the order of the index
+    // fields decides filter validation, sort directions and where the cursor sits.
+    private static List<String> appendDistinct(List<String> target, List<String> values) {
+        for (String value : values) {
+            if (!target.contains(value)) {
+                target.add(value);
+            }
+        }
+        return target;
+    }
+
     private static Boolean hasValues(List<String> values) {
         if (values == null) {
             return false;
@@ -362,10 +373,9 @@ public with sharing class rflib_BigObjectQueryController {
             }
 
             // The query field set is derived rather than configured, so there is no fourth list to keep in sync.
-            Set<String> queryFields = new Set<String>(resolved.indexFields);
-            queryFields.addAll(resolved.displayFields);
-            queryFields.addAll(resolved.detailFields);
-            resolved.queryFields = new List<String>(queryFields);
+            resolved.queryFields = appendDistinct(new List<String>(), resolved.indexFields);
+            appendDistinct(resolved.queryFields, resolved.displayFields);
+            appendDistinct(resolved.queryFields, resolved.detailFields);
 
             return resolved;
         }
@@ -463,9 +473,9 @@ public with sharing class rflib_BigObjectQueryController {
         }
 
         private List<String> resolveFields(String attribute, List<String> fieldNames) {
-            Set<String> result = new Set<String>();
+            List<String> result = new List<String>();
             if (fieldNames == null) {
-                return new List<String>();
+                return result;
             }
 
             for (String fieldName : fieldNames) {
@@ -485,29 +495,27 @@ public with sharing class rflib_BigObjectQueryController {
 
                 Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
                 resolved.fieldDescribes.put(fieldDescribe.getName(), fieldDescribe);
-                result.add(fieldDescribe.getName());
+                appendDistinct(result, new List<String>{ fieldDescribe.getName() });
             }
 
-            return new List<String>(result);
+            return result;
         }
 
         private List<String> getAllCustomFields() {
             // Index fields lead in index order; the remaining custom fields follow alphabetically, since the
             // describe map has no meaningful order.
-            Set<String> result = new Set<String>(resolved.indexFields);
             List<String> otherFields = new List<String>();
 
             for (Schema.SObjectField field : fieldMap.values()) {
                 Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
-                if (fieldDescribe.isCustom() && !result.contains(fieldDescribe.getName())) {
+                if (fieldDescribe.isCustom() && !resolved.indexFields.contains(fieldDescribe.getName())) {
                     resolved.fieldDescribes.put(fieldDescribe.getName(), fieldDescribe);
                     otherFields.add(fieldDescribe.getName());
                 }
             }
 
             otherFields.sort();
-            result.addAll(otherFields);
-            return new List<String>(result);
+            return appendDistinct(new List<String>(resolved.indexFields), otherFields);
         }
 
         private void enforceFieldAccess() {
