@@ -13,6 +13,7 @@ const REVIEW_MARKER = '<!-- gemini-review -->';
 const BOT_LOGIN = 'github-actions[bot]';
 const MAX_DIFF_CHARS = 400_000;
 const MAX_COMMENTS = 25;
+const MAX_RETRY_DELAY_MS = 2 * 60 * 1000;
 const IGNORED_FILES = [/(^|\/)package-lock\.json$/, /\.snap$/, /\/staticresources\//, /\.(svg|png|jpg|gif|pdf)$/i];
 const SEVERITY_LABELS = {
     critical: '🔴 **Critical**',
@@ -44,7 +45,7 @@ const RESPONSE_SCHEMA = {
 };
 
 const { GITHUB_TOKEN, GEMINI_API_KEY, GITHUB_REPOSITORY, GITHUB_EVENT_PATH } = process.env;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-4-argon';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 async function github(path, options = {}) {
     const response = await fetch(`${GITHUB_API}/repos/${GITHUB_REPOSITORY}${path}`, {
@@ -189,12 +190,16 @@ async function callGemini(systemInstruction, prompt) {
             }
             return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ''));
         }
+        const errorText = await response.text();
         const retryable = response.status === 429 || response.status >= 500;
-        if (!retryable || attempt === 3) {
-            throw new Error(`Gemini request failed: ${response.status} ${await response.text()}`);
+        // A quota error names its own wait (e.g. "retryDelay": "68308s"); hours mean an exhausted daily quota.
+        const retryDelay = errorText.match(/"retryDelay":\s*"(\d+)(?:\.\d+)?s"/);
+        const delayMs = retryDelay ? Number(retryDelay[1]) * 1000 : attempt * 15_000;
+        if (!retryable || attempt === 3 || delayMs > MAX_RETRY_DELAY_MS) {
+            throw new Error(`Gemini request failed: ${response.status} ${errorText}`);
         }
-        console.log(`Gemini returned ${response.status}, retrying (attempt ${attempt})...`);
-        await new Promise((resolve) => setTimeout(resolve, attempt * 15_000));
+        console.log(`Gemini returned ${response.status}, retrying in ${delayMs / 1000}s (attempt ${attempt})...`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
 }
 
