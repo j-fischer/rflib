@@ -37,6 +37,8 @@ Comment only on real problems in the changed code, most important first:
   for small optional improvements. Use `nit` sparingly.
 - If you have nothing worth saying about the changed code, return an empty `comments`
   list. Do not invent problems.
+- Do not claim that a version, model name, API, or library release does not exist
+  because you do not know it. Releases newer than your training data are expected here.
 
 ## Summary
 

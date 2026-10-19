@@ -153,7 +153,7 @@ function buildDiff(files, scope) {
             continue;
         }
 
-        const section = `### File: ${file.filename} (${file.status})\n\`\`\`diff\n${annotatePatch(file.patch, commentable)}\n\`\`\``;
+        const section = `### File: ${file.filename}\nStatus: ${file.status}\n\`\`\`diff\n${annotatePatch(file.patch, commentable)}\n\`\`\``;
         if (size + section.length > MAX_DIFF_CHARS) {
             skipped.push(file.filename);
             continue;
