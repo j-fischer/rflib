@@ -9,7 +9,8 @@ export const TABS = {
     logMonitor: 'Log Monitor',
     permissionsExplorer: 'Permissions Explorer',
     appEventsDashboard: 'Application Events Dashboard',
-    applicationEvents: 'Application Events'
+    applicationEvents: 'Application Events',
+    appEventArchive: 'Application Event Archive'
 } as const;
 
 // Root custom elements the Ops Center tabs mount. The navigation smoke test asserts
@@ -20,7 +21,8 @@ export const ROOT_COMPONENT_TAGS = {
     bigObjectStat: 'c-rflib-big-object-stat',
     customSettingsEditor: 'c-rflib-custom-settings-editor',
     logEventMonitor: 'c-rflib-log-event-monitor',
-    permissionsExplorer: 'c-rflib-permissions-explorer'
+    permissionsExplorer: 'c-rflib-permissions-explorer',
+    bigObjectExplorer: 'c-rflib-big-object-explorer'
 } as const;
 
 export type RootComponentTag = (typeof ROOT_COMPONENT_TAGS)[keyof typeof ROOT_COMPONENT_TAGS];

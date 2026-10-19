@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>RFLIB Big Object Explorer</masterLabel>
+    <description>Loads a slice of a Big Object in chunks and filters it in the browser on fields the Big Object index cannot reach.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property
+                name="bigObjectApiName"
+                type="String"
+                required="true"
+                label="Big Object API Name"
+                description="API name of the Big Object to explore. Must end in __b."
+            />
+            <property
+                name="indexFields"
+                type="String"
+                required="true"
+                label="Index Fields"
+                description="Comma-separated list of the fields of the Big Object index, in the order the index declares them."
+            />
+            <property
+                name="indexSortDirection"
+                type="String"
+                default="DESC"
+                label="Index Sort Direction"
+                description="Sort direction of the index fields as declared in the index, e.g. DESC or DESC,ASC,ASC. Fields without a listed direction are ASC."
+            />
+            <property
+                name="displayFields"
+                type="String"
+                required="true"
+                label="Display Fields"
+                description="Comma-separated list of the fields shown as columns in the record list, each with its own filter."
+            />
+            <property
+                name="detailFields"
+                type="String"
+                label="Detail Fields"
+                description="Comma-separated list of the fields shown in the detail pane, in order. Leave blank to show every custom field."
+            />
+            <property
+                name="fieldLabels"
+                type="String"
+                label="Field Labels"
+                description="Comma-separated label overrides in the form Api_Name__c=Label."
+            />
+            <property
+                name="cardTitle"
+                type="String"
+                label="Title"
+                description="Heading of the component. Defaults to the label of the Big Object."
+            />
+            <property
+                name="chunkSize"
+                type="Integer"
+                default="2000"
+                min="1"
+                max="50000"
+                label="Chunk Size"
+                description="Number of records loaded per server round trip. Keep it modest for Big Objects with long text fields."
+            />
+            <property
+                name="maxRecords"
+                type="Integer"
+                default="100000"
+                min="1"
+                label="Maximum Records"
+                description="Maximum number of records loaded into the browser by a single query."
+            />
+            <property
+                name="defaultFilter"
+                type="String"
+                label="Default Filter"
+                description="Initial index filter as semicolon-separated Field=value terms, e.g. Occurred_On__c=LAST_N_DAYS:7. Values can be exact (ACME), a list (A,B), a range (a..b), or TODAY, YESTERDAY, THIS_MONTH or LAST_N_DAYS:n for date fields. Defaults to the last 7 days when the index starts with a date."
+            />
+            <property
+                name="filterableIndexDepth"
+                type="Integer"
+                default="1"
+                min="1"
+                label="Filterable Index Depth"
+                description="Number of leading index fields that get a filter input."
+            />
+            <property
+                name="pageSize"
+                type="Integer"
+                default="10"
+                min="1"
+                label="Page Size"
+                description="Number of records per page when the component loads: 10, 25, 50 or 100. Other values fall back to 10. Users can change it with the rows per page selector."
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

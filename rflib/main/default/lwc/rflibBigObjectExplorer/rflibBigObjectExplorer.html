@@ -1,0 +1,244 @@
+<!--
+ * Copyright (c) 2026 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <template lwc:if={isDescribing}>
+        <lightning-card>
+            <div class="slds-is-relative describe-spinner">
+                <lightning-spinner size="medium" alternative-text="Loading configuration..."></lightning-spinner>
+            </div>
+        </lightning-card>
+    </template>
+
+    <template lwc:if={hasProblems}>
+        <lightning-card title="Big Object Explorer is not configured correctly" icon-name="utility:error">
+            <div class="slds-m-horizontal_medium slds-m-bottom_medium config-problems">
+                <p class="slds-m-bottom_small">
+                    Correct the following attributes of the component in the Lightning App Builder:
+                </p>
+                <ul class="slds-list_dotted">
+                    <template for:each={problems} for:item="problem">
+                        <li key={problem.key} class="config-problem">
+                            <template lwc:if={problem.attribute}>
+                                <strong>{problem.attribute}</strong>:&nbsp;
+                            </template>
+                            {problem.message}
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </lightning-card>
+    </template>
+
+    <template lwc:if={isReady}>
+        <c-rflib-confirmation-dialog
+            title="Large amount of data"
+            message={payloadConfirmationMessage}
+            confirm-label="Continue"
+            cancel-label="Stop"
+            visible={showPayloadConfirmation}
+            original-message="payload"
+            name="payloadConfirmation"
+            onmodalaction={handlePayloadConfirmation}
+        >
+        </c-rflib-confirmation-dialog>
+
+        <div class="slds-page-header">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon
+                                size="medium"
+                                icon-name="utility:database"
+                                alternative-text=""
+                                title={title}
+                            ></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title slds-truncate title">{title}</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions">
+                    <div class="slds-page-header__controls">
+                        <template for:each={indexFilterRows} for:item="input">
+                            <div key={input.key} class="slds-page-header__control index-filter">
+                                <span class="index-filter-label">{input.label}</span>
+                                <template lwc:if={input.isRange}>
+                                    <lightning-input
+                                        type={input.inputType}
+                                        label={input.label}
+                                        variant="label-hidden"
+                                        placeholder="From"
+                                        value={input.fromValue}
+                                        disabled={input.disabled}
+                                        data-field={input.fieldName}
+                                        data-part="fromValue"
+                                        onchange={handleIndexFilterChange}
+                                    >
+                                    </lightning-input>
+                                    <lightning-input
+                                        class="slds-m-left_x-small"
+                                        type={input.inputType}
+                                        label={input.label}
+                                        variant="label-hidden"
+                                        placeholder="To"
+                                        value={input.toValue}
+                                        disabled={input.disabled}
+                                        data-field={input.fieldName}
+                                        data-part="toValue"
+                                        onchange={handleIndexFilterChange}
+                                    >
+                                    </lightning-input>
+                                </template>
+                                <template lwc:else>
+                                    <lightning-input
+                                        type="text"
+                                        label={input.label}
+                                        variant="label-hidden"
+                                        placeholder="value, a,b or a..b"
+                                        value={input.value}
+                                        disabled={input.disabled}
+                                        data-field={input.fieldName}
+                                        data-part="value"
+                                        onchange={handleIndexFilterChange}
+                                    >
+                                    </lightning-input>
+                                </template>
+                            </div>
+                        </template>
+                        <div class="slds-page-header__control">
+                            <lightning-button
+                                variant="brand"
+                                label="Query"
+                                disabled={isQueryDisabled}
+                                onclick={handleQuery}
+                            ></lightning-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__row slds-m-top_x-small">
+                <div class="slds-page-header__col-meta">
+                    <p class="slds-page-header__name-meta">{recordCountText}</p>
+                    <p
+                        lwc:if={hasDroppedFields}
+                        class="slds-page-header__name-meta slds-text-color_error dropped-fields"
+                    >
+                        Not shown, because you do not have read access: {droppedFieldsText}
+                    </p>
+                </div>
+                <div class="slds-page-header__col-controls">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <lightning-button-icon
+                                icon-name="utility:toggle_panel_left"
+                                variant="border-filled"
+                                title={tooltipFullscreen}
+                                alternative-text={tooltipFullscreen}
+                                onclick={handleToggleFullscreen}
+                                disabled={isExpandButtonDisabled}
+                            >
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div lwc:if={showLoadingOverlay} class="loading-overlay">
+            <div class="spinner-wrapper">
+                <lightning-spinner size="large" alternative-text="Loading records..."> </lightning-spinner>
+            </div>
+            <div class="loading-text">{progressText}</div>
+            <lightning-button class="slds-m-top_medium" label="Cancel" onclick={handleCancel}></lightning-button>
+        </div>
+
+        <div class="slds-grid slds-m-top_x-small">
+            <div class={leftColumnClass}>
+                <lightning-card>
+                    <c-rflib-big-object-record-list
+                        records={records}
+                        fields={fieldInfos}
+                        display-fields={displayFieldNames}
+                        index-fields={indexFieldNames}
+                        current-page={page}
+                        page-size={effectivePageSize}
+                        selected-key={selectedKey}
+                        onrefreshed={handleRefreshed}
+                        onrecordselected={handleRecordSelected}
+                    >
+                    </c-rflib-big-object-record-list>
+                    <div class="slds-m-around_x-small">
+                        <c-rflib-paginator
+                            onprevious={handlePrevious}
+                            onnext={handleNext}
+                            onfirst={handleFirst}
+                            onlast={handleLast}
+                            ongotopage={handleGoToPage}
+                            onpagesizechange={handlePageSizeChanged}
+                            current-page={page}
+                            total-records={numDisplayedRecords}
+                            page-size={effectivePageSize}
+                            should-display-page-selection="true"
+                        >
+                        </c-rflib-paginator>
+                    </div>
+                </lightning-card>
+            </div>
+            <div class={rightColumnClass}>
+                <template lwc:if={isRecordSelected}>
+                    <c-rflib-big-object-record-viewer
+                        record={selectedRecord}
+                        fields={detailFieldInfos}
+                        title={selectedRecordTitle}
+                        ontogglefullscreen={handleToggleFullscreen}
+                        oncloseviewer={handleCloseViewer}
+                    ></c-rflib-big-object-record-viewer>
+                </template>
+                <template lwc:else>
+                    <lightning-card>
+                        <div class="slds-text-align_center slds-p-around_large">
+                            <h3 class="slds-text-heading_medium slds-m-bottom_x-small">No Record Selected</h3>
+                            <p class="slds-text-body_regular slds-text-color_weak">
+                                Select a record from the list to view all of its fields
+                            </p>
+                        </div>
+                    </lightning-card>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

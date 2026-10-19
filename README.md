@@ -24,6 +24,7 @@ The following lists describe some of the key features of rflib.
 - Log Archive using Big Objects
 - Automatically [time and log](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-the-Log-Timer) execution duration
 - Dashboard for all Object, Field, and Apex/VF Page permissions for Profiles, Permission Sets, and Permission Set Groups
+- Big Object Explorer for searching archived records, such as Application Events, on fields the Big Object index cannot filter
 - Supports logging in Flow and Process Builder
 - Supports OmniScript and Integration Procedures in [OmniStudio](https://github.com/j-fischer/rflib/wiki/Getting-Started-with-Logging-in-OmniStudio)
 - Display of platform details (Governor Limits, browser & NodeJS process details) for every Log Event
@@ -141,6 +142,20 @@ For operational teams, Application Events can be used to track integration reque
 RFLIB log messages for more details.
 
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Application_Event_Dashboard.jpg 'Application Event Dashboard')
+
+## Big Object Explorer
+
+Big Objects can only be queried by a left-to-right prefix of their index, so questions like "which archived Application Events mention record
+001xx0000012345" cannot be answered with SOQL. The Big Object Explorer loads a slice of a Big Object into the browser in chunks, using the index
+for a coarse range such as the last seven days, and then filters and searches the loaded records on any of their fields. Selecting a record shows
+all of its fields, with JSON payloads formatted and record IDs linked.
+
+The `Application Event Archive` tab in the Ops Center is the first configured instance. The `RFLIB Big Object Explorer` component can be added
+to any App Page and configured for another Big Object entirely through its attributes in the Lightning App Builder: the Big Object, its index
+fields in index order, the columns of the list, the fields of the detail pane, and the default filter, e.g. `Occurred_On__c=LAST_N_DAYS:7`.
+
+The explorer enforces the object and field permissions of the user. Assign the `Big Object Explorer Access` or `Ops Center Access` Permission
+Set to grant access to the RFLIB archives; any other Big Object needs its own read access.
 
 ## Updates
 

@@ -1,0 +1,121 @@
+<!--
+ * Copyright (c) 2026 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <div lwc:if={isSearching}>
+        <lightning-spinner class="slds-is-fixed" size="large" alternative-text="Searching records...">
+        </lightning-spinner>
+    </div>
+    <lightning-card title={title} icon-name="utility:list">
+        <div class="slds-m-around_medium">
+            <div class="filter-bar" onkeyup={handleSearchKeyUp}>
+                <template for:each={columns} for:item="column">
+                    <div key={column.fieldName} class="filter-cell">
+                        <template lwc:if={column.isRange}>
+                            <div class="range-filter">
+                                <lightning-input
+                                    type={column.rangeInputType}
+                                    label={column.label}
+                                    variant="label-hidden"
+                                    placeholder="From"
+                                    title={column.label}
+                                    data-field={column.fieldName}
+                                    data-part="fromValue"
+                                    onchange={handleColumnFilterChange}
+                                >
+                                </lightning-input>
+                                <lightning-input
+                                    type={column.rangeInputType}
+                                    label={column.label}
+                                    variant="label-hidden"
+                                    placeholder="To"
+                                    title={column.label}
+                                    data-field={column.fieldName}
+                                    data-part="toValue"
+                                    onchange={handleColumnFilterChange}
+                                >
+                                </lightning-input>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <lightning-input
+                                type="search"
+                                label={column.label}
+                                variant="label-hidden"
+                                placeholder={column.placeholder}
+                                data-field={column.fieldName}
+                                data-part="value"
+                                onchange={handleColumnFilterChange}
+                            >
+                            </lightning-input>
+                        </template>
+                    </div>
+                </template>
+            </div>
+            <div class="filter-bar slds-m-top_x-small" onkeyup={handleSearchKeyUp}>
+                <div class="filter-cell global-search">
+                    <lightning-input
+                        type="search"
+                        label="Search all fields"
+                        variant="label-hidden"
+                        placeholder="Search all fields..."
+                        data-id="global-search"
+                        onchange={handleGlobalSearchChange}
+                    >
+                    </lightning-input>
+                </div>
+                <div>
+                    <lightning-button label="Search" onclick={executeSearch}></lightning-button>
+                </div>
+            </div>
+            <table
+                class="slds-table slds-table_bordered slds-table_striped slds-table_cell-buffer slds-table_fixed-layout slds-m-top_small"
+            >
+                <thead>
+                    <tr class="slds-text-heading_label">
+                        <template for:each={columns} for:item="column">
+                            <th key={column.fieldName} scope="col">
+                                <div class="slds-truncate" title={column.label}>{column.label}</div>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={rows} for:item="row">
+                        <c-rflib-big-object-record-list-row
+                            key={row.key}
+                            row={row}
+                            data-key={row.key}
+                            onclick={handleRowClick}
+                        ></c-rflib-big-object-record-list-row>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </lightning-card>
+</template>

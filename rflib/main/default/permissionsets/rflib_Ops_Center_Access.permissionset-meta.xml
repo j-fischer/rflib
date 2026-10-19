@@ -9,6 +9,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>rflib_BigObjectQueryController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>rflib_BigObjectStatController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -160,6 +164,10 @@
         <viewAllFields>false</viewAllFields>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
+    <tabSettings>
+        <tab>rflib_Application_Event_Archive_Explorer</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
     <tabSettings>
         <tab>rflib_Application_Event__c</tab>
         <visibility>Visible</visibility>

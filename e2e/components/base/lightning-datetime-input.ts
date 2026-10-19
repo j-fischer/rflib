@@ -26,3 +26,12 @@ export class LightningDateTimeInput {
 export function formatDateUs(date: Date): string {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 }
+
+/**
+ * Formats a Date as YYYY-MM-DD. The date input accepts ISO dates whatever the user's locale, unlike the
+ * locale-formatted M/D/YYYY, which a non en-US user (e.g. en_CA) rejects.
+ */
+export function formatDateIso(date: Date): string {
+    const pad = (value: number): string => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}

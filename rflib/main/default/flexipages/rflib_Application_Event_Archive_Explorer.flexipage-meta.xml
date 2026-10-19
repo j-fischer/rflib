@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>bigObjectApiName</name>
+                    <value>rflib_Application_Event_Archive__b</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>cardTitle</name>
+                    <value>Application Event Archive</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>chunkSize</name>
+                    <value>2000</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>defaultFilter</name>
+                    <value>Occurred_On__c=LAST_N_DAYS:7</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>detailFields</name>
+                    <value>Occurred_On__c,Event_Name__c,Created_By_ID__c,Related_Record_ID__c,Additional_Details__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>displayFields</name>
+                    <value>Occurred_On__c,Event_Name__c,Related_Record_ID__c,Created_By_ID__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldLabels</name>
+                    <value>Occurred_On__c=Occurred On,Event_Name__c=Event,Related_Record_ID__c=Related Record,Created_By_ID__c=Created By</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>filterableIndexDepth</name>
+                    <value>1</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>indexFields</name>
+                    <value>Occurred_On__c,Event_Name__c,Related_Record_ID__c,Created_By_ID__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>indexSortDirection</name>
+                    <value>DESC</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>maxRecords</name>
+                    <value>100000</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>pageSize</name>
+                    <value>25</value>
+                </componentInstanceProperties>
+                <componentName>rflibBigObjectExplorer</componentName>
+                <identifier>rflibBigObjectExplorerId</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Application Event Archive Explorer</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

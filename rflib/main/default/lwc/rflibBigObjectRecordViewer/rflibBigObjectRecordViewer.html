@@ -1,0 +1,154 @@
+<!--
+ * Copyright (c) 2026 Johannes Fischer <fischer.jh@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name "RFLIB", the name of the copyright holder, nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+-->
+<template>
+    <lightning-card title={cardTitle} icon-name="utility:summarydetail" lwc:if={hasRecord}>
+        <div slot="actions" class="action-group">
+            <lightning-button-icon
+                icon-name="utility:copy"
+                variant="border-filled"
+                alternative-text="Copy record as JSON"
+                title="Copy record as JSON"
+                data-id="copy-record"
+                onclick={handleCopyRecord}
+            >
+            </lightning-button-icon>
+            <lightning-button-icon
+                class="slds-m-left_xx-small"
+                icon-name="utility:expand_alt"
+                variant="border-filled"
+                alternative-text="Toggle full screen"
+                title="Toggle full screen"
+                data-id="toggle-fullscreen"
+                onclick={handleToggleFullscreen}
+            >
+            </lightning-button-icon>
+            <lightning-button-icon
+                class="slds-m-left_xx-small"
+                icon-name="utility:close"
+                variant="border-filled"
+                alternative-text="Close"
+                title="Close"
+                data-id="close-viewer"
+                onclick={handleClose}
+            >
+            </lightning-button-icon>
+        </div>
+
+        <div class="slds-m-around_medium">
+            <template for:each={items} for:item="item">
+                <div key={item.key} class="slds-form-element slds-m-bottom_x-small" data-field={item.key}>
+                    <span class="slds-form-element__label">{item.label}</span>
+                    <div class="slds-form-element__control slds-border_bottom">
+                        <div class="slds-form-element__static">
+                            <template lwc:if={item.isEmpty}>
+                                <span class="slds-text-color_weak">&mdash;</span>
+                            </template>
+                            <template lwc:elseif={item.isDatetime}>
+                                <lightning-formatted-date-time
+                                    value={item.value}
+                                    year="numeric"
+                                    day="2-digit"
+                                    month="long"
+                                    hour="2-digit"
+                                    minute="2-digit"
+                                    second="2-digit"
+                                    weekday="long"
+                                >
+                                </lightning-formatted-date-time>
+                            </template>
+                            <template lwc:elseif={item.isDate}>
+                                <lightning-formatted-date-time
+                                    value={item.value}
+                                    year="numeric"
+                                    day="2-digit"
+                                    month="long"
+                                    time-zone="UTC"
+                                >
+                                </lightning-formatted-date-time>
+                            </template>
+                            <template lwc:elseif={item.isNumber}>
+                                <lightning-formatted-number value={item.value}></lightning-formatted-number>
+                            </template>
+                            <template lwc:elseif={item.isId}>
+                                <div class="id-value">
+                                    <lightning-button
+                                        variant="base"
+                                        label={item.value}
+                                        title="Open record"
+                                        data-id={item.value}
+                                        onclick={handleNavigateToRecord}
+                                    >
+                                    </lightning-button>
+                                    <lightning-button-icon
+                                        class="slds-m-left_xx-small"
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        size="small"
+                                        alternative-text="Copy record ID"
+                                        title="Copy record ID"
+                                        data-id={item.value}
+                                        onclick={handleCopyId}
+                                    >
+                                    </lightning-button-icon>
+                                    <span lwc:if={item.userName} class="slds-m-left_x-small user-name"
+                                        >{item.userName}</span
+                                    >
+                                </div>
+                            </template>
+                            <template lwc:elseif={item.isLongText}>
+                                <div class="long-text-actions">
+                                    <lightning-button
+                                        variant="base"
+                                        label={item.expandLabel}
+                                        data-field={item.key}
+                                        onclick={handleToggleExpanded}
+                                    >
+                                    </lightning-button>
+                                    <lightning-button
+                                        lwc:if={item.isJson}
+                                        class="slds-m-left_small"
+                                        variant="base"
+                                        label={item.formatLabel}
+                                        data-field={item.key}
+                                        onclick={handleToggleFormat}
+                                    >
+                                    </lightning-button>
+                                </div>
+                                <pre lwc:if={item.isExpanded} class="long-text"><code>{item.displayValue}</code></pre>
+                            </template>
+                            <template lwc:else>
+                                <span class="text-value">{item.value}</span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
