@@ -115,6 +115,13 @@ test('paginates when more than one page of events exists', async () => {
     await expect(pageInfo).toContainText('Page 2');
     await expect(monitor.paginator.pageInput).toHaveValue('2');
 
+    // The entered page is passed on as a number, so Next moves one page on instead of
+    // appending a digit to the entered text (1 -> 11).
+    await monitor.paginator.goTo(1);
+    await expect(pageInfo).toContainText('Page 1');
+    await monitor.paginator.button('Next').click();
+    await expect(pageInfo).toContainText('Page 2');
+
     // Changing the page size returns the list to the first page.
     await monitor.paginator.selectPageSize(25);
     await expect(pageInfo).toContainText('Page 1');
