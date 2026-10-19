@@ -9,6 +9,15 @@ Install link: TBD
 - Added the `Default Page Size` attribute to the Log Monitor, the Permissions Explorer, and the User Permission Assignments component in the Lightning App Builder. It sets the number of rows shown when the page loads and accepts 10, 25, 50, or 100. The defaults are unchanged: 10 for the Log Monitor and the Permissions Explorer, 25 for User Permission Assignments.
 - Fixed the page navigation after jumping to a page with the page number box. The entered page was passed on as text, so a following `Next` appended a digit instead of moving forward a page, for example from page 5 to page 51. An entry that is not a number now leaves the current page in place, and an entry beyond the last page shows the page that is actually displayed.
 
+### RFLIB-TF 4.0.1
+
+Package ID: TBD
+Package Alias: TBD
+Install link: TBD
+
+- Fixed the execution order of trigger handlers and retryable action handlers whose `Order__c` values have different numbers of digits. `Order__c` was compared as text, so a handler with order `10` ran before one with order `9`. It is now compared as a number in both `rflib_Trigger_Configuration__mdt` and `rflib_Retryable_Action_Config__mdt`; handlers with the same order still run in alphabetical order of their `Class_Name__c`. If your configurations mix values such as `2`, `9`, and `10`, review them after upgrading, as those handlers now run in numeric order.
+- Fixed the trigger framework never publishing its log events. `rflib_TriggerManager` batches the log events it reports, such as the `ERROR` logged when a handler throws an exception, but never published that batch, so those events only reached the Log Monitor, the Log Archive, and the notification channels if other code in the same transaction called `rflib_Logger.publishBatchedLogEvents()`. The batch is now published once the outermost trigger dispatch completes, including when a handler aborts the transaction. Recursive trigger executions do not publish on their own; their events are included when the outermost dispatch completes.
+
 ### RFLIB 11.4.0
 
 Package ID: 04tKY0000005SvfYAE

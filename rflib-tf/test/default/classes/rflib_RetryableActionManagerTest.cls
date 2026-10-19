@@ -233,6 +233,31 @@ private class rflib_RetryableActionManagerTest {
         Assert.areEqual(1, firstOrder.compareTo(nullOrder));
     }
 
+    @IsTest
+    public static void testRetryableActionConfigurationWrapper_MultiDigitOrder() {
+        setup();
+
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper order2 = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 2, true, 'rflib_HandlerC'));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper order9 = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 9, true, 'rflib_HandlerB'));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper order10A = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 10, true, 'rflib_HandlerA'));
+        rflib_RetryableActionManager.RetryableActionConfigurationWrapper order10B = new rflib_RetryableActionManager.RetryableActionConfigurationWrapper(createConfiguration('Action_One', 10, true, 'rflib_HandlerB'));
+
+        Assert.areEqual(-1, order9.compareTo(order10A));
+        Assert.areEqual(1, order10A.compareTo(order9));
+        Assert.areEqual(-1, order2.compareTo(order10A));
+        Assert.areEqual(-1, order10A.compareTo(order10B));
+
+        List<rflib_RetryableActionManager.RetryableActionConfigurationWrapper> sortable = new List<rflib_RetryableActionManager.RetryableActionConfigurationWrapper> {
+            order10B, order9, order10A, order2
+        };
+        sortable.sort();
+
+        Assert.areEqual(order2.actionConfig, sortable.get(0).actionConfig);
+        Assert.areEqual(order9.actionConfig, sortable.get(1).actionConfig);
+        Assert.areEqual(order10A.actionConfig, sortable.get(2).actionConfig);
+        Assert.areEqual(order10B.actionConfig, sortable.get(3).actionConfig);
+    }
+
     private static List<rflib_Retryable_Action__e> createEvents() {
         return new List<rflib_Retryable_Action__e> {
             new rflib_Retryable_Action__e(
