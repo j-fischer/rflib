@@ -77,8 +77,8 @@ public inherited sharing class rflib_TriggerManager {
         try {
             runHandlers(args, handlers);
         } finally {
-            // If active handler is not NULL, we are in a recursive loop and need to wait for the root transaction to complete.
-            if (ACTIVE_HANDLERS.isEmpty() == null) {
+            // If there are active handlers, we are in a recursive loop and need to wait for the root transaction to complete.
+            if (ACTIVE_HANDLERS.isEmpty()) {
                 LOGGER.publishBatchedLogEvents();
             }
         }
@@ -308,11 +308,25 @@ public inherited sharing class rflib_TriggerManager {
                 return 1;
             }
 
-            Integer returnValue = compareFieldValue(compareToConfig, 'Order__c');
+            Integer returnValue = compareOrder(compareToConfig);
             
             return returnValue != 0
                 ? returnValue
                 : compareFieldValue(compareToConfig, 'Class_Name__c');
+        }
+
+        // Order__c is a Number field and must be compared numerically, otherwise 10 would sort before 9.
+        private Integer compareOrder(TriggerConfigurationWrapper compareTo) {
+            Decimal order = triggerConfig.Order__c;
+            Decimal otherOrder = compareTo.triggerConfig.Order__c;
+            if (order == otherOrder) {
+                return 0;
+            } else if (order == null) {
+                return -1;
+            } else if (otherOrder == null) {
+                return 1;
+            }
+            return order > otherOrder ? 1 : -1;
         }
 
         private Integer compareFieldValue(TriggerConfigurationWrapper compareTo, String fieldName) {

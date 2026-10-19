@@ -48,6 +48,9 @@ private class rflib_TriggerManagerTest {
     private static Boolean SIMPLE_HANDLER_MOCK_RUN_INVOKED = false;
     private static Boolean SIMPLE_HANDLER_MOCK_CONSECUTIVERUN_INVOKED = false;
 
+    private static final rflib_MockLogger MOCK_LOGGER = new rflib_MockLogger();
+    private static Boolean BATCHED_EVENTS_PUBLISHED_AFTER_NESTED_DISPATCH = null;
+
     static {
         rflib_FeatureSwitch.DEFAULT_VALUE = false; // Needs to be set for backwards version compatibility
     }
@@ -373,6 +376,91 @@ private class rflib_TriggerManagerTest {
     }
 
     @IsTest
+    public static void testConfigWrapper_MultiDigitOrder() {
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper2 = new rflib_TriggerManager.TriggerConfigurationWrapper(
+            createConfiguration(MOCK_TRIGGER_HANDLER, 2)
+        );
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper9 = new rflib_TriggerManager.TriggerConfigurationWrapper(
+            createConfiguration(MOCK_TRIGGER_HANDLER, 9)
+        );
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapper10 = new rflib_TriggerManager.TriggerConfigurationWrapper(
+            createConfiguration(MOCK_TRIGGER_HANDLER, 10)
+        );
+        rflib_TriggerManager.TriggerConfigurationWrapper wrapperNoOrder = new rflib_TriggerManager.TriggerConfigurationWrapper(
+            new rflib_Trigger_Configuration__mdt(Class_Name__c = MOCK_TRIGGER_HANDLER)
+        );
+
+        Assert.areEqual(-1, wrapper9.compareTo(wrapper10));
+        Assert.areEqual(1, wrapper10.compareTo(wrapper9));
+        Assert.areEqual(-1, wrapper2.compareTo(wrapper10));
+        Assert.areEqual(1, wrapper10.compareTo(wrapper2));
+        Assert.areEqual(0, wrapper10.compareTo(wrapper10));
+        Assert.areEqual(-1, wrapperNoOrder.compareTo(wrapper2));
+        Assert.areEqual(1, wrapper2.compareTo(wrapperNoOrder));
+    }
+
+    @IsTest
+    public static void testArgs() {
+        rflib_TriggerManager.Args args = createArgs(createEvent());
+
+        Assert.isTrue(args.hasNoExceptions());
+        Assert.isTrue(args.getCaughtExceptions().isEmpty());
+        Assert.isTrue(args.equals(createArgs(createEvent())));
+        Assert.isFalse(args.equals(createArgs(createEvent(), TriggerOperation.AFTER_UPDATE)));
+        Assert.isFalse(args.equals('Not an Args instance'));
+    }
+
+    @IsTest
+    public static void testDefaultTriggerConfigurationQueryLocatorSorting_MultiDigitOrder() {
+        rflib_Trigger_Configuration__mdt config10B = createConfiguration(true, 'rflib_MockTriggerHandlerB', OBJECT_TYPE_NAME, AFTER_INSERT, 10, ABORT_TRANSACTION);
+        rflib_Trigger_Configuration__mdt config10A = createConfiguration(true, 'rflib_MockTriggerHandlerA', OBJECT_TYPE_NAME, AFTER_INSERT, 10, ABORT_TRANSACTION);
+        rflib_Trigger_Configuration__mdt config9 = createConfiguration(true, 'rflib_MockTriggerHandler9', OBJECT_TYPE_NAME, AFTER_INSERT, 9, ABORT_TRANSACTION);
+        rflib_Trigger_Configuration__mdt config2 = createConfiguration(true, 'rflib_MockTriggerHandler2', OBJECT_TYPE_NAME, AFTER_INSERT, 2, ABORT_TRANSACTION);
+
+        rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator locator = new rflib_TriggerManager.DefaultTriggerConfigurationQueryLocator();
+        locator.allConfigValues = new List<rflib_Trigger_Configuration__mdt> { config10B, config9, config10A, config2 };
+        List<rflib_Trigger_Configuration__mdt> actualResult = locator.getRecords(OBJECT_TYPE_NAME, AFTER_INSERT);
+
+        Assert.areEqual(4, actualResult.size());
+        Assert.areEqual(config2.Class_Name__c, actualResult.get(0).Class_Name__c);
+        Assert.areEqual(config9.Class_Name__c, actualResult.get(1).Class_Name__c);
+        Assert.areEqual(config10A.Class_Name__c, actualResult.get(2).Class_Name__c);
+        Assert.areEqual(config10B.Class_Name__c, actualResult.get(3).Class_Name__c);
+    }
+
+    @IsTest
+    public static void testDispatch_PublishesBatchedLogEvents() {
+        // The factory must be set before rflib_TriggerManager is initialized, which creates its static logger.
+        rflib_LoggerUtil.loggerFactory = new MockLoggerFactory();
+        setup(ABORT_TRANSACTION);
+
+        System.runAs(STANDARD_USER) {
+            rflib_TriggerManager.dispatch(createArgs(createEvent()));
+        }
+
+        Assert.isTrue(MOCK_LOGGER.batchedEventsPublished, 'Batched log events should be published after the dispatch completes');
+    }
+
+    @IsTest
+    public static void testDispatch_DoesNotPublishBatchedLogEventsFromNestedDispatch() {
+        // The factory must be set before rflib_TriggerManager is initialized, which creates its static logger.
+        rflib_LoggerUtil.loggerFactory = new MockLoggerFactory();
+        setup(ABORT_TRANSACTION);
+
+        rflib_Log_Event__e ev = createEvent();
+
+        System.runAs(STANDARD_USER) {
+            rflib_MockTriggerHandler.ACTION_WHEN_CALLED = new TriggerRecursiveRunCapturingPublishState();
+
+            rflib_TriggerManager.dispatch(createArgs(ev));
+        }
+
+        assertConsecutiveRunTriggerArgs(ev);
+        Assert.isFalse(BATCHED_EVENTS_PUBLISHED_AFTER_NESTED_DISPATCH, 'Batched log events should not be published by the nested dispatch');
+        Assert.isTrue(MOCK_LOGGER.batchedEventsPublished, 'Batched log events should be published after the outermost dispatch completes');
+    }
+
+    @IsTest
     public static void testInvalidHandlerName() {
         rflib_TriggerManager.QUERY_LOCATOR = new rflib_MockTriggerConfigQueryLocator(
             createConfiguration('rflib_InvalidClassName', 1), 
@@ -535,6 +623,29 @@ private class rflib_TriggerManagerTest {
             }
 
             return null;
+        }
+    }
+
+    public class TriggerRecursiveRunCapturingPublishState implements Callable {
+
+        public Object call(String action, Map<String, Object> args) {
+            if (action == 'run') {
+                rflib_TriggerManager.dispatch((rflib_TriggerManager.Args) args.get('triggerArgs'));
+                BATCHED_EVENTS_PUBLISHED_AFTER_NESTED_DISPATCH = MOCK_LOGGER.batchedEventsPublished;
+            }
+
+            return null;
+        }
+    }
+
+    public class MockLoggerFactory implements rflib_LoggerFactory {
+
+        public rflib_Logger createLogger(String context) {
+            return MOCK_LOGGER;
+        }
+
+        public rflib_Logger createBatchedLogger(String context) {
+            return MOCK_LOGGER;
         }
     }
 

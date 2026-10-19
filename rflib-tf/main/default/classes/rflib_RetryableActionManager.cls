@@ -195,11 +195,25 @@ public inherited sharing class rflib_RetryableActionManager {
                 return 1;
             }
 
-            Integer returnValue = compareFieldValue(compareToConfig, 'Order__c');
+            Integer returnValue = compareOrder(compareToConfig);
             
             return returnValue != 0
                 ? returnValue
                 : compareFieldValue(compareToConfig, 'Class_Name__c');
+        }
+
+        // Order__c is a Number field and must be compared numerically, otherwise 10 would sort before 9.
+        private Integer compareOrder(RetryableActionConfigurationWrapper compareTo) {
+            Decimal order = actionConfig.Order__c;
+            Decimal otherOrder = compareTo.actionConfig.Order__c;
+            if (order == otherOrder) {
+                return 0;
+            } else if (order == null) {
+                return -1;
+            } else if (otherOrder == null) {
+                return 1;
+            }
+            return order > otherOrder ? 1 : -1;
         }
 
         private Integer compareFieldValue(RetryableActionConfigurationWrapper compareTo, String fieldName) {
