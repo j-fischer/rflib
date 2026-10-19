@@ -51,7 +51,7 @@ Work down this list and stop at the first option that applies:
 
 1. **An existing `data-*` hook in the template** - `data-field` on the log event list
    search inputs, `data-field-name` in the settings editor, `data-id` in the
-   confirmation dialog, `data-log-id` on rows.
+   confirmation dialog and on the paginator's page size selector, `data-log-id` on rows.
 2. **Role plus accessible name** - `getByRole('button', { name: 'Export to CSV' })`.
    For icon-only `lightning-button-menu`, the `alternative-text` attribute _is_ the
    accessible name.

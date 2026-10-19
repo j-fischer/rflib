@@ -194,6 +194,43 @@ describe('c-rflib-user-permission-assignment-list', () => {
         expect(datatable.data.length).toBe(5);
     });
 
+    it('uses the default page size configured in the App Builder', async () => {
+        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
+
+        const element = createComponent({ defaultPageSize: '10' });
+
+        await flushPromises();
+        await flushPromises();
+
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+        expect(paginator.pageSize).toBe(10);
+
+        const datatable = element.shadowRoot.querySelector('lightning-datatable');
+        expect(datatable.data.length).toBe(10);
+    });
+
+    it('changes the page size and returns to the first page', async () => {
+        getUserPermissionAssignments.mockResolvedValue(MOCK_DATA);
+
+        const element = createComponent({ defaultPageSize: '10' });
+
+        await flushPromises();
+        await flushPromises();
+
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+        paginator.dispatchEvent(new CustomEvent('next'));
+        await flushPromises();
+        expect(paginator.currentPage).toBe(2);
+
+        paginator.dispatchEvent(new CustomEvent('pagesizechange', { detail: 25 }));
+        await flushPromises();
+
+        const datatable = element.shadowRoot.querySelector('lightning-datatable');
+        expect(paginator.currentPage).toBe(1);
+        expect(paginator.pageSize).toBe(25);
+        expect(datatable.data.length).toBe(25);
+    });
+
     it('handles error when loading data', async () => {
         const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
         const error = { body: { message: 'An error occurred' } };

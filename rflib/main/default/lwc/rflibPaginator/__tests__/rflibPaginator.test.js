@@ -1,5 +1,5 @@
 import { createElement } from 'lwc';
-import Paginator from 'c/rflibPaginator';
+import Paginator, { getValidPageSize, PAGE_SIZES } from 'c/rflibPaginator';
 
 describe('c-rflib-paginator', () => {
     afterEach(() => {
@@ -174,7 +174,7 @@ describe('c-rflib-paginator', () => {
         });
     });
 
-    it('displays page selection input when flag is set', () => {
+    it('displays page selection input with the total number of pages when flag is set', () => {
         const element = createElement('c-rflib-paginator', {
             is: Paginator
         });
@@ -188,6 +188,22 @@ describe('c-rflib-paginator', () => {
             const input = element.shadowRoot.querySelector('input');
             expect(input).not.toBeNull();
             expect(input.value).toBe('1');
+            expect(element.shadowRoot.querySelector('#totalPages').textContent).toBe('4');
+        });
+    });
+
+    it('hides page selection input when flag is not set', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 1;
+        element.totalRecords = 20;
+        element.pageSize = 5;
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            expect(element.shadowRoot.querySelector('input')).toBeNull();
+            expect(element.shadowRoot.querySelector('lightning-combobox')).not.toBeNull();
         });
     });
 
@@ -210,7 +226,7 @@ describe('c-rflib-paginator', () => {
             input.dispatchEvent(new KeyboardEvent('keypress', { keyCode: 13 }));
 
             expect(handler).toHaveBeenCalled();
-            expect(handler.mock.calls[0][0].detail).toBe('3');
+            expect(handler.mock.calls[0][0].detail).toBe(3);
         });
     });
 
@@ -280,5 +296,90 @@ describe('c-rflib-paginator', () => {
 
             expect(handler).not.toHaveBeenCalled();
         });
+    });
+
+    it('resets the page number input when the entered value is not a number', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 2;
+        element.totalRecords = 20;
+        element.pageSize = 5;
+        element.shouldDisplayPageSelection = true;
+        document.body.appendChild(element);
+
+        const handler = jest.fn();
+        element.addEventListener('gotopage', handler);
+
+        return Promise.resolve().then(() => {
+            const input = element.shadowRoot.querySelector('input');
+            input.value = '';
+            input.dispatchEvent(new KeyboardEvent('keypress', { keyCode: 13 }));
+
+            expect(handler.mock.calls[0][0].detail).toBe(2);
+            expect(input.value).toBe('2');
+        });
+    });
+
+    it('displays a single page when there are no records', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 1;
+        element.totalRecords = 0;
+        element.pageSize = 10;
+        element.shouldDisplayPageSelection = true;
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            expect(element.shadowRoot.querySelector('#totalPages').textContent).toBe('1');
+        });
+    });
+
+    it('displays the page size selector with the supported page sizes', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 1;
+        element.totalRecords = 200;
+        element.pageSize = 25;
+        document.body.appendChild(element);
+
+        return Promise.resolve().then(() => {
+            const combobox = element.shadowRoot.querySelector('lightning-combobox');
+            expect(combobox).not.toBeNull();
+            expect(combobox.value).toBe('25');
+            expect(combobox.options.map((option) => option.value)).toEqual(['10', '25', '50', '100']);
+        });
+    });
+
+    it('fires pagesizechange event when a new page size is selected', () => {
+        const element = createElement('c-rflib-paginator', {
+            is: Paginator
+        });
+        element.currentPage = 3;
+        element.totalRecords = 200;
+        element.pageSize = 10;
+        document.body.appendChild(element);
+
+        const handler = jest.fn();
+        element.addEventListener('pagesizechange', handler);
+
+        return Promise.resolve().then(() => {
+            const combobox = element.shadowRoot.querySelector('lightning-combobox');
+            combobox.dispatchEvent(new CustomEvent('change', { detail: { value: '50' } }));
+
+            expect(handler).toHaveBeenCalled();
+            expect(handler.mock.calls[0][0].detail).toBe(50);
+        });
+    });
+
+    it('validates page sizes', () => {
+        expect(PAGE_SIZES).toEqual([10, 25, 50, 100]);
+        expect(getValidPageSize('50', 10)).toBe(50);
+        expect(getValidPageSize(100, 10)).toBe(100);
+        expect(getValidPageSize('30', 25)).toBe(25);
+        expect(getValidPageSize(undefined, 25)).toBe(25);
+        expect(getValidPageSize('abc', 10)).toBe(10);
     });
 });

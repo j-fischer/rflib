@@ -41,7 +41,7 @@ const SEARCH_FIELDS = {
 };
 
 export default class RflibLogEventList extends LightningElement {
-    @api pageSize;
+    _pageSize;
     @track _currentPage = 1; // Changed to internal tracked property
 
     allRecords = [];
@@ -307,6 +307,16 @@ export default class RflibLogEventList extends LightningElement {
     @api
     getFilteredRecords() {
         return JSON.parse(JSON.stringify(this.filteredRecords));
+    }
+
+    @api
+    get pageSize() {
+        return this._pageSize;
+    }
+    set pageSize(value) {
+        this._pageSize = value;
+        this.currentPageIndex = 0;
+        this.refreshEventList();
     }
 
     @api

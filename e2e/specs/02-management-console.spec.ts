@@ -67,6 +67,15 @@ test('lists users with Ops Center access and users without client logging', asyn
     const noClientLogging = 'Users Who Do Not Have Client Logging Enabled';
     await expect(console_.permissionAssignmentList(noClientLogging)).toBeVisible();
     await expect(console_.permissionAssignmentTable(noClientLogging).root).toBeVisible();
+
+    // Both cards show the page number box and start at the default page size of 25. Neither
+    // holds more than 25 users in a scratch org, so each fits on a single page.
+    for (const title of [opsCenterAccess, noClientLogging]) {
+        const paginator = console_.permissionAssignmentPaginator(title);
+        await expect(paginator.pageInput).toHaveValue('1');
+        expect(await paginator.totalPages()).toBe(1);
+        await expect(paginator.pageSizeSelector.trigger).toHaveText('25');
+    }
 });
 
 test('Big Object statistics can count all big objects', async () => {
