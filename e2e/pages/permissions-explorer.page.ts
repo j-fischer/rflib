@@ -42,9 +42,9 @@ export class PermissionsExplorerPage {
         return this.header.locator('p').filter({ hasText: 'Permission Type' });
     }
 
-    // The three header menus are distinguished by what they announce, not by order:
-    // the permission type menu is labelled with the selected type, the export menu
-    // with "Export to CSV", and the icon-only page size menu by its alternative-text.
+    // The header menus are distinguished by what they announce, not by order: the
+    // permission type menu is labelled with the selected type and the export menu
+    // with "Export to CSV".
     get permissionTypeMenu(): LightningButtonMenu {
         return new LightningButtonMenu(
             this.header.locator('lightning-button-menu').filter({ hasText: PERMISSION_TYPE_LABELS }).first()
@@ -53,18 +53,6 @@ export class PermissionsExplorerPage {
 
     get exportMenu(): LightningButtonMenu {
         return new LightningButtonMenu(this.header.getByRole('button', { name: 'Export to CSV' }));
-    }
-
-    // The page size menu is icon-only, so alternative-text is its only label. Falls
-    // back to its position in the header button group (type, export, page size) if a
-    // release stops rendering the assistive text.
-    get pageSizeMenu(): LightningButtonMenu {
-        return new LightningButtonMenu(
-            this.header
-                .getByRole('button', { name: 'Select page size' })
-                .or(this.header.locator('lightning-button-menu').nth(2))
-                .first()
-        );
     }
 
     async selectPermissionType(label: string): Promise<void> {

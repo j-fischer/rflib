@@ -543,22 +543,50 @@ describe('c-rflib-big-object-explorer', () => {
 
     it('jumps to the page entered in the paginator', async () => {
         describeConfig.mockResolvedValue(createDescription());
-        const records = Array.from({ length: 5 }, (value, index) => createRecord(index));
+        const records = Array.from({ length: 25 }, (value, index) => createRecord(index));
         queryChunk.mockResolvedValue(createChunk(records, { isComplete: true }));
 
-        const element = mount(createExplorer({ pageSize: 2 }));
+        const element = mount(createExplorer({ pageSize: 10 }));
         await flush();
 
         const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
         expect(paginator.shouldDisplayPageSelection).toBeTruthy();
-        expect(paginator.totalRecords).toBe(5);
+        expect(paginator.totalRecords).toBe(25);
 
-        // The paginator passes the typed page number as a string.
-        paginator.dispatchEvent(new CustomEvent('gotopage', { detail: '3' }));
+        paginator.dispatchEvent(new CustomEvent('gotopage', { detail: 3 }));
         await flush();
 
         expect(paginator.currentPage).toBe(3);
         expect(getList(element).currentPage).toBe(3);
+    });
+
+    it('changes the rows per page from the paginator', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        const records = Array.from({ length: 30 }, (value, index) => createRecord(index));
+        queryChunk.mockResolvedValue(createChunk(records, { isComplete: true }));
+
+        const element = mount(createExplorer({ pageSize: 10 }));
+        await flush();
+
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+        paginator.dispatchEvent(new CustomEvent('gotopage', { detail: 3 }));
+        await flush();
+        paginator.dispatchEvent(new CustomEvent('pagesizechange', { detail: 50 }));
+        await flush();
+
+        expect(paginator.pageSize).toBe(50);
+        expect(paginator.currentPage).toBe(1);
+        expect(getList(element).pageSize).toBe(50);
+    });
+
+    it('snaps a configured page size to the sizes the paginator offers', async () => {
+        describeConfig.mockResolvedValue(createDescription());
+        queryChunk.mockResolvedValue(createChunk([], { isComplete: true }));
+
+        const element = mount(createExplorer({ pageSize: 15 }));
+        await flush();
+
+        expect(element.shadowRoot.querySelector('c-rflib-paginator').pageSize).toBe(10);
     });
 
     it('flags fields hidden from the user', async () => {

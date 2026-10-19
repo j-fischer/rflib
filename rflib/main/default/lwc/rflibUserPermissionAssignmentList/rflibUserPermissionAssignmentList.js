@@ -28,6 +28,7 @@
  */
 import { api, LightningElement } from 'lwc';
 import { createLogger } from 'c/rflibLogger';
+import { getValidPageSize } from 'c/rflibPaginator';
 import getUserPermissionAssignments from '@salesforce/apex/rflib_UserPermAssignmentController.getUserPermissionAssignments';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -46,6 +47,15 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
     @api isAssigned;
     @api title;
 
+    @api
+    get defaultPageSize() {
+        return this._defaultPageSize;
+    }
+    set defaultPageSize(value) {
+        this._defaultPageSize = value;
+        this.pageSize = getValidPageSize(value, DEFAULT_PAGE_SIZE);
+    }
+
     userPermissionAssignments = [];
     data = [];
     columns = columns;
@@ -56,7 +66,7 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
     numTotalRecords;
     numDisplayedRecords;
     async connectedCallback() {
-        logger.debug('Initializing component, DEFAULT_PAGE_SIZE={0}', DEFAULT_PAGE_SIZE);
+        logger.debug('Initializing component, pageSize={0}', this.pageSize);
 
         const args = {
             permSetApiName: this.permissionSetName,
@@ -71,17 +81,17 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
                 logger.debug('Users identified={0}', JSON.stringify(result));
                 _this.userPermissionAssignments = result;
                 _this.numTotalRecords = result.length;
-                _this.totalPages = Math.ceil(_this.numTotalRecords / DEFAULT_PAGE_SIZE);
+                _this.totalPages = Math.ceil(_this.numTotalRecords / _this.pageSize);
                 _this.handlePageChanged();
             })
             .catch((ex) => logger.error('Failed to retrieve user permission information', ex));
     }
 
     handlePageChanged() {
-        logger.debug('Navigate to previous page, current page={0}', this.page);
+        logger.debug('Display page, current page={0}', this.page);
 
-        let startIndex = (this.page - 1) * DEFAULT_PAGE_SIZE;
-        this.data = this.userPermissionAssignments.slice(startIndex, startIndex + DEFAULT_PAGE_SIZE);
+        let startIndex = (this.page - 1) * this.pageSize;
+        this.data = this.userPermissionAssignments.slice(startIndex, startIndex + this.pageSize);
         this.numDisplayedRecords = this.data.length;
     }
 
@@ -121,6 +131,14 @@ export default class RflibUserPermissionAssignmentList extends LightningElement 
     handlePageChange(event) {
         logger.debug('Page changed, current page={0}', event.detail);
         this.page = event.detail;
+        this.handlePageChanged();
+    }
+
+    handlePageSizeChanged(event) {
+        logger.debug('New page size selected: pageSize={0}', event.detail);
+        this.pageSize = event.detail;
+        this.page = 1;
+        this.totalPages = Math.ceil(this.numTotalRecords / this.pageSize);
         this.handlePageChanged();
     }
 }

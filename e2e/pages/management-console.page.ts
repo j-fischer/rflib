@@ -1,5 +1,5 @@
 import { Locator, Page } from '@playwright/test';
-import { LogArchiveAlertComponent } from '../components';
+import { LogArchiveAlertComponent, PaginatorComponent } from '../components';
 import { LightningCombobox, LightningDatatable, LightningRecordPicker } from '../components/base';
 
 export class ManagementConsolePage {
@@ -22,6 +22,10 @@ export class ManagementConsolePage {
 
     permissionAssignmentTable(title: string): LightningDatatable {
         return LightningDatatable.within(this.permissionAssignmentList(title));
+    }
+
+    permissionAssignmentPaginator(title: string): PaginatorComponent {
+        return PaginatorComponent.within(this.permissionAssignmentList(title));
     }
 
     get publicGroupManager(): Locator {

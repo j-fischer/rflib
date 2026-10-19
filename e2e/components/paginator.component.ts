@@ -1,4 +1,5 @@
 import { Locator } from '@playwright/test';
+import { LightningCombobox } from './base';
 
 /** Wraps `c-rflib-paginator`. */
 export class PaginatorComponent {
@@ -13,6 +14,16 @@ export class PaginatorComponent {
     // class instead of the `pageNum` id (rflibPaginator.html).
     get pageInput(): Locator {
         return this.root.locator('input.page-selector');
+    }
+
+    get pageSizeSelector(): LightningCombobox {
+        return new LightningCombobox(this.root.locator('lightning-combobox[data-id="page-size-selector"]'));
+    }
+
+    // The options' accessible names are exactly "10", "25", "50" and "100", so the match
+    // must be exact or "10" would also match "100" (confirmed against a live org).
+    async selectPageSize(pageSize: 10 | 25 | 50 | 100): Promise<void> {
+        await this.pageSizeSelector.select(String(pageSize), true);
     }
 
     button(label: 'First' | 'Previous' | 'Next' | 'Last'): Locator {

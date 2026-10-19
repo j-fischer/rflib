@@ -92,7 +92,7 @@
                 default="10"
                 min="1"
                 label="Page Size"
-                description="Number of records per page of the record list."
+                description="Number of records per page when the component loads: 10, 25, 50 or 100. Other values fall back to 10. Users can change it with the rows per page selector."
             />
         </targetConfig>
     </targetConfigs>

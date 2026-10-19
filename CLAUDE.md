@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RFLIB (Reliability Force) is a Salesforce open-source library providing logging, feature switches, a trigger framework, and MCP server integration. It is published as 5 modular unlocked packages with their own versioning and dependency chains.
+RFLIB (Reliability Force) is a Salesforce open-source library providing logging, feature switches, and a trigger framework. It is published as 4 modular unlocked packages with their own versioning and dependency chains.
 
 ## Commands
 
@@ -72,7 +72,7 @@ the PR only after the user approves the draft.
 
 ### Package Structure and Dependencies
 
-The repo contains 5 unlocked Salesforce packages, each in its own top-level directory:
+The repo contains 4 unlocked Salesforce packages, each in its own top-level directory:
 
 | Package      | Directory       | Description                               | Depends On      |
 | ------------ | --------------- | ----------------------------------------- | --------------- |
@@ -80,9 +80,10 @@ The repo contains 5 unlocked Salesforce packages, each in its own top-level dire
 | RFLIB-FS     | `rflib-fs/`     | Feature Switches via Custom Metadata      | RFLIB           |
 | RFLIB-TF     | `rflib-tf/`     | Trigger Framework + Retryable Actions     | RFLIB, RFLIB-FS |
 | RFLIB-PHAROS | `rflib-pharos/` | Pharos AI integration via Platform Events | RFLIB           |
-| RFLIB-MCP    | `rflib-mcp/`    | MCP Server integration                    | RFLIB           |
 
 Each package directory follows the standard SFDX layout: `<package>/main/default/` for source and `<package>/test/default/` for test classes.
+
+Agent-driven debugging (reading log archives, application events, and logger settings, and tuning logger settings) is not a package in this repo. It is provided by the `sf rflib debug` commands of the RFLIB CLI plugin ([j-fischer/rflib-plugin](https://github.com/j-fischer/rflib-plugin)).
 
 ### Core Logging Framework (`rflib/`)
 

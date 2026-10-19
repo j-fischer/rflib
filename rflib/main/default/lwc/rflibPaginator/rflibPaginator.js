@@ -30,6 +30,18 @@
  * https://salesforcelightningwebcomponents.blogspot.com/2019/04/pagination-with-search-step-by-step.html
  */
 import { LightningElement, api } from 'lwc';
+
+export const PAGE_SIZES = [10, 25, 50, 100];
+
+/**
+ * Returns the given value as a page size if it is one of the supported PAGE_SIZES, otherwise the fallback.
+ * Values configured in the Lightning App Builder arrive as strings, so they are parsed first.
+ */
+export function getValidPageSize(value, fallback) {
+    const pageSize = parseInt(value, 10);
+    return PAGE_SIZES.includes(pageSize) ? pageSize : fallback;
+}
+
 export default class Paginator extends LightningElement {
     @api totalRecords;
     @api currentPage;
@@ -37,11 +49,16 @@ export default class Paginator extends LightningElement {
 
     @api shouldDisplayPageSelection = false;
 
-    lastpage = false;
-    firstpage = false;
-
     get totalPages() {
-        return Math.ceil(this.totalRecords / this.pageSize);
+        return Math.ceil(this.totalRecords / this.pageSize) || 1;
+    }
+
+    get pageSizeOptions() {
+        return PAGE_SIZES.map((size) => ({ label: String(size), value: String(size) }));
+    }
+
+    get selectedPageSize() {
+        return String(this.pageSize);
     }
 
     get shouldDisableFirstButton() {
@@ -83,13 +100,27 @@ export default class Paginator extends LightningElement {
     }
 
     handlePageNumberChange(evt) {
-        if (evt.keyCode === 13) {
-            let selectedPage =
-                evt.target.value > this.totalPages ? this.totalPages : evt.target.value < 1 ? 1 : evt.target.value;
+        if (evt.keyCode === 13 || evt.key === 'Enter') {
+            const enteredPage = parseInt(evt.target.value, 10);
+            const selectedPage = isNaN(enteredPage)
+                ? this.currentPage
+                : Math.min(Math.max(enteredPage, 1), this.totalPages);
+
+            // The input is not re-rendered if the current page does not change, i.e. when the
+            // entered value was clipped to the page that is already displayed.
+            evt.target.value = selectedPage;
 
             if (!import.meta.env.SSR) {
                 this.dispatchEvent(new CustomEvent('gotopage', { detail: selectedPage }));
             }
+        }
+    }
+
+    handlePageSizeChange(evt) {
+        const newPageSize = getValidPageSize(evt.detail.value, this.pageSize);
+
+        if (!import.meta.env.SSR) {
+            this.dispatchEvent(new CustomEvent('pagesizechange', { detail: newPageSize }));
         }
     }
 }

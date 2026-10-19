@@ -30,6 +30,7 @@ import { LightningElement, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import { createLogger } from 'c/rflibLogger';
+import { getValidPageSize } from 'c/rflibPaginator';
 import hideHeaderCSS from '@salesforce/resourceUrl/rflib_HidePageHeader';
 
 import describeConfig from '@salesforce/apex/rflib_BigObjectQueryController.describeConfig';
@@ -155,6 +156,7 @@ export default class RflibBigObjectExplorer extends LightningElement {
     pendingRecords = [];
 
     page = 1;
+    selectedPageSize = null;
     numDisplayedRecords = 0;
 
     selectedKey = null;
@@ -178,8 +180,10 @@ export default class RflibBigObjectExplorer extends LightningElement {
         this.loadToken += 1;
     }
 
+    // The rows per page the user picked in the paginator, or the configured page size snapped to the sizes the
+    // paginator's selector offers.
     get effectivePageSize() {
-        return toInteger(this.pageSize) || DEFAULT_PAGE_SIZE;
+        return this.selectedPageSize || getValidPageSize(this.pageSize, DEFAULT_PAGE_SIZE);
     }
 
     get effectiveMaxRecords() {
@@ -584,8 +588,12 @@ export default class RflibBigObjectExplorer extends LightningElement {
     }
 
     handleGoToPage(event) {
-        // The paginator clamps the page to the valid range but passes what was typed, which is a string.
-        this.page = parseInt(event.detail, 10);
+        this.page = event.detail;
+    }
+
+    handlePageSizeChanged(event) {
+        this.page = 1;
+        this.selectedPageSize = event.detail;
     }
 
     handleRecordSelected(event) {
