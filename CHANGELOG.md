@@ -1,3 +1,14 @@
+### RFLIB 11.5.0
+
+Package ID: TBD
+Package Alias: TBD
+Install link: TBD
+
+- The Log Monitor now shows the same pagination controls as the Permissions Explorer and the User Permission Assignments component: the current page in an editable box next to the total number of pages, so users can type a page number and press Enter to jump to it. It previously showed only the First, Previous, Next, and Last buttons.
+- Added a `Rows per page` selector to the pagination controls of the Log Monitor, the Permissions Explorer, and the User Permission Assignments component, offering 10, 25, 50, and 100 rows. Changing it returns the list to the first page. In the Permissions Explorer, it replaces the page size menu behind the settings icon in the page header.
+- Added the `Default Page Size` attribute to the Log Monitor, the Permissions Explorer, and the User Permission Assignments component in the Lightning App Builder. It sets the number of rows shown when the page loads and accepts 10, 25, 50, or 100. The defaults are unchanged: 10 for the Log Monitor and the Permissions Explorer, 25 for User Permission Assignments.
+- Fixed the page navigation after jumping to a page with the page number box. The entered page was passed on as text, so a following `Next` appended a digit instead of moving forward a page, for example from page 5 to page 51. An entry that is not a number now leaves the current page in place, and an entry beyond the last page shows the page that is actually displayed.
+
 ### RFLIB 11.4.0
 
 Package ID: 04tKY0000005SvfYAE

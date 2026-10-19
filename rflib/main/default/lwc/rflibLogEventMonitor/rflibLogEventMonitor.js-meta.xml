@@ -6,4 +6,9 @@
     <targets>
         <target>lightning__AppPage</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="defaultPageSize" type="String" label="Default Page Size" datasource="10,25,50,100" default="10" description="The number of rows displayed per page when the component loads. Users can change it using the page size selector next to the pagination controls." />
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

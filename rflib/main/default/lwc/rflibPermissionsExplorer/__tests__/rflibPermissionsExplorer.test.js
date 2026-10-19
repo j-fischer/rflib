@@ -263,10 +263,6 @@ function getExportMenu(element) {
     return getMenus(element).find((menu) => menu.label === 'Export to CSV');
 }
 
-function getSettingsMenu(element) {
-    return getMenus(element).find((menu) => menu.alternativeText === 'Select page size');
-}
-
 function getFieldsWithoutFlsMenu(element) {
     return element.shadowRoot.querySelector('lightning-button-menu[data-id="fields-without-fls-menu"]');
 }
@@ -694,16 +690,46 @@ describe('c-rflib-permissions-explorer', () => {
 
     // --- Page size change test ---
 
-    it('updates page size when settings menu selection changes', async () => {
+    it('updates page size when the paginator page size changes', async () => {
         const element = await createAndLoad();
 
-        const settingsMenu = getSettingsMenu(element);
-        settingsMenu.dispatchEvent(new CustomEvent('select', { detail: { value: '50' } }));
+        const paginator = element.shadowRoot.querySelector('c-rflib-paginator');
+        paginator.dispatchEvent(new CustomEvent('pagesizechange', { detail: 50 }));
 
         await flushPromises();
 
         const table = element.shadowRoot.querySelector('c-rflib-permissions-table');
         expect(table.pageSize).toBe(50);
+        expect(paginator.pageSize).toBe(50);
+        expect(paginator.currentPage).toBe(1);
+    });
+
+    it('uses the default page size configured in the App Builder', async () => {
+        const element = createElement('c-rflib-permissions-explorer', {
+            is: RflibPermissionsExplorer
+        });
+        element.defaultPageSize = '50';
+        document.body.appendChild(element);
+
+        jest.runAllTimers();
+        await flushPromises(2);
+
+        const table = element.shadowRoot.querySelector('c-rflib-permissions-table');
+        expect(table.pageSize).toBe(50);
+    });
+
+    it('falls back to the default page size for an unsupported App Builder value', async () => {
+        const element = createElement('c-rflib-permissions-explorer', {
+            is: RflibPermissionsExplorer
+        });
+        element.defaultPageSize = '30';
+        document.body.appendChild(element);
+
+        jest.runAllTimers();
+        await flushPromises(2);
+
+        const table = element.shadowRoot.querySelector('c-rflib-permissions-table');
+        expect(table.pageSize).toBe(10);
     });
 
     // --- Pagination tests ---
