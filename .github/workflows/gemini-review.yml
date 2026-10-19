@@ -1,0 +1,37 @@
+name: Gemini Code Review
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+    group: gemini-review-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    review:
+        # Secrets are not available to PRs from forks or Dependabot, and drafts are not reviewed.
+        if: >-
+            !github.event.pull_request.draft &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            github.actor != 'dependabot[bot]'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            contents: read
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            - name: Review pull request with Gemini
+              env:
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+                  GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: node .github/scripts/gemini-review.mjs
