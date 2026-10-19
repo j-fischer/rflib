@@ -40,6 +40,19 @@ public class rflib_TestUserFactory {
         return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
     }
 
+    public static User insertWithPermissionSetAndRetrieve(String firstName, String lastName, String profileName, String permissionSetName) {
+        User u = new Builder(firstName, lastName, profileName).persist();
+        // Running the setup DML as the current user keeps it separate from any non-setup DML in the test,
+        // which would otherwise fail with MIXED_DML_OPERATION.
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            insert new PermissionSetAssignment(
+                PermissionSetId = [SELECT Id FROM PermissionSet WHERE Name = :permissionSetName].Id,
+                AssigneeId = u.Id
+            );
+        }
+        return [SELECT Firstname, Lastname, Username, Email FROM User WHERE Id = :u.Id];
+    }
+
     private rflib_TestUserFactory() { }
 
     public class Builder {

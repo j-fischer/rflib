@@ -68,12 +68,18 @@ public with sharing class rflib_UserPermSetManagerController {
     @AuraEnabled
     public static void assignPermissionSet(Id permissionSetId, String alias) {
         try {
+            if (!Schema.SObjectType.PermissionSetAssignment.isCreateable()) {
+                throw rflib_ControllerUtil.createAuraHandledException(
+                    'You do not have permission to assign permission sets.'
+                );
+            }
+
             User user = [SELECT Id FROM User WHERE Alias = :alias LIMIT 1];
             PermissionSetAssignment psa = new PermissionSetAssignment(
                 AssigneeId = user.Id,
                 PermissionSetId = permissionSetId
             );
-            insert psa;
+            Database.insert(psa, AccessLevel.USER_MODE);
         } catch (Exception ex) {
             LOGGER.error('Error in assignPermissionSet method for alias: ' + alias + ' and permissionSetId: ' + permissionSetId, ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());
@@ -83,10 +89,16 @@ public with sharing class rflib_UserPermSetManagerController {
     @AuraEnabled
     public static void deletePermissionSetAssignment(Id permissionSetAssignmentId) {
         try {
+            if (!Schema.SObjectType.PermissionSetAssignment.isDeletable()) {
+                throw rflib_ControllerUtil.createAuraHandledException(
+                    'You do not have permission to remove permission set assignments.'
+                );
+            }
+
             PermissionSetAssignment psa = new permissionSetAssignment(
                 Id = permissionSetAssignmentId
             );
-            delete psa;
+            Database.delete(psa, AccessLevel.USER_MODE);
         } catch (Exception ex) {
             LOGGER.error('Error in deletePermissionSetAssignment method for permissionSetAssignmentId: ' + permissionSetAssignmentId, ex);
             throw rflib_ControllerUtil.createAuraHandledException(ex.getMessage());

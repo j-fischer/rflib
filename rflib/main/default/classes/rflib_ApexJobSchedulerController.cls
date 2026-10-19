@@ -31,6 +31,18 @@ public with sharing class rflib_ApexJobSchedulerController {
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory()
         .createLogger('rflib_ApexJobSchedulerController');
 
+    // The RFLIB jobs used by the Management Dashboard can always be scheduled or deleted. Admins who add the
+    // component to their own pages allow further classes through the Ops_Center_Schedulable_Classes Global
+    // Setting. Names are compared in lower case because Apex class names are case-insensitive.
+    private static final Set<String> RFLIB_SCHEDULABLE_CLASSES = new Set<String>{
+        rflib_ApplicationEventArchiver.class.getName().toLowerCase(),
+        rflib_LogArchiveCleanup.class.getName().toLowerCase(),
+        rflib_ApplicationEventArchiveCleanup.class.getName().toLowerCase()
+    };
+
+    private static final String ALLOW_CLASS_HINT =
+        'To allow it, add the class name to the Ops_Center_Schedulable_Classes Global Setting.';
+
     @AuraEnabled(cacheable=true)
     public static ScheduledJobDetails getJobDetails(String jobName) {
         rflib_LoggerUtil.logInternal(LOGGER, 'getJobDetails called with jobName: ' + jobName);
@@ -85,6 +97,13 @@ public with sharing class rflib_ApexJobSchedulerController {
             className = className.trim();
             cronExpression = cronExpression.trim();
 
+            if (!isSchedulableClass(className)) {
+                LOGGER.error('Apex class is not permitted to be scheduled: ' + className);
+                throw rflib_ControllerUtil.createAuraHandledException(
+                    'The class ' + className + ' cannot be scheduled from the Ops Center. ' + ALLOW_CLASS_HINT
+                );
+            }
+
             Type jobType = Type.forName(className);
             if (jobType == null) {
                 LOGGER.error('Apex class not found: ' + className);
@@ -122,6 +141,20 @@ public with sharing class rflib_ApexJobSchedulerController {
             ];
 
             if (!cronTriggers.isEmpty()) {
+                List<AsyncApexJob> scheduledApexJobs = [
+                    SELECT ApexClass.Name, ApexClass.NamespacePrefix
+                    FROM AsyncApexJob
+                    WHERE CronTriggerId = :cronTriggers[0].Id AND JobType = 'ScheduledApex'
+                    LIMIT 1
+                ];
+                String jobClassName = scheduledApexJobs.isEmpty() ? null : getFullClassName(scheduledApexJobs[0].ApexClass);
+                if (!isDeletableJobClass(jobClassName)) {
+                    LOGGER.error('Scheduled job is not permitted to be deleted: ' + jobName + ', class: ' + jobClassName);
+                    throw rflib_ControllerUtil.createAuraHandledException(
+                        'The job ' + jobName + ' runs the class ' + jobClassName + ' and cannot be deleted from the Ops Center. ' + ALLOW_CLASS_HINT
+                    );
+                }
+
                 System.abortJob(cronTriggers[0].Id);
                 rflib_LoggerUtil.logInternal(LOGGER, 'Job deleted successfully: ' + jobName);
             } else {
@@ -134,6 +167,42 @@ public with sharing class rflib_ApexJobSchedulerController {
             LOGGER.error('Error deleting scheduled job for jobName: ' + jobName, e);
             throw rflib_ControllerUtil.createAuraHandledException('Error deleting scheduled job: ' + e.getMessage());
         }
+    }
+
+    private static String getFullClassName(ApexClass apexClass) {
+        return String.isBlank(apexClass.NamespacePrefix) ? apexClass.Name : apexClass.NamespacePrefix + '.' + apexClass.Name;
+    }
+
+    private static Boolean isSchedulableClass(String className) {
+        if (className == null) {
+            return false;
+        }
+
+        if (RFLIB_SCHEDULABLE_CLASSES.contains(className.toLowerCase())) {
+            return true;
+        }
+
+        for (String configuredClassName : rflib_GlobalSettings.opsCenterSchedulableClasses) {
+            if (configuredClassName.equalsIgnoreCase(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // A scheduled job only records its top-level class, so a job running an inner class (Outer.Inner) is
+    // matched against the configured name without its last segment as well.
+    private static Boolean isDeletableJobClass(String topLevelClassName) {
+        if (isSchedulableClass(topLevelClassName)) {
+            return true;
+        }
+
+        for (String configuredClassName : rflib_GlobalSettings.opsCenterSchedulableClasses) {
+            if (configuredClassName.substringBeforeLast('.').equalsIgnoreCase(topLevelClassName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

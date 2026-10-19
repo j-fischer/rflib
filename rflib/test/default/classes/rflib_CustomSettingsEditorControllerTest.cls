@@ -34,7 +34,8 @@ private class rflib_CustomSettingsEditorControllerTest {
     
     private static final User ADMIN_USER = rflib_TestUserFactory.insertAndRetrieve('Alice', 'Admin', 'System Administrator');
     private static final User STANDARD_USER = rflib_TestUserFactory.insertAndRetrieve('Bob', 'Viewer', 'Standard User');
-    
+    private static final User OPS_CENTER_USER = rflib_TestUserFactory.insertWithPermissionSetAndRetrieve('Opal', 'SettingsOps', 'Standard User', 'rflib_Ops_Center_Access');
+
     private static void setupTestData() {
         List<rflib_Logger_Settings__c> customSettingRecords = new List<rflib_Logger_Settings__c>();
         
@@ -215,6 +216,117 @@ private class rflib_CustomSettingsEditorControllerTest {
             Assert.fail('Expected AuraHandledException was not thrown for null record.');
         } catch (AuraHandledException e) {
             Assert.isTrue(e.getMessage().contains('cannot be null'), 'Exception message should indicate null record.');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    private static void testCanUserModifyCustomSettings_OpsCenterUser() {
+        Boolean canModify;
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            canModify = rflib_CustomSettingsEditorController.canUserModifyCustomSettings(TEST_CUSTOM_SETTINGS_API_NAME);
+        }
+        Test.stopTest();
+
+        Assert.isFalse(canModify, 'Ops Center user without Customize Application should not be able to modify Custom Settings.');
+    }
+
+    @IsTest
+    private static void testSaveCustomSetting_Insert_OpsCenterUserWithoutPermission() {
+        rflib_Logger_Settings__c newSetting = new rflib_Logger_Settings__c(
+            SetupOwnerId = OPS_CENTER_USER.Id,
+            Log_Size__c = 300
+        );
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_CustomSettingsEditorController.saveCustomSetting(newSetting);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to create Custom Settings.');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('You do not have permission to create records of rflib_Logger_Settings__c.'),
+                    'Exception message should indicate missing permission, was: ' + e.getMessage());
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Logger_Settings__c WHERE SetupOwnerId = :newSetting.SetupOwnerId], 'The Custom Setting record should not be inserted.');
+    }
+
+    @IsTest
+    private static void testSaveCustomSetting_Update_OpsCenterUserWithoutPermission() {
+        setupTestData();
+
+        rflib_Logger_Settings__c existingSetting = [SELECT Id, Log_Size__c FROM rflib_Logger_Settings__c WHERE SetupOwnerId = :ADMIN_USER.Id];
+        existingSetting.Log_Size__c = 150;
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_CustomSettingsEditorController.saveCustomSetting(existingSetting);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to update Custom Settings.');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('You do not have permission to update records of rflib_Logger_Settings__c.'),
+                    'Exception message should indicate missing permission, was: ' + e.getMessage());
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(100, [SELECT Log_Size__c FROM rflib_Logger_Settings__c WHERE Id = :existingSetting.Id].Log_Size__c, 'The Custom Setting record should not be updated.');
+    }
+
+    @IsTest
+    private static void testDeleteCustomSettingRecord_OpsCenterUserWithoutPermission() {
+        setupTestData();
+
+        Id recordId = [SELECT Id FROM rflib_Logger_Settings__c WHERE SetupOwnerId = :ADMIN_USER.Id].Id;
+
+        Test.startTest();
+        System.runAs(OPS_CENTER_USER) {
+            try {
+                rflib_CustomSettingsEditorController.deleteCustomSettingRecord(TEST_CUSTOM_SETTINGS_API_NAME, recordId);
+                Assert.fail('Expected AuraHandledException was not thrown for a user without permission to delete Custom Settings.');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('You do not have permission to delete records of rflib_Logger_Settings__c.'),
+                    'Exception message should indicate missing permission, was: ' + e.getMessage());
+            }
+        }
+        Test.stopTest();
+
+        Assert.areEqual(1, [SELECT COUNT() FROM rflib_Logger_Settings__c WHERE Id = :recordId], 'The Custom Setting record should not be deleted.');
+    }
+
+    @IsTest
+    private static void testSaveCustomSetting_NonCustomSettingIsRejected() {
+        rflib_Application_Event__c record = new rflib_Application_Event__c(
+            Event_Name__c = 'not-a-custom-setting',
+            Occurred_On__c = Datetime.now(),
+            Created_By_ID__c = 'test'
+        );
+
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.saveCustomSetting(record);
+            Assert.fail('Expected AuraHandledException was not thrown for a record that is not a Custom Setting.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('does not belong to a Custom Setting'),
+                'Exception message should indicate that the record is not a Custom Setting, was: ' + e.getMessage());
+        }
+        Test.stopTest();
+
+        Assert.areEqual(0, [SELECT COUNT() FROM rflib_Application_Event__c], 'The record should not be inserted.');
+    }
+
+    @IsTest
+    private static void testDeleteCustomSettingRecord_NonCustomSettingIsRejected() {
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.deleteCustomSettingRecord('User', STANDARD_USER.Id);
+            Assert.fail('Expected AuraHandledException was not thrown for an object that is not a Custom Setting.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('does not belong to a Custom Setting'),
+                'Exception message should indicate that the object is not a Custom Setting, was: ' + e.getMessage());
         }
         Test.stopTest();
     }

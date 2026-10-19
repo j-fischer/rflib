@@ -46,6 +46,10 @@ public without sharing class rflib_PublicGroupMemberManagerController {
     public static void addUserToGroup(String groupApiName, Id userId) {
         rflib_LoggerUtil.logInternal(LOGGER, 'Adding user ' + userId + ' to group: ' + groupApiName);
         try {
+            if (!Schema.SObjectType.GroupMember.isCreateable()) {
+                throw rflib_ControllerUtil.createAuraHandledException('You do not have permission to add group members.');
+            }
+
             Group targetGroup = [SELECT Id FROM Group WHERE DeveloperName = :groupApiName AND Type = 'Regular' LIMIT 1];
             Integer existingMembers = [
                 SELECT COUNT() 
@@ -54,7 +58,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
             ];
             if (existingMembers == 0) {
                 GroupMember gm = new GroupMember(GroupId = targetGroup.Id, UserOrGroupId = userId);
-                insert gm;
+                Database.insert(gm, AccessLevel.USER_MODE);
                 rflib_LoggerUtil.logInternal(LOGGER, 'User ' + userId + ' added to group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is already a member of the group.');
@@ -70,6 +74,10 @@ public without sharing class rflib_PublicGroupMemberManagerController {
     public static void removeUserFromGroup(String groupApiName, Id userId) {
         rflib_LoggerUtil.logInternal(LOGGER, 'Removing user ' + userId + ' from group: ' + groupApiName);
         try {
+            if (!Schema.SObjectType.GroupMember.isDeletable()) {
+                throw rflib_ControllerUtil.createAuraHandledException('You do not have permission to remove group members.');
+            }
+
             Group targetGroup = [SELECT Id FROM Group WHERE DeveloperName = :groupApiName AND Type = 'Regular' LIMIT 1];
             List<GroupMember> membersToDelete = [
                 SELECT Id 
@@ -77,7 +85,7 @@ public without sharing class rflib_PublicGroupMemberManagerController {
                 WHERE GroupId = :targetGroup.Id AND UserOrGroupId = :userId
             ];
             if (!membersToDelete.isEmpty()) {
-                delete membersToDelete;
+                Database.delete(membersToDelete, AccessLevel.USER_MODE);
                 rflib_LoggerUtil.logInternal(LOGGER, 'User ' + userId + ' removed from group successfully.');
             } else {
                 LOGGER.warn('User ' + userId + ' is not a member of the group.');

@@ -305,6 +305,25 @@ public class rflib_GlobalSettings {
         }
     }
 
+    /**
+     * @description Additional Apex classes, besides the RFLIB jobs, that the Apex Job Scheduler component
+     *              may schedule and delete. Configured as a comma-separated list; returns an empty list when blank.
+     */
+    public static List<String> opsCenterSchedulableClasses {
+        get {
+            List<String> result = new List<String>();
+            String val = getSetting('Ops_Center_Schedulable_Classes');
+            if (String.isNotBlank(val)) {
+                for (String className : val.split(',')) {
+                    if (String.isNotBlank(className)) {
+                        result.add(className.trim());
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
     public static Boolean batchApexErrorReportingEnabledOrDefault {
         get {
             String val = getSetting('Diagnostic_Event_Batch_Apex_Error_Reporting_Enabled');

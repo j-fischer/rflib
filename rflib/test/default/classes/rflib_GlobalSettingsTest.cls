@@ -331,6 +331,26 @@ private class rflib_GlobalSettingsTest {
     }
 
     @IsTest
+    static void testOpsCenterSchedulableClassesDefaultsToEmpty() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Ops_Center_Schedulable_Classes', null);
+        System.assertEquals(0, rflib_GlobalSettings.opsCenterSchedulableClasses.size(), 'No additional classes without the setting');
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testOpsCenterSchedulableClassesOverride() {
+        Test.startTest();
+        rflib_GlobalSettings.SETTINGS.put('Ops_Center_Schedulable_Classes', ' MyJob , ,OtherJob,');
+        System.assertEquals(
+            new List<String>{ 'MyJob', 'OtherJob' },
+            rflib_GlobalSettings.opsCenterSchedulableClasses,
+            'Class names should be split, trimmed and blanks dropped'
+        );
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testShowFieldsWithoutFlsInPermissionsExplorerDefaultsToHidden() {
         Test.startTest();
         rflib_GlobalSettings.SETTINGS.put('Permissions_Explorer_Show_Fields_Without_FLS', null);
