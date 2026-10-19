@@ -1,3 +1,12 @@
+### RFLIB-TF 4.0.1
+
+Package ID: TBD
+Package Alias: TBD
+Install link: TBD
+
+- Fixed the execution order of trigger handlers and retryable action handlers whose `Order__c` values have different numbers of digits. `Order__c` was compared as text, so a handler with order `10` ran before one with order `9`. It is now compared as a number in both `rflib_Trigger_Configuration__mdt` and `rflib_Retryable_Action_Config__mdt`; handlers with the same order still run in alphabetical order of their `Class_Name__c`. If your configurations mix values such as `2`, `9`, and `10`, review them after upgrading, as those handlers now run in numeric order.
+- Fixed the trigger framework never publishing its log events. `rflib_TriggerManager` batches the log events it reports, such as the `ERROR` logged when a handler throws an exception, but never published that batch, so those events only reached the Log Monitor, the Log Archive, and the notification channels if other code in the same transaction called `rflib_Logger.publishBatchedLogEvents()`. The batch is now published once the outermost trigger dispatch completes, including when a handler aborts the transaction. Recursive trigger executions do not publish on their own; their events are included when the outermost dispatch completes.
+
 ### RFLIB 11.4.0
 
 Package ID: 04tKY0000005SvfYAE
