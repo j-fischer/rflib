@@ -17,9 +17,11 @@ export class PaginatorComponent {
     }
 
     get pageSizeSelector(): LightningCombobox {
-        return LightningCombobox.within(this.root);
+        return new LightningCombobox(this.root.locator('lightning-combobox[data-id="page-size-selector"]'));
     }
 
+    // The options' accessible names are exactly "10", "25", "50" and "100", so the match
+    // must be exact or "10" would also match "100" (confirmed against a live org).
     async selectPageSize(pageSize: 10 | 25 | 50 | 100): Promise<void> {
         await this.pageSizeSelector.select(String(pageSize), true);
     }
