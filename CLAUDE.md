@@ -101,12 +101,15 @@ Key Apex classes:
 - `rflib_ApplicationEventService` — logs named application events to `rflib_Application_Event__c`
 - `rflib_LogEventHandler` — Platform Event subscriber that archives logs
 - `rflib_BigObjectDatabaseExecutor` — abstraction over Big Object DML
+- `rflib_BigObjectQueryController` / `rflib_DefaultBigObjectQueryService` — validate a Big Object Explorer configuration and read a Big Object in chunks, always in user mode
 
 Key LWC components:
 
 - `rflibLogger` — client-side logger for LWC; mirrors Apex API
 - `rflibLogEventMonitor` — real-time log event viewer
 - `rflibPermissionsExplorer` — dashboard for object/field/Apex permissions
+- `rflibBigObjectExplorer` — configurable explorer for any Big Object; backs the Application Event Archive tab
+- `rflibPaginator` — shared pagination controls (page number box, rows per page) used by the Ops Center lists
 
 ### Feature Switches (`rflib-fs/`)
 
@@ -132,6 +135,7 @@ Feature flags stored as `rflib_Feature_Switch__mdt` Custom Metadata records. Sup
 - **LWC Jest tests** live in `__tests__/` subdirectories alongside component files.
 - **Source API version**: 65.0 (defined in `sfdx-project.json`).
 - **@TestVisible**: Annotation can only be used on private members (static included), not ever on any methods.
+- **Ops Center controllers enforce the caller's permissions on the server.** Hiding a control in the LWC is not access control: any holder of `rflib_Ops_Center_Access` can call the Aura methods directly. Check object access with a describe call and write with `AccessLevel.USER_MODE`; where the platform has no permission to check (e.g. scheduling Apex), restrict to an allow-list such as the `Ops_Center_Schedulable_Classes` Global Setting.
 - Pre-commit hooks run Prettier, ESLint, and CSpell via Husky + lint-staged — run `npm run prettier` before committing if formatting issues appear.
 - RFLIB-PHAROS intentionally has **no direct package dependency** on RFLIB; the integration is event-driven through `rflib_Log_Event__e`.
 

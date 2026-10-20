@@ -131,6 +131,10 @@ way to stay on top of those as well through the `Management Console` tab.
 There, users with access to the Ops Center can view the current consumption of the org-wide Governor Limits relevant to RFLIB. In addition, RFLIB will
 display what users have not been provided with Permission Set to enable client logging and what users are assigned access to the Ops Center.
 
+Changes made in the Management Console, such as assigning permission sets, managing public group members, or editing Logger Settings, require the
+same permissions as in Setup. The Apex Job Scheduler only manages the RFLIB jobs and the classes listed in the `Ops_Center_Schedulable_Classes`
+Global Setting.
+
 ![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Management_Console.png 'Management Console')
 
 ## Application Event Dashboard
@@ -156,6 +160,8 @@ fields in index order, the columns of the list, the fields of the detail pane, a
 
 The explorer enforces the object and field permissions of the user. Assign the `Big Object Explorer Access` or `Ops Center Access` Permission
 Set to grant access to the RFLIB archives; any other Big Object needs its own read access.
+
+![alt text](https://github.com/j-fischer/rflib/blob/master/screenshots/Application_Event_Archive_Event_Viewer.png 'Application Event Archive')
 
 ## Updates
 
