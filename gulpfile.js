@@ -185,8 +185,47 @@ gulp.task('prompt-alias', function (done) {
     }
 });
 
+// Returns the value following a command line flag, e.g. `--bump minor`, or undefined if the flag is absent
+function getArgValue(flag) {
+    return process.argv.includes(flag) ? process.argv[process.argv.indexOf(flag) + 1] : undefined;
+}
+
+function selectPackage(packageIndex) {
+    config.packageIndex = packageIndex;
+
+    if (config.packageIndex === null) {
+        gutil.log(gutil.colors.red('Failed to set package details'));
+        process.exit(1);
+    }
+
+    config.package = _.cloneDeep(config.projectFile.packageDirectories[config.packageIndex]);
+
+    const packageVersions = Object.keys(config.projectFile.packageAliases).filter(function (value) {
+        return value.startsWith(config.package.package + '@');
+    });
+
+    config.package.latestVersionAlias = packageVersions[packageVersions.length - 1];
+    config.package.configuredVersionNumber = config.package.versionNumber.replace('.NEXT', '');
+    config.package.patch = semver.inc(config.package.configuredVersionNumber, 'patch');
+    config.package.minor = semver.inc(config.package.configuredVersionNumber, 'minor');
+    config.package.major = semver.inc(config.package.configuredVersionNumber, 'major');
+}
+
 // Prompt to select package
 gulp.task('prompt-selectPackage', function (done) {
+    const packageName = getArgValue('--package');
+    if (packageName) {
+        const packageIndex = config.projectFile.packageDirectories.findIndex((pkgDir) => pkgDir.package === packageName);
+        if (packageIndex === -1) {
+            gutil.log(gutil.colors.red('Unknown package: ' + packageName));
+            process.exit(1);
+        }
+        selectPackage(packageIndex);
+        gutil.log(gutil.colors.blue('Package already selected: ' + packageName));
+        done();
+        return;
+    }
+
     const choices = config.projectFile.packageDirectories.map((pkgDir, index) => ({
         name: pkgDir.package,
         value: index
@@ -201,24 +240,7 @@ gulp.task('prompt-selectPackage', function (done) {
                 choices: choices
             },
             function (res) {
-                config.packageIndex = res.packageIndex;
-
-                if (config.packageIndex === null) {
-                    gutil.log(gutil.colors.red('Failed to set package details'));
-                    process.exit(1);
-                }
-
-                config.package = _.cloneDeep(config.projectFile.packageDirectories[config.packageIndex]);
-
-                const packageVersions = Object.keys(config.projectFile.packageAliases).filter(function (value) {
-                    return value.startsWith(config.package.package + '@');
-                });
-
-                config.package.latestVersionAlias = packageVersions[packageVersions.length - 1];
-                config.package.configuredVersionNumber = config.package.versionNumber.replace('.NEXT', '');
-                config.package.patch = semver.inc(config.package.configuredVersionNumber, 'patch');
-                config.package.minor = semver.inc(config.package.configuredVersionNumber, 'minor');
-                config.package.major = semver.inc(config.package.configuredVersionNumber, 'major');
+                selectPackage(res.packageIndex);
                 done();
             }
         )
@@ -256,6 +278,18 @@ gulp.task('prompt-confirmVersion', function (done) {
 
 // Prompt to update dependencies
 gulp.task('prompt-updateDependencies', function (done) {
+    const updateDependencies = getArgValue('--update-dependencies');
+    if (updateDependencies) {
+        if (!['true', 'false'].includes(updateDependencies)) {
+            gutil.log(gutil.colors.red('--update-dependencies must be true or false, got: ' + updateDependencies));
+            process.exit(1);
+        }
+        config.version.updateDependencies = updateDependencies === 'true';
+        gutil.log(gutil.colors.blue('Update dependencies already selected: ' + updateDependencies));
+        done();
+        return;
+    }
+
     gulp.src('*').pipe(
         prompt.prompt(
             {
@@ -275,8 +309,40 @@ gulp.task('prompt-updateDependencies', function (done) {
     );
 });
 
+function selectBump(nextVersion, nextVersionCustom) {
+    if (['patch', 'minor', 'major'].includes(nextVersion)) {
+        config.version.nextVersionType = nextVersion;
+        config.version.nextVersion = config.package[nextVersion];
+    } else if (nextVersion === 'build') {
+        config.version.nextVersionType = 'build';
+        config.version.nextVersion = 'build';
+    } else if (nextVersion === 'custom') {
+        config.version.nextVersionType = 'custom';
+        config.version.nextVersion = nextVersionCustom;
+    }
+}
+
 // Prompt for version bump
 gulp.task('prompt-bump', function (done) {
+    const bump = getArgValue('--bump');
+    if (bump) {
+        if (['build', 'patch', 'minor', 'major'].includes(bump)) {
+            selectBump(bump);
+        } else if (semver.valid(bump)) {
+            selectBump('custom', bump);
+        } else {
+            gutil.log(gutil.colors.red('--bump must be build, patch, minor, major or a valid semver, got: ' + bump));
+            process.exit(1);
+        }
+        gutil.log(
+            gutil.colors.blue(
+                `Version bump already selected: ${config.package.configuredVersionNumber} => ${config.version.nextVersion}`
+            )
+        );
+        done();
+        return;
+    }
+
     gulp.src('*').pipe(
         prompt.prompt(
             [
@@ -324,16 +390,7 @@ gulp.task('prompt-bump', function (done) {
                 }
             ],
             function (res) {
-                if (['patch', 'minor', 'major'].includes(res.nextVersion)) {
-                    config.version.nextVersionType = res.nextVersion;
-                    config.version.nextVersion = config.package[res.nextVersion];
-                } else if (res.nextVersion === 'build') {
-                    config.version.nextVersionType = 'build';
-                    config.version.nextVersion = 'build';
-                } else if (res.nextVersion === 'custom') {
-                    config.version.nextVersionType = 'custom';
-                    config.version.nextVersion = res.nextVersionCustom;
-                }
+                selectBump(res.nextVersion, res.nextVersionCustom);
                 done();
             }
         )
