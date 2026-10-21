@@ -1,3 +1,12 @@
+### RFLIB-TF 4.0.1
+
+Package ID: 04tKY0000005SwYYAU
+Package Alias: RFLIB-TF@4.0.1-1
+Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKY0000005SwYYAU
+
+- Fixed the execution order of trigger handlers and retryable action handlers whose `Order__c` values have different numbers of digits. `Order__c` was compared as text, so a handler with order `10` ran before one with order `9`; it is now compared as a number in both `rflib_Trigger_Configuration__mdt` and `rflib_Retryable_Action_Config__mdt`, and handlers with the same order still run in alphabetical order of their `Class_Name__c`. **If your configurations mix values such as `2`, `9`, and `10`, review them after upgrading, as those handlers now run in numeric order.**
+- Fixed the trigger framework never publishing its batched log events, such as the `ERROR` logged when a handler throws an exception, unless other code in the transaction called `rflib_Logger.publishBatchedLogEvents()`. The batch is now published once the outermost trigger dispatch completes, including when a handler aborts the transaction.
+
 ### RFLIB 11.5.0
 
 Package ID: 04tKY0000005SwTYAU
@@ -13,15 +22,6 @@ Install link: https://login.salesforce.com/packaging/installPackage.apexp?p0=04t
 - **Security:** Fixed the Management Console components letting holders of `RFLIB - Ops Center Access` make changes they had no permission for by calling the components' Apex methods directly, such as assigning permission sets, changing public group membership, scheduling or aborting Apex jobs, and editing `rflib_Logger_Settings__c`. The server now checks the user's own permissions.
 - **Behavior change:** The Permission Set Manager requires `Assign Permission Sets`, the Public Group Member Manager requires the permission Salesforce requires to change that group's membership in Setup, and the Logger Settings editor only saves custom setting records and requires access to the custom setting (`Customize Application` or `Configure Custom Settings`).
 - **Behavior change:** The Apex Job Scheduler component only manages the RFLIB jobs on the Management Dashboard and the classes listed in the new `Ops_Center_Schedulable_Classes` Global Setting. **If you added the component to your own pages to manage other jobs, add those class names to the setting as a comma-separated list.**
-
-### RFLIB-TF 4.0.1
-
-Package ID: TBD
-Package Alias: TBD
-Install link: TBD
-
-- Fixed the execution order of trigger handlers and retryable action handlers whose `Order__c` values have different numbers of digits. `Order__c` was compared as text, so a handler with order `10` ran before one with order `9`. It is now compared as a number in both `rflib_Trigger_Configuration__mdt` and `rflib_Retryable_Action_Config__mdt`; handlers with the same order still run in alphabetical order of their `Class_Name__c`. If your configurations mix values such as `2`, `9`, and `10`, review them after upgrading, as those handlers now run in numeric order.
-- Fixed the trigger framework never publishing its log events. `rflib_TriggerManager` batches the log events it reports, such as the `ERROR` logged when a handler throws an exception, but never published that batch, so those events only reached the Log Monitor, the Log Archive, and the notification channels if other code in the same transaction called `rflib_Logger.publishBatchedLogEvents()`. The batch is now published once the outermost trigger dispatch completes, including when a handler aborts the transaction. Recursive trigger executions do not publish on their own; their events are included when the outermost dispatch completes.
 
 ### RFLIB 11.4.0
 
