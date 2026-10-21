@@ -254,6 +254,25 @@ gulp.task('prompt-confirmVersion', function (done) {
         process.exit(1);
     }
 
+    const confirmedVersionAlias = getArgValue('--confirm-version');
+    if (confirmedVersionAlias) {
+        if (confirmedVersionAlias !== config.package.latestVersionAlias) {
+            gutil.log(
+                gutil.colors.red(
+                    `Version was not confirmed: --confirm-version ${confirmedVersionAlias} does not match the latest version alias ${config.package.latestVersionAlias}`
+                )
+            );
+            process.exit(1);
+        }
+        gutil.log(
+            gutil.colors.blue(
+                `Version already confirmed: version number=${config.package.configuredVersionNumber} => version alias=${config.package.latestVersionAlias}`
+            )
+        );
+        done();
+        return;
+    }
+
     gulp.src('*').pipe(
         prompt.prompt(
             {
