@@ -243,6 +243,87 @@ private class rflib_FieldMapperTest {
         System.assertEquals('TEST-REQ-001', mappedEvent.Related_Record_ID__c);
     }
     
+    @IsTest
+    static void testMapFields_FormulaReturnTypes() {
+        // Arrange
+        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(
+            Context__c = 'Test Context',
+            Log_Level__c = 'ERROR'
+        );
+
+        // Act
+        Test.startTest();
+        Account account = (Account) mapWithFormula(sourceLogEvent, 'Account', 'NumberOfEmployees', '42');
+        Opportunity opportunity = (Opportunity) mapWithFormula(sourceLogEvent, 'Opportunity', 'TotalOpportunityQuantity', '1.5');
+        Opportunity privateOpportunity = (Opportunity) mapWithFormula(sourceLogEvent, 'Opportunity', 'IsPrivate', 'Log_Level__c = "ERROR"');
+        Opportunity datedOpportunity = (Opportunity) mapWithFormula(sourceLogEvent, 'Opportunity', 'CloseDate', 'DATE(2026, 1, 15)');
+        BusinessHours businessHours = (BusinessHours) mapWithFormula(sourceLogEvent, 'BusinessHours', 'MondayStartTime', 'TIMEVALUE("10:30:00.000")');
+        Test.stopTest();
+
+        // Assert
+        Assert.areEqual(42, account.NumberOfEmployees, 'Integer formula should be mapped');
+        Assert.areEqual(1.5, opportunity.TotalOpportunityQuantity, 'Decimal formula should be mapped');
+        Assert.isTrue(privateOpportunity.IsPrivate, 'Boolean formula should be mapped');
+        Assert.areEqual(Date.newInstance(2026, 1, 15), datedOpportunity.CloseDate, 'Date formula should be mapped');
+        Assert.areEqual(Time.newInstance(10, 30, 0, 0), businessHours.MondayStartTime, 'Time formula should be mapped');
+    }
+
+    @IsTest
+    static void testMapFields_UnsupportedTargetFieldType() {
+        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(Context__c = 'Test Context');
+
+        Test.startTest();
+        try {
+            mapWithFormula(sourceLogEvent, 'Opportunity', 'Amount', '100');
+            Assert.fail('Expected exception was not thrown');
+        } catch (rflib_FieldMapper.FieldMappingException ex) {
+            Assert.isTrue(ex.getMessage().contains('Unsupported field type for formula evaluation: CURRENCY'),
+                'Expected unsupported field type error but got: ' + ex.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMapFields_FormulaTargetFieldNotFound() {
+        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(Context__c = 'Test Context');
+
+        Test.startTest();
+        try {
+            mapWithFormula(sourceLogEvent, TARGET_OBJECT_TYPE, 'Does_Not_Exist__c', 'Context__c');
+            Assert.fail('Expected exception was not thrown');
+        } catch (rflib_FieldMapper.FieldMappingException ex) {
+            Assert.areEqual('Target field Does_Not_Exist__c not found on target object', ex.getMessage(),
+                'Expected missing target field error');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testMapFields_SimpleFieldCopy_IncompatibleTargetField() {
+        rflib_Log_Event__e sourceLogEvent = new rflib_Log_Event__e(Context__c = 'Test Context');
+
+        rflib_SOQL.setMock('FieldMappingRule.getRules', new List<rflib_Field_Mapping_Rule__mdt>{
+            createMappingRule(TARGET_OBJECT_TYPE, 'Occurred_On__c', 'Context__c', true)
+        });
+
+        Test.startTest();
+        try {
+            rflib_FieldMapper.mapFields(sourceLogEvent, TARGET_OBJECT_TYPE);
+            Assert.fail('Expected exception was not thrown');
+        } catch (rflib_FieldMapper.FieldMappingException ex) {
+            Assert.isTrue(ex.getMessage().startsWith('Error during field mapping: '),
+                'Expected a wrapped mapping error but got: ' + ex.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    private static SObject mapWithFormula(SObject sourceObject, String targetObject, String targetField, String formula) {
+        rflib_SOQL.setMock('FieldMappingRule.getRules', new List<rflib_Field_Mapping_Rule__mdt>{
+            createMappingRule(targetObject, targetField, formula, false)
+        });
+        return rflib_FieldMapper.mapFields(sourceObject, targetObject);
+    }
+
     // Helper method to create a mapping rule
     private static rflib_Field_Mapping_Rule__mdt createMappingRule(
         String targetObject, 

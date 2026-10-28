@@ -153,13 +153,20 @@ public class rflib_FieldMapper {
         }
 
         try {
+            FormulaEval.FormulaReturnType returnType = getFormulaReturnType(targetField);
             FormulaEval.FormulaInstance ff = Formula.builder()
-                .withReturnType(getFormulaReturnType(targetField))
+                .withReturnType(returnType)
                 .withType(sourceObject.getSObjectType())
                 .withFormula(rule.Transformation_Formula__c)
                 .build();
-            
-            return ff.evaluate(sourceObject);
+
+            Object result = ff.evaluate(sourceObject);
+
+            // A DATE formula evaluates to a Datetime at midnight GMT, which a Date field does not accept
+            if (result != null && returnType == FormulaEval.FormulaReturnType.DATE) {
+                return Date.valueOf(result);
+            }
+            return result;
         } catch (Exception ex) {
             throw new FieldMappingException('Error evaluating formula for field ' + rule.Target_Field__c + ': ' + ex.getMessage());
         }

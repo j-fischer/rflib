@@ -55,6 +55,18 @@ public without sharing class rflib_FeatureSwitch {
         private set;
     }
 
+    // Custom Metadata records cannot be inserted in tests, so tests provide the records here instead
+    @TestVisible
+    private static List<rflib_Feature_Switch__mdt> featureSwitchRecords {
+        get {
+            if (featureSwitchRecords == null) {
+                featureSwitchRecords = rflib_Feature_Switch__mdt.getAll().values();
+            }
+            return featureSwitchRecords;
+        }
+        private set;
+    }
+
     @TestVisible
     private static List<String> directPublicGroupAssociations {
         get {
@@ -166,7 +178,7 @@ public without sharing class rflib_FeatureSwitch {
     }
 
     private static Map<String, Map<String, Boolean>> getAllFeatureSwitches() {
-        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = rflib_Feature_Switch__mdt.getAll().values();
+        List<rflib_Feature_Switch__mdt> allFeaturesSwitches = featureSwitchRecords;
 
         LOGGER.trace('All feature switch values: ' + JSON.serialize(allFeaturesSwitches));
 

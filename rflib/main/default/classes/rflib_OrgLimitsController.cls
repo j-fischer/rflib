@@ -33,8 +33,8 @@ public with sharing class rflib_OrgLimitsController {
 
     @AuraEnabled
     public static Map<String, SerializableOrgLimit> getOrgLimits() {
-        rflib_LoggerUtil.logInternal(LOGGER, 'getOrgLimits invoked');
         try {
+            rflib_LoggerUtil.logInternal(LOGGER, 'getOrgLimits invoked');
             Map<String, SerializableOrgLimit> result = new Map<String, SerializableOrgLimit>();
             for (OrgLimit ol : OrgLimits.getAll()) {
                 result.put(ol.getName(), new SerializableOrgLimit(ol));

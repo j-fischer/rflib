@@ -34,26 +34,25 @@ public abstract class rflib_AbstractArchiveCleanup {
     
     @TestVisible
     protected final Datetime referenceDate;
-    protected final Datetime lastProcessedDate;
-    
+
     protected Integer totalProcessed = 0;
+    private Integer processedInThisRun = 0;
     protected final rflib_Logger logger;
-    
-    protected rflib_AbstractArchiveCleanup(rflib_Logger logger, Integer daysToRetain, Datetime lastProcessedDate, Integer totalProcessed) {
+
+    protected rflib_AbstractArchiveCleanup(rflib_Logger logger, Integer daysToRetain, Integer totalProcessed) {
         this.logger = logger;
-        
+
         // Normalize the reference date to start of day
         Date today = Date.today();
         Date cutoffDate = today.addDays((-1) * daysToRetain);
         this.referenceDate = Datetime.newInstance(cutoffDate, Time.newInstance(0, 0, 0, 0));
-        
-        this.lastProcessedDate = lastProcessedDate;
+
         if (totalProcessed != null) {
             this.totalProcessed = totalProcessed;
         }
-        
-        logger.info('Initialized cleanup with referenceDate={0}, lastProcessedDate={1}, totalProcessed={2}', 
-            new Object[] { referenceDate, lastProcessedDate, this.totalProcessed });
+
+        logger.info('Initialized cleanup with referenceDate={0}, totalProcessed={1}',
+            new Object[] { referenceDate, this.totalProcessed });
     }
     
     public abstract Iterable<SObject> start(Database.BatchableContext bc);
@@ -77,6 +76,7 @@ public abstract class rflib_AbstractArchiveCleanup {
                 }
             }
             
+            processedInThisRun += successCount;
             totalProcessed += successCount;
             logger.info('Successfully deleted {0} records. Total processed: {1}', 
                 new Object[] { successCount, totalProcessed });
@@ -87,7 +87,7 @@ public abstract class rflib_AbstractArchiveCleanup {
         }
     }
     
-    protected virtual void chainNextBatch(Datetime lastProcessedDate, Integer totalProcessed) {
+    protected virtual void chainNextBatch(Integer totalProcessed) {
         // Default implementation does nothing, to be overridden by subclasses
     }
     
@@ -99,9 +99,11 @@ public abstract class rflib_AbstractArchiveCleanup {
         try {
             logger.info('Finished batch processing. Total records processed: {0}', new Object[] { totalProcessed });
             
-            if (totalProcessed > 0 && Math.mod(totalProcessed, getQueryLimit()) == 0) {
-                logger.info('Chaining next batch as batch size limit was hit');
-                chainNextBatch(referenceDate, totalProcessed);
+            // Deleted records no longer match the query, so the next batch picks up the oldest remaining ones.
+            // A run that deleted less than a full page has nothing left to chain for, or hit records it could not delete.
+            if (processedInThisRun > 0 && processedInThisRun == getQueryLimit()) {
+                logger.info('Chaining next batch as query limit was hit');
+                chainNextBatch(totalProcessed);
             }
         } catch (Exception ex) {
             logger.error('Failed to finish batch', ex);

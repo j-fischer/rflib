@@ -150,6 +150,21 @@ private class rflib_FeatureSwitchTest {
     }
 
     @IsTest
+    private static void testFeatureSwitchesAreLoadedFromCustomMetadata() {
+        rflib_FeatureSwitch.featureSwitchRecords = new List<rflib_Feature_Switch__mdt>{
+            new rflib_Feature_Switch__mdt(Switch_Name__c = 'Switch_A', Scope_Type__c = 'Global', Turned_On__c = true),
+            new rflib_Feature_Switch__mdt(Switch_Name__c = 'Switch_A', Scope_Type__c = 'Profile', Scope_Name__c = 'Some Profile', Turned_On__c = false),
+            new rflib_Feature_Switch__mdt(Switch_Name__c = 'Switch_B', Scope_Type__c = 'User', Scope_Name__c = 'someone@example.com', Turned_On__c = true)
+        };
+
+        Map<String,Map<String,Boolean>> result = rflib_FeatureSwitch.featureSwitches;
+
+        System.assertEquals(new Set<String>{ 'Switch_A', 'Switch_B' }, result.keySet());
+        System.assertEquals(new Map<String,Boolean>{ rflib_FeatureSwitch.GLOBAL_SCOPE => true, 'Some Profile' => false }, result.get('Switch_A'));
+        System.assertEquals(new Map<String,Boolean>{ 'someone@example.com' => true }, result.get('Switch_B'));
+    }
+
+    @IsTest
     private static void testGetAllScopedValues() {
         setup();
 

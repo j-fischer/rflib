@@ -124,6 +124,80 @@ private class rflib_CustomSettingsEditorControllerTest {
     }
     
     @IsTest
+    private static void testGetCustomSettings_OrganizationAndProfileOwners() {
+        Id orgId = UserInfo.getOrganizationId();
+        Id profileId = UserInfo.getProfileId();
+        String profileName = [SELECT Name FROM Profile WHERE Id = :profileId].Name;
+
+        insert new List<rflib_Logger_Settings__c>{
+            new rflib_Logger_Settings__c(SetupOwnerId = orgId, Log_Size__c = 10),
+            new rflib_Logger_Settings__c(SetupOwnerId = profileId, Log_Size__c = 20)
+        };
+
+        Test.startTest();
+        List<rflib_CustomSettingsEditorController.CustomSettingWrapper> settings = rflib_CustomSettingsEditorController.getCustomSettings(TEST_CUSTOM_SETTINGS_API_NAME);
+        Test.stopTest();
+
+        Map<String, rflib_CustomSettingsEditorController.CustomSettingWrapper> settingsByOwnerType = new Map<String, rflib_CustomSettingsEditorController.CustomSettingWrapper>();
+        for (rflib_CustomSettingsEditorController.CustomSettingWrapper wrapper : settings) {
+            settingsByOwnerType.put(wrapper.setupOwnerType, wrapper);
+        }
+
+        Assert.areEqual(2, settings.size(), 'There should be 2 Custom Setting records.');
+        Assert.areEqual(String.valueOf(orgId), settingsByOwnerType.get('Organization').setupOwnerId, 'The org default should be labeled as Organization.');
+        Assert.areEqual(profileName, settingsByOwnerType.get('Profile').setupOwnerName, 'The profile setting should show the profile name.');
+    }
+
+    @IsTest
+    private static void testGetCustomSettings_EmptyApiName() {
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.getCustomSettings('');
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('cannot be empty'), 'Exception message should indicate an empty API name, was: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    private static void testGetCustomSettings_NonCustomSettingIsRejected() {
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.getCustomSettings('Account');
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('does not belong to a Custom Setting'),
+                'Exception message should indicate that the object is not a Custom Setting, was: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    private static void testCanUserModifyCustomSettings_NonExistent() {
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.canUserModifyCustomSettings('NonExistentCustomSetting__c');
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('does not exist'), 'Exception message should indicate non-existence, was: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    private static void testDeleteCustomSettingRecord_EmptyRecordId() {
+        Test.startTest();
+        try {
+            rflib_CustomSettingsEditorController.deleteCustomSettingRecord(TEST_CUSTOM_SETTINGS_API_NAME, '');
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.isTrue(e.getMessage().contains('Record Id cannot be empty'), 'Exception message should indicate an empty record id, was: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     private static void testGetCustomSettingFields_Success() {
         setupTestData();
         

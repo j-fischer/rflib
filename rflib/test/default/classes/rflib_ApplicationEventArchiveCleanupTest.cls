@@ -113,6 +113,42 @@ private class rflib_ApplicationEventArchiveCleanupTest {
         Assert.isTrue(queryStr.contains('LIMIT 25000'), 'Query should contain the custom limit: ' + queryStr);
     }
     
+    @IsTest
+    static void testScheduledExecute_QueuesBatch() {
+        rflib_ApplicationEventArchiveCleanup cleanup = new rflib_ApplicationEventArchiveCleanup();
+
+        cleanup.execute((SchedulableContext) null);
+
+        Assert.areEqual(1, [SELECT COUNT() FROM AsyncApexJob WHERE JobType = 'BatchApex' AND ApexClass.Name = 'rflib_ApplicationEventArchiveCleanup'],
+            'Scheduled execution should queue the cleanup batch');
+    }
+
+    @IsTest
+    static void testFinish_ChainsNextBatchWhenQueryLimitIsHit() {
+        // GIVEN
+        rflib_GlobalSettings.SETTINGS.put('App_Event_Archive_Cleanup_Query_Limit', '10');
+        // The query binds its mocks when the class loads, so both results are stacked up front:
+        // the first batch gets a full page, the chained batch run on Test.stopTest() finds no further records
+        rflib_SOQL.mock('ApplicationEventArchiveCleanup.start').thenReturn(createMockArchives(10));
+        rflib_SOQL.mock('ApplicationEventArchiveCleanup.start').thenReturn(new List<rflib_Application_Event_Archive__b>());
+
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(createSuccessDeleteResults(10));
+        rflib_ApplicationEventArchiveCleanup cleanup = new rflib_ApplicationEventArchiveCleanup();
+        cleanup.dmlExecutor = mockDmlExecutor;
+
+        // WHEN
+        Test.startTest();
+        cleanup.execute(null, (List<SObject>) cleanup.start(null));
+        cleanup.finish(null);
+        Test.stopTest();
+
+        // THEN - the chained batch ran once and, having deleted nothing, did not chain again
+        Assert.areEqual(1, [SELECT COUNT() FROM AsyncApexJob WHERE JobType = 'BatchApex' AND ApexClass.Name = 'rflib_ApplicationEventArchiveCleanup' AND Status = 'Completed'],
+            'The next batch should have been chained and completed');
+        String queryStr = rflib_ApplicationEventArchiveCleanup.QUERY.toString();
+        Assert.isFalse(queryStr.contains('Occurred_On__c >'), 'Chained batch should re-query the oldest remaining records: ' + queryStr);
+    }
+
     private static List<rflib_Application_Event_Archive__b> createMockArchives(Integer count) {
         List<rflib_Application_Event_Archive__b> archives = new List<rflib_Application_Event_Archive__b>();
         Datetime oldDate = Datetime.now().addDays(-60); // Older than retention period

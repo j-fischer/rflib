@@ -90,6 +90,42 @@ private class rflib_DefaultApplicationEventServiceTest {
     }
 
     @isTest
+    static void testPublishApplicationEvent_UsesConfiguredTimeAndTruncatesDetails() {
+        DateTime occurredOn = DateTime.newInstance(2026, 1, 15, 10, 30, 0);
+        String additionalDetails = 'x'.repeat(rflib_DefaultApplicationEventService.MAX_ADDITIONAL_DETAIL_SIZE) + 'end';
+
+        rflib_DefaultApplicationEventService.NOW = occurredOn;
+        rflib_DefaultApplicationEventService.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
+        rflib_DefaultApplicationEventService service = new rflib_DefaultApplicationEventService();
+        Test.startTest();
+        service.publishApplicationEvent('Test Event', null, additionalDetails);
+        Test.stopTest();
+
+        rflib_Application_Event_Occurred_Event__e event = (rflib_Application_Event_Occurred_Event__e) MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        Assert.areEqual(occurredOn, event.Occurred_On__c);
+        Assert.areEqual(rflib_DefaultApplicationEventService.MAX_ADDITIONAL_DETAIL_SIZE, event.Additional_Details__c.length());
+        Assert.isTrue(event.Additional_Details__c.endsWith('end'), 'The most recent part of the details should be kept');
+    }
+
+    @isTest
+    static void testPublishApplicationEvent_PublishingLimit() {
+        rflib_GlobalSettings.overridePublishingLimitOrDefault(2);
+        rflib_DefaultApplicationEventService.EVENT_PUBLISHER = MOCK_EVENT_PUBLISHER;
+        rflib_DefaultApplicationEventService service = new rflib_DefaultApplicationEventService();
+        Test.startTest();
+        service.publishApplicationEvent('First Event', null, null);
+        service.publishApplicationEvent('Second Event', null, null);
+        List<SObject> eventsAtLimit = MOCK_EVENT_PUBLISHER.capturedPlatformEvents;
+        service.publishApplicationEvent('Third Event', null, null);
+        Test.stopTest();
+
+        Assert.areEqual(2, MOCK_EVENT_PUBLISHER.getPublishingCounter(), 'Publishing should stop once the limit is reached');
+        Assert.areEqual(2, eventsAtLimit.size(), 'The last publish before the limit should include the limit reached event');
+        Assert.areEqual('application-event-publishing-limit-reached', ((rflib_Application_Event_Occurred_Event__e) eventsAtLimit[1]).Event_Name__c);
+        Assert.areEqual(eventsAtLimit, MOCK_EVENT_PUBLISHER.capturedPlatformEvents, 'No events should be published after the limit is reached');
+    }
+
+    @isTest
     static void testArchiveEvents_emptyList() {
         rflib_Application_Event__c evt1 = createApplicationEvent('Test Event 1', 'Id1', 'Test Additional Details 1');
         rflib_Application_Event__c evt2 = createApplicationEvent('Test Event 2', 'Id2', 'Test Additional Details 2');

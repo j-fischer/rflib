@@ -50,6 +50,9 @@ public class rflib_MockLogger implements rflib_Logger {
 
     public final List<LogDetails> logDetails = new List<LogDetails>();
 
+    // Exceptions to throw when a statement is logged at the given level, to reach a caller's error handling
+    public final Map<rflib_LogLevel, Exception> exceptionsToThrow = new Map<rflib_LogLevel, Exception>();
+
     public void setLogCacheSize(Integer newSize) {
         this.logCacheSize = newSize;
     }
@@ -168,6 +171,9 @@ public class rflib_MockLogger implements rflib_Logger {
 
     @SuppressWarnings('PMD.ExcessiveParameterList')
     private void addLogDetails(rflib_LogLevel logLevel, String message, Object[] args, Exception ex) {
+        if (exceptionsToThrow.containsKey(logLevel)) {
+            throw exceptionsToThrow.get(logLevel);
+        }
         logDetails.add(new LogDetails(logLevel, message, args, ex));
     }
     
