@@ -112,6 +112,42 @@ private class rflib_LogArchiveCleanupTest {
         Assert.isTrue(queryStr.contains('LIMIT 30000'), 'Query should contain the custom limit: ' + queryStr);
     }
     
+    @IsTest
+    static void testScheduledExecute_QueuesBatch() {
+        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+
+        cleanup.execute((SchedulableContext) null);
+
+        Assert.areEqual(1, [SELECT COUNT() FROM AsyncApexJob WHERE JobType = 'BatchApex' AND ApexClass.Name = 'rflib_LogArchiveCleanup'],
+            'Scheduled execution should queue the cleanup batch');
+    }
+
+    @IsTest
+    static void testFinish_ChainsNextBatchWhenQueryLimitIsHit() {
+        // GIVEN
+        rflib_GlobalSettings.SETTINGS.put('Log_Archive_Cleanup_Query_Limit', '10');
+        // The query binds its mocks when the class loads, so both results are stacked up front:
+        // the first batch gets a full page, the chained batch run on Test.stopTest() finds no further records
+        rflib_SOQL.mock('LogArchiveCleanup.start').thenReturn(createMockArchives(10));
+        rflib_SOQL.mock('LogArchiveCleanup.start').thenReturn(new List<rflib_Logs_Archive__b>());
+
+        rflib_MockDmlExecutor mockDmlExecutor = new rflib_MockDmlExecutor(createSuccessDeleteResults(10));
+        rflib_LogArchiveCleanup cleanup = new rflib_LogArchiveCleanup();
+        cleanup.dmlExecutor = mockDmlExecutor;
+
+        // WHEN
+        Test.startTest();
+        cleanup.execute(null, (List<SObject>) cleanup.start(null));
+        cleanup.finish(null);
+        Test.stopTest();
+
+        // THEN - the chained batch ran once and, having deleted nothing, did not chain again
+        Assert.areEqual(1, [SELECT COUNT() FROM AsyncApexJob WHERE JobType = 'BatchApex' AND ApexClass.Name = 'rflib_LogArchiveCleanup' AND Status = 'Completed'],
+            'The next batch should have been chained and completed');
+        String queryStr = rflib_LogArchiveCleanup.QUERY.toString();
+        Assert.isFalse(queryStr.contains('CreatedDate__c >'), 'Chained batch should re-query the oldest remaining records: ' + queryStr);
+    }
+
     private static List<rflib_Logs_Archive__b> createMockArchives(Integer count) {
         List<rflib_Logs_Archive__b> archives = new List<rflib_Logs_Archive__b>();
         Datetime oldDate = Datetime.now().addDays(-60); // Older than retention period

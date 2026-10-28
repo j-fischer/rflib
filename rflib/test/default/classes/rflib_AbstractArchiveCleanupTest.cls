@@ -85,36 +85,50 @@ private class rflib_AbstractArchiveCleanupTest {
     @IsTest
     static void testFinishWithoutChaining() {
         // GIVEN
-        TestableArchiveCleanup cleanup = new TestableArchiveCleanup();
-        cleanup.setProcessedCount(10); // Not a multiple of the query limit
-        
+        TestableArchiveCleanup cleanup = createCleanupWithDeletedRecords(2);
+        cleanup.setQueryLimit(50); // The run deleted less than a full page
+
         // WHEN
         Test.startTest();
         Database.BatchableContext bc = new rflib_MockBatchContext();
         cleanup.finish(bc);
         Test.stopTest();
-        
+
         // THEN
         System.assertEquals(false, cleanup.chainingAttempted, 'Should not attempt to chain when not hitting limit');
     }
-    
+
     @IsTest
     static void testFinishWithChaining() {
         // GIVEN
-        TestableArchiveCleanup cleanup = new TestableArchiveCleanup();
-        cleanup.setProcessedCount(200); // Set to a multiple of the query limit (200 = 2 * 100)
-        cleanup.setQueryLimit(100);
-        
+        TestableArchiveCleanup cleanup = createCleanupWithDeletedRecords(2);
+        cleanup.setQueryLimit(2);
+
         // WHEN
         Test.startTest();
         Database.BatchableContext bc = new rflib_MockBatchContext();
         cleanup.finish(bc);
         Test.stopTest();
-        
+
         // THEN
         System.assertEquals(true, cleanup.chainingAttempted, 'Should attempt to chain when hitting limit');
-        System.assertEquals(200, cleanup.chainedTotalProcessed, 'Should pass correct total processed');
-        System.assertNotEquals(null, cleanup.chainedReferenceDate, 'Should pass reference date');
+        System.assertEquals(2, cleanup.chainedTotalProcessed, 'Should pass correct total processed');
+    }
+
+    @IsTest
+    static void testFinishWithoutChaining_ChainedRunDeletedNothing() {
+        // GIVEN - a chained run carries the previous total, which is a multiple of the query limit
+        TestableArchiveCleanup cleanup = new TestableArchiveCleanup();
+        cleanup.setProcessedCount(200);
+        cleanup.setQueryLimit(100);
+
+        // WHEN
+        Test.startTest();
+        cleanup.finish(new rflib_MockBatchContext());
+        Test.stopTest();
+
+        // THEN
+        System.assertEquals(false, cleanup.chainingAttempted, 'Should not chain again when the run deleted no records');
     }
 
     @IsTest
@@ -145,9 +159,8 @@ private class rflib_AbstractArchiveCleanupTest {
     @IsTest
     static void testErrorHandlingInFinish() {
         // GIVEN
-        TestableArchiveCleanup cleanup = new TestableArchiveCleanup();
-        cleanup.setProcessedCount(200);
-        cleanup.setQueryLimit(100);
+        TestableArchiveCleanup cleanup = createCleanupWithDeletedRecords(2);
+        cleanup.setQueryLimit(2);
         cleanup.throwErrorOnNextChain = true;
         
         // WHEN
@@ -163,6 +176,18 @@ private class rflib_AbstractArchiveCleanupTest {
         Test.stopTest();
     }
     
+    private static TestableArchiveCleanup createCleanupWithDeletedRecords(Integer count) {
+        List<SObject> records = new List<SObject>();
+        for (Integer i = 0; i < count; i++) {
+            records.add(new Account(Name = 'Test Account ' + i));
+        }
+
+        TestableArchiveCleanup cleanup = new TestableArchiveCleanup();
+        cleanup.dmlExecutor = new rflib_MockDmlExecutor(createSuccessDeleteResults(count));
+        cleanup.execute(new rflib_MockBatchContext(), records);
+        return cleanup;
+    }
+
     private static List<Database.DeleteResult> createSuccessDeleteResults(Integer count) {
         List<Database.DeleteResult> results = new List<Database.DeleteResult>();
         for (Integer i = 0; i < count; i++) {
@@ -182,13 +207,12 @@ private class rflib_AbstractArchiveCleanupTest {
         private Integer queryLimitValue = 50;
         private Integer batchSizeValue = 10;
         public Boolean chainingAttempted = false;
-        public Datetime chainedReferenceDate;
         public Integer chainedTotalProcessed;
         public Boolean throwErrorOnNextChain = false;
-        
+
         public TestableArchiveCleanup() {
-            super(rflib_LoggerUtil.getFactory().createLogger('TestableArchiveCleanup'), 
-                 RETENTION_DAYS, null, null);
+            super(rflib_LoggerUtil.getFactory().createLogger('TestableArchiveCleanup'),
+                 RETENTION_DAYS, null);
         }
         
         public void setTestRecords(List<SObject> records) {
@@ -211,12 +235,11 @@ private class rflib_AbstractArchiveCleanupTest {
             return testRecords != null ? testRecords : new List<SObject>();
         }
         
-        protected override void chainNextBatch(Datetime lastProcessedDate, Integer totalProcessed) {
+        protected override void chainNextBatch(Integer totalProcessed) {
             if (throwErrorOnNextChain) {
                 throw new QueryException('Simulated chain error');
             }
             chainingAttempted = true;
-            chainedReferenceDate = lastProcessedDate;
             chainedTotalProcessed = totalProcessed;
         }
         

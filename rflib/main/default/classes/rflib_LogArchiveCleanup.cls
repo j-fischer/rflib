@@ -44,11 +44,11 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
         .mockId('LogArchiveCleanup.start');
     
     public rflib_LogArchiveCleanup() {
-        this(null, null);
+        this(null);
     }
-    
-    private rflib_LogArchiveCleanup(Datetime lastProcessedDate, Integer totalProcessed) {
-        super(LOGGER, rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault, lastProcessedDate, totalProcessed);
+
+    private rflib_LogArchiveCleanup(Integer totalProcessed) {
+        super(LOGGER, rflib_GlobalSettings.daysToRetainArchivedLogsOrDefault, totalProcessed);
     }
 
     public void execute(SchedulableContext sc) {
@@ -61,14 +61,7 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
     }
     
     public override Iterable<SObject> start(Database.BatchableContext bc) {
-        rflib_SOQL.FilterGroup filterGroup = rflib_SOQL.FilterGroup
-            .add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate));
-
-        if (lastProcessedDate != null) {
-            filterGroup.add(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).greaterThan(lastProcessedDate));
-        }        
-
-        QUERY.whereAre(filterGroup).setLimit(getQueryLimit());
+        QUERY.whereAre(rflib_SOQL.Filter.with(rflib_Logs_Archive__b.CreatedDate__c).lessThan(referenceDate)).setLimit(getQueryLimit());
             
         List<SObject> records = QUERY.toList();            
         logger.info('Starting batch processing {0} records older than {2} with query: {1}', 
@@ -77,14 +70,8 @@ public virtual with sharing class rflib_LogArchiveCleanup extends rflib_Abstract
         return records;
     }
     
-    protected override void chainNextBatch(Datetime lastProcessedDate, Integer totalProcessed) {
-        Database.executeBatch(
-            new rflib_LogArchiveCleanup(
-                lastProcessedDate, 
-                totalProcessed
-            ), 
-            getBatchSize()
-        );
+    protected override void chainNextBatch(Integer totalProcessed) {
+        Database.executeBatch(new rflib_LogArchiveCleanup(totalProcessed), getBatchSize());
     }
     
     protected override Integer getBatchSize() {
