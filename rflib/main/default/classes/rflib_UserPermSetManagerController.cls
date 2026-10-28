@@ -105,15 +105,6 @@ public with sharing class rflib_UserPermSetManagerController {
         }
     }
 
-    private static Boolean isNotASalesforceId(String stringToValidate) {
-        try {
-            Id.valueOf(stringToValidate);
-            return false;
-        } catch (Exception ex) {
-            return true;
-        }
-    }
-
     public class PermissionSetDTO {
         @AuraEnabled public Id Id { get; set; }
         @AuraEnabled public String Name { get; set; }

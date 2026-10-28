@@ -134,6 +134,36 @@ private class rflib_UserPermSetManagerControllerTest {
     }
     
     @IsTest
+    private static void testGetAssignedPermissionSets_ErrorIsRethrown() {
+        // The read-only queries cannot fail on their own, so the logger fails instead to reach their error handling
+        rflib_LoggerUtil.loggerFactory = new rflib_MockFailingLoggerFactory();
+
+        Test.startTest();
+        try {
+            rflib_UserPermSetManagerController.getAssignedPermissionSets(TEST_ALIAS_ADMIN);
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.areEqual(rflib_MockFailingLoggerFactory.FAILURE_MESSAGE, e.getMessage(), 'The original error should be rethrown');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    private static void testGetAllPermissionSets_ErrorIsRethrown() {
+        // The read-only queries cannot fail on their own, so the logger fails instead to reach their error handling
+        rflib_LoggerUtil.loggerFactory = new rflib_MockFailingLoggerFactory();
+
+        Test.startTest();
+        try {
+            rflib_UserPermSetManagerController.getAllPermissionSets();
+            Assert.fail('Expected AuraHandledException was not thrown.');
+        } catch (AuraHandledException e) {
+            Assert.areEqual(rflib_MockFailingLoggerFactory.FAILURE_MESSAGE, e.getMessage(), 'The original error should be rethrown');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
     private static void testAssignPermissionSet_Success() {
         setupTestData();
         

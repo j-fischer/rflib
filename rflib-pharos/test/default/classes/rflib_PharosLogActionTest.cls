@@ -341,6 +341,71 @@ private class rflib_PharosLogActionTest {
         Assert.isTrue(true, 'Method executed successfully with rflib_Log__c object');
     }
     
+    @IsTest
+    static void testCreatePharosLogRecords_PublishesMappedRecordsWithRflibStandIns() {
+        // Setup
+        useRflibStandInsForPharosObjects();
+        setupEventPublisher();
+        setupTestFieldMappingRulesForRflib();
+
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
+        settings.Pharos_Log_Level__c = 'INFO'; // Unsupported level, defaults to WARN
+        upsert settings;
+
+        List<rflib_Log_Event__e> logEvents = new List<rflib_Log_Event__e>{
+            createLogEvent('ERROR', 'This should be processed', 'TestContext', 'REQ-001'),
+            createLogEvent('INFO', 'This should NOT be processed', 'TestContext', 'REQ-002')
+        };
+
+        // Act
+        Test.startTest();
+        rflib_PharosLogAction.createPharosLogRecords(logEvents);
+        Test.stopTest();
+
+        // Assert
+        SObject publishedEvent = MOCK_EVENT_PUBLISHER.capturedPlatformEvent;
+        Assert.isInstanceOfType(publishedEvent, rflib_Log_Event__e.class, 'The Pharos Log Event stand-in should be published');
+
+        List<Object> pharosLogs = (List<Object>) JSON.deserializeUntyped((String) publishedEvent.get('Log_Messages__c'));
+        Assert.areEqual(1, pharosLogs.size(), 'Should only process the ERROR event');
+
+        Map<String, Object> pharosLog = (Map<String, Object>) pharosLogs[0];
+        Assert.areEqual('REQ-001', pharosLog.get('Request_ID__c'), 'The log event fields should be mapped');
+        Assert.areEqual(JSON.serialize(rflib_PharosPostProcessingBuilder.getPostProcessingSettings()), pharosLog.get('Platform_Info__c'),
+            'The post-processing settings should be added');
+    }
+
+    @IsTest
+    static void testCreatePharosLogRecords_PharosLogEventObjectNotFound() {
+        // Setup
+        useRflibStandInsForPharosObjects();
+        rflib_PharosLogAction.PHAROS_LOG_EVENT_OBJECT = 'rflib_DoesNotExist__e';
+        setupEventPublisher();
+        setupTestFieldMappingRulesForRflib();
+
+        rflib_Logger_Settings__c settings = rflib_Logger_Settings__c.getOrgDefaults();
+        settings.Pharos_Log_Level__c = 'ERROR';
+        upsert settings;
+
+        // Act
+        Test.startTest();
+        rflib_PharosLogAction.createPharosLogRecords(new List<rflib_Log_Event__e>{
+            createLogEvent('ERROR', 'Test error message', 'TestContext', 'REQ-001')
+        });
+        Test.stopTest();
+
+        // Assert
+        Assert.isNull(MOCK_EVENT_PUBLISHER.capturedPlatformEvent, 'No event should be published when the Pharos Log Event object does not exist');
+    }
+
+    // RFLIB objects stand in for the Pharos objects, so records are mapped and published in orgs without the Pharos package
+    private static void useRflibStandInsForPharosObjects() {
+        rflib_PharosLogAction.PHAROS_LOG_OBJECT = 'rflib_Log__c';
+        rflib_PharosLogAction.PHAROS_POST_PROCESSING_SETTINGS_FIELD = 'Platform_Info__c';
+        rflib_PharosLogAction.PHAROS_LOG_EVENT_OBJECT = 'rflib_Log_Event__e';
+        rflib_PharosLogAction.PHAROS_LOG_EVENT_OBJECT_BODY = 'Log_Messages__c';
+    }
+
     // Helper methods
     private static rflib_Log_Event__e createLogEvent(String logLevel, String message, String context, String requestId) {
         return new rflib_Log_Event__e(

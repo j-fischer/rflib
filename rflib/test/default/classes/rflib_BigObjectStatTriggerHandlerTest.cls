@@ -80,7 +80,43 @@ private class rflib_BigObjectStatTriggerHandlerTest {
         validateEvent(MOCK_EVENT_PUBLISHER.capturedPlatformEvents.get(0));
     }
 
+    @IsTest
+    static void testAfterInsert_publishFailureIsLogged() {
+        // The handler creates its logger when the class loads, so the factory is set before the handler is referenced
+        rflib_MockLoggerFactory loggerFactory = new rflib_MockLoggerFactory();
+        rflib_LoggerUtil.loggerFactory = loggerFactory;
+
+        FailingEventPublisher failingPublisher = new FailingEventPublisher();
+        rflib_BigObjectStatTriggerHandler.EVENT_PUBLISHER = failingPublisher;
+
+        insert new rflib_Big_Object_Stat__c();
+
+        Assert.areEqual(1, failingPublisher.publishingCount, 'Event should have been published once');
+        Assert.isTrue(loggerFactory.debugLogCapture.containsInAnyMessage('Failed to publish Big Object Stat event: Publish failed'),
+            'The publish failure should be logged');
+    }
+
     static void validateEvent(SObject e) {
         Assert.isInstanceOfType(e, rflib_Big_Object_Stat_Event__e.class, 'Event should be a Big Object Stat Event');
+    }
+
+    private class FailingEventPublisher implements rflib_EventPublisher {
+        public Integer publishingCount = 0;
+
+        public Database.SaveResult publish(SObject event) {
+            publishingCount++;
+            return (Database.SaveResult) JSON.deserialize(
+                '{"success":false,"errors":[{"message":"Publish failed","statusCode":"UNKNOWN_EXCEPTION"}]}',
+                Database.SaveResult.class
+            );
+        }
+
+        public List<Database.SaveResult> publish(List<SObject> events) {
+            return new List<Database.SaveResult>{ publish(events[0]) };
+        }
+
+        public Integer getPublishingCounter() {
+            return publishingCount;
+        }
     }
 }

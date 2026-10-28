@@ -31,10 +31,13 @@ public class rflib_PharosLogAction {
 
     private static final rflib_Logger LOGGER = rflib_LoggerUtil.getFactory().createLogger('rflib_PharosLogAction');
     
-    private static final String PHAROS_LOG_EVENT_OBJECT = 'pharos__Log_Event__e';
-    private static final String PHAROS_LOG_EVENT_OBJECT_BODY = 'pharos__Body__c';
-    private static final String PHAROS_POST_PROCESSING_SETTINGS_FIELD = 'pharos__Post_Processing_Settings__c';
-    
+    @TestVisible
+    private static String PHAROS_LOG_EVENT_OBJECT = 'pharos__Log_Event__e';
+    @TestVisible
+    private static String PHAROS_LOG_EVENT_OBJECT_BODY = 'pharos__Body__c';
+    @TestVisible
+    private static String PHAROS_POST_PROCESSING_SETTINGS_FIELD = 'pharos__Post_Processing_Settings__c';
+
     @TestVisible
     private static String PHAROS_LOG_OBJECT = 'pharos__Log__c';
 
