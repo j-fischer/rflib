@@ -149,15 +149,17 @@ Proceed to Step 4 to monitor output.
 When no valid default org exists, run:
 
 ```bash
-npx gulp create-scratch --alias rflib
+npx gulp create-scratch --alias "${RFLIB_SCRATCH_ALIAS:-rflib}"
 ```
 
 **Recommended alias: `rflib`** — this matches the DevHub configuration and is the
-default used throughout the project.
+default used throughout the project. In the Claude Cloud environment,
+`RFLIB_SCRATCH_ALIAS` is set (to `claude_org`) and the command above uses it instead.
 
 `gulp create-scratch` will:
 
-1. Create a 30-day scratch org with the given alias (set as default)
+1. Create a scratch org with the given alias (set as default) that expires after
+   `RFLIB_SCRATCH_DAYS` days (30 when unset)
 2. Push all source
 3. Assign permission sets (`rflib_Ops_Center_Access`, `rflib_Create_Application_Event`)
 4. Configure custom settings

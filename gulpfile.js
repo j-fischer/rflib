@@ -46,7 +46,9 @@ require('time-require');
 const config = {
     projectFile: JSON.parse(fs.readFileSync('sfdx-project.json')),
     packageFile: JSON.parse(fs.readFileSync('package.json')),
-    alias: process.argv.includes('--alias') ? process.argv[process.argv.indexOf('--alias') + 1] : 'rflib',
+    alias: process.argv.includes('--alias') ? process.argv[process.argv.indexOf('--alias') + 1] : process.env.RFLIB_SCRATCH_ALIAS || 'rflib',
+    // Days until a new scratch org expires; the Claude Cloud environment sets a short lifespan.
+    scratchDays: process.env.RFLIB_SCRATCH_DAYS || 30,
     packageIndex: null,
     package: {},
     version: {
@@ -545,42 +547,42 @@ function shellTask(getCommand, ignoreErrors = false) {
 gulp.task(
     'shell-force-create-org-default',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
+        return `sf org create scratch -f config/project-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-default-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
+        return `sf org create scratch -f config/project-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-with-omni-default',
     shellTask(function () {
-        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
+        return `sf org create scratch -f config/omni-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10 --set-default`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-with-omni-default-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/omni-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
+        return `sf org create scratch -f config/omni-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10 --set-default --release=preview`;
     })
 );
 
 gulp.task(
     'shell-force-create-org',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10`;
+        return `sf org create scratch -f config/project-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10`;
     })
 );
 
 gulp.task(
     'shell-force-create-org-preview',
     shellTask(function () {
-        return `sf org create scratch -f config/project-scratch-def.json -y 30 -a ${config.alias} --name ${config.alias} -w 10 --release=preview`;
+        return `sf org create scratch -f config/project-scratch-def.json -y ${config.scratchDays} -a ${config.alias} --name ${config.alias} -w 10 --release=preview`;
     })
 );
 

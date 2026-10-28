@@ -50,7 +50,7 @@ sf org display --json
 ```
 
 If `result.status` is not `Active`, stop and create one via the `rflib-quality`
-skill (`npx gulp create-scratch --alias rflib`) — the suite depends on the perm sets,
+skill (`npx gulp create-scratch --alias "${RFLIB_SCRATCH_ALIAS:-rflib}"`) — the suite depends on the perm sets,
 custom settings, and seeded events that task provisions.
 
 Then refresh the browser session the inspector and the suite share:
