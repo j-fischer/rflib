@@ -26,7 +26,8 @@ npm run cspell                   # Spell check all source files
 sf apex run test -o <org-alias> --code-coverage                # Run all Apex tests
 sf apex run test -o <org-alias> -n <TestClassName>             # Run a single test class
 sf project deploy start -o <org-alias> -w 25                   # Deploy source to scratch org
-gulp test                                                      # Run full end-to-end test suite for front and backend
+npx gulp test --alias <org-alias>                              # Deploy, then Apex tests, lint, flow scan, LWC tests (no Playwright E2E)
+npx gulp test-e2e --alias <org-alias>                          # Playwright E2E suite against the org
 ```
 
 ### Package Management (Gulp)
@@ -99,7 +100,7 @@ Key Apex classes:
 - `rflib_Logger` — interface; `rflib_DefaultLogger` — implementation
 - `rflib_LoggerFactory` / `rflib_DefaultLoggerFactory` — factory for creating logger instances
 - `rflib_ApplicationEventService` — logs named application events to `rflib_Application_Event__c`
-- `rflib_LogEventHandler` — Platform Event subscriber that archives logs
+- `rflib_Log_Event_Handler` (Flow) — Platform Event subscriber; `rflib_ArchiveLogAction` writes the archive
 - `rflib_BigObjectDatabaseExecutor` — abstraction over Big Object DML
 - `rflib_BigObjectQueryController` / `rflib_DefaultBigObjectQueryService` — validate a Big Object Explorer configuration and read a Big Object in chunks, always in user mode
 
@@ -113,17 +114,17 @@ Key LWC components:
 
 ### Feature Switches (`rflib-fs/`)
 
-Feature flags stored as `rflib_Feature_Switch__mdt` Custom Metadata records. Supports hierarchical overrides (org → profile → user) via `rflib_FeatureSwitchService`. Accessible from Apex, LWC (`rflibFeatureSwitches`), and Flow.
+Feature flags stored as `rflib_Feature_Switch__mdt` Custom Metadata records. Supports hierarchical overrides (org → profile → user) via `rflib_FeatureSwitch` (`isTurnedOn` / `isTurnedOff`). Accessible from Apex, LWC (`rflibFeatureSwitches`), and Flow.
 
 ### Trigger Framework (`rflib-tf/`)
 
-- `rflib_TriggerManager` reads `rflib_Trigger_Config__mdt` records to dynamically instantiate and order `rflib_TriggerHandler` implementations
+- `rflib_TriggerManager` reads `rflib_Trigger_Configuration__mdt` records to dynamically instantiate and order `rflib_TriggerHandler` implementations
 - `rflib_RetryableActionManager` / `rflib_RetryableActionHandler` — asynchronous retry pattern using Platform Events
 - `rflib_SingleRunOnlyTriggerHandler` — utility base class for preventing trigger recursion
 
 ## Naming Conventions
 
-- **Apex classes**: `rflib_<Feature><Type>.cls` — e.g., `rflib_ApplicationEventService`, `rflib_BigObjectStatController`, `rflib_LogEventHandler`
+- **Apex classes**: `rflib_<Feature><Type>.cls` — e.g., `rflib_ApplicationEventService`, `rflib_BigObjectStatController`, `rflib_LogArchiveController`
 - **Test classes**: `<ClassName>Test.cls` — must mirror the class under test exactly
 - **LWC components**: camelCase starting with `rflib` — e.g., `rflibLogger`, `rflibLogEventMonitor`
 - **Custom objects/fields**: `rflib_<Name>__c` / `rflib_<Name>__b` (Big Objects) / `rflib_<Name>__mdt` (CMDT) / `rflib_<Name>__e` (Platform Events)
@@ -137,7 +138,7 @@ Feature flags stored as `rflib_Feature_Switch__mdt` Custom Metadata records. Sup
 - **@TestVisible**: Annotation can only be used on private members (static included), not ever on any methods.
 - **Ops Center controllers enforce the caller's permissions on the server.** Hiding a control in the LWC is not access control: any holder of `rflib_Ops_Center_Access` can call the Aura methods directly. Check object access with a describe call and write with `AccessLevel.USER_MODE`; where the platform has no permission to check (e.g. scheduling Apex), restrict to an allow-list such as the `Ops_Center_Schedulable_Classes` Global Setting.
 - Pre-commit hooks run Prettier, ESLint, and CSpell via Husky + lint-staged — run `npm run prettier` before committing if formatting issues appear.
-- RFLIB-PHAROS intentionally has **no direct package dependency** on RFLIB; the integration is event-driven through `rflib_Log_Event__e`.
+- RFLIB-PHAROS integrates with RFLIB through the `rflib_Log_Event__e` Platform Event; its package declares RFLIB as its only dependency.
 
 ## Behavioral Guidelines
 

@@ -49,8 +49,8 @@ Two scripts do the mechanical parts; you do the understanding and the writing:
   re-rendered on every reload — so you can look at the PR exactly as reviewers will
   before anything is published.
 
-The draft lives at **`.claude/skills/rflib-pr/out/pr-body.md`** — gitignored (all of
-`.claude/` is), inside the repo so the user can open it in the editor, and the default
+The draft lives at **`.claude/skills/rflib-pr/out/pr-body.md`** — gitignored (the `out/`
+folder only), inside the repo so the user can open it in the editor, and the default
 path both scripts and the launch configuration use.
 
 All paths are relative to the repo root. Invoking this skill is the instruction to run
@@ -297,8 +297,9 @@ pushing to confirm.
 
 ## Gotchas
 
-- **`.claude/` is gitignored.** This skill, its scripts, the launch configuration and
-  the draft exist only on this machine.
+- **Only the draft is local.** `.claude/skills/rflib-pr/out/` is gitignored; this skill, its
+  scripts and `.claude/launch.json` are tracked, so an edit to any of them shows as a
+  dirty tree in the inventory and ships in the PR once committed.
 - **PR bodies render every newline as `<br>`.** `gh api markdown -f mode=gfm` (the PR
   renderer) turns `line one\nline two` into `line one<br>line two`; plain `markdown`
   mode does not. Write each paragraph on one line; inside a list item, a newline is a

@@ -182,7 +182,7 @@ categories. Work through them in order:
 
 Indicators:
 
-- `Error` lines with file paths (e.g., `force-app/main/default/classes/...`)
+- `Error` lines with file paths (e.g., `rflib/main/default/classes/...`)
 - `Deployment failed`
 - `COMPILE ERROR`
 - Lines containing `unexpected token`, `Variable does not exist`, `Method does not exist`
@@ -279,7 +279,7 @@ Indicators:
    a slow poll rather than a real bug. If a failure looks timing-related, re-run
    `gulp test-e2e` once before changing code. Prefer fixing the spec's polling
    (`e2e/helpers/polling.ts`) over adding fixed sleeps.
-4. Spec ordering matters — numeric prefixes (`01`–`08`) are intentional because
+4. Spec ordering matters — the numeric prefixes are intentional because
    later specs (e.g. `05-log-archive`) destroy data earlier specs created. Do
    not reorder or run specs in isolation when diagnosing cross-spec failures.
 5. On failure, Playwright writes a trace/screenshot/video; point the user to
