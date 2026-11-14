@@ -1,14 +1,12 @@
 ---
 name: rflib-quality
 description: >
-    Use this skill when the user wants to run quality checks, pre-commit
-    validation, or full test suite for the rflib repository before committing
-    or creating a pull request. It both runs the suite (gulp test + E2E) AND
-    verifies the branch's changes actually meet their stated goals (from commit
-    messages or the current session). Trigger phrases include: "run quality
-    checks", "check before committing", "run tests", "validate my changes",
-    "pre-commit check", "rflib quality", "gulp test", or any request to verify
-    the branch is ready to commit.
+    Use this skill to validate the whole branch before committing or opening a
+    pull request: it runs the full suite against a scratch org (gulp test, then
+    the Playwright E2E suite), fixes what fails, and verifies the changes meet
+    their stated goals (from commit messages or the current session). A run
+    takes 10+ minutes and may create a scratch org, so it is not for running a
+    single Apex, Jest or E2E test.
 version: 1.2.0
 user-invocable: true
 disable-model-invocation: false
@@ -189,11 +187,8 @@ Indicators:
 
 **Fix process:**
 
-1. Identify the file and line number from the error message.
-2. Read the file with the Read tool.
-3. Diagnose the compile error (type mismatch, missing method, missing import, etc.).
-4. Edit the file to fix the error.
-5. Do not re-run until all identified compile errors are addressed.
+Fix every compile error the output names before re-running — each run redeploys and
+costs minutes.
 
 ### Category B — Apex Test Failures
 
@@ -223,11 +218,8 @@ Indicators:
 
 **Fix process:**
 
-1. Read the failing `__tests__/*.test.js` file.
-2. Read the component's `.js` file to understand the current implementation.
-3. Fix either the component or the test depending on which is incorrect.
-4. Check for missing mock setup (`@wire` mocks, `jest.mock()` calls) if the error
-   is about undefined properties.
+Decide whether the component or its test is wrong and fix that one. An error about
+undefined properties usually means missing mock setup (`@wire` mocks, `jest.mock()`).
 
 ### Category D — Lint Errors
 
