@@ -10,6 +10,12 @@ his concepts to provide detailed log information from Lightning Components and L
 into the execution path on the client side, especially when dealing with production issues. The library can be configured to
 automatically report any unexpected errors through Salesforce's latest technologies such as Platform Events.
 
+## Watch the Overview
+
+[![Observability for free: accountable Salesforce code, written by people or AI agents (RFLIB 2026)](https://img.youtube.com/vi/iO3mxObzIP4/maxresdefault.jpg)](https://youtu.be/iO3mxObzIP4)
+
+_Observability for free: accountable Salesforce code, written by people or AI agents_ — a walkthrough of what RFLIB gives you and how to use it.
+
 ## Key Features
 
 The following lists describe some of the key features of rflib.
