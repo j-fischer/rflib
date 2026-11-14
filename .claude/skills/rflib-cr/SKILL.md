@@ -1,13 +1,11 @@
 ---
 name: rflib-cr
 description: >
-    Use this skill to review the code of an in-progress implementation against
-    RFLIB's curated best practices, right before running rflib-quality. It reviews
-    the uncommitted working-tree changes (staged + unstaged), checks them against
-    generic, Apex, and JavaScript best-practice checklists, and auto-fixes the
-    violations it finds. Trigger phrases include: "review the code", "code review",
-    "rflib cr", "review my changes", "check best practices", or any request to
-    review an implementation before committing or running quality checks.
+    Use this skill to review the uncommitted working-tree changes (staged +
+    unstaged) against RFLIB's own conventions — generic, Apex, and JavaScript
+    best-practice checklists — and auto-fix the violations, at the end of an
+    implementation and right before rflib-quality. It is a convention review,
+    not a hunt for correctness bugs (that is /code-review).
 version: 1.0.0
 user-invocable: true
 disable-model-invocation: false
@@ -77,8 +75,6 @@ finding: `file:line`, the best practice it breaks, and the concrete fix.
 
 Apply the checklists in this order: **Generic** to everything, then **Apex** to
 Apex files, then **JavaScript** to JS/LWC files.
-
-When unsure, ask the user for guidance.
 
 ### Generic Best Practices
 
